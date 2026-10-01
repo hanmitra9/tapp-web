@@ -1,8 +1,10 @@
-import sys
-sys.path.insert(0, '/tmp/gen')
+import sys, pathlib
+HERE = pathlib.Path(__file__).resolve().parent
+sys.path.insert(0, str(HERE))
 from parts import *
 from hero2 import hero_creator_visual, hero_brand_visual
-GLOBE = open('/tmp/ref/globe.svg.frag').read()
+from hub import hero_hub, LEVELS, PORTFOLIO
+GLOBE = open(HERE / 'globe.svg.frag').read()
 
 def pill_btn(label, href, primary=True, big=False):
     h = '56px' if big else '48px'
@@ -141,9 +143,9 @@ def faq_block(pill, l1, l2, btn, href, listname):
   </div>
 </section>'''
 
-WALL = open('/tmp/gen/wall.html').read()
-FX3 = open('/tmp/gen/fx3.html').read()
-JS = open('/tmp/gen/logic.js').read()
+WALL = open(HERE / 'wall.html').read()
+FX3 = open(HERE / 'fx3.html').read()
+JS = open(HERE / 'logic.js').read()
 
 page = f'''<!doctype html>
 <html lang="id">
@@ -193,6 +195,15 @@ a{{color:inherit;text-decoration:none}}
 .lp .blip{{animation:blip 5s ease-in-out infinite}}
 @keyframes spin{{to{{transform:rotate(360deg)}}}}
 @keyframes blip{{0%,55%{{opacity:0.25}}62%,90%{{opacity:1}}100%{{opacity:0.25}}}}
+
+.lp .tchip{{padding:6px 11px;border-radius:999px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);font-size:12px;font-weight:700;color:#D4D4D8}}
+.lp .tarc path{{transition:fill .25s ease,stroke .25s ease}}
+.lp .tarc g[role=button]:hover path{{stroke:#7DA2FF}}
+.lp .hub{{animation:hubglow 3.2s ease-in-out infinite}}
+@keyframes hubglow{{0%,100%{{box-shadow:0 0 0 10px rgba(69,72,245,0.14),0 0 0 22px rgba(69,72,245,0.06),0 0 70px rgba(69,72,245,0.7),inset 0 1px 0 rgba(255,255,255,0.35)}}50%{{box-shadow:0 0 0 12px rgba(69,72,245,0.18),0 0 0 28px rgba(69,72,245,0.07),0 0 110px rgba(69,72,245,0.95),inset 0 1px 0 rgba(255,255,255,0.35)}}}}
+.lp .hc{{animation:bob 6s ease-in-out infinite}} .lp .hc:nth-of-type(2){{animation-delay:-1.5s}} .lp .hc:nth-of-type(3){{animation-delay:-3s}} .lp .hc:nth-of-type(4){{animation-delay:-4.5s}}
+@keyframes bob{{0%,100%{{transform:translateY(0)}}50%{{transform:translateY(-6px)}}}}
+@media (max-width: 1240px){{ .lp .hstage{{transform:scale(0.82);transform-origin:center top}} .lp .hstage-wrap{{height:330px !important}} }}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
 @media (max-width: 900px){{
   .lp .nlinks{{display:none !important}}
@@ -215,6 +226,14 @@ a{{color:inherit;text-decoration:none}}
   .lp .mqc{{width:84px !important;height:84px !important;border-radius:22px !important}}
   .lp .mqc img{{width:46px !important;height:46px !important}}
   .lp .brow{{padding:24px !important}}
+  .lp .hstage-wrap{{height:170px !important}}
+  .lp .hstage{{transform:scale(0.9) translateY(-100px) !important}}
+  .lp .hstage .hc,.lp .hstage .hwire{{display:none !important}}
+  .lp .hm{{display:flex !important}}
+  .lp .tcard{{position:static !important;transform:none !important;margin:-24px auto 0}}
+  .lp .tarc text{{font-size:44px}}
+  .lp .ctiles > div:nth-child(3){{display:none}}
+  .lp .pdash{{padding:14px !important}}
 }}
 </style>
 </helmet>
@@ -235,7 +254,7 @@ a{{color:inherit;text-decoration:none}}
 
 <main id="top">
 <sc-if value="{{{{isCreator}}}}" hint-placeholder-val="{{{{ true }}}}">
-  {HERO_C}
+  {hero_hub()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
     {head("Jelajahi Campaign", "Campaign Pertama Dibuka,", "Giliran Kamu Ambil", "Mulai dari TAPP Campaign. Bangun rekam jejak, naik level, lalu buka campaign brand yang lebih besar.")}
@@ -246,7 +265,7 @@ a{{color:inherit;text-decoration:none}}
     </div>
     <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 40px">
       {pill_btn("Lihat Semua Campaign", "campaigns.html")}
-      <span style="font-size: 14px; color: #8A8A93; font-weight: 600">Gratis untuk creator. Tanpa minimum follower.</span>
+      <span style="display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: #8A8A93; font-weight: 600"><span style="display: inline-flex; transform: scale(0.8)">{AV_STACK}</span>Gratis untuk creator. Tanpa minimum follower.</span>
     </div>
   </section>
 
@@ -254,6 +273,10 @@ a{{color:inherit;text-decoration:none}}
     {head("Alur Kerja", "Dari Daftar Sampai Saldo,", "Tanpa Tebak-tebakan", "Setiap tahap punya status yang bisa kamu lihat: direview, lolos, atau perlu diperbaiki. Kamu selalu tahu posisi clip dan uangmu.")}
     <div class="g2" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px">{''.join(step_card(i, t) for i, t in enumerate(STEPS_C))}</div>
   </section>
+
+  {LEVELS}
+
+  {PORTFOLIO}
 
   <section id="daftar" class="sec" style="padding: 88px 0 40px">
 {WALL}
@@ -315,5 +338,5 @@ a{{color:inherit;text-decoration:none}}
 </body>
 </html>
 '''
-open('/mnt/user-data/outputs/artifacts/113a17d5-1d25-41ef-8549-83089f226ecc/project/Main.dc.html', 'w').write(page)
+open(HERE.parent / 'landing.dc.html', 'w').write(page)
 print(len(page))

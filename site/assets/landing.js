@@ -41,7 +41,7 @@ class DCLogic { constructor(props) { this.props = props || {}; this.state = {}; 
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { mode: null, openC: 0, openB: 0, met: 'Views' };
+    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', tier: 2 };
   }
   renderVals() {
     const s = this.state;
@@ -124,8 +124,28 @@ class Component extends DCLogic {
       return cards.concat(cards);
     };
 
+    // level arc: real tiers + thresholds (app_settings.tier_thresholds)
+    const TIERS = [
+      ['New', '0', '#8A8A93', 'Titik awal semua creator. Kerjakan TAPP Campaign dan kumpulkan clip pertama yang lolos verifikasi.'],
+      ['Rising', '50K', '#34D07A', 'Clip-mu mulai konsisten lolos dan menghasilkan. Rekam jejakmu mulai terbentuk.'],
+      ['Verified', '250K', '#7DA2FF', 'Rekam jejakmu sudah teruji di banyak clip. Profilmu menunjukkan performa yang bisa dipercaya.'],
+      ['Proven', '1 juta', '#A78BFA', 'Satu juta qualified views. Kamu sudah terbukti bisa mendatangkan audiens nyata.'],
+      ['Elite', '5 juta', '#F0B429', 'Level tertinggi di TAPP: lima juta qualified views yang lolos verifikasi.'],
+    ];
+    const ti = s.tier == null ? 2 : s.tier, sel = TIERS[ti];
+    const tiers = TIERS.map((t, i) => ({
+      pick: () => this.setState({ tier: i }),
+      fill: i === ti ? 'url(#arcOn)' : '#0F0F14',
+      stroke: i === ti ? t[2] : 'rgba(255,255,255,0.08)',
+      label: i === ti ? '#FFFFFF' : '#8A8A93',
+      op: i === ti ? '1' : '0.55',
+    }));
+
     return {
       isCreator: creator, isBrand: !creator,
+      tiers: tiers, tierName: sel[0], tierNum: String(ti + 1), tierBody: sel[3],
+      tierReq: ti === 0 ? 'Mulai dari 0 qualified views' : 'Mulai dari ' + sel[1] + ' qualified views',
+      tierPill: 'color: ' + sel[2] + '; background: rgba(255,255,255,0.05); border: 1px solid ' + sel[2],
       creatorTab: tab(creator), brandTab: tab(!creator),
       setCreator: () => this.setState({ mode: 'creator' }),
       setBrand: () => this.setState({ mode: 'brand' }),

@@ -1,5 +1,5 @@
 # Building blocks for the TAPP landing (dark premium, follows the reference artifact's structure)
-P1, P2 = open('/tmp/ref/mark_paths.txt').read().split('\n')
+P1, P2 = open(__import__('pathlib').Path(__file__).resolve().parent / 'mark_paths.txt').read().split('\n')
 BLOB_MARK = '/_blob/58aec98a357608dc6fa8a4a440fc9214'
 BLOB_WHITE = '/_blob/2d5aebeddb5d0a63b818258d6ea37530'
 
