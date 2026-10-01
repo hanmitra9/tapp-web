@@ -32,7 +32,7 @@ export default function Activity() {
       {!q.data && !q.error ? <><CardSkeleton /><CardSkeleton /></> : null}
       {q.data && !rows.length ? (
         <EmptyState title="Belum ikut campaign" body="Gabung ke campaign untuk mulai membuat klip dan mendapat penghasilan."
-          action={{ label: 'Cari campaign', onPress: () => router.navigate('/campaigns') }} />
+          action={{ label: 'Cari campaign', onPress: () => router.navigate('/dashboard/campaigns') }} />
       ) : null}
       {attention ? <Notice tone="info" message={`${attention} submission butuh perhatianmu.`} /> : null}
       {subs.length ? <Text style={styles.section}>Submission terbaru</Text> : null}

@@ -16,12 +16,30 @@
         else a.style.display = 'none';
       }
     });
+    // Signed in already (the app shares this site's storage): the header offers Dashboard instead of Log In / Sign Up.
+    if (signedIn() && c.APP_URL) {
+      var home = c.APP_URL.replace(/\/$/, '');
+      (root || document).querySelectorAll('header a').forEach(function (a) {
+        var t = (a.textContent || '').trim();
+        if (t === 'Log In') a.style.display = 'none';
+        if (t === 'Sign Up') { a.textContent = 'Dashboard'; a.setAttribute('href', home + '/dashboard'); }
+      });
+    }
     // Hide a group (e.g. the footer "Social" column) when none of its links are configured.
     (root || document).querySelectorAll('[data-hide-empty]').forEach(function (g) {
       var visible = Array.prototype.some.call(g.querySelectorAll('a'), function (a) { return a.style.display !== 'none'; });
       if (!visible) { if (!g.hasAttribute('data-hid')) { g.setAttribute('data-hid', g.style.display || ''); g.style.display = 'none'; } }
       else if (g.hasAttribute('data-hid')) { g.style.display = g.getAttribute('data-hid'); g.removeAttribute('data-hid'); }
     });
+  }
+  function signedIn() {
+    try {
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (/^sb-.+-auth-token$/.test(k) && localStorage.getItem(k)) return true;
+      }
+    } catch (e) { /* storage blocked */ }
+    return false;
   }
   window.TAPP_applyLinks = apply;
   document.addEventListener('DOMContentLoaded', function () { apply(document); });

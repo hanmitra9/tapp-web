@@ -1,16 +1,17 @@
 import Feather from '@expo/vector-icons/Feather';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { goToSite } from '@/lib/site';
 import { color, radius, space, type } from '@/theme/tokens';
 
 // Desktop replacement for the floating tab bar: logo, then the same five destinations as a vertical list.
 export function WebSidebar({ state, descriptors, navigation, product = 'TAPP Creators' }: BottomTabBarProps & { product?: string }) {
   return (
     <View style={styles.bar} accessibilityRole="menu">
-      <View style={styles.brand}>
+      <Pressable style={styles.brand} onPress={() => goToSite('/')} accessibilityRole="link" accessibilityLabel="TAPP beranda">
         <Image source={require('../../assets/tapp-logo.png')} style={styles.logo} />
         <Text style={styles.brandText}>{product}</Text>
-      </View>
+      </Pressable>
       {state.routes.map((route, i) => {
         const { options } = descriptors[route.key]!;
         const focused = state.index === i;

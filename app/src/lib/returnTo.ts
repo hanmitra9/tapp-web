@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 
 // Remember the page someone opened before signing in (e.g. a campaign link from the website),
 // send them to the login screen, and bring them back there afterwards.
-const AUTH_ROUTES = ['/welcome', '/login', '/register', '/verify-email', '/forgot-password', '/reset-password'];
+const AUTH_ROUTES = ['/login', '/register', '/verify-email', '/forgot-password', '/reset-password'];
 const KEY = 'tapp_return_to';
 
 function currentRoute(): string | null {

@@ -1,6 +1,6 @@
 import { defineConfig } from '@playwright/test';
 
-// Smoke tests against the exported web build. Build first: `npm run build:web`, then `npm run e2e`.
+// Smoke tests against the combined site build. Build first: `python3 site/tools/build_all.py`, then `npm run e2e`.
 export default defineConfig({
   testDir: 'e2e',
   timeout: 30_000,

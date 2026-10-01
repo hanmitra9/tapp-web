@@ -25,7 +25,7 @@ export default function AppLayout() {
         <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
       </Stack.Protected>
       <Stack.Protected guard={creator}>
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="dashboard" />
         <Stack.Screen name="campaign/[id]" />
         <Stack.Screen name="workspace/[id]" />
         <Stack.Screen name="performance" />

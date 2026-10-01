@@ -14,7 +14,7 @@ supabase/
   migrations/…003_security.sql   deny-by-default grants, column grants, RLS, storage buckets/policies
   seed.sql                       dev-only campaign
   tests/run.sh                   applies migrations to local Postgres + full workflow & abuse test
-app/                             creator & brand web app (Expo web)
+app/                             signed-in pages (Expo web), served from the same site
 ```
 
 ## Supabase status (project njffqsbddzztfxxbavpp)
@@ -117,12 +117,13 @@ Matches the reference fintech style with TAPP Blue replacing the purple:
 - Home: total earnings headline, gradient "Tersedia untuk dicairkan" card, four quick actions, transaction-style "Sedang kamu kerjakan" list. Floating rounded tab bar.
 - Admin panel uses the same dark system (`admin/src/styles.css`): floating sidebar with blue active item, segmented tabs, surface cards for list/detail, gradient first stat, pill badges.
 
-## Web app
-TAPP is web only (no Android/iOS build). `app/` is built with Expo web into a static SPA.
-- Run: `cd app && npm run web` · Build: `npm run build:web` → static site in `app/dist/`.
-- Deploy: see `DEPLOY.md` (Apache `.htaccess`, Nginx, or Netlify `public/_redirects`) — SPA rewrites so deep links work. Set `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` (and optional PostHog) as environment variables.
-- Desktop (≥900px): left sidebar instead of the tab bar, content max-width, 2-column marketplace, split Welcome (headline left, fading ribbons right), forms as a centered card. Phone browsers get the mobile layout.
-- Confirmations use the browser dialog (`src/lib/alert.ts`), analytics via `posthog-js` (`src/lib/analytics.ts`).
+## One website
+TAPP is a single website. `site/` holds the landing and public pages; `app/` holds the signed-in pages (login, onboarding, `/dashboard`, campaigns, submit, earnings, payouts, profile, brand portal); `admin/` is the admin panel. They are separate code internally but built and deployed together:
+`python3 site/tools/build_all.py https://yourdomain` → upload `dist/` (see `DEPLOY.md`).
+- URLs: `/` landing · `/campaigns` public list · `/login`, `/register` · `/dashboard`, `/dashboard/campaigns|activity|earnings|profile` · `/campaign/…`, `/workspace/…`, `/payouts`… · `/brand` · `/admin/`.
+- Signed-out pages wear the landing header; the landing header shows **Dashboard** when the visitor is signed in. Any path that isn't a file is served by `app.html`.
+- Desktop (≥900px): sidebar, wider content, forms as a centered card. Phones get the mobile layout. Confirmations use the browser dialog (`src/lib/alert.ts`), analytics via `posthog-js`.
+- Dev: `cd app && npm run web` (signed-in pages alone) · E2E: build with `build_all.py`, then `cd app && npm run e2e`.
 
 ## Brand portal (V1: laporan saja)
 Two homes behind one login: `profiles.role = 'brand'` → `/brand` (TAPP for Brands), everyone else → the creator app.
@@ -153,7 +154,7 @@ Two homes behind one login: `profiles.role = 'brand'` → `/brand` (TAPP for Bra
 - **Brand assets**: vector logo set in `brand/svg/` (mark, white/black mark, app icon, horizontal logo for dark/light backgrounds).
 - **Five-tier creator system** (migration `…022`): New → Rising → Verified → Proven → Elite, automatic from lifetime qualified views (thresholds in `app_settings.tier_thresholds`: 0 / 50K / 250K / 1M / 5M). Recomputed on every `admin_qualify_views` call; notifies the creator on promotion; logged to the audit trail. Read model for the app: `my_tier_progress()` (current tier, next tier, views remaining).
 - **Auto-record foundation** (migration `…023`): creators connect TikTok/Instagram/YouTube via OAuth (`connect_platform_account` / `disconnect_platform_account`); tokens live in Supabase Vault, never a plain column. A cron sweep (every 3h, currently a no-op until `app_settings.fetch_metrics_url` is set) is meant to call a `fetch-metrics` Edge Function — **not yet built**, since it needs each platform's developer app + App Review before it can call their real API. That function would call `due_for_auto_metrics()` to find what's due, then `record_api_metrics()` to write results — both `service_role`-only, unreachable by any user. Manual admin entry keeps working unchanged in the meantime. Per-platform config (client id, scopes) lives in `app_settings.platform_oauth_config`, all three platforms currently `enabled: false`.
-- **Found & fixed (Oct 2026)**: with `APP_URL` unset, every app-bound button on the website (Log In, Sign Up, Daftar Gratis, Ambil campaign) silently fell back to `href="#"` — a dead link, by design (never a guessed wrong URL), but still broken until configured. `config.js` now ships with a visible placeholder (`https://app.tapp.example`) so the site is never silently broken; **change it to the real app URL before launch**. Also split `site/tools/build_app.py` and `build_admin.py` out so building the website never produces app/admin build output inside `site/`.
+- **One site (Oct 2026)**: the signed-in pages ship in the same build as the landing (`site/tools/build_all.py` → `dist/`), so website buttons point at the same domain (`APP_URL: '/'` in `config.js`) and there is no separate app URL to configure.
 - **Website extras**: favicons, social preview image, 404 page, robots.txt, sitemap.xml, web manifest; one command rebuilds everything for a domain: `python3 site/tools/build_all.py https://yourdomain`.
 - **Hosting**: see `DEPLOY.md` — Apache `.htaccess` files ship with the site, web app and admin builds; `deploy/nginx.conf` for a VPS.
 - Recommended in the Supabase dashboard: Authentication → Password security → enable **leaked password protection**.

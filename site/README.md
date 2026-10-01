@@ -1,6 +1,6 @@
 # TAPP website (tapp landing + campaigns + legal)
 
-Static site. `python3 site/tools/build_all.py https://yourdomain` also builds the web app into `site/app/` and the admin panel into `site/admin/`, so one upload serves everything. Pages:
+Static pages of the TAPP website. `python3 site/tools/build_all.py https://yourdomain` builds these plus the signed-in pages (`app/`) and the admin panel (`admin/`) into one `dist/` folder: one upload serves everything. Pages:
 - `index.html` — landing (Creator / Brand), prerendered for SEO, interactive via `assets/landing.js`
 - `campaigns.html` — live list of open campaigns (reads `public_campaigns()` from Supabase, read-only)
 - `privacy.html`, `terms.html` — Kebijakan Privasi & Syarat Layanan (add the legal entity name/address once registered; have them reviewed)
@@ -9,7 +9,7 @@ Static site. `python3 site/tools/build_all.py https://yourdomain` also builds th
 ## Settings — `assets/config.js` (edit, then redeploy; no rebuild)
 | Key | What |
 |---|---|
-| `APP_URL` | Web app address. Default `/app` (bundled in this folder) — leave it unless the app is hosted elsewhere. |
+| `APP_URL` | Where Sign Up / Log In go. `/` = the same site (default; the signed-in pages ship in the same build). |
 | `SUPPORT_EMAIL` | Every contact link. Now `tappcreators@gmail.com`; switch to `support@<domain>` once you have one. |
 | `DISCORD_URL`, `INSTAGRAM_URL`, `WHATSAPP_URL` | Leave empty to hide the link (the floating Discord button and empty footer columns hide too). |
 

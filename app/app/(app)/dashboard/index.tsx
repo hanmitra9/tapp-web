@@ -54,7 +54,7 @@ export default function Home() {
             <Feather name="bell" size={20} color={color.text} />
             {d?.unread ? <View style={styles.badge}><Text style={styles.badgeText}>{d.unread > 9 ? '9+' : d.unread}</Text></View> : null}
           </Pressable>
-          <Pressable onPress={() => router.navigate('/profile')} accessibilityRole="button" accessibilityLabel="Profil">
+          <Pressable onPress={() => router.navigate('/dashboard/profile')} accessibilityRole="button" accessibilityLabel="Profil">
             <Avatar uri={null} name={account?.fullName ?? null} size={44} />
           </Pressable>
         </View>
@@ -67,7 +67,7 @@ export default function Home() {
       </View>
 
       <View style={styles.actions}>
-        <ActionCircle icon="compass" label="Campaign" onPress={() => router.navigate('/campaigns')} />
+        <ActionCircle icon="compass" label="Campaign" onPress={() => router.navigate('/dashboard/campaigns')} />
         <ActionCircle icon="bar-chart-2" label="Performa" onPress={() => router.push('/performance')} />
         <ActionCircle icon="download" label="Cairkan" onPress={() => router.push('/payout/request')} />
         <ActionCircle icon="grid" label="Lainnya" onPress={() => router.push('/help')} />
@@ -78,16 +78,16 @@ export default function Home() {
 
       {d ? (
         <View style={styles.pills}>
-          <Pressable style={styles.pill} onPress={() => router.navigate('/campaigns')}>
+          <Pressable style={styles.pill} onPress={() => router.navigate('/dashboard/campaigns')}>
             <Text style={styles.pillValue}>{d.home.available >= 50 ? '50+' : d.home.available}</Text><Text style={styles.pillLabel}>campaign tersedia</Text>
           </Pressable>
-          <Pressable style={styles.pill} onPress={() => router.navigate('/activity')}>
+          <Pressable style={styles.pill} onPress={() => router.navigate('/dashboard/activity')}>
             <Text style={styles.pillValue}>{d.home.active}</Text><Text style={styles.pillLabel}>campaign aktif</Text>
           </Pressable>
         </View>
       ) : null}
 
-      <SectionHead title="Rekomendasi untukmu" action={{ label: 'Lihat semua', onPress: () => router.navigate('/campaigns') }} />
+      <SectionHead title="Rekomendasi untukmu" action={{ label: 'Lihat semua', onPress: () => router.navigate('/dashboard/campaigns') }} />
       {!d ? <><CardSkeleton /><CardSkeleton /></> : d.recs.length ? d.recs.map((c) => (
         <View key={c.id} style={{ marginBottom: space.md }}><CampaignCard item={c} onPress={() => router.push({ pathname: '/campaign/[id]', params: { id: c.id } })} /></View>
       )) : (
@@ -97,7 +97,7 @@ export default function Home() {
 
       {d && d.active.length ? (
         <>
-          <SectionHead title="Sedang kamu kerjakan" action={{ label: 'Semua', onPress: () => router.navigate('/activity') }} />
+          <SectionHead title="Sedang kamu kerjakan" action={{ label: 'Semua', onPress: () => router.navigate('/dashboard/activity') }} />
           {d.active.map((m) => (
             <Pressable key={m.id} style={({ pressed }) => [styles.activeRow, pressed && { opacity: 0.6 }]} accessibilityRole="button"
               onPress={() => router.push({ pathname: '/workspace/[id]', params: { id: m.campaign!.id } })}>

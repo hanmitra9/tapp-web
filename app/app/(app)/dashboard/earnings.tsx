@@ -114,7 +114,7 @@ export default function Earnings() {
       {d && d.rows.length ? <Chips options={FILTERS} value={[filter]} onChange={([f]) => f && setFilter(f as Filter)} /> : null}
       {d && !d.rows.length ? (
         <EmptyState title="Belum ada penghasilan" body="Penghasilan muncul setelah klipmu disetujui dan qualified views-nya dihitung."
-          action={{ label: 'Cari campaign', onPress: () => router.navigate('/campaigns') }} />
+          action={{ label: 'Cari campaign', onPress: () => router.navigate('/dashboard/campaigns') }} />
       ) : null}
       {d && d.rows.length && !rows.length ? <Text style={styles.muted}>Tidak ada riwayat dengan status ini.</Text> : null}
       {rows.map((e) => <Row key={e.id} e={e} />)}

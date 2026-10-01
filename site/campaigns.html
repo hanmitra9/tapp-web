@@ -75,7 +75,7 @@
   function card(k) {
     var maxViews = k.max_earning_per_submission ? Math.round(k.max_earning_per_submission / k.cpm * 1000) : null;
     var icons = (k.platforms || []).map(function (p) { return '<span style="display: inline-flex; color: #D4D4D8">' + (ICON[p] || esc(NAME[p] || p)) + '</span>'; }).join('');
-    var href = app ? app + '/campaign/' + encodeURIComponent(k.id) : '#';
+    var href = c.APP_URL ? app + '/campaign/' + encodeURIComponent(k.id) : '#';
     return '<article style="border-radius: 18px; overflow: hidden; background: linear-gradient(180deg, #131318, #0C0C10); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column">'
       + '<div style="position: relative; height: 150px; overflow: hidden; background: radial-gradient(70% 90% at 80% 30%, #7DA2FF, transparent 60%), linear-gradient(135deg, #0E1A6B, #4548F5)">'
       + '<img src="assets/tapp-mark-white.svg" alt="" style="position: absolute; right: 26px; top: 34px; width: 74px; height: 74px; filter: drop-shadow(0 0 24px rgba(198,214,255,0.8))">'

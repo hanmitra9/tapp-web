@@ -1,16 +1,14 @@
 import { expect, test } from '@playwright/test';
 
-// Signed-out flows only: they need no live backend, so they run against any build.
+// Runs against the combined site build (python3 site/tools/build_all.py). Signed-out flows only: they need
+// no live backend, so they run against any build.
 
-test('welcome → register', async ({ page }) => {
+test('landing Sign Up opens the register page on the same site', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByText('Distribusikan konten brand.', { exact: false })).toBeVisible();
-  await page.getByRole('button', { name: 'Lanjut' }).click();
-  await expect(page.getByRole('heading', { name: /Gabung campaign/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Lanjut' }).click();
-  await expect(page.getByRole('heading', { name: /Submit link-nya/ })).toBeVisible();
-  await page.getByRole('button', { name: 'Buat akun' }).click();
-  await expect(page).toHaveURL(/\/register/);
+  await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+  await page.locator('header').getByRole('link', { name: 'Sign Up' }).click();
+  await expect(page).toHaveURL(/\/register$/);
+  await expect(page.getByRole('button', { name: 'Log In' })).toBeVisible();   // landing-style header
 });
 
 test('login validates before calling the server', async ({ page }) => {
@@ -21,15 +19,17 @@ test('login validates before calling the server', async ({ page }) => {
   await expect(page.getByText(/email/i).nth(1)).toBeVisible();
 });
 
-test('protected deep link → login, remembered for after sign-in', async ({ page }) => {
-  await page.goto('/campaigns');
+test('signed-in page while signed out → login, remembered for after sign-in', async ({ page }) => {
+  await page.goto('/dashboard/campaigns');
   await expect(page).toHaveURL(/\/login/);
-  expect(await page.evaluate(() => sessionStorage.getItem('tapp_return_to'))).toBe('/campaigns');
+  expect(await page.evaluate(() => sessionStorage.getItem('tapp_return_to'))).toBe('/dashboard/campaigns');
 });
 
-test('refreshing a deep link does not 404', async ({ page }) => {
-  const res = await page.goto('/forgot-password');
+test('public pages stay static, deep app links survive a refresh', async ({ page }) => {
+  const res = await page.goto('/campaigns');
   expect(res?.status()).toBe(200);
+  await expect(page.locator('h1')).toContainText('Brief yang');
+  await page.goto('/forgot-password');
   await page.reload();
   await expect(page).toHaveURL(/\/forgot-password/);
 });

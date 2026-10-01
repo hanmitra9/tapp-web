@@ -19,7 +19,7 @@ Sends every TAPP email over the **Resend HTTP API**. Railway blocks outbound SMT
 | `SUPPORT_EMAIL` | `tappcreators@gmail.com` (or support@yourdomain later) |
 | `MAILER_SECRET` | the value stored in Supabase Vault as `mailer_secret` |
 | `SEND_EMAIL_HOOK_SECRET` | from Supabase → Auth → Hooks → Send Email (`v1,whsec_...`) |
-| `APP_URL` | web app address, e.g. `https://app.yourdomain` |
+| `APP_URL` | website address, e.g. `https://yourdomain` (the signed-in pages live on the same site) |
 
 ## Live now
 - Railway project **tapp** → function **tapp-mailer** → `https://tapp-mailer-production.up.railway.app`
@@ -32,7 +32,7 @@ Sends every TAPP email over the **Resend HTTP API**. Railway blocks outbound SMT
 2. **Railway**: project `tapp` → function `tapp-mailer` (code: `index.ts`) → set the variables above → generate a domain.
    Open `https://<railway-domain>/` — it must show `"resend": true`.
 3. **Database → mailer**: in Supabase SQL: 
-   `insert into app_settings (key, value) values ('mailer_url', to_jsonb('https://<railway-domain>'::text)), ('app_url', to_jsonb('https://app.yourdomain'::text)) on conflict (key) do update set value = excluded.value;`
+   `insert into app_settings (key, value) values ('mailer_url', to_jsonb('https://<railway-domain>'::text)), ('app_url', to_jsonb('https://yourdomain'::text)) on conflict (key) do update set value = excluded.value;`
    From now on brand invites and payout outcomes are emailed automatically.
 5. **Sign-in verification** (optional but recommended, only after 4 works): `update app_settings set value = 'true'::jsonb where key = 'require_login_otp';`
    Every sign-in then needs the password **and** a 6-digit code emailed to the user; password-only sessions are refused by the API (PostgREST pre-request `check_request`). Set back to `false` to turn it off.
