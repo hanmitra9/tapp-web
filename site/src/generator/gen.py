@@ -50,17 +50,17 @@ HERO_B = f'''<div class="hero pad" style="position: relative; display: grid; gri
 </div>'''
 
 STEPS_C = [
-  ('Bikin Akun', 'Daftar gratis dan pilih niche kontenmu. Follower masih sedikit? Aman, tidak ada batas minimum.',
+  ('Buat Akun', 'Tentukan niche kontenmu. Akun baru mendapat jalur yang sama dengan akun besar, karena yang dinilai adalah hasil.',
    '<span style="font-size: 13px; font-weight: 600">Daftar Akun</span><span style="font-size: 12px; color: #8A8A93; font-weight: 500">Nama lengkap</span><span class="inp">Rani Putri</span><span style="font-size: 12px; color: #8A8A93; font-weight: 500">Email</span><span class="inp">rani@email.com</span><span class="btnm">Daftar Sekarang</span>'),
-  ('Sambungkan Akun Sosial', 'Masukkan username TikTok, Instagram, atau YouTube. Tim TAPP memverifikasi akun sebelum kamu mulai.',
+  ('Hubungkan Akun Sosial', 'Tautkan TikTok, Instagram, atau YouTube. Tim TAPP memverifikasi kepemilikan akun sebelum kamu mulai.',
    '<span style="font-size: 13px; font-weight: 600">Hubungkan Akun</span>'
    + ''.join(f'<span class="row"><span style="display: flex; align-items: center; gap: 10px"><span style="color: #D4D4D8; display: inline-flex">{ICON[k]}</span><span style="display: flex; flex-direction: column"><b style="font-size: 13px">{n}</b><span style="font-size: 11px; color: #8A8A93; font-weight: 500">{h}</span></span></span><span style="{st}">{t}</span></span>'
              for k, n, h, t, st in [('tt', 'TikTok', '@rani.clips', 'Terhubung', 'font-size: 11px; font-weight: 600; color: #34D07A; background: rgba(52,208,122,0.14); padding: 4px 9px; border-radius: 999px'),
                                      ('ig', 'Instagram', 'Belum terhubung', 'Hubungkan', 'font-size: 11px; font-weight: 600; color: #C6D6FF; background: rgba(69,72,245,0.2); padding: 4px 9px; border-radius: 999px'),
                                      ('yt', 'YouTube', 'Belum terhubung', 'Hubungkan', 'font-size: 11px; font-weight: 600; color: #C6D6FF; background: rgba(69,72,245,0.2); padding: 4px 9px; border-radius: 999px')])),
-  ('Ambil Campaign', 'Pilih yang cocok dengan niche-mu. Setelah bergabung, konten sumber dan brief lengkap langsung terbuka.',
+  ('Ambil Campaign', 'Pilih brief yang cocok dengan gaya kontenmu. Materi sumber dan aturan lengkap terbuka begitu kamu bergabung.',
    f'<span style="display: flex; align-items: center; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px"><i style="font-style: normal; width: 22px; height: 22px; border-radius: 7px; background: linear-gradient(180deg, #4F6BFF, #2238C2); display: inline-flex; align-items: center; justify-content: center"><img src="{BLOB_WHITE}" alt="" style="width: 13px; height: 13px"></i>TAPP</span><span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.06)">Clipping</span></span><b style="font-size: 16px">TAPP Campaign</b><span class="tabular"><b style="font-size: 18px">Rp3.000</b><span style="font-size: 12px; color: #8A8A93; font-weight: 500"> /1K Views</span></span><span class="tabular" style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #9A9AA5"><span>Minimal klaim</span><span style="color: #FFF">5.000 views</span></span><span class="tabular" style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #9A9AA5"><span>Maks. per clip</span><span style="color: #FFF">100K views</span></span><span style="height: 6px; border-radius: 3px; background: #1F1F26; display: block"><span style="display: block; width: 62%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #4548F5, #7DA2FF)"></span></span>'),
-  ('Posting, Submit, Terima Bayaran', 'Kirim link postingan. Yang lolos review dihitung dari qualified views, masuk saldo, lalu siap ditarik.',
+  ('Posting &amp; Terima Bayaran', 'Kirim link postingan. Views yang lolos verifikasi dihitung, masuk saldo, dan siap dicairkan.',
    '<span style="font-size: 13px; font-weight: 600">Submit Clip</span><span style="font-size: 12px; color: #8A8A93; font-weight: 500">Link postingan</span><span class="inp" style="border-color: #4548F5; box-shadow: 0 0 16px rgba(69,72,245,0.35)">tiktok.com/@rani.clips/video/7412</span><span class="btnm">Kirim untuk direview</span><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: rgba(255,176,32,0.14); color: #FFB020">Direview</span><span style="font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: rgba(52,208,122,0.14); color: #34D07A">Lolos</span><span class="tabular" style="margin-left: auto; font-weight: 600; color: #34D07A">Rp234.000</span></span>'),
 ]
 def step_card(i, t):
@@ -210,6 +210,19 @@ a{{color:inherit;text-decoration:none}}
 @keyframes bob{{0%,100%{{transform:translateY(0)}}50%{{transform:translateY(-6px)}}}}
 @media (max-width: 1240px){{ .lp .hstage{{transform:scale(0.82);transform-origin:center top}} .lp .hstage-wrap{{height:330px !important}} }}
 @media (max-width: 1240px){{ .lp .bpanel{{gap:20px !important}} }}
+
+/* premium layer: layered black, gradient accents, grain */
+.lp{{background:radial-gradient(1100px 620px at 50% -6%,rgba(84,96,255,0.20),rgba(69,72,245,0.05) 45%,transparent 70%),radial-gradient(800px 700px at 100% 38%,rgba(69,72,245,0.07),transparent 65%),radial-gradient(800px 700px at 0% 72%,rgba(99,80,255,0.06),transparent 65%),linear-gradient(180deg,#0B0B12 0%,#07070A 22%,#050507 60%,#08080D 100%) !important}}
+.lp::after{{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.045;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}}
+.lp h1 span[style*="#7DA2FF"],.lp h2 span[style*="#7DA2FF"]{{background:linear-gradient(96deg,#C9D5FF 0%,#9AABFF 38%,#7280FF 72%,#575CF7 100%);-webkit-background-clip:text;background-clip:text;color:transparent !important;padding-bottom:.06em}}
+.lp .sec{{position:relative}}
+.lp .sec::before{{content:'';position:absolute;top:0;left:50%;width:min(760px,80%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(125,140,255,0.35),rgba(198,214,255,0.5),rgba(125,140,255,0.35),transparent)}}
+.lp .btn-p{{background:linear-gradient(180deg,#7A88FF 0%,#5059F8 48%,#3A3FD8 100%) !important;border:1px solid rgba(198,214,255,0.28) !important;box-shadow:0 10px 30px -14px rgba(84,96,255,0.95),inset 0 1px 0 rgba(255,255,255,0.28),inset 0 -1px 0 rgba(0,0,0,0.25) !important}}
+.lp .btn-s{{background:linear-gradient(180deg,#16161D,#0D0D12) !important;border:1px solid rgba(255,255,255,0.1) !important}}
+.lp .ccard,.lp .pdash,.lp .bsim > div{{position:relative}}
+.lp .gb{{position:relative}}
+.lp .hc > div,.lp .hm > div{{position:relative}}
+.lp .gb::before,.lp .ccard::before,.lp .pdash::before,.lp .hc > div::before,.lp .hm > div::before,.lp .bsim > div::before{{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(160deg,rgba(198,214,255,0.35),rgba(125,140,255,0.08) 35%,rgba(255,255,255,0.02) 60%,rgba(125,140,255,0.2));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
 @media (max-width: 900px){{
   .lp .nlinks{{display:none !important}}
@@ -218,7 +231,7 @@ a{{color:inherit;text-decoration:none}}
   .lp .hero{{grid-template-columns:minmax(0,1fr) !important;padding-top:24px !important}}
   .lp .hero > div:not(.hv){{align-items:flex-start !important;text-align:left !important;order:-1}}
   .lp .hero > div:not(.hv) > div{{justify-content:flex-start !important}}
-  .lp .hero-h{{font-size:46px !important;line-height:50px !important;letter-spacing:-1.4px !important;white-space:normal !important}}
+  .lp .hero-h{{font-size:39px !important;line-height:44px !important;white-space:normal !important}}
   .lp .fan{{height:460px !important;transform:scale(0.78);transform-origin:center top;margin-bottom:-60px}}
   .lp .fan .t1,.lp .fan:hover .t1{{transform:translate(-50%,-50%) translateX(-105px) translateY(20px) rotate(-10deg) !important}}
   .lp .fan .t3,.lp .fan:hover .t3{{transform:translate(-50%,-50%) translateX(105px) translateY(20px) rotate(10deg) !important}}
@@ -251,7 +264,7 @@ a{{color:inherit;text-decoration:none}}
 </style>
 </helmet>
 <div class="lp" style="position: relative; width: 100%; min-height: 100vh; background: #07070A; color: #FFFFFF; font-family: 'Geist', system-ui, sans-serif; overflow: hidden">
-<div aria-hidden="true" style="position: absolute; left: 50%; top: -300px; width: 1400px; height: 900px; margin-left: -700px; border-radius: 50%; background: radial-gradient(closest-side, rgba(69,72,245,0.16), rgba(69,72,245,0.04) 60%, transparent); pointer-events: none"></div>
+<div aria-hidden="true" style="position: absolute; left: 50%; top: -300px; width: 1400px; height: 900px; margin-left: -700px; border-radius: 50%; background: radial-gradient(closest-side, rgba(69,72,245,0.08), transparent 70%); pointer-events: none"></div>
 
 <!-- NAV (reference: mark, Creator/Brand, links, Sign Up) -->
 <header class="pad" style="position: relative; z-index: 20; display: flex; align-items: center; gap: 28px; height: 76px; padding: 0 64px">
@@ -270,20 +283,20 @@ a{{color:inherit;text-decoration:none}}
   {hero_hub()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
-    {head("Jelajahi Campaign", "Campaign Pertama Dibuka,", "Giliran Kamu Ambil", "Mulai dari TAPP Campaign. Bangun rekam jejak, naik level, lalu buka campaign brand yang lebih besar.")}
+    {head("Open Campaigns", "Brief Sudah Menunggu,", "Tinggal Kamu Eksekusi", "Tarif, batas views, dan aturan konten terlihat sejak awal. Kamu tahu nilai sebuah clip sebelum mulai mengedit.")}
     <div class="g3" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px">
       {campaign_card(CAMPAIGNS[0])}
-      {soon_card("Campaign brand pertama", "Brand pertama yang bergabung akan muncul di sini.")}
-      {soon_card("Campaign berikutnya", "Aktifkan notifikasi di aplikasi supaya jadi yang pertama tahu.")}
+      {soon_card("Campaign brand berikutnya", "Slot ini disiapkan untuk brand yang bergabung selanjutnya.")}
+      {soon_card("Brief baru", "Campaign baru langsung muncul di dashboard-mu begitu dibuka.")}
     </div>
     <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 40px">
-      {pill_btn("Lihat Semua Campaign", "campaigns.html")}
-      <span style="display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: #8A8A93; font-weight: 500"><span style="display: inline-flex">{AV_STACK}</span>Gratis untuk creator. Tanpa minimum follower.</span>
+      {pill_btn("Jelajahi Semua Campaign", "campaigns.html")}
+      <span style="display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: #8A8A93; font-weight: 500"><span style="display: inline-flex">{AV_STACK}</span>Gratis untuk creator. Tanpa syarat follower.</span>
     </div>
   </section>
 
   <section id="alur" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
-    {head("Alur Kerja", "Dari Daftar Sampai Saldo,", "Tanpa Tebak-tebakan", "Setiap tahap punya status yang bisa kamu lihat: direview, lolos, atau perlu diperbaiki. Kamu selalu tahu posisi clip dan uangmu.")}
+    {head("How It Works", "Empat Langkah,", "Setiap Status Terlihat", "Dari pendaftaran sampai pencairan, posisi clip dan uangmu selalu jelas: direview, lolos, atau perlu revisi.")}
     <div class="g2" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px">{''.join(step_card(i, t) for i, t in enumerate(STEPS_C))}</div>
   </section>
 
@@ -294,20 +307,20 @@ a{{color:inherit;text-decoration:none}}
   <section id="daftar" class="sec" style="padding: 88px 0 40px">
 {WALL}
     <div class="pad" style="max-width: 760px; margin: 56px auto 0; padding: 0 64px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Mulai dari Satu Clip,<br><span style="color: #7DA2FF">Naik Level dari Hasil Nyata</span></h2>
-      <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 600px">Kerjakan satu campaign, kumpulkan clip yang lolos, lalu buka campaign yang lebih besar. Levelmu dihitung dari rekam jejak, bukan dari jumlah follower.</p>
-      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{pill_btn("Daftar Gratis", "#app:/register")}{pill_btn("Lihat Campaign", "campaigns.html", False)}</div>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Rekam Jejakmu Dimulai<br><span style="color: #7DA2FF">dari Clip Pertama</span></h2>
+      <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 600px">Satu brief hari ini, satu clip yang lolos, lalu campaign yang lebih besar. Setiap langkah tercatat dan ikut menaikkan levelmu.</p>
+      <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{pill_btn("Mulai Sekarang", "#app:/register")}{pill_btn("Jelajahi Campaign", "campaigns.html", False)}</div>
     </div>
   </section>
 
-  {faq_block("FAQ", "Masih Ada", "yang Mengganjal?", "Tanya Tim TAPP", "#mail", "faqC")}
+  {faq_block("FAQ", "Sebelum Kamu", "Mulai Mengedit", "Hubungi Tim TAPP", "#mail", "faqC")}
 </sc-if>
 
 <sc-if value="{{{{isBrand}}}}" hint-placeholder-val="{{{{ false }}}}">
   {hero_brand()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
-    {head("Kenapa TAPP", "Kontrol Penuh Atas Distribusi Kontenmu", "Dari Brief Sampai Laporan", "Buat campaign, awasi kualitas views, dan baca hasilnya di satu tempat.", True, 860)}
+    {head("Why TAPP", "Kendali Penuh,", "dari Brief hingga Laporan", "Satu tim yang mendampingi, satu sistem yang menyaring views, dan satu dashboard yang membaca hasilnya.", True, 860)}
 {FX3}
   </section>
 
@@ -315,9 +328,9 @@ a{{color:inherit;text-decoration:none}}
 
   <section id="kontak" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 88px 64px 40px; text-align: center">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 24px">
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Biar Brand Kamu<br><span style="color: #7DA2FF">Muncul di Mana-mana</span></h2>
-      <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 560px">Ceritakan tujuan campaign-mu, lalu biarkan creator dari berbagai kota menyebarkannya.</p>
-      <a class="btn-p" href="#mail" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Hubungi Tim TAPP</a>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Biarkan Brand-mu<br><span style="color: #7DA2FF">Dibicarakan di Mana-mana</span></h2>
+      <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 560px">Ceritakan target campaign-mu. Kami siapkan creator yang tepat untuk menyebarkannya dari berbagai kota.</p>
+      <a class="btn-p" href="#mail" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Jadwalkan Meeting</a>
     </div>
     {GLOBE}
   </section>
@@ -330,7 +343,7 @@ a{{color:inherit;text-decoration:none}}
   <div class="foot" style="max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 40px">
     <div style="display: flex; flex-direction: column; gap: 14px; max-width: 340px">
       <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 20px"><img src="{BLOB_MARK}" alt="" style="width: 28px; height: 28px"><span>TAPP</span></div>
-      <p style="font-size: 15px; line-height: 24px; color: #9A9AA5; font-weight: 400">Platform distribusi konten berbasis performa. Mempertemukan brand dan creator, dibayar per view terverifikasi.</p>
+      <p style="font-size: 15px; line-height: 24px; color: #9A9AA5; font-weight: 400">Platform distribusi konten berbasis performa. Brand membayar hasil yang terverifikasi, creator dibayar untuk kerja yang terbukti.</p>
     </div>
     <div style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Navigation</span><a class="nl" href="#top">Home</a><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#alur">Cara Kerja</a><a class="nl" href="#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan Privasi</a><a class="nl" href="terms.html">Syarat Layanan</a></div>
     <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Social</span><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>

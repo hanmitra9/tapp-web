@@ -80,10 +80,10 @@ def hero_hub():
     </div>
   </div>
   <div class="pad" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 0 24px">
-    <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 6px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8"><span style="display: inline-flex">{AV}</span>Gratis untuk creator · Tanpa minimum follower</span>
-    <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Clip Kamu,<br><span style="color: #7DA2FF">Bayaran Nyata</span></h1>
-    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Dibayar dari views yang lolos verifikasi. Mulai dari campaign pertama, bangun rekam jejak, dan naik level.</p>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Daftar Gratis", "#app:/register")}{_btn("Lihat Campaign", "campaigns.html", False)}</div>
+    <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 6px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8"><span style="display: inline-flex">{AV}</span>Terbuka untuk creator baru · Tanpa syarat follower</span>
+    <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Dibayar untuk Setiap<br><span style="color: #7DA2FF">View yang Nyata</span></h1>
+    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Ambil brief dari brand, posting dari akunmu sendiri, dan terima bayaran untuk setiap 1.000 views yang lolos verifikasi.</p>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Sekarang", "#app:/register")}{_btn("Jelajahi Campaign", "campaigns.html", False)}</div>
     <div class="hm" style="display: none; width: 100%; max-width: 420px; flex-direction: column; align-items: center; gap: 12px; margin-top: 8px; text-align: left">{_payout_card()}{_campaign_card()}</div>
   </div>
 </div>'''
@@ -117,8 +117,8 @@ def _arc():
 LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 40px">
       <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">Level Creator</span>
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Setiap Clip yang Lolos,<br><span style="color: #7DA2FF">Bawa Kamu Naik Level</span></h2>
-      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Levelmu dihitung otomatis dari total qualified views, bukan dari jumlah follower. Pilih level untuk melihat syaratnya.</p>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Reputasi yang Dihitung,<br><span style="color: #7DA2FF">Bukan Diklaim</span></h2>
+      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views. Jumlah follower tidak ikut dihitung. Yang dinilai hanya hasil. Pilih level untuk melihat syaratnya.</p>
     </div>
     <div class="tarc" style="position: relative; max-width: 1000px; margin: 0 auto">
       {_arc()}
@@ -128,7 +128,7 @@ LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margi
         <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{{{{tierReq}}}}</span>
         <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{{{{tierBody}}}}</p>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
-          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik level</span><span class="tchip">Tampil di profilmu</span>
+          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
         </div>
       </div>
     </div>
@@ -136,9 +136,9 @@ LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margi
 
 # ── Portfolio ─────────────────────────────────────────────────────────────────────────
 POINTS = [
-    ('Portofolio Clip', 'Semua clip yang lolos tersimpan rapi bersama views dan penghasilannya.'),
-    ('Performa &amp; Skor Reliabilitas', 'Qualified views, approval rate, dan skor reliabilitas yang dihitung otomatis dari setiap review.'),
-    ('Riwayat Pencairan', 'Setiap pencairan tercatat lengkap dengan statusnya, dari diajukan sampai dibayar.'),
+    ('Clip Portfolio', 'Semua clip yang lolos tersusun rapi, lengkap dengan views dan penghasilannya.'),
+    ('Performance &amp; Reliability', 'Qualified views, approval rate, dan reliability score yang dihitung otomatis dari setiap review.'),
+    ('Payout History', 'Setiap pencairan tercatat, dari diajukan hingga diterima di rekeningmu.'),
 ]
 
 def _dash():
@@ -155,7 +155,7 @@ def _dash():
         <b class="tabular" style="display: block; font-size: 30px; letter-spacing: -0.6px; margin-top: 2px">Rp4.250.000</b>
         <img src="{BLOB_WHITE}" alt="" style="position: absolute; right: -10px; top: -14px; width: 104px; height: 104px; opacity: 0.14">
       </div>
-      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">{stat('Qualified views', '1,4 jt')}{stat('Approval', '94%')}{stat('Reliabilitas', '92', '; color: #34D07A')}</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">{stat('Qualified views', '1,4 jt')}{stat('Approval', '94%')}{stat('Reliability', '92', '; color: #34D07A')}</div>
       <span style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600"><span>Clip kamu</span><span style="color: #7DA2FF">Lihat semua</span></span>
       <div class="ctiles" style="display: flex; gap: 8px; overflow: hidden">{tiles}</div>
     </div>'''
@@ -163,9 +163,9 @@ def _dash():
 PORTFOLIO = f'''<section id="portofolio" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div class="g2" style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center">
       <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
-        <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">Profil Creator</span>
-        <h2 class="h2" style="font-size: 44px; line-height: 50px; font-weight: 600; letter-spacing: -1.4px">Portofolio &amp; Reputasi<br><span style="color: #7DA2FF">Tumbuh dari Tiap Clip</span></h2>
-        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap campaign yang selesai, views yang masuk, dan pencairan yang tercatat memperkuat profilmu.</p>
+        <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">Creator Profile</span>
+        <h2 class="h2" style="font-size: 44px; line-height: 50px; font-weight: 600; letter-spacing: -1.4px">Portofolio yang<br><span style="color: #7DA2FF">Bicara Lewat Data</span></h2>
+        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap clip yang lolos, setiap view yang terverifikasi, dan setiap pencairan tercatat di profilmu. Bukti kerja yang bisa dipertanggungjawabkan.</p>
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px; width: 100%">
           {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(69,72,245,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 400">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
         </div>

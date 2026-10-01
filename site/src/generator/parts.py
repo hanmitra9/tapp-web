@@ -3,7 +3,7 @@ P1, P2 = open(__import__('pathlib').Path(__file__).resolve().parent / 'mark_path
 BLOB_MARK = '/_blob/58aec98a357608dc6fa8a4a440fc9214'
 BLOB_WHITE = '/_blob/2d5aebeddb5d0a63b818258d6ea37530'
 
-CARD = 'background: linear-gradient(180deg, #131318, #0C0C10); border: 1px solid rgba(255,255,255,0.08); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 24px 60px -30px rgba(0,0,0,0.9)'
+CARD = 'background: linear-gradient(180deg, #15151D 0%, #0D0D12 55%, #0A0A0E 100%); border: 1px solid rgba(255,255,255,0.07); box-shadow: inset 0 1px 0 rgba(255,255,255,0.05), 0 24px 60px -30px rgba(0,0,0,0.9)'
 FLOAT = 'background: linear-gradient(180deg, rgba(22,22,28,0.94), rgba(12,12,16,0.94)); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 24px 48px -24px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.06); backdrop-filter: blur(10px)'
 
 def big_mark(size, gid):

@@ -43,7 +43,7 @@ def header(active):
 
 FOOT = '''<footer class="bot">
   <div class="cols">
-    <div class="col" style="max-width: 340px"><span style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 20px"><img src="assets/tapp-mark.svg" alt="" style="width: 26px; height: 26px">TAPP</span><span style="color: #9A9AA5; font-weight: 400; line-height: 24px">Platform distribusi konten berbasis performa. Mempertemukan brand dan creator, dibayar per view terverifikasi.</span></div>
+    <div class="col" style="max-width: 340px"><span style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 20px"><img src="assets/tapp-mark.svg" alt="" style="width: 26px; height: 26px">TAPP</span><span style="color: #9A9AA5; font-weight: 400; line-height: 24px">Platform distribusi konten berbasis performa. Brand membayar hasil yang terverifikasi, creator dibayar untuk kerja yang terbukti.</span></div>
     <div class="col"><b>Navigation</b><a class="nl" href="index.html">Home</a><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="index.html#alur">Cara Kerja</a><a class="nl" href="index.html#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan Privasi</a><a class="nl" href="terms.html">Syarat Layanan</a></div>
     <div class="col" data-hide-empty><b>Social</b><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>
     <div class="col" data-hide-empty><b>Contact</b><a class="nl" href="#mail">Email Support</a><a class="nl" href="#whatsapp">WhatsApp</a></div>
@@ -59,8 +59,8 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
 <main>
   <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start; margin-bottom: 36px">
     <span class="pill">Campaign terbuka</span>
-    <h1 class="h1">Campaign yang<br><span>Sedang Dibuka</span></h1>
-    <p class="lead">Diperbarui langsung dari TAPP. Pilih campaign, daftar, lalu mulai bikin clip dari akunmu sendiri.</p>
+    <h1 class="h1">Brief yang<br><span>Sedang Dibuka</span></h1>
+    <p class="lead">Diperbarui langsung dari sistem TAPP. Pilih brief yang cocok, bergabung, dan mulai mengedit dari akunmu sendiri.</p>
   </div>
   <div role="toolbar" aria-label="Filter platform" id="filters" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px"></div>
   <div id="list" aria-live="polite" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px"></div>

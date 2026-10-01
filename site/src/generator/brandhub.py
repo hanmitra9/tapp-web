@@ -45,9 +45,9 @@ def hero_brand():
   <div class="bwbg" aria-hidden="true" style="position: absolute; left: 50%; top: -40px; width: 900px; margin-left: -450px; opacity: 0.32; pointer-events: none">{_wall()}</div>
   <div style="position: relative">{_sim()}</div>
   <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; margin-top: 48px">
-    <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Satu Brief, Ribuan Creator.<br><span style="color: #7DA2FF">Bayar Hanya Views yang Lolos.</span></h1>
-    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Creator TAPP mendistribusikan konten brand-mu di TikTok, Instagram, dan YouTube. Views dari bot dan aktivitas janggal tidak kamu bayar.</p>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Hubungi Tim TAPP", "#mail")}{_btn("Cara Kerja", "#alur", False)}</div>
+    <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Jangkauan Organik,<br><span style="color: #7DA2FF">Dibayar Saat Terbukti</span></h1>
+    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Creator TAPP mengubah materi brand-mu jadi clip pendek di TikTok, Instagram, dan YouTube. Kamu hanya membayar views yang lolos verifikasi. Bot dan lonjakan janggal tidak pernah masuk tagihan.</p>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Jadwalkan Meeting", "#mail")}{_btn("Lihat Cara Kerja", "#alur", False)}</div>
   </div>
 </div>'''
 
@@ -93,10 +93,10 @@ def _posting():
 </div>'''
 
 STEPS = [
-    ('Meeting', 'Ngobrol Dulu, Baru Hitung Angka', 'Kita bahas tujuan, audiens, platform, dan tarif per 1.000 views. Tim TAPP juga memverifikasi brand-mu supaya creator tahu campaign-nya terpercaya.', _meeting()),
-    ('Brief &amp; Budget', 'Susun Brief, Kunci Budget', 'Aturan konten, materi sumber, dan budget disepakati bersama account manager. Budget dikunci saat campaign disetujui, jadi pengeluaran tidak pernah melewatinya.', _budget()),
-    ('Creator Posting', 'Creator Mulai Bikin Clip dan Posting', 'Creator yang cocok dari niche, platform, dan rekam jejak bergabung, membuat clip dari materi brand-mu, lalu posting di akun mereka.', _posting()),
-    ('Report', 'Pantau Hasil, Bayar yang Lolos', 'Lihat views mentah dibanding qualified, biaya per view, dan performa tiap creator di dashboard brand. Sisa budget kembali saat campaign selesai.', None),
+    ('Meeting', 'Strategi Dulu, Angka Kemudian', 'Kita petakan tujuan, audiens, platform, dan tarif per 1.000 views. Tim TAPP juga memverifikasi brand-mu agar creator tahu campaign ini kredibel.', _meeting()),
+    ('Brief &amp; Budget', 'Brief yang Tajam, Budget yang Terkunci', 'Aturan konten, materi sumber, dan budget disepakati bersama account manager. Budget dikunci saat campaign disetujui. Pengeluaran tidak akan pernah melewatinya.', _budget()),
+    ('Creator Posting', 'Creator yang Tepat Mulai Bergerak', 'Creator dipilih dari niche, platform, dan rekam jejak. Mereka mengolah materimu menjadi clip, lalu memublikasikannya dari akun masing-masing.', _posting()),
+    ('Report', 'Baca Hasilnya, Bayar yang Terbukti', 'Bandingkan views mentah dengan qualified views, biaya per view, dan performa tiap creator di dashboard brand. Sisa budget kembali saat campaign selesai.', None),
 ]
 
 def steps_tabs(report_visual):
@@ -106,15 +106,15 @@ def steps_tabs(report_visual):
         <span style="font-size: 13px; font-weight: 600; color: #7DA2FF">Langkah {i+1} dari 4</span>
         <h3 style="font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -0.6px">{t[1]}</h3>
         <p style="font-size: 16px; line-height: 25px; color: #9A9AA5; font-weight: 400; max-width: 420px">{t[2]}</p>
-        <div style="display: flex; gap: 10px; margin-top: 6px">{_btn("Hubungi Tim TAPP", "#mail")}</div>
+        <div style="display: flex; gap: 10px; margin-top: 6px">{_btn("Jadwalkan Meeting", "#mail")}</div>
       </div>
       <div style="display: flex; align-items: center; justify-content: center; min-height: 340px; padding: 24px; border-radius: 18px; background: radial-gradient(70% 70% at 50% 40%, rgba(69,72,245,0.22), transparent 70%), #0A0A0E; border: 1px solid rgba(125,162,255,0.16)">{t[3] if t[3] else report_visual}</div>
     </div>''' for i, t in enumerate(STEPS))
     return f'''<section id="alur" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start; max-width: 760px; margin-bottom: 36px">
-      <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">Cara Kerja</span>
-      <h2 class="h2" style="font-size: 50px; line-height: 56px; font-weight: 600; letter-spacing: -1.5px">Empat Langkah,<br><span style="color: #7DA2FF">Campaign-mu Jalan</span></h2>
-      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Setiap langkah didampingi tim TAPP. Kamu menentukan brief, tarif, dan budget; TAPP mengurus distribusi, verifikasi views, dan pembayaran creator.</p>
+      <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">How It Works</span>
+      <h2 class="h2" style="font-size: 50px; line-height: 56px; font-weight: 600; letter-spacing: -1.5px">Dari Meeting Pertama<br><span style="color: #7DA2FF">ke Laporan Pertama</span></h2>
+      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Kamu menentukan arah, tarif, dan budget. Kami mengurus creator, verifikasi views, dan pembayaran.</p>
     </div>
     <div style="border-radius: 18px; padding: 10px; {CARD}">
       <div class="btabs" role="tablist" aria-label="Langkah campaign" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 4px; margin-bottom: 10px">{tabs}</div>

@@ -29,7 +29,7 @@ class Component extends DCLogic {
       ['Ditarik ke mana?', 'E-wallet (GoPay, OVO, DANA, ShopeePay, LinkAja) atau rekening bank (BCA, BRI, BNI, Mandiri, dan lainnya). Tim TAPP memproses dalam 1 sampai 3 hari kerja.'],
       ['Berapa views minimal supaya dibayar?', 'Tiap campaign punya aturannya sendiri. Di TAPP Campaign, clip mulai dihitung setelah mencapai 5.000 views dan dibayar sampai 100K views per clip, jadi maksimal Rp300.000 per clip.'],
       ['Follower saya masih sedikit, boleh?', 'Boleh. Tidak ada minimum follower. Level naik dari clip yang lolos dan approval rate-mu, jadi creator baru punya jalur yang sama.'],
-      ['Clip saya ditolak, lalu?', 'Kamu langsung melihat alasannya. Kalau diminta revisi, perbaiki lalu kirim ulang selama campaign berjalan. Kalau merasa keliru, ajukan keberatan dari aplikasi.'],
+      ['Clip saya ditolak, lalu?', 'Kamu langsung melihat alasannya. Kalau diminta revisi, perbaiki lalu kirim ulang selama campaign berjalan. Kalau merasa keliru, ajukan keberatan dari dashboard.'],
     ], 'openC');
     const faqB = faqList([
       ['Bagaimana brand bergabung?', 'Akses brand dibuka lewat tim TAPP. Setelah brief siap, kami kirim undangan ke email timmu untuk masuk ke dashboard brand.'],
@@ -86,11 +86,11 @@ class Component extends DCLogic {
 
     // level arc: real tiers + thresholds (app_settings.tier_thresholds)
     const TIERS = [
-      ['New', '0', '#8A8A93', 'Titik awal semua creator. Kerjakan TAPP Campaign dan kumpulkan clip pertama yang lolos verifikasi.'],
-      ['Rising', '50K', '#34D07A', 'Clip-mu mulai konsisten lolos dan menghasilkan. Rekam jejakmu mulai terbentuk.'],
-      ['Verified', '250K', '#7DA2FF', 'Rekam jejakmu sudah teruji di banyak clip. Profilmu menunjukkan performa yang bisa dipercaya.'],
-      ['Proven', '1 juta', '#A78BFA', 'Satu juta qualified views. Kamu sudah terbukti bisa mendatangkan audiens nyata.'],
-      ['Elite', '5 juta', '#F0B429', 'Level tertinggi di TAPP: lima juta qualified views yang lolos verifikasi.'],
+      ['New', '0', '#8A8A93', 'Titik awal. Selesaikan campaign pertama dan kumpulkan clip yang lolos verifikasi.'],
+      ['Rising', '50K', '#34D07A', 'Clip-mu mulai konsisten lolos. Pola kerjamu sudah terbentuk dan terbaca.'],
+      ['Verified', '250K', '#7DA2FF', 'Rekam jejak yang teruji di banyak clip dan campaign. Performamu bisa dipercaya.'],
+      ['Proven', '1 juta', '#A78BFA', 'Satu juta qualified views. Kamu terbukti menggerakkan audiens nyata.'],
+      ['Elite', '5 juta', '#F0B429', 'Puncak level TAPP: lima juta qualified views yang lolos verifikasi.'],
     ];
     const ti = s.tier == null ? 2 : s.tier, sel = TIERS[ti];
     const tiers = TIERS.map((t, i) => ({
