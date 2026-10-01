@@ -7,7 +7,7 @@ export type PayoutMethod = { id: string; kind: 'bank' | 'ewallet'; provider: str
 export type Audience = { countries: string[]; age_ranges: string[]; languages: string[] };
 export type CreatorProfile = {
   userId: string; fullName: string | null; username: string | null; avatarUrl: string | null; country: string | null;
-  status: 'pending' | 'verified' | 'active' | 'suspended' | 'banned'; tier: 'new' | 'rising' | 'proven';
+  status: 'pending' | 'verified' | 'active' | 'suspended' | 'banned'; tier: 'new' | 'rising' | 'verified' | 'proven' | 'elite';
   mainPlatform: Platform | null; niches: string[]; categories: string[]; contentStyle: string | null;
   audience: Audience; experience: Experience | null; reliability: number;
 };

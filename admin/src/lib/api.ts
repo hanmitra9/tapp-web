@@ -94,7 +94,7 @@ export const qualifyViews = (id: string, metricId: string, qualified: number, no
 // ── Creators ──
 export type CreatorStatus = 'pending' | 'verified' | 'active' | 'suspended' | 'banned';
 export type AdminCreator = {
-  user_id: string; status: CreatorStatus; status_reason: string | null; tier: string; main_platform: string | null; niches: string[];
+  user_id: string; status: CreatorStatus; status_reason: string | null; tier: string; reliability_score: number; main_platform: string | null; niches: string[];
   content_categories: string[]; content_style: string | null; experience_level: string | null; audience: Record<string, string[]>;
   onboarding_completed_at: string | null; created_at: string;
   profile: { full_name: string | null; username: string | null; country: string | null; avatar_url: string | null } | null;
@@ -103,7 +103,7 @@ export type AdminCreator = {
 };
 export async function listCreators(status: CreatorStatus, search: string): Promise<AdminCreator[]> {
   let q = supabase.from('creator_profiles')
-    .select('user_id, status, status_reason, tier, main_platform, niches, content_categories, content_style, experience_level, audience, onboarding_completed_at, created_at, profile:profiles!inner(full_name, username, country, avatar_url), platforms:creator_platforms(id, platform, handle, profile_url, followers, verified_at), payout:creator_payout_methods(kind, provider, account_name)')
+    .select('user_id, status, status_reason, tier, reliability_score, main_platform, niches, content_categories, content_style, experience_level, audience, onboarding_completed_at, created_at, profile:profiles!inner(full_name, username, country, avatar_url), platforms:creator_platforms(id, platform, handle, profile_url, followers, verified_at), payout:creator_payout_methods(kind, provider, account_name)')
     .eq('status', status).order(status === 'verified' ? 'onboarding_completed_at' : 'created_at', { ascending: status === 'verified' }).limit(200);
   const s = clean(search);
   if (s) q = q.or(`username.ilike.%${s}%,full_name.ilike.%${s}%`, { referencedTable: 'profiles' });

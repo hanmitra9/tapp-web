@@ -22,12 +22,15 @@ export default function Welcome() {
   const reduce = useRef(false);
   useEffect(() => { AccessibilityInfo.isReduceMotionEnabled().then((r) => { reduce.current = r; }); }, []);
 
+  const animating = useRef(false);
   function next() {
+    if (animating.current) return;   // a tap mid-fade would re-run the same step and get lost
     if (i === SLIDES.length - 1) { track('signup_started'); return router.push('/register'); }
     if (reduce.current) return setI(i + 1);
+    animating.current = true;
     Animated.timing(fade, { toValue: 0, duration: 140, useNativeDriver: true }).start(() => {
       setI(i + 1);
-      Animated.timing(fade, { toValue: 1, duration: 220, useNativeDriver: true }).start();
+      Animated.timing(fade, { toValue: 1, duration: 220, useNativeDriver: true }).start(() => { animating.current = false; });
     });
   }
 

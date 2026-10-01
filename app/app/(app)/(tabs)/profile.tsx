@@ -24,7 +24,7 @@ const STATUS: Record<CreatorProfile['status'], { label: string; tone: 'neutral' 
   suspended: { label: 'Ditangguhkan', tone: 'danger' },
   banned: { label: 'Ditutup', tone: 'danger' },
 };
-const TIER: Record<CreatorProfile['tier'], string> = { new: 'New', rising: 'Rising', proven: 'Proven' };
+const TIER: Record<CreatorProfile['tier'], string> = { new: 'New', rising: 'Rising', verified: 'Verified', proven: 'Proven', elite: 'Elite' };
 
 const idr = (n: number) => `Rp${new Intl.NumberFormat('id-ID').format(n)}`;
 const compact = (n: number) => new Intl.NumberFormat('id-ID', { notation: 'compact', maximumFractionDigits: 1 }).format(n);
@@ -82,8 +82,10 @@ export default function Profile() {
       </Pressable>
 
       <Section title="Reliabilitas">
+        <Row label="Skor reliabilitas" value={reviewed ? `${Math.round(p.reliability)}/100` : 'Belum ada data'} />
         <Row label="Tingkat persetujuan" value={approvalRate == null ? 'Belum ada submission yang ditinjau' : `${approvalRate}% dari ${reviewed} submission`} />
-        <Text style={styles.note}>Level naik dari New ke Rising lalu Proven berdasarkan performa, konsistensi, dan kualitas submission — bukan jumlah followers.</Text>
+        <Text style={styles.note}>Skor naik saat klipmu disetujui dan tetap tayang; turun jika ditolak, ditandai, atau postingan dihapus/diprivat.</Text>
+        <Text style={styles.note}>Level (New → Rising → Verified → Proven → Elite) naik otomatis dari total qualified views — bukan jumlah followers.</Text>
       </Section>
 
       <Section title="Akun sosial" action={locked ? undefined : { label: 'Kelola', onPress: () => router.push('/profile/socials') }}>

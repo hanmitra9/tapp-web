@@ -33,8 +33,10 @@
 | Auth expiration | Supabase auto-refresh while the tab is visible; expired-session errors map to "log in again" |
 | Notification failure | In-app inbox is the source of truth (written by the DB); email is best-effort via `mailer/` |
 
-## Known V1 limits (unchanged from earlier phases)
+## Automated tests
+- Database: `supabase/tests/run.sh` (full workflow, abuse cases, reliability score, admin MFA enforcement).
+- Web app: `cd app && npm run build:web && npm run e2e` — Playwright smoke tests on desktop + phone viewports (welcome → register, login validation, protected deep link → login → return, deep-link refresh). Signed-out flows only, so they need no live backend.
+
+## Known V1 limits
 - No platform API verification — metrics are admin-entered.
-- No admin MFA yet (see `SECURITY.md`).
-- Creator tier (New/Rising/Proven) and reliability score are stored but not yet auto-computed — still manual/flat.
-- No automated E2E tests against a running app; all testing here is at the database layer (`supabase/tests/`).
+- E2E covers signed-out flows only; signed-in flows are covered at the database layer.

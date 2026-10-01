@@ -18,6 +18,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
  ('00000000-0000-0000-0000-0000000000c1','c1@x.id', now(), '{"full_name":"Creator One"}'),
  ('00000000-0000-0000-0000-0000000000c2','c2@x.id', null,  '{"full_name":"Creator Two"}');
 update profiles set role='admin' where id='00000000-0000-0000-0000-00000000000a';
+update app_settings set value = 'false'::jsonb where key = 'require_admin_mfa';   -- MFA has its own section at the end
 update profiles set role='brand' where id='00000000-0000-0000-0000-00000000000b';
 insert into brands (id,name,slug) values ('10000000-0000-0000-0000-000000000001','Acme Finance','acme');
 insert into brand_members values ('10000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000b','owner');
@@ -337,3 +338,35 @@ select disconnect_platform_account('tiktok');
 select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok';  -- expect revoked
 reset role;
 select count(*) as due_after_disconnect_expect_0 from due_for_auto_metrics();
+
+-- ── Reliability score (0025) ──
+reset role;
+select user_id, reliability_score,
+  (select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed','rejected','flagged')) as reviewed
+from creator_profiles cp order by user_id;
+do $$ begin
+  if exists (select 1 from creator_profiles cp where reliability_score <> case
+      when (select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed','rejected','flagged')) = 0 then 0
+      else round(100.0 * ((select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed') and s.content_state not in ('deleted','private')) + 1)
+        / ((select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed','rejected','flagged')) + 2), 2) end)
+  then raise exception 'reliability_score out of sync'; end if;
+  if not exists (select 1 from creator_profiles where reliability_score > 0) then raise exception 'reliability never computed'; end if;
+end $$;
+select 'reliability_ok' as result;
+
+-- ── Admin MFA (0026) ──
+reset role; update app_settings set value = 'true'::jsonb where key = 'require_admin_mfa'; set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select set_config('request.jwt.claims', '{"role":"authenticated","aal":"aal1"}', false);
+select is_admin() as aal1_admin_expect_false;
+select count(*) as aal1_sees_audit_expect_0 from audit_logs;
+select pg_temp.expect_error($$select admin_set_creator_status('00000000-0000-0000-0000-0000000000c2','suspended','x')$$, 'forbidden');
+select set_config('request.jwt.claims', '{"role":"authenticated","aal":"aal2"}', false);
+select is_admin() as aal2_admin_expect_true;
+do $$ begin if not public.is_admin() then raise exception 'aal2 admin rejected'; end if;
+  if (select count(*) from audit_logs) = 0 then raise exception 'aal2 admin cannot read audit'; end if; end $$;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select is_admin() as creator_aal2_expect_false;
+select set_config('request.jwt.claims', '', false);
+reset role;
+select 'admin_mfa_ok' as result;

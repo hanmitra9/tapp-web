@@ -79,7 +79,7 @@ function CreatorDetail({ c, onChanged }: { c: AdminCreator; onChanged: () => Pro
   return (
     <>
       <h2>{c.profile?.full_name} <span className="sub">@{c.profile?.username}</span></h2>
-      <p className="sub">Status {c.status} · level {c.tier} · onboarding {dt(c.onboarding_completed_at)}</p>
+      <p className="sub">Status {c.status} · level {c.tier} · reliabilitas {Number(c.reliability_score)} · onboarding {dt(c.onboarding_completed_at)}</p>
       {c.status_reason ? <div className="notice warn">Alasan status: {c.status_reason}</div> : null}
 
       <div className="section">

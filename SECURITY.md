@@ -40,7 +40,11 @@ select string_agg(tablename, ', ') from pg_tables where schemaname='public' and 
 ```
 Plus Supabase Advisors → Security. Remaining "SECURITY DEFINER callable by authenticated" warnings are the intended RPC API; each function authorizes internally.
 
+## Admin two-factor (migration `…026`)
+- With `app_settings.require_admin_mfa = true` (default), `is_admin()` is true only for an **AAL2** session (authenticator app verified). An AAL1 admin session gets no admin RLS access and every `admin_*` RPC returns `forbidden`.
+- The admin panel forces TOTP setup (QR code) on first sign-in and a 6-digit code on every sign-in after that.
+- Lost authenticator: in the Supabase dashboard → Authentication → Users → the admin → remove MFA factor, then they enroll again.
+
 ## Known V1 limits
 - Metrics are entered manually by admins (no platform API verification yet).
-- No 2FA for admin accounts — enable MFA in Supabase Auth before scaling the ops team.
 - Payout destination is self-declared; name matching is checked by the admin at transfer time.
