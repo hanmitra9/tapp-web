@@ -26,8 +26,7 @@ def head(title, desc, path=''):
 <meta property="og:title" content="{title}">
 <meta property="og:description" content="{desc}">
 <meta property="og:url" content="__SITE_URL__/{path}">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/site.css">
 </head>
 <body>
@@ -44,7 +43,7 @@ def header(active):
 
 FOOT = '''<footer class="bot">
   <div class="cols">
-    <div class="col" style="max-width: 340px"><span style="display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 20px"><img src="assets/tapp-mark.svg" alt="" style="width: 26px; height: 26px">TAPP</span><span style="color: #9A9AA5; font-weight: 500; line-height: 24px">Platform distribusi konten berbasis performa. Mempertemukan brand dan creator, dibayar per view terverifikasi.</span></div>
+    <div class="col" style="max-width: 340px"><span style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 20px"><img src="assets/tapp-mark.svg" alt="" style="width: 26px; height: 26px">TAPP</span><span style="color: #9A9AA5; font-weight: 400; line-height: 24px">Platform distribusi konten berbasis performa. Mempertemukan brand dan creator, dibayar per view terverifikasi.</span></div>
     <div class="col"><b>Navigation</b><a class="nl" href="index.html">Home</a><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="index.html#alur">Cara Kerja</a><a class="nl" href="index.html#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan Privasi</a><a class="nl" href="terms.html">Syarat Layanan</a></div>
     <div class="col" data-hide-empty><b>Social</b><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>
     <div class="col" data-hide-empty><b>Contact</b><a class="nl" href="#mail">Email Support</a><a class="nl" href="#whatsapp">WhatsApp</a></div>
@@ -92,25 +91,25 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
     var maxViews = k.max_earning_per_submission ? Math.round(k.max_earning_per_submission / k.cpm * 1000) : null;
     var icons = (k.platforms || []).map(function (p) { return '<span style="display: inline-flex; color: #D4D4D8">' + (ICON[p] || esc(NAME[p] || p)) + '</span>'; }).join('');
     var href = app ? app + '/campaign/' + encodeURIComponent(k.id) : '#';
-    return '<article style="border-radius: 22px; overflow: hidden; background: linear-gradient(180deg, #131318, #0C0C10); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column">'
+    return '<article style="border-radius: 18px; overflow: hidden; background: linear-gradient(180deg, #131318, #0C0C10); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column">'
       + '<div style="position: relative; height: 150px; overflow: hidden; background: radial-gradient(70% 90% at 80% 30%, #7DA2FF, transparent 60%), linear-gradient(135deg, #0E1A6B, #4548F5)">'
       + '<img src="assets/tapp-mark-white.svg" alt="" style="position: absolute; right: 26px; top: 34px; width: 74px; height: 74px; filter: drop-shadow(0 0 24px rgba(198,214,255,0.8))">'
-      + '<span style="position: absolute; left: 20px; bottom: 16px; font-size: 26px; line-height: 28px; font-weight: 700; letter-spacing: -0.6px; max-width: 60%">' + esc(k.title) + '</span></div>'
+      + '<span style="position: absolute; left: 20px; bottom: 16px; font-size: 26px; line-height: 28px; font-weight: 600; letter-spacing: -0.6px; max-width: 60%">' + esc(k.title) + '</span></div>'
       + '<div style="padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">'
-      + '<span style="display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px">' + esc(k.brand_name) + (k.status === 'ending' ? '<span style="margin-left: auto; font-size: 12px; color: #FFB020">Segera berakhir</span>' : '') + '</span>'
-      + '<span class="tab"><span style="font-size: 22px; font-weight: 700">Rp' + nf.format(k.cpm) + '</span><span style="font-size: 13px; color: #8A8A93; font-weight: 600"> /1K views</span></span>'
-      + '<div style="display: flex; align-items: center; gap: 10px">' + icons + '<span style="margin-left: auto; font-size: 13px; font-weight: 600; color: #9A9AA5">' + deadline(k.submission_deadline) + '</span></div>'
+      + '<span style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px">' + esc(k.brand_name) + (k.status === 'ending' ? '<span style="margin-left: auto; font-size: 12px; color: #FFB020">Segera berakhir</span>' : '') + '</span>'
+      + '<span class="tab"><span style="font-size: 22px; font-weight: 600">Rp' + nf.format(k.cpm) + '</span><span style="font-size: 13px; color: #8A8A93; font-weight: 500"> /1K views</span></span>'
+      + '<div style="display: flex; align-items: center; gap: 10px">' + icons + '<span style="margin-left: auto; font-size: 13px; font-weight: 500; color: #9A9AA5">' + deadline(k.submission_deadline) + '</span></div>'
       + '<div class="tab" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">'
-      + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 600">Minimal klaim</span><b style="font-size: 15px">' + short(k.min_views_to_qualify || 0) + ' views</b></span>'
-      + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 600">Maks. per clip</span><b style="font-size: 15px">' + (maxViews ? short(maxViews) + ' views' : 'Tanpa batas') + '</b></span></div>'
-      + '<div style="display: flex; flex-direction: column; gap: 8px"><div class="tab" style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; color: #9A9AA5"><span>Budget tersisa</span><span style="color: #FFFFFF">' + k.budget_left_pct + '%</span></div>'
+      + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 500">Minimal klaim</span><b style="font-size: 15px">' + short(k.min_views_to_qualify || 0) + ' views</b></span>'
+      + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 500">Maks. per clip</span><b style="font-size: 15px">' + (maxViews ? short(maxViews) + ' views' : 'Tanpa batas') + '</b></span></div>'
+      + '<div style="display: flex; flex-direction: column; gap: 8px"><div class="tab" style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; color: #9A9AA5"><span>Budget tersisa</span><span style="color: #FFFFFF">' + k.budget_left_pct + '%</span></div>'
       + '<div style="height: 6px; border-radius: 3px; background: #1F1F26"><div style="width: ' + k.budget_left_pct + '%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #4548F5, #7DA2FF)"></div></div></div>'
       + '<a class="btn" href="' + href + '" style="height: 44px; border-radius: 12px; margin-top: 4px">Ambil campaign</a>'
       + '</div></article>';
   }
   function empty(title, body) {
-    return '<div style="grid-column: 1 / -1; padding: 56px 24px; border-radius: 22px; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(60% 80% at 50% 0%, rgba(69,72,245,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">'
-      + '<img src="assets/tapp-mark.svg" alt="" style="width: 44px; height: 44px; opacity: 0.85"><h2 style="font-size: 22px; font-weight: 700">' + title + '</h2><p style="font-size: 15px; line-height: 24px; color: #9A9AA5; max-width: 440px">' + body + '</p>'
+    return '<div style="grid-column: 1 / -1; padding: 56px 24px; border-radius: 18px; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(60% 80% at 50% 0%, rgba(69,72,245,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">'
+      + '<img src="assets/tapp-mark.svg" alt="" style="width: 44px; height: 44px; opacity: 0.85"><h2 style="font-size: 22px; font-weight: 600">' + title + '</h2><p style="font-size: 15px; line-height: 24px; color: #9A9AA5; max-width: 440px">' + body + '</p>'
       + '<a class="btn" href="' + (app ? app + '/register' : '#') + '" style="margin-top: 6px">Daftar gratis</a></div>';
   }
   function draw() {
@@ -119,11 +118,11 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
     var plats = ['all'].concat(Array.from(new Set([].concat.apply([], all.map(function (k) { return k.platforms || []; })))));
     filters.innerHTML = all.length ? plats.map(function (p) {
       var on = p === active;
-      return '<button data-p="' + p + '" aria-pressed="' + on + '" style="height: 38px; padding: 0 16px; border-radius: 999px; font: inherit; font-weight: 700; font-size: 14px; cursor: pointer; ' + (on ? 'background: rgba(69,72,245,0.25); color: #FFFFFF; border: 1px solid #5B7CFA' : 'background: rgba(255,255,255,0.04); color: #A1A1AA; border: 1px solid rgba(255,255,255,0.1)') + '">' + (p === 'all' ? 'Semua' : esc(NAME[p] || p)) + '</button>';
+      return '<button data-p="' + p + '" aria-pressed="' + on + '" style="height: 38px; padding: 0 16px; border-radius: 999px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; ' + (on ? 'background: rgba(69,72,245,0.25); color: #FFFFFF; border: 1px solid #5B7CFA' : 'background: rgba(255,255,255,0.04); color: #A1A1AA; border: 1px solid rgba(255,255,255,0.1)') + '">' + (p === 'all' ? 'Semua' : esc(NAME[p] || p)) + '</button>';
     }).join('') : '';
     filters.querySelectorAll('button').forEach(function (b) { b.onclick = function () { active = b.getAttribute('data-p'); draw(); }; });
   }
-  list.innerHTML = [0, 1, 2].map(function () { return '<div style="height: 420px; border-radius: 22px; background: linear-gradient(90deg, #0F0F13, #16161C, #0F0F13); border: 1px solid rgba(255,255,255,0.06)"></div>'; }).join('');
+  list.innerHTML = [0, 1, 2].map(function () { return '<div style="height: 420px; border-radius: 18px; background: linear-gradient(90deg, #0F0F13, #16161C, #0F0F13); border: 1px solid rgba(255,255,255,0.06)"></div>'; }).join('');
   fetch(c.SUPABASE_URL + '/rest/v1/rpc/public_campaigns', { method: 'POST', headers: { apikey: c.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: '{}' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (rows) { all = rows || []; draw(); })
@@ -189,7 +188,7 @@ legal('terms.html', 'Syarat Layanan', 'Aturan memakai TAPP untuk creator dan bra
 # ───────────────────────────── 404 ─────────────────────────────
 NOTFOUND = head('Halaman tidak ditemukan | TAPP', 'Halaman ini tidak ada di TAPP.', '404') + header('') + """
 <main style="min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px">
-  <img src="assets/tapp-mark.svg" alt="" style="width: 72px; height: 72px; filter: drop-shadow(0 0 30px rgba(69,72,245,0.9))">
+  <img src="assets/tapp-mark.svg" alt="" style="width: 72px; height: 72px; filter: drop-shadow(0 0 24px rgba(69,72,245,0.45))">
   <span class="pill">404</span>
   <h1 class="h1">Halaman Ini<br><span>Tidak Ditemukan</span></h1>
   <p class="lead">Mungkin link-nya salah atau halamannya sudah dipindah.</p>
@@ -197,7 +196,7 @@ NOTFOUND = head('Halaman tidak ditemukan | TAPP', 'Halaman ini tidak ada di TAPP
 </main>
 """ + FOOT + '\n</body>\n</html>\n'
 # 404 pages are served from any path, so asset links must be absolute
-(ROOT / '404.html').write_text(NOTFOUND.replace('__SITE_URL__', SITE_URL).replace('href="assets/', 'href="/assets/').replace('src="assets/', 'src="/assets/').replace('href="index.html', 'href="/index.html').replace('href="campaigns.html', 'href="/campaigns.html').replace('href="privacy.html', 'href="/privacy.html').replace('href="terms.html', 'href="/terms.html').replace('href="site.webmanifest', 'href="/site.webmanifest'))
+(ROOT / '404.html').write_text(NOTFOUND.replace('__SITE_URL__', SITE_URL).replace('href="assets/', 'href="/assets/').replace('src="assets/', 'src="/assets/').replace('href="index.html', 'href="/index.html').replace('href="campaigns.html', 'href="/campaigns.html').replace('href="privacy.html', 'href="/privacy.html').replace('href="terms.html', 'href="/terms.html').replace('href="site.webmanifest', 'href="/site.webmanifest').replace('href="assets/fonts', 'href="/assets/fonts'))
 
 # ───────────────────────────── robots + sitemap ─────────────────────────────
 (ROOT / 'robots.txt').write_text(f"User-agent: *\nAllow: /\nDisallow: /src/\nDisallow: /tools/\n\nSitemap: {SITE_URL}/sitemap.xml\n")

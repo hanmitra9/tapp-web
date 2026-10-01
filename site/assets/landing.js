@@ -47,8 +47,8 @@ class Component extends DCLogic {
     const s = this.state;
     const mode = s.mode ?? this.props.startMode ?? 'creator';
     const creator = mode === 'creator';
-    const tab = (on) => 'height: 32px; padding: 0 14px; border-radius: 999px; font-weight: 700; font-size: 14px; '
-      + (on ? 'color: #FFFFFF; background: rgba(69,72,245,0.22); border: 1px solid rgba(125,162,255,0.5)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent');
+    const tab = (on) => 'height: 32px; padding: 0 14px; border-radius: 9px; font-weight: 500; font-size: 14px; '
+      + (on ? 'color: #FFFFFF; background: #4548F5; border: 1px solid rgba(255,255,255,0.16)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent');
 
     const faqList = (raw, key) => raw.map((f, i) => {
       const open = s[key] === i;
@@ -57,7 +57,7 @@ class Component extends DCLogic {
         box: 'border-radius: 16px; ' + (open
           ? 'background: radial-gradient(90% 140% at 0% 0%, rgba(69,72,245,0.22), transparent 60%), #111116; border: 1px solid rgba(125,162,255,0.45); box-shadow: 0 18px 44px -24px rgba(69,72,245,0.9)'
           : 'background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)'),
-        sign: 'width: 28px; height: 28px; flex-shrink: 0; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 600; '
+        sign: 'width: 28px; height: 28px; flex-shrink: 0; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; '
           + (open ? 'color: #FFFFFF; background: rgba(69,72,245,0.35)' : 'color: #7DA2FF; background: transparent'),
         toggle: () => this.setState({ [key]: open ? -1 : i }),
       };
@@ -117,8 +117,8 @@ class Component extends DCLogic {
         return {
           name: name, sub: pay, ini: name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase(),
           card: 'flex-shrink: 0; height: 88px; min-width: 230px; padding: 0 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 16px; background: linear-gradient(180deg, #15151B, #0D0D11); border: 1px solid rgba(255,255,255,0.08)',
-          whoRow: 'display: flex; align-items: center; gap: 10px; white-space: nowrap; font-weight: 600; color: #E4E4E7; font-size: ' + (big ? '17px' : '14px'),
-          av: 'font-style: normal; width: ' + (big ? '30px' : '24px') + '; height: ' + (big ? '30px' : '24px') + '; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: ' + (big ? '11px' : '9px') + '; font-weight: 700; color: #FFFFFF; background: ' + g + '; box-shadow: 0 0 0 3px ' + g + '33, 0 0 16px ' + g + '99',
+          whoRow: 'display: flex; align-items: center; gap: 10px; white-space: nowrap; font-weight: 500; color: #E4E4E7; font-size: ' + (big ? '17px' : '14px'),
+          av: 'font-style: normal; width: ' + (big ? '30px' : '24px') + '; height: ' + (big ? '30px' : '24px') + '; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: ' + (big ? '11px' : '9px') + '; font-weight: 600; color: #FFFFFF; background: ' + g + '; box-shadow: 0 0 0 3px ' + g + '33, 0 0 16px ' + g + '99',
         };
       });
       return cards.concat(cards);
@@ -144,7 +144,7 @@ class Component extends DCLogic {
     // budget simulator: brand pays creator reward + 15% platform fee; clips are paid up to 100K views each
     const rp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
     const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
-    const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 700; '
+    const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 600; '
       + (on ? 'color: #FFFFFF; background: rgba(69,72,245,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
     const budget = s.budget || 25000000, cpm = s.cpm || 3000;
     const views = budget / (cpm * 1.15) * 1000;
@@ -153,7 +153,7 @@ class Component extends DCLogic {
     const bstep = s.bstep || 0;
     const bsteps = [0, 1, 2, 3].map((i) => ({
       on: i === bstep, pick: () => this.setState({ bstep: i }),
-      tab: 'height: 48px; border-radius: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; '
+      tab: 'height: 48px; border-radius: 14px; font-size: 14px; font-weight: 600; white-space: nowrap; '
         + (i === bstep ? 'color: #FFFFFF; background: rgba(69,72,245,0.22); border: 1px solid rgba(125,162,255,0.5)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent'),
       panel: (i === bstep ? 'display: grid' : 'display: none') + '; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 32px; padding: 18px',
     }));

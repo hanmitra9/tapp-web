@@ -4,9 +4,9 @@ from parts import ICON, BLOB_WHITE, FLOAT, CARD
 from hero2 import clip, EYE
 
 def _btn(label, href, primary=True):
-    st = ('background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 14px 36px -12px rgba(69,72,245,0.95), inset 0 1px 0 rgba(255,255,255,0.25)'
-          if primary else 'background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.12)')
-    return f'<a class="{"btn-p" if primary else "btn-s"}" href="{href}" style="display: inline-flex; align-items: center; white-space: nowrap; height: 54px; padding: 0 28px; border-radius: 14px; font-weight: 700; font-size: 16px; {st}">{label}</a>'
+    st = ('background: linear-gradient(180deg, #5767FF, #3B44E4); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 24px -14px rgba(69,72,245,0.9), inset 0 1px 0 rgba(255,255,255,0.2)'
+          if primary else 'background: #111115; border: 1px solid rgba(255,255,255,0.1)')
+    return f'<a class="{"btn-p" if primary else "btn-s"}" href="{href}" style="display: inline-flex; align-items: center; white-space: nowrap; height: 50px; padding: 0 24px; border-radius: 12px; font-weight: 500; font-size: 15px; {st}">{label}</a>'
 
 def _mini_mark(sz=22, r=7):
     return f'<i style="font-style: normal; width: {sz}px; height: {sz}px; border-radius: {r}px; background: linear-gradient(180deg, #4F6BFF, #2238C2); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><img src="{BLOB_WHITE}" alt="" style="width: {sz*0.6:.0f}px; height: {sz*0.6:.0f}px"></i>'
@@ -34,36 +34,36 @@ def _wires():
 
 def _payout_card():
     return f'''<div style="width: 260px; padding: 14px 16px; border-radius: 16px; {FLOAT}; display: flex; flex-direction: column; gap: 10px">
-      <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700"><span style="display: inline-flex; color: #D4D4D8">{ICON['tt']}</span>@rani.clips</span>
+      <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600"><span style="display: inline-flex; color: #D4D4D8">{ICON['tt']}</span>@rani.clips</span>
       <div class="tabular" style="display: flex; justify-content: space-between; gap: 10px">
-        <span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 11px; font-weight: 600; color: #8A8A93">Qualified views</span><b style="display: flex; align-items: center; gap: 5px; font-size: 17px">{EYE}86K</b></span>
-        <span style="display: flex; flex-direction: column; gap: 3px; text-align: right"><span style="font-size: 11px; font-weight: 600; color: #8A8A93">Estimasi bayaran</span><b style="font-size: 17px; color: #34D07A">Rp258.000</b></span>
+        <span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Qualified views</span><b style="display: flex; align-items: center; gap: 5px; font-size: 17px">{EYE}86K</b></span>
+        <span style="display: flex; flex-direction: column; gap: 3px; text-align: right"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Estimasi Payout</span><b style="font-size: 17px; color: #34D07A">Rp258.000</b></span>
       </div>
     </div>'''
 
 def _campaign_card():
     return f'''<div style="width: 252px; padding: 14px; border-radius: 16px; {FLOAT}; display: flex; flex-direction: column; gap: 9px">
       <div style="position: relative; height: 62px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #0E1A6B, #4548F5)">
-        <img src="{BLOB_WHITE}" alt="" style="position: absolute; right: 12px; top: 9px; width: 44px; height: 44px; opacity: 0.9"><span style="position: absolute; left: 12px; bottom: 9px; font-size: 16px; font-weight: 700; letter-spacing: -0.3px">TAPP Campaign</span>
+        <img src="{BLOB_WHITE}" alt="" style="position: absolute; right: 12px; top: 9px; width: 44px; height: 44px; opacity: 0.9"><span style="position: absolute; left: 12px; bottom: 9px; font-size: 16px; font-weight: 600; letter-spacing: -0.3px">TAPP Campaign</span>
       </div>
-      <span style="display: flex; align-items: center; justify-content: space-between"><span style="display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 700">{_mini_mark(18, 6)}TAPP</span><span style="font-size: 10px; font-weight: 700; padding: 3px 7px; border-radius: 6px; background: rgba(255,255,255,0.06)">CLIPPING</span></span>
-      <span class="tabular"><b style="font-size: 16px">Rp3.000</b><span style="font-size: 11px; color: #8A8A93; font-weight: 600"> /1K Views</span></span>
-      <span style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #9A9AA5"><span>Budget tersisa</span><span class="tabular" style="color: #FFFFFF">100%</span></span>
+      <span style="display: flex; align-items: center; justify-content: space-between"><span style="display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600">{_mini_mark(18, 6)}TAPP</span><span style="font-size: 10px; font-weight: 600; padding: 3px 7px; border-radius: 6px; background: rgba(255,255,255,0.06)">CLIPPING</span></span>
+      <span class="tabular"><b style="font-size: 16px">Rp3.000</b><span style="font-size: 11px; color: #8A8A93; font-weight: 500"> /1K Views</span></span>
+      <span style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 500; color: #9A9AA5"><span>Budget Tersisa</span><span class="tabular" style="color: #FFFFFF">100%</span></span>
       <span style="height: 5px; border-radius: 3px; background: #1F1F26; display: block"><span style="display: block; width: 100%; height: 5px; border-radius: 3px; background: linear-gradient(90deg, #4548F5, #7DA2FF)"></span></span>
     </div>'''
 
 def _level_card():
     return f'''<div style="width: 160px; padding: 14px; border-radius: 16px; {FLOAT}; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
-      <span style="font-size: 12px; font-weight: 700; color: #D4D4D8">Level kamu</span>
+      <span style="font-size: 12px; font-weight: 600; color: #D4D4D8">Your Level</span>
       {_badge('#8A8A93', 54)}
       <b style="font-size: 18px">New</b>
       <span style="width: 100%; height: 1px; background: rgba(255,255,255,0.08)"></span>
-      <span style="font-size: 11px; font-weight: 600; color: #9A9AA5; line-height: 15px">Rising di <b class="tabular" style="color: #FFFFFF">50K</b> qualified views</span>
+      <span style="font-size: 11px; font-weight: 500; color: #9A9AA5; line-height: 15px">Rising di <b class="tabular" style="color: #FFFFFF">50K</b> qualified views</span>
     </div>'''
 
 HUB = f'''<div class="hub" style="position: absolute; left: 540px; top: 120px; width: 120px; height: 120px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #5B74FF, #2238C2); border: 1px solid rgba(198,214,255,0.6); box-shadow: 0 0 0 10px rgba(69,72,245,0.14), 0 0 0 22px rgba(69,72,245,0.06), 0 0 90px rgba(69,72,245,0.85), inset 0 1px 0 rgba(255,255,255,0.35)"><img src="{BLOB_WHITE}" alt="" style="width: 62px; height: 62px"></div>'''
 
-AV = ''.join(f'<i style="font-style: normal; width: 26px; height: 26px; border-radius: 13px; margin-left: {0 if k==0 else -8}px; background: {c}; border: 2px solid #07070A; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700">{n}</i>'
+AV = ''.join(f'<i style="font-style: normal; width: 26px; height: 26px; border-radius: 13px; margin-left: {0 if k==0 else -8}px; background: {c}; border: 2px solid #07070A; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600">{n}</i>'
              for k, (n, c) in enumerate([('RP', '#34D07A'), ('DP', '#F2692B'), ('NK', '#2F8CE6')]))
 
 def hero_hub():
@@ -80,9 +80,9 @@ def hero_hub():
     </div>
   </div>
   <div class="pad" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 0 24px">
-    <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 6px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 600; color: #D4D4D8"><span style="display: inline-flex">{AV}</span>Gratis untuk creator · Tanpa minimum follower</span>
-    <h1 class="hero-h" style="font-size: 68px; line-height: 72px; font-weight: 700; letter-spacing: -2.4px">Clip Kamu,<br><span style="color: #7DA2FF">Bayaran Nyata</span></h1>
-    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 500; max-width: 560px">Dibayar dari views yang lolos verifikasi. Mulai dari campaign pertama, bangun rekam jejak, dan naik level.</p>
+    <span style="display: inline-flex; align-items: center; gap: 10px; padding: 5px 14px 5px 6px; border-radius: 999px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8"><span style="display: inline-flex">{AV}</span>Gratis untuk creator · Tanpa minimum follower</span>
+    <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Clip Kamu,<br><span style="color: #7DA2FF">Bayaran Nyata</span></h1>
+    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Dibayar dari views yang lolos verifikasi. Mulai dari campaign pertama, bangun rekam jejak, dan naik level.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Daftar Gratis", "#app:/register")}{_btn("Lihat Campaign", "campaigns.html", False)}</div>
     <div class="hm" style="display: none; width: 100%; max-width: 420px; flex-direction: column; align-items: center; gap: 12px; margin-top: 8px; text-align: left">{_payout_card()}{_campaign_card()}</div>
   </div>
@@ -107,7 +107,7 @@ def _arc():
         mx, my = pt((R + r) / 2, (a0 + a1) / 2)
         out.append(f'''<g role="button" tabindex="0" aria-label="Level {name}" onClick="{{{{tiers.{i}.pick}}}}" style="cursor: pointer">
         <path d="{d}" fill="{{{{tiers.{i}.fill}}}}" stroke="{{{{tiers.{i}.stroke}}}}" stroke-width="1.5"></path>
-        <text x="{mx:.1f}" y="{my-46:.1f}" text-anchor="middle" font-size="19" font-weight="700" fill="{{{{tiers.{i}.label}}}}">{name}</text>
+        <text x="{mx:.1f}" y="{my-46:.1f}" text-anchor="middle" font-size="19" font-weight="600" fill="{{{{tiers.{i}.label}}}}">{name}</text>
         <g transform="translate({mx-26:.1f} {my-24:.1f})" opacity="{{{{tiers.{i}.op}}}}">{_badge(color, 52)}</g>
       </g>''')
     return ('<svg viewBox="0 0 1000 510" width="100%" role="group" aria-label="Level creator TAPP" style="display: block; overflow: visible">'
@@ -116,17 +116,17 @@ def _arc():
 
 LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 40px">
-      <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 600; color: #D4D4D8">Level Creator</span>
-      <h2 class="h2" style="font-size: 50px; line-height: 56px; font-weight: 700; letter-spacing: -1.5px">Setiap Clip yang Lolos,<br><span style="color: #7DA2FF">Bawa Kamu Naik Level</span></h2>
-      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 500; max-width: 600px">Levelmu dihitung otomatis dari total qualified views, bukan dari jumlah follower. Pilih level untuk melihat syaratnya.</p>
+      <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">Level Creator</span>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Setiap Clip yang Lolos,<br><span style="color: #7DA2FF">Bawa Kamu Naik Level</span></h2>
+      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Levelmu dihitung otomatis dari total qualified views, bukan dari jumlah follower. Pilih level untuk melihat syaratnya.</p>
     </div>
     <div class="tarc" style="position: relative; max-width: 1000px; margin: 0 auto">
       {_arc()}
       <div class="tcard" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
-        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; {{{{tierPill}}}}">Level {{{{tierNum}}}} dari 5</span>
+        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; {{{{tierPill}}}}">Level {{{{tierNum}}}} dari 5</span>
         <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">{{{{tierName}}}}</b>
-        <span class="tabular" style="font-size: 15px; font-weight: 600; color: #C6D6FF">{{{{tierReq}}}}</span>
-        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 500; max-width: 380px">{{{{tierBody}}}}</p>
+        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{{{{tierReq}}}}</span>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{{{{tierBody}}}}</p>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
           <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik level</span><span class="tchip">Tampil di profilmu</span>
         </div>
@@ -144,30 +144,30 @@ POINTS = [
 def _dash():
     tiles = ''.join(f'<div style="flex: 1; min-width: 0">{clip(110, 170, k, "", v, "tt", colors=c, small=True)}</div>'
                     for k, v, c in [('quote', '128K', ('#4F7BFF', '#0F1B4D')), ('reaction', '86K', ('#F97316', '#431407')), ('compare', '98K', ('#06B6D4', '#083344'))])
-    stat = lambda l, v, extra='': f'<span style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #15151B; border: 1px solid rgba(255,255,255,0.06)"><span style="font-size: 11px; font-weight: 600; color: #8A8A93">{l}</span><b class="tabular" style="font-size: 18px{extra}">{v}</b></span>'
-    return f'''<div class="pdash" style="width: 100%; max-width: 440px; padding: 18px; border-radius: 26px; {CARD}; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 40px 90px -40px rgba(69,72,245,0.8), inset 0 1px 0 rgba(255,255,255,0.05)">
+    stat = lambda l, v, extra='': f'<span style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #15151B; border: 1px solid rgba(255,255,255,0.06)"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">{l}</span><b class="tabular" style="font-size: 18px{extra}">{v}</b></span>'
+    return f'''<div class="pdash" style="width: 100%; max-width: 440px; padding: 18px; border-radius: 18px; {CARD}; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 40px 90px -40px rgba(69,72,245,0.8), inset 0 1px 0 rgba(255,255,255,0.05)">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
-        <span style="display: flex; align-items: center; gap: 10px"><i style="font-style: normal; width: 36px; height: 36px; border-radius: 18px; background: #34D07A; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700">RP</i><span style="display: flex; flex-direction: column"><b style="font-size: 15px">Rani Putri</b><span style="font-size: 12px; color: #8A8A93; font-weight: 600">@rani.clips</span></span></span>
-        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; background: rgba(125,162,255,0.12); border: 1px solid rgba(125,162,255,0.35); font-size: 12px; font-weight: 700; color: #C6D6FF">{_badge('#7DA2FF', 22)}Verified</span>
+        <span style="display: flex; align-items: center; gap: 10px"><i style="font-style: normal; width: 36px; height: 36px; border-radius: 18px; background: #34D07A; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">RP</i><span style="display: flex; flex-direction: column"><b style="font-size: 15px">Rani Putri</b><span style="font-size: 12px; color: #8A8A93; font-weight: 500">@rani.clips</span></span></span>
+        <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; background: rgba(125,162,255,0.12); border: 1px solid rgba(125,162,255,0.35); font-size: 12px; font-weight: 600; color: #C6D6FF">{_badge('#7DA2FF', 22)}Verified</span>
       </div>
       <div style="position: relative; overflow: hidden; padding: 16px 18px; border-radius: 18px; background: linear-gradient(135deg, #4F6BFF, #1E2FA8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25)">
-        <span style="font-size: 12px; font-weight: 600; color: rgba(255,255,255,0.8)">Total penghasilan</span>
+        <span style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8)">Total penghasilan</span>
         <b class="tabular" style="display: block; font-size: 30px; letter-spacing: -0.6px; margin-top: 2px">Rp4.250.000</b>
         <img src="{BLOB_WHITE}" alt="" style="position: absolute; right: -10px; top: -14px; width: 104px; height: 104px; opacity: 0.14">
       </div>
       <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">{stat('Qualified views', '1,4 jt')}{stat('Approval', '94%')}{stat('Reliabilitas', '92', '; color: #34D07A')}</div>
-      <span style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700"><span>Clip kamu</span><span style="color: #7DA2FF">Lihat semua</span></span>
+      <span style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 600"><span>Clip kamu</span><span style="color: #7DA2FF">Lihat semua</span></span>
       <div class="ctiles" style="display: flex; gap: 8px; overflow: hidden">{tiles}</div>
     </div>'''
 
 PORTFOLIO = f'''<section id="portofolio" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div class="g2" style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center">
       <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
-        <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 600; color: #D4D4D8">Profil Creator</span>
-        <h2 class="h2" style="font-size: 44px; line-height: 50px; font-weight: 700; letter-spacing: -1.4px">Portofolio &amp; Reputasi<br><span style="color: #7DA2FF">Tumbuh dari Tiap Clip</span></h2>
-        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 500; max-width: 480px">Setiap campaign yang selesai, views yang masuk, dan pencairan yang tercatat memperkuat profilmu.</p>
+        <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">Profil Creator</span>
+        <h2 class="h2" style="font-size: 44px; line-height: 50px; font-weight: 600; letter-spacing: -1.4px">Portofolio &amp; Reputasi<br><span style="color: #7DA2FF">Tumbuh dari Tiap Clip</span></h2>
+        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap campaign yang selesai, views yang masuk, dan pencairan yang tercatat memperkuat profilmu.</p>
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px; width: 100%">
-          {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(69,72,245,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 500">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
+          {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(69,72,245,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 400">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
         </div>
       </div>
       <div style="display: flex; justify-content: center">{_dash()}</div>
