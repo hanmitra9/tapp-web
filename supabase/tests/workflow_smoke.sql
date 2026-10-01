@@ -370,3 +370,12 @@ select is_admin() as creator_aal2_expect_false;
 select set_config('request.jwt.claims', '', false);
 reset role;
 select 'admin_mfa_ok' as result;
+
+-- ── YouTube auto metrics queue (0027) ──
+reset role;
+select substring('youtube.com/watch/dQw4w9WgXcQ' from '^youtube\.com/watch/([A-Za-z0-9_-]+)$') as yt_id_expect_dQw4w9WgXcQ;
+select count(*) >= 0 as yt_queue_runs from due_for_youtube_metrics();
+set role authenticated;
+select pg_temp.expect_error($$select * from due_for_youtube_metrics()$$, 'permission denied');
+reset role;
+select 'youtube_queue_ok' as result;

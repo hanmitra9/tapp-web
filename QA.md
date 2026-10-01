@@ -38,5 +38,5 @@
 - Web app: `cd app && npm run build:web && npm run e2e` — Playwright smoke tests on desktop + phone viewports (welcome → register, login validation, protected deep link → login → return, deep-link refresh). Signed-out flows only, so they need no live backend.
 
 ## Known V1 limits
-- No platform API verification — metrics are admin-entered.
+- TikTok and Instagram metrics are admin-entered (YouTube is automatic once `YOUTUBE_API_KEY` is set).
 - E2E covers signed-out flows only; signed-in flows are covered at the database layer.
