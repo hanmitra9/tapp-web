@@ -15,7 +15,7 @@ export function Layout() {
         <div className="nav-brand"><img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="" />TAPP Control</div>
         <NavLink to="/" end>Ringkasan</NavLink>
         <NavLink to="/submissions">Verifikasi <Count n={c ? c.pending_review + c.flagged : undefined} /></NavLink>
-        <NavLink to="/performance">Performa <Count n={c ? c.awaiting_first_metrics + c.stale_metrics : undefined} /></NavLink>
+        <NavLink to="/performance">Performa <Count n={c ? c.awaiting_first_metrics + c.stale_metrics + (c.auto_held ?? 0) : undefined} /></NavLink>
         <NavLink to="/creators">Kreator <Count n={c?.creators_to_review} /></NavLink>
         <NavLink to="/payouts">Pencairan <Count n={c?.payouts_open} /></NavLink>
         <NavLink to="/campaigns">Campaign <Count n={c?.campaigns_pending} /></NavLink>

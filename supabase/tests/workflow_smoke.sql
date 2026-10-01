@@ -436,3 +436,40 @@ set role authenticated;
 select pg_temp.expect_error($$select send_brand_daily_reports()$$, 'permission denied');
 reset role;
 select 'brand_reporting_ok' as result;
+
+-- ── Automatic view filtering (0030) ──
+reset role;
+create temp table _aq as select id, creator_id, platform, qualified_views from submissions where status = 'tracking' order by created_at limit 1;
+update creator_profiles set status = 'active' where user_id = (select creator_id from _aq);
+update creator_platforms set verified_at = now(), followers = 1000000 where creator_id = (select creator_id from _aq) and platform = (select platform from _aq);
+update submissions set content_state = 'live' where id = (select id from _aq);
+-- clean growth: +20% over the last snapshot, healthy engagement → qualified automatically at raw views
+insert into content_metrics (submission_id, captured_at, views, likes, comments, shares, saves, source)
+select id, now(), (select max(views) from content_metrics where submission_id = _aq.id) * 12 / 10, 9000, 400, 300, 100, 'manual' from _aq;
+select (auto_qualify_sweep()).qualified >= 1 as auto_qualified_some;
+do $$ declare v_raw bigint; v_q bigint; v_by uuid; begin
+  select m.views into v_raw from content_metrics m where m.submission_id = (select id from _aq) order by captured_at desc limit 1;
+  select qualified_views into v_q from submissions where id = (select id from _aq);
+  select computed_by into v_by from performance_snapshots where submission_id = (select id from _aq) order by created_at desc limit 1;
+  if v_q <> v_raw then raise exception 'auto qualify expected % got %', v_raw, v_q; end if;
+  if v_by is not null then raise exception 'auto snapshot should have computed_by null'; end if;
+end $$;
+-- suspicious: 20× jump within an hour and almost no engagement → held with reasons, nothing paid
+insert into content_metrics (submission_id, captured_at, views, likes, comments, shares, saves, source)
+select id, now() + interval '1 hour', (select views from content_metrics where submission_id = _aq.id order by captured_at desc limit 1) * 20, 10, 0, 0, 0, 'manual' from _aq;
+select (auto_qualify_sweep()).held >= 1 as held_some;
+select auto_hold_reason from submissions where id = (select id from _aq);
+do $$ begin
+  if (select auto_hold_reason from submissions where id = (select id from _aq)) not like '%naik%' then raise exception 'jump not detected'; end if;
+  if (select auto_hold_reason from submissions where id = (select id from _aq)) not like '%engagement rendah%' then raise exception 'engagement not detected'; end if;
+  if (select auto_held from admin_queue_counts) < 1 then raise exception 'held count missing'; end if;
+end $$;
+-- a held clip is not re-examined until a new metric arrives; switching the feature off stops the sweep
+select (auto_qualify_sweep()).held = 0 as not_rechecked;
+update app_settings set value = jsonb_set(value, '{enabled}', 'false') where key = 'auto_qualify';
+select (auto_qualify_sweep()).qualified = 0 as off_does_nothing;
+update app_settings set value = jsonb_set(value, '{enabled}', 'true') where key = 'auto_qualify';
+set role authenticated;
+select pg_temp.expect_error($$select auto_qualify_sweep()$$, 'permission denied');
+reset role;
+select 'auto_qualify_ok' as result;

@@ -16,7 +16,7 @@ const STATUS: Record<SubStatus, { label: string; tone: string }> = {
 };
 const TABS: Record<'review' | 'performance', { q: Queue; label: string }[]> = {
   review: [{ q: 'review', label: 'Perlu review' }, { q: 'flagged', label: 'Ditandai' }, { q: 'closed', label: 'Selesai diproses' }],
-  performance: [{ q: 'metrics', label: 'Belum ada metrik' }, { q: 'tracking', label: 'Dilacak' }, { q: 'flagged', label: 'Ditandai' }],
+  performance: [{ q: 'held', label: 'Ditahan otomatis' }, { q: 'metrics', label: 'Belum ada metrik' }, { q: 'tracking', label: 'Dilacak' }, { q: 'flagged', label: 'Ditandai' }],
 };
 const PRESETS: Partial<Record<SubStatus, string[]>> = {
   rejected: [
@@ -69,6 +69,7 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
               <div className="row"><span className="title">{s.campaign_title}</span><span className={`badge ${STATUS[s.status].tone}`}>{STATUS[s.status].label}</span></div>
               <div className="meta">@{s.creator_username ?? '—'} · {s.platform} · masuk {ago(s.created_at)}</div>
               {mode === 'performance' ? <div className="meta">Raw {num(s.views)} · Qualified {num(s.qualified_views)} · metrik {ago(s.last_metrics_at)}</div> : null}
+              {mode === 'performance' && s.auto_hold_reason ? <div className="meta" style={{ color: 'var(--warning)' }}>Ditahan: {s.auto_hold_reason}</div> : null}
             </button>
           ))}
         </div>
@@ -124,6 +125,7 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
 
       {mode === 'review' && reviewable ? <ReviewPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && trackable ? <MetricsPanel s={s} onDone={refresh} /> : null}
+      {mode === 'performance' && s.status === 'tracking' && s.auto_hold_reason ? <div className="notice warn" style={{ marginTop: 16 }}>Ditahan penyaringan otomatis: {s.auto_hold_reason}. Cek klipnya, lalu tetapkan qualified views secara manual di bawah.</div> : null}
       {mode === 'performance' && s.status === 'tracking' ? <QualifyPanel s={s} metrics={h.metrics} onDone={refresh} /> : null}
       {mode === 'performance' && s.status === 'flagged' ? <div className="notice info" style={{ marginTop: 16 }}>Submission ditandai. Selesaikan di halaman Verifikasi (setujui kembali atau tolak) sebelum menghitung qualified views.</div> : null}
 
@@ -149,7 +151,7 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
             <thead><tr><th>Waktu</th><th className="n">Raw</th><th className="n">Qualified</th><th className="n">Sebelumnya</th><th>Catatan</th></tr></thead>
             <tbody>{h.snapshots.map((x) => (
               <tr key={x.id}><td>{dt(x.created_at)}</td><td className="n">{num(x.raw_views)}</td><td className="n">{num(x.qualified_views)}</td>
-                <td className="n">{num(x.previous_qualified_views)}</td><td>{x.budget_capped ? 'Dibatasi budget. ' : ''}{x.note ?? ''}</td></tr>
+                <td className="n">{num(x.previous_qualified_views)}</td><td>{x.computed_by ? '' : <span className="badge" style={{ marginRight: 6 }}>Otomatis</span>}{x.budget_capped ? 'Dibatasi budget. ' : ''}{x.note ?? ''}</td></tr>
             ))}</tbody>
           </table>
         </div>

@@ -11,7 +11,7 @@ export type AdminSubmission = {
   creator_name: string | null; creator_username: string | null; creator_status: string; creator_tier: string;
   account_handle: string | null; account_followers: number | null; creator_approved: number; creator_rejected: number;
   latest_metric_id: string | null; views: number | null; likes: number | null; comments: number | null; shares: number | null; saves: number | null;
-  metrics_captured_at: string | null; metric_count: number;
+  metrics_captured_at: string | null; metric_count: number; auto_hold_reason: string | null; auto_hold_at: string | null;
 };
 const NUMERIC = ['qualified_views', 'earned', 'cpm', 'min_views_to_qualify', 'max_earning_per_submission', 'budget', 'campaign_earned',
   'account_followers', 'creator_approved', 'creator_rejected', 'views', 'likes', 'comments', 'shares', 'saves', 'metric_count'] as const;
@@ -21,9 +21,9 @@ const norm = (r: Record<string, unknown>) => {
   return o as unknown as AdminSubmission;
 };
 
-export type Queue = 'review' | 'flagged' | 'metrics' | 'tracking' | 'closed';
+export type Queue = 'review' | 'flagged' | 'metrics' | 'tracking' | 'held' | 'closed';
 const QUEUE_FILTER: Record<Queue, SubStatus[]> = {
-  review: ['pending_review'], flagged: ['flagged'], metrics: ['approved'], tracking: ['tracking'], closed: ['rejected', 'needs_changes', 'completed'],
+  review: ['pending_review'], flagged: ['flagged'], metrics: ['approved'], tracking: ['tracking'], held: ['tracking'], closed: ['rejected', 'needs_changes', 'completed'],
 };
 
 export async function listSubmissions(queue: Queue, search: string): Promise<AdminSubmission[]> {
@@ -31,6 +31,7 @@ export async function listSubmissions(queue: Queue, search: string): Promise<Adm
   // Review queues: oldest first (FIFO). Tracking: stalest metrics first.
   q = queue === 'tracking' ? q.order('last_metrics_at', { ascending: true, nullsFirst: true })
     : queue === 'closed' ? q.order('reviewed_at', { ascending: false }) : q.order('created_at', { ascending: true });
+  if (queue === 'held') q = q.not('auto_hold_reason', 'is', null);
   const s = clean(search);
   if (s) q = q.or(`campaign_title.ilike.%${s}%,creator_username.ilike.%${s}%,post_url.ilike.%${s}%`);
   const { data, error } = await q;
@@ -43,19 +44,19 @@ export async function getSubmission(id: string) {
   return norm(data);
 }
 
-export type Counts = { pending_review: number; flagged: number; awaiting_first_metrics: number; stale_metrics: number; creators_to_review: number; payouts_open: number; disputes_open: number; tickets_open: number; campaigns_pending: number };
+export type Counts = { pending_review: number; flagged: number; awaiting_first_metrics: number; stale_metrics: number; creators_to_review: number; payouts_open: number; disputes_open: number; tickets_open: number; campaigns_pending: number; auto_held: number };
 export async function fetchCounts(): Promise<Counts> {
   const { data, error } = await supabase.from('admin_queue_counts').select('*').single();
   if (error) throw error;
   return Object.fromEntries(Object.entries(data).map(([k, v]) => [k, Number(v)])) as Counts;
 }
 
-export type Snapshot = { id: string; raw_views: number; qualified_views: number; previous_qualified_views: number; budget_capped: boolean; note: string | null; created_at: string };
+export type Snapshot = { id: string; raw_views: number; qualified_views: number; previous_qualified_views: number; budget_capped: boolean; note: string | null; created_at: string; computed_by: string | null };
 export async function fetchHistory(submissionId: string): Promise<{ metrics: Metric[]; snapshots: Snapshot[] }> {
   const [m, s] = await Promise.all([
     supabase.from('content_metrics').select('id, captured_at, views, likes, comments, shares, saves, source')
       .eq('submission_id', submissionId).order('captured_at', { ascending: false }),
-    supabase.from('performance_snapshots').select('id, raw_views, qualified_views, previous_qualified_views, budget_capped, note, created_at')
+    supabase.from('performance_snapshots').select('id, raw_views, qualified_views, previous_qualified_views, budget_capped, note, created_at, computed_by')
       .eq('submission_id', submissionId).order('created_at', { ascending: false }),
   ]);
   if (m.error) throw m.error;
@@ -301,3 +302,11 @@ export async function countNewMeetings(): Promise<number> {
 }
 export const updateMeeting = (id: string, status: MeetingStatus, meetLink: string | null, note: string | null) =>
   rpc('admin_update_meeting', { p_id: id, p_status: status, p_meet_link: meetLink, p_note: note });
+
+// ── Automatic view filtering (migration 030) ──
+export type AutoQualify = { enabled: boolean; held: number; auto_24h: number; manual_24h: number };
+export async function fetchAutoQualify(): Promise<AutoQualify> {
+  const d = await rpc<Record<string, unknown>>('admin_auto_qualify_status', {});
+  return { enabled: !!d.enabled, held: Number(d.held ?? 0), auto_24h: Number(d.auto_24h ?? 0), manual_24h: Number(d.manual_24h ?? 0) };
+}
+export const setAutoQualify = (enabled: boolean) => rpc('admin_set_auto_qualify', { p_enabled: enabled });
