@@ -284,3 +284,20 @@ export const inviteBrandMember = (brandId: string, email: string, role: string) 
   rpc('admin_invite_brand_member', { p_brand_id: brandId, p_email: email, p_role: role });
 export const revokeBrandInvite = (id: string) => rpc('admin_revoke_brand_invite', { p_invite_id: id });
 export const removeBrandMember = (brandId: string, userId: string) => rpc('admin_remove_brand_member', { p_brand_id: brandId, p_user_id: userId });
+
+// ── Meetings (brand booking from the website /meeting) ──
+export type MeetingStatus = 'new' | 'scheduled' | 'done' | 'cancelled';
+export type Meeting = { id: string; name: string; company: string; email: string; whatsapp: string | null; goal: string | null;
+  budget_range: string | null; slot: string; status: MeetingStatus; meet_link: string | null; admin_note: string | null; handled_at: string | null; created_at: string };
+export async function listMeetings(statuses: MeetingStatus[]): Promise<Meeting[]> {
+  const { data, error } = await supabase.from('meeting_requests').select('*').in('status', statuses).order('slot', { ascending: true }).limit(200);
+  if (error) throw error;
+  return data as Meeting[];
+}
+export async function countNewMeetings(): Promise<number> {
+  const { count, error } = await supabase.from('meeting_requests').select('id', { count: 'exact', head: true }).eq('status', 'new');
+  if (error) return 0;   // table not migrated yet: keep the nav quiet
+  return count ?? 0;
+}
+export const updateMeeting = (id: string, status: MeetingStatus, meetLink: string | null, note: string | null) =>
+  rpc('admin_update_meeting', { p_id: id, p_status: status, p_meet_link: meetLink, p_note: note });

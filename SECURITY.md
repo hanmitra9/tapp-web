@@ -1,7 +1,7 @@
 # TAPP — security model (V1)
 
 ## Principles
-1. **Deny by default.** `anon` has no table or function access. `authenticated` gets explicit table/column grants only.
+1. **Deny by default.** `anon` has no table access and can call exactly five functions, each read-only or narrowly validated: `check_request` (PostgREST pre-request), `login_policy`, `public_campaigns` (safe campaign fields), `meeting_slots_taken` (booked times only) and `request_meeting` (validated booking insert with per-email and global rate limits). `authenticated` gets explicit table/column grants only.
 2. **RLS on every table** (23 public tables). Policy helpers live in the non-exposed `private` schema.
 3. **Money and state never come from the client.** Earnings, qualified views, budgets, statuses, and payouts change only inside `SECURITY DEFINER` RPCs that check the caller (`assert_admin`, `assert_active_creator`) and validate transitions.
 4. **Append-only history.** `content_metrics`, `performance_snapshots`, `audit_logs` reject UPDATE/DELETE.
@@ -32,8 +32,9 @@
 
 ## Review checklist (run after each migration)
 ```sql
--- all should return 'none'
-select string_agg(proname, ', ') from pg_proc where pronamespace in ('public'::regnamespace,'private'::regnamespace) and has_function_privilege('anon', oid, 'execute');
+-- expect exactly: check_request, login_policy, meeting_slots_taken, public_campaigns, request_meeting
+select string_agg(proname, ', ' order by proname) from pg_proc where pronamespace in ('public'::regnamespace,'private'::regnamespace) and has_function_privilege('anon', oid, 'execute');
+-- the rest should return 'none'
 select string_agg(proname, ', ') from pg_proc where pronamespace in ('public'::regnamespace,'private'::regnamespace) and prosecdef and proconfig is null;
 select string_agg(relname, ', ') from pg_class where relnamespace='public'::regnamespace and relkind='v' and not coalesce(reloptions @> array['security_invoker=true'], false);
 select string_agg(tablename, ', ') from pg_tables where schemaname='public' and not rowsecurity;

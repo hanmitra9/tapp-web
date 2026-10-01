@@ -170,6 +170,6 @@ PORTFOLIO = f'''<section id="portofolio" class="sec pad" style="max-width: 1180p
           {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(69,72,245,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 400">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
         </div>
       </div>
-      <div style="display: flex; justify-content: center">{_dash()}</div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">{_dash()}<span style="font-size: 12px; color: #6E6E78; font-weight: 400; text-align: center">Contoh tampilan profil creator</span></div>
     </div>
   </section>'''

@@ -379,3 +379,39 @@ set role authenticated;
 select pg_temp.expect_error($$select * from due_for_youtube_metrics()$$, 'permission denied');
 reset role;
 select 'youtube_queue_ok' as result;
+
+-- ── Meeting booking (0028) ──
+reset role;
+update app_settings set value = 'false'::jsonb where key = 'require_admin_mfa';
+create temp table _slot as
+  select ((d + time '10:00') at time zone 'Asia/Jakarta') as s1, ((d + time '10:30') at time zone 'Asia/Jakarta') as s2,
+         ((d + time '10:30') at time zone 'Asia/Jakarta') + interval '1 day' as s3, ((d + time '18:00') at time zone 'Asia/Jakarta') as bad
+  from (select min(x)::date as d from generate_series(current_date + 2, current_date + 9, interval '1 day') x where extract(isodow from x) between 1 and 3) q;
+grant select on _slot to anon, authenticated;
+set role anon;
+select (request_meeting('Budi Brand', 'Acme Kopi', 'Budi@Acme.id', (select s1 from _slot), '+62 812 3456 7890', 'Launching produk', '10-50jt'))->>'slot' is not null as booked;
+select count(*) as taken_expect_1 from meeting_slots_taken();
+select pg_temp.expect_error($$select request_meeting('Ani', 'Other Co', 'ani@other.id', (select s1 from _slot))$$, 'meeting_slot_taken');
+select pg_temp.expect_error($$select request_meeting('Ani', 'Other Co', 'ani@other.id', (select bad from _slot))$$, 'meeting_slot_invalid');
+select pg_temp.expect_error($$select request_meeting('Ani', 'Other Co', 'ani@other.id', now() + interval '1 hour')$$, 'meeting_slot');
+select request_meeting('Budi Brand', 'Acme Kopi', 'budi@acme.id', (select s2 from _slot)) is not null as second_ok;
+select pg_temp.expect_error($$select request_meeting('Budi Brand', 'Acme Kopi', 'budi@acme.id', (select s3 from _slot))$$, 'meeting_too_many_open');
+select pg_temp.expect_error($$select * from meeting_requests$$, 'permission denied');
+reset role; set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as creator_sees_expect_0 from meeting_requests;
+select pg_temp.expect_error($$select admin_update_meeting((select id from meeting_requests limit 1), 'done')$$, 'forbidden');
+reset role;
+do $$ declare v uuid; begin
+  perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false);
+  select id into v from meeting_requests where slot = (select s1 from _slot);
+  begin perform admin_update_meeting(v, 'scheduled'); raise exception 'expected meeting_link_required';
+  exception when others then if sqlerrm not like 'meeting_link_required%' then raise; end if; end;
+  perform admin_update_meeting(v, 'scheduled', 'https://meet.google.com/abc-defg-hij', 'Kickoff');
+  if (select status from meeting_requests where id = v) <> 'scheduled' then raise exception 'not scheduled'; end if;
+  perform admin_update_meeting(v, 'cancelled');
+end $$;
+set role anon;
+select count(*) as taken_after_cancel_expect_1 from meeting_slots_taken();
+reset role;
+select 'meeting_booking_ok' as result;

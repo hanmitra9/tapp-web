@@ -47,7 +47,7 @@ def hero_brand():
   <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; margin-top: 48px">
     <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Jangkauan Organik,<br><span style="color: #7DA2FF">Dibayar Saat Terbukti</span></h1>
     <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Creator TAPP mengubah materi brand-mu jadi clip pendek di TikTok, Instagram, dan YouTube. Kamu hanya membayar views yang lolos verifikasi. Bot dan lonjakan janggal tidak pernah masuk tagihan.</p>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Jadwalkan Meeting", "#mail")}{_btn("Lihat Cara Kerja", "#alur", False)}</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Jadwalkan Meeting", "meeting.html")}{_btn("Lihat Cara Kerja", "#alur", False)}</div>
   </div>
 </div>'''
 
@@ -60,7 +60,7 @@ def _meeting():
     {_mini_mark(28, 9)}
     <b style="font-size: 17px">Tim TAPP</b><span style="font-size: 13px; color: #9A9AA5; font-weight: 500; margin-top: -8px">Kickoff campaign</span>
     <span style="font-size: 13px; color: #D4D4D8; font-weight: 500">30–60 menit</span><span style="font-size: 13px; color: #D4D4D8; font-weight: 500; margin-top: -6px">Online meeting</span>
-    <a class="btn-p" href="#mail" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 40px; border-radius: 10px; font-size: 13px; font-weight: 600; background: linear-gradient(180deg, #4D63FF, #2F45D6)">Minta jadwal</a>
+    <a class="btn-p" href="meeting.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 40px; border-radius: 10px; font-size: 13px; font-weight: 600; background: linear-gradient(180deg, #4D63FF, #2F45D6)">Minta jadwal</a>
   </div>
   <div style="padding: 18px 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-content: start">
     <span style="text-align: center; font-size: 12px; color: #8A8A93; font-weight: 500">Sen</span><span style="text-align: center; font-size: 12px; color: #8A8A93; font-weight: 500">Sel</span><span style="text-align: center; font-size: 12px; color: #8A8A93; font-weight: 500">Rab</span>
@@ -106,7 +106,7 @@ def steps_tabs(report_visual):
         <span style="font-size: 13px; font-weight: 600; color: #7DA2FF">Langkah {i+1} dari 4</span>
         <h3 style="font-size: 30px; line-height: 36px; font-weight: 600; letter-spacing: -0.6px">{t[1]}</h3>
         <p style="font-size: 16px; line-height: 25px; color: #9A9AA5; font-weight: 400; max-width: 420px">{t[2]}</p>
-        <div style="display: flex; gap: 10px; margin-top: 6px">{_btn("Jadwalkan Meeting", "#mail")}</div>
+        <div style="display: flex; gap: 10px; margin-top: 6px">{_btn("Jadwalkan Meeting", "meeting.html")}</div>
       </div>
       <div style="display: flex; align-items: center; justify-content: center; min-height: 340px; padding: 24px; border-radius: 18px; background: radial-gradient(70% 70% at 50% 40%, rgba(69,72,245,0.22), transparent 70%), #0A0A0E; border: 1px solid rgba(125,162,255,0.16)">{t[3] if t[3] else report_visual}</div>
     </div>''' for i, t in enumerate(STEPS))

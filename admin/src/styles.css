@@ -125,3 +125,6 @@ textarea { min-height: 72px; resize: vertical; }
 .login form { width: 100%; max-width: 380px; display: grid; gap: 14px; background: var(--surface); padding: 32px; border-radius: var(--r-lg); }
 .login img { width: 36px; height: 36px; }
 .panel { background: var(--surface); border-radius: var(--r-lg); padding: 20px 22px; }
+.mrow { display: flex; justify-content: space-between; gap: 16px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.mrow:last-of-type { border-bottom: 0; }
+.mrow > span:first-child { color: var(--text-2); }

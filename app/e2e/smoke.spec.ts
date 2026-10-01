@@ -33,3 +33,36 @@ test('public pages stay static, deep app links survive a refresh', async ({ page
   await page.reload();
   await expect(page).toHaveURL(/\/forgot-password/);
 });
+
+test('brand books a meeting slot (Supabase mocked)', async ({ page }) => {
+  let sent: Record<string, unknown> | null = null;
+  await page.route('**/rest/v1/rpc/meeting_slots_taken', (r) => r.fulfill({ json: [] }));
+  await page.route('**/rest/v1/rpc/request_meeting', async (r) => { sent = r.request().postDataJSON(); await r.fulfill({ json: { id: 'x', slot: sent!.p_slot } }); });
+  await page.goto('/?mode=brand');
+  await page.getByRole('link', { name: 'Jadwalkan Meeting' }).first().click();
+  await expect(page).toHaveURL(/\/meeting/);
+  await page.locator('#cal button[data-d]:not([disabled])').first().click();
+  await page.locator('#slots button:not([disabled])').first().click();
+  await page.fill('input[name=name]', 'Budi Santoso');
+  await page.fill('input[name=company]', 'Acme Kopi');
+  await page.fill('input[name=email]', 'budi@acme.id');
+  await page.getByRole('button', { name: 'Kirim Permintaan Meeting' }).click();
+  await expect(page.getByText('Permintaan terkirim')).toBeVisible();
+  expect(sent!.p_company).toBe('Acme Kopi');
+  const slot = new Date(String(sent!.p_slot));
+  const wib = new Date(slot.getTime() + 7 * 3600e3);
+  expect([1, 2, 3, 4, 5]).toContain(wib.getUTCDay());
+  expect(wib.getUTCHours()).toBeGreaterThanOrEqual(10);
+});
+
+test('taken slot is reported and freed for another pick (Supabase mocked)', async ({ page }) => {
+  await page.route('**/rest/v1/rpc/meeting_slots_taken', (r) => r.fulfill({ json: [] }));
+  await page.route('**/rest/v1/rpc/request_meeting', (r) => r.fulfill({ status: 400, json: { message: 'meeting_slot_taken' } }));
+  await page.goto('/meeting');
+  await page.locator('#cal button[data-d]:not([disabled])').first().click();
+  await page.locator('#slots button:not([disabled])').first().click();
+  await page.fill('input[name=name]', 'Budi'); await page.fill('input[name=company]', 'Acme'); await page.fill('input[name=email]', 'b@acme.id');
+  await page.getByRole('button', { name: 'Kirim Permintaan Meeting' }).click();
+  await expect(page.getByText('Jam itu baru saja diambil')).toBeVisible();
+  await expect(page.locator('#slots button[disabled]').first()).toBeVisible();
+});

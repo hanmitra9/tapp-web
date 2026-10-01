@@ -306,6 +306,7 @@ a{{color:inherit;text-decoration:none}}
 
   <section id="daftar" class="sec" style="padding: 88px 0 40px">
 {WALL}
+    <p style="font-size: 12px; color: #6E6E78; font-weight: 400; text-align: center; margin-top: 18px">Ilustrasi. Nama creator di atas adalah contoh.</p>
     <div class="pad" style="max-width: 760px; margin: 56px auto 0; padding: 0 64px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Rekam Jejakmu Dimulai<br><span style="color: #7DA2FF">dari Clip Pertama</span></h2>
       <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 600px">Satu brief hari ini, satu clip yang lolos, lalu campaign yang lebih besar. Setiap langkah tercatat dan ikut menaikkan levelmu.</p>
@@ -330,7 +331,7 @@ a{{color:inherit;text-decoration:none}}
     <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 24px">
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Biarkan Brand-mu<br><span style="color: #7DA2FF">Dibicarakan di Mana-mana</span></h2>
       <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 560px">Ceritakan target campaign-mu. Kami siapkan creator yang tepat untuk menyebarkannya dari berbagai kota.</p>
-      <a class="btn-p" href="#mail" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Jadwalkan Meeting</a>
+      <a class="btn-p" href="meeting.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Jadwalkan Meeting</a>
     </div>
     {GLOBE}
   </section>

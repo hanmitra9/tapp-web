@@ -54,7 +54,8 @@ footer.bot .copy{max-width:1180px;margin:40px auto 0;padding-top:20px;border-top
 @media (prefers-reduced-motion:reduce){*{transition:none !important;animation:none !important}}
 
 /* premium layer (matches landing) */
-body{background:radial-gradient(1100px 620px at 50% -6%,rgba(84,96,255,0.18),rgba(69,72,245,0.04) 45%,transparent 70%),linear-gradient(180deg,#0B0B12 0%,#07070A 30%,#050507 100%) fixed}
+html{background:#050507}
+body{min-height:100vh;background:radial-gradient(1100px 620px at 50% -6%,rgba(84,96,255,0.18),rgba(69,72,245,0.04) 45%,transparent 70%),linear-gradient(180deg,#0B0B12 0,#07070A 900px,#050507 100%) #050507}
 body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.045;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
 .glow-top{opacity:.5}
 .h1 span{background:linear-gradient(96deg,#C9D5FF 0%,#9AABFF 38%,#7280FF 72%,#575CF7 100%);-webkit-background-clip:text;background-clip:text;color:transparent;padding-bottom:.06em}

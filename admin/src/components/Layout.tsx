@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAdmin } from '../auth';
-import { fetchCounts } from '../lib/api';
+import { countNewMeetings, fetchCounts } from '../lib/api';
 import { useLoad } from '../lib/useLoad';
 
 export function Layout() {
   const { admin, signOut } = useAdmin();
   const counts = useLoad(fetchCounts, []);
+  const meetings = useLoad(countNewMeetings, []);
   const c = counts.data;
   const Count = ({ n }: { n: number | undefined }) => (n ? <span className="count">{n}</span> : null);
   return (
@@ -21,13 +22,14 @@ export function Layout() {
         <NavLink to="/brands">Brand</NavLink>
         <NavLink to="/disputes">Keberatan <Count n={c?.disputes_open} /></NavLink>
         <NavLink to="/support">Support <Count n={c?.tickets_open} /></NavLink>
+        <NavLink to="/meetings">Meeting <Count n={meetings.data ?? undefined} /></NavLink>
         <NavLink to="/audit">Audit log</NavLink>
         <div className="nav-foot">
           <span>{admin.name ?? admin.email}</span>
           <button className="btn secondary" onClick={signOut}>Keluar</button>
         </div>
       </nav>
-      <main className="main"><Outlet context={{ refreshCounts: counts.reload }} /></main>
+      <main className="main"><Outlet context={{ refreshCounts: () => { counts.reload(); meetings.reload(); } }} /></main>
     </div>
   );
 }
