@@ -62,6 +62,19 @@ export async function removePlatform(id: string) {
   if (!data?.length) throw { code: 'platform_in_use' };   // RLS keeps accounts that have live submissions
 }
 
+// "Hubungkan dengan TikTok": on only once the TikTok app is approved (app_settings.platform_oauth_config.tiktok.enabled).
+export async function tiktokConnectEnabled(): Promise<boolean> {
+  const { data } = await supabase.from('app_settings').select('value').eq('key', 'platform_oauth_config').maybeSingle();
+  return (data?.value as { tiktok?: { enabled?: boolean } } | null)?.tiktok?.enabled === true;
+}
+
+// Login URL from the tiktok-oauth function (it stores a one-time state bound to this user).
+export async function startTiktokConnect(): Promise<string> {
+  const { data, error } = await supabase.functions.invoke<{ url?: string }>('tiktok-oauth', { method: 'POST' });
+  if (error || !data?.url) throw new Error('Login TikTok belum bisa dibuka. Coba lagi sebentar lagi.');
+  return data.url;
+}
+
 export async function setMainPlatform(uid: string, platform: Platform | null) {
   const { data, error } = await supabase.from('creator_profiles').update({ main_platform: platform }).eq('user_id', uid).select('user_id');
   if (error) throw error;

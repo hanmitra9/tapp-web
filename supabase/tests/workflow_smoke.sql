@@ -323,10 +323,10 @@ select tier, next_tier, views_to_next from my_tier_progress() q, lateral jsonb_t
 reset role;
 
 -- ── Auto-record foundation ──
--- connect_platform_account needs Vault (not stubbed locally); confirm it fails closed rather than silently
--- succeeding without storing a token, then exercise the rest of the surface with a connection row inserted directly.
+-- connect_platform_account is no longer client-callable (0031: tokens only arrive via the server-side OAuth
+-- exchange); exercise the rest of the surface with a connection row inserted directly.
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1'); set role authenticated;
-select pg_temp.expect_error($$select connect_platform_account('tiktok','pu123','kingclips','tok_abc','ref_abc',3600,array['video.list'])$$, 'vault_unavailable');
+select pg_temp.expect_error($$select connect_platform_account('tiktok','pu123','kingclips','tok_abc','ref_abc',3600,array['video.list'])$$, 'permission denied');
 reset role;
 insert into creator_platform_connections (creator_id, platform, platform_user_id, handle, status)
   values ('00000000-0000-0000-0000-0000000000c1', 'tiktok', 'pu123', 'kingclips', 'connected');
@@ -473,3 +473,35 @@ set role authenticated;
 select pg_temp.expect_error($$select auto_qualify_sweep()$$, 'permission denied');
 reset role;
 select 'auto_qualify_ok' as result;
+
+-- ── TikTok connect (0031) ──
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select oauth_complete_tiktok(auth.uid(),'pu123','kingclips',100,'a','r',86400,array['video.list'])$$, 'permission denied');
+select pg_temp.expect_error($$select * from due_for_tiktok_metrics()$$, 'permission denied');
+select pg_temp.expect_error($$select * from oauth_states$$, 'permission denied');
+reset role;
+-- another creator logging in with an account already registered to c1 is refused
+select pg_temp.expect_error($$select oauth_complete_tiktok('00000000-0000-0000-0000-0000000000c2','pu999','KingClips',5,'a','r',86400,null)$$, 'tiktok_account_taken');
+-- the owner logging in: connection back to connected, account verified, followers stored
+update creator_platforms set verified_at = null where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok';
+select handle, followers, verified_at is not null as verified_expect_t
+  from oauth_complete_tiktok('00000000-0000-0000-0000-0000000000c1','pu123','@KingClips',4321,'a','r',86400,array['video.list']);
+do $$ begin
+  if (select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok') <> 'connected'
+    then raise exception 'connection not restored'; end if;
+  if (select count(*) from creator_platforms where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok') <> 1
+    then raise exception 'duplicate tiktok row'; end if;
+  if not exists (select 1 from notifications where user_id = '00000000-0000-0000-0000-0000000000c1' and title = 'Akun TikTok terverifikasi')
+    then raise exception 'no notification'; end if;
+end $$;
+-- a different open_id already connected elsewhere is refused even under a new username
+select pg_temp.expect_error($$select oauth_complete_tiktok('00000000-0000-0000-0000-0000000000c2','pu123','another_name',5,'a','r',86400,null)$$, 'tiktok_account_taken');
+-- queue: c1's tracking TikTok clip with a video id, once its cooldown has passed
+update submissions set last_metrics_at = now() - interval '4 hours' where id = :'sub_id';
+select video_id from due_for_tiktok_metrics() where submission_id = :'sub_id';   -- expect 7412
+do $$ begin
+  if not exists (select 1 from due_for_tiktok_metrics() where video_id = '7412') then raise exception 'tiktok queue missed clip'; end if;
+end $$;
+select 'tiktok_connect_ok' as result;

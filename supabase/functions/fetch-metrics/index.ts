@@ -1,10 +1,17 @@
-// fetch-metrics — records views for approved YouTube submissions from the public YouTube Data API.
+// fetch-metrics — records views for approved submissions:
+//   YouTube: public YouTube Data API (YOUTUBE_API_KEY function secret).
+//   TikTok:  the creator's own connected account (tiktok-oauth), Display API video/query
+//            (TIKTOK_CLIENT_KEY / TIKTOK_CLIENT_SECRET for refreshing tokens).
 // Invoked by the fetch-metrics-sweep cron (every 3h). Auth: x-dispatch-secret header, checked against
-// Supabase Vault via a service-role-only RPC. Needs the YOUTUBE_API_KEY function secret.
-// Writes raw metrics only (record_api_metrics); turning views into qualified views stays with an admin.
-import { createClient } from 'npm:@supabase/supabase-js@2';
+// Supabase Vault via a service-role-only RPC.
+// Writes raw metrics only (record_api_metrics); the auto-qualify sweep / an admin turns them into qualified views.
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 type Due = { submission_id: string; video_id: string; last_views: number | null };
+type TtDue = Due & { connection_id: string };
+type TtVideo = { id: string; view_count?: number; like_count?: number; comment_count?: number; share_count?: number };
+type Token = { access_token: string | null; refresh_token: string | null; expires_at: string | null };
+type Sb = SupabaseClient;
 type Video = { id: string; statistics?: { viewCount?: string; likeCount?: string; commentCount?: string }; status?: { privacyStatus?: string } };
 
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } });
@@ -17,14 +24,18 @@ Deno.serve(async (req) => {
   const { data: ok } = await sb.rpc('verify_fetch_metrics_secret', { p_secret: req.headers.get('x-dispatch-secret') ?? '' });
   if (ok !== true) return json(401, { error: 'unauthorized' });
 
+  const [youtube, tiktok] = await Promise.all([runYoutube(sb), runTiktok(sb)]);
+  return json(200, { youtube, tiktok });
+});
+
+async function runYoutube(sb: Sb) {
   const key = Deno.env.get('YOUTUBE_API_KEY');
-  if (!key) return json(200, { skipped: 'no_api_key' });
+  if (!key) return { skipped: 'no_api_key' };
 
   const { data, error } = await sb.rpc('due_for_youtube_metrics', { p_min_interval_minutes: 170, p_limit: 500 });
-  if (error) return json(500, { error: error.message });
+  if (error) return { error: error.message };
   const due = (data ?? []) as Due[];
-  if (!due.length) return json(200, { checked: 0 });
-
+  if (!due.length) return { checked: 0 };
   let recorded = 0, hidden = 0;
   const failures: string[] = [];
   // videos.list takes up to 50 ids per call (1 quota unit each call; default quota is 10,000/day).
@@ -54,5 +65,77 @@ Deno.serve(async (req) => {
       else if (visible) recorded++; else hidden++;
     }
   }
-  return json(200, { checked: due.length, recorded, hidden, failures: failures.slice(0, 20) });
-});
+  return { checked: due.length, recorded, hidden, failures: failures.slice(0, 20) };
+}
+
+// TikTok only returns stats for the connected user's own videos, so work is grouped per connection.
+async function runTiktok(sb: Sb) {
+  const key = Deno.env.get('TIKTOK_CLIENT_KEY'), secret = Deno.env.get('TIKTOK_CLIENT_SECRET');
+  if (!key || !secret) return { skipped: 'not_configured' };
+  const { data, error } = await sb.rpc('due_for_tiktok_metrics', { p_min_interval_minutes: 170, p_limit: 500 });
+  if (error) return { error: error.message };
+  const due = (data ?? []) as TtDue[];
+  if (!due.length) return { checked: 0 };
+
+  const byConn = new Map<string, TtDue[]>();
+  for (const d of due) byConn.set(d.connection_id, [...(byConn.get(d.connection_id) ?? []), d]);
+  let recorded = 0, hidden = 0;
+  const failures: string[] = [];
+
+  for (const [connId, items] of byConn) {
+    const access = await tiktokToken(sb, connId, key, secret);
+    if (!access) { failures.push(`${connId}: token`); continue; }
+    // video/query takes up to 20 ids per call.
+    for (let i = 0; i < items.length; i += 20) {
+      const chunk = items.slice(i, i + 20);
+      const res = await fetch('https://open.tiktokapis.com/v2/video/query/?fields=id,view_count,like_count,comment_count,share_count', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${access}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filters: { video_ids: [...new Set(chunk.map((d) => d.video_id))] } }),
+      });
+      if (res.status === 401) { await sb.rpc('mark_platform_connection_error', { p_connection_id: connId, p_error: 'tiktok_401' }); break; }
+      if (!res.ok) { failures.push(`tiktok_${res.status}`); continue; }
+      const body = (await res.json()) as { data?: { videos?: TtVideo[] } };
+      const byId = new Map((body.data?.videos ?? []).map((v) => [String(v.id), v]));
+      for (const d of chunk) {
+        // Not returned: deleted, made private, or no longer on this account. Keep the last known views and let
+        // record_api_metrics flag it for a check.
+        const v = byId.get(d.video_id);
+        const r = await sb.rpc('record_api_metrics', {
+          p_submission_id: d.submission_id,
+          p_views: v ? v.view_count ?? 0 : (d.last_views ?? 0),
+          p_likes: v?.like_count ?? 0, p_comments: v?.comment_count ?? 0, p_shares: v?.share_count ?? 0,
+          p_content_state: v ? 'live' : 'deleted',
+          p_raw: { source: 'tiktok_display_api_v2', video_id: d.video_id, found: !!v },
+        });
+        if (r.error) failures.push(`${d.submission_id}: ${r.error.message}`);
+        else if (v) recorded++; else hidden++;
+      }
+    }
+  }
+  return { checked: due.length, recorded, hidden, failures: failures.slice(0, 20) };
+}
+
+// Access token for a connection, refreshed first when it expires within 5 minutes. null = reconnect needed
+// (the connection is marked and the creator notified).
+async function tiktokToken(sb: Sb, connId: string, key: string, secret: string): Promise<string | null> {
+  const { data } = await sb.rpc('get_platform_token', { p_connection_id: connId });
+  const t = ((data ?? []) as Token[])[0];
+  if (!t?.access_token) return null;
+  if (t.expires_at && new Date(t.expires_at).getTime() > Date.now() + 5 * 60_000) return t.access_token;
+  if (!t.refresh_token) { await sb.rpc('mark_platform_connection_error', { p_connection_id: connId, p_error: 'no_refresh_token' }); return null; }
+  const res = await fetch('https://open.tiktokapis.com/v2/oauth/token/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ client_key: key, client_secret: secret, grant_type: 'refresh_token', refresh_token: t.refresh_token }),
+  });
+  const tok = (await res.json().catch(() => ({}))) as { access_token?: string; refresh_token?: string; expires_in?: number; error?: string };
+  if (!tok.access_token) {
+    await sb.rpc('mark_platform_connection_error', { p_connection_id: connId, p_error: `tiktok_refresh: ${tok.error ?? res.status}` });
+    return null;
+  }
+  await sb.rpc('update_platform_token', {
+    p_connection_id: connId, p_access_token: tok.access_token, p_refresh_token: tok.refresh_token ?? null, p_expires_in_seconds: tok.expires_in ?? 86400,
+  });
+  return tok.access_token;
+}
