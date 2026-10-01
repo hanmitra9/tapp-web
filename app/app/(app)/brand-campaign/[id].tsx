@@ -12,9 +12,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
-import { Button } from '@/components/Button';
 import { CostCard, Freshness, ViewsBreakdown } from '@/features/brand/ReportParts';
-import { downloadCsv, printPdf } from '@/features/brand/export';
 import { color, radius, space, type } from '@/theme/tokens';
 import { BRAND_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
@@ -67,7 +65,7 @@ export default function BrandCampaignReport() {
           <View style={{ alignItems: 'flex-end' }}><Text style={styles.cap}>Sisa budget</Text><Text style={styles.budgetSide}>{idr(c.remaining)}</Text></View>
         </View>
         <View style={styles.track}><View style={[styles.fill, { width: `${Math.max(used * 100, 1)}%` }, used >= 0.9 && { backgroundColor: color.warning }]} /></View>
-        <Text style={styles.cap}>{Math.round(used * 100)}% dari {idr(c.budget)}</Text>
+        <Text style={styles.cap}>{Math.round(used * 100)}% dari budget reward {idr(c.budget)} · fee platform {c.fee_pct}% ditagih terpisah</Text>
       </View>
 
       <View style={styles.grid}>
@@ -85,14 +83,6 @@ export default function BrandCampaignReport() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Biaya &amp; CPM</Text>
         <CostCard spent={c.spent} fee={c.platform_fee} feePct={c.fee_pct} total={c.total_cost} effectiveCpm={c.effective_cpm} cpm={c.cpm} />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Export laporan</Text>
-        <View style={styles.exportRow}>
-          <View style={{ flex: 1 }}><Button variant="secondary" label="Download CSV" onPress={() => downloadCsv({ c, daily: daily.data ?? [], clips, platforms })} /></View>
-          <View style={{ flex: 1 }}><Button variant="secondary" label="Simpan PDF" onPress={() => printPdf({ c, daily: daily.data ?? [], clips, platforms })} /></View>
-        </View>
       </View>
 
       <View style={styles.section}>
@@ -185,5 +175,4 @@ const styles = StyleSheet.create({
   rank: { ...type.heading, color: color.blueLight, width: 20, fontVariant: ['tabular-nums'] },
   clipTitle: { ...type.label, color: color.text },
   clipPlat: { ...type.caption, color: color.textMuted },
-  exportRow: { flexDirection: 'row', gap: space.sm },
 });

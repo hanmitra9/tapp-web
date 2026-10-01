@@ -141,13 +141,14 @@ class Component extends DCLogic {
       op: i === ti ? '1' : '0.55',
     }));
 
-    // budget simulator: brand pays creator reward + 15% platform fee; clips are paid up to 100K views each
+    // budget simulator: the budget pays creator rewards; the 15% platform fee is billed on top of rewards used.
+    // Clips are paid up to 100K views each, so the views also need at least that many paid clips.
     const rp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
     const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
     const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 600; '
       + (on ? 'color: #FFFFFF; background: rgba(69,72,245,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
     const budget = s.budget || 25000000, cpm = s.cpm || 3000;
-    const views = budget / (cpm * 1.15) * 1000;
+    const views = budget / cpm * 1000;
     const budgets = [10000000, 25000000, 50000000, 100000000].map((b) => ({ label: rp(b / 1e6) + ' jt', on: b === budget, style: chipStyle(b === budget), pick: () => this.setState({ budget: b }) }));
     const cpms = [2000, 3000, 5000].map((c) => ({ label: rp(c), on: c === cpm, style: chipStyle(c === cpm), pick: () => this.setState({ cpm: c }) }));
     const bstep = s.bstep || 0;
@@ -160,7 +161,7 @@ class Component extends DCLogic {
 
     return {
       isCreator: creator, isBrand: !creator,
-      budgets: budgets, cpms: cpms, simBudget: rp(budget), simViews: compact(views), simCost: rp(cpm * 1.15),
+      budgets: budgets, cpms: cpms, simBudget: rp(budget), simViews: compact(views), simCost: rp(budget * 1.15),
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       tiers: tiers, tierName: sel[0], tierNum: String(ti + 1), tierBody: sel[3],
       tierReq: ti === 0 ? 'Mulai dari 0 qualified views' : 'Mulai dari ' + sel[1] + ' qualified views',

@@ -25,8 +25,8 @@ def _sim():
       <span style="padding: 4px 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); font-size: 12px; font-weight: 600; color: #D4D4D8">Clipping</span>
     </div>
     <div class="bstats" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center">
-      {stat('Estimasi Total Views', 'simViews', '#34D07A')}
-      <span style="border-left: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(255,255,255,0.08)">{stat('Effective CPM', 'simCost', '#FFFFFF')}</span>
+      {stat('Qualified Views', 'simViews', '#34D07A')}
+      <span style="border-left: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(255,255,255,0.08)">{stat('Total maks. + fee 15%', 'simCost', '#FFFFFF')}</span>
       {stat('Min. Video Submitted', 'simClips', '#7DA2FF')}
     </div>
   </div>
@@ -35,7 +35,7 @@ def _sim():
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget Kamu</span><b class="tabular" style="font-size: 22px; color: #C6D6FF">{{{{simBudget}}}}</b></div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap">{chip('budgets')}</div>
     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; font-weight: 500; color: #8A8A93; margin-right: 2px">CPM creator</span>{chip('cpms')}</div>
-    <span style="font-size: 12px; line-height: 18px; font-weight: 400; color: #8A8A93">Simulasi: reward creator + fee platform 15%. Clip dibayar sampai 100K views per clip. Sisa budget kembali saat campaign selesai.</span>
+    <span style="font-size: 12px; line-height: 18px; font-weight: 400; color: #8A8A93">Simulasi: budget dipakai untuk reward creator; fee platform 15% ditagih terpisah dari reward yang terpakai. Clip dibayar sampai 100K views per clip. Budget yang tidak terpakai tidak ditagih.</span>
   </div>
 </div>'''
 
@@ -74,8 +74,9 @@ def _budget():
     return f'''<div style="width: 100%; max-width: 420px; padding: 22px; border-radius: 20px; {CARD}; display: flex; flex-direction: column; gap: 14px; text-align: center">
   <span style="font-size: 13px; font-weight: 500; color: #9A9AA5">Budget campaign</span>
   <b class="tabular" style="font-size: 38px; letter-spacing: -1px"><span style="color: #6E6E78">Rp</span>24.500.000</b>
+  <span style="font-size: 12px; color: #8A8A93; margin-top: -8px">budget reward creator</span>
   <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: 30px">{ticks}<i style="position: absolute; left: 44%; bottom: -6px; width: 14px; height: 14px; border-radius: 7px; background: #7DA2FF; box-shadow: 0 0 14px #7DA2FF"></i></div>
-  <div style="text-align: left; margin-top: 6px">{row('Reward untuk creator', 'Rp21.304.348')}{row('Fee platform (15%)', 'Rp3.195.652')}{row('Status', '<span style="color: #34D07A">Terkunci saat disetujui</span>')}</div>
+  <div style="text-align: left; margin-top: 6px">{row('Fee platform (15%, maks.)', 'Rp3.675.000')}{row('Total maksimal', 'Rp28.175.000')}{row('Status', '<span style="color: #34D07A">Terkunci saat disetujui</span>')}</div>
 </div>'''
 
 def _posting():
@@ -94,7 +95,7 @@ def _posting():
 
 STEPS = [
     ('Meeting', 'Strategi Dulu, Angka Kemudian', 'Kita petakan tujuan, audiens, platform, dan tarif per 1.000 views. Tim TAPP juga memverifikasi brand-mu agar creator tahu campaign ini kredibel.', _meeting()),
-    ('Brief &amp; Budget', 'Brief yang Tajam, Budget yang Terkunci', 'Aturan konten, materi sumber, dan budget disepakati bersama account manager. Budget dikunci saat campaign disetujui. Pengeluaran tidak akan pernah melewatinya.', _budget()),
+    ('Brief &amp; Budget', 'Brief yang Tajam, Budget yang Terkunci', 'Aturan konten, materi sumber, dan budget reward disepakati bersama account manager. Budget dikunci saat campaign disetujui; reward tidak akan pernah melewatinya. Fee platform 15% dihitung dari reward yang benar-benar terpakai.', _budget()),
     ('Creator Posting', 'Creator yang Tepat Mulai Bergerak', 'Creator dipilih dari niche, platform, dan rekam jejak. Mereka mengolah materimu menjadi clip, lalu memublikasikannya dari akun masing-masing.', _posting()),
     ('Report', 'Baca Hasilnya, Bayar yang Terbukti', 'Bandingkan views mentah dengan qualified views, biaya per view, dan performa tiap creator di dashboard brand. Sisa budget kembali saat campaign selesai.', None),
 ]
