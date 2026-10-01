@@ -1,0 +1,342 @@
+-- End-to-end workflow + abuse cases. Run against a local DB with _local_stubs.sql applied.
+\set ON_ERROR_STOP 1
+create or replace function pg_temp.act(uid uuid) returns void language sql as $$ select set_config('request.jwt.claim.sub', uid::text, false) $$;
+create or replace function pg_temp.expect_error(sql text, code text) returns void language plpgsql as $$
+begin
+  begin execute sql; exception when others then
+    if sqlerrm like code || '%' then raise notice 'ok  (blocked: %)', sqlerrm; return; end if;
+    raise exception 'expected % but got: %', code, sqlerrm;
+  end;
+  raise exception 'expected error % but statement succeeded: %', code, sql;
+end $$;
+grant execute on all functions in schema pg_temp to authenticated;
+
+-- users: admin, brand, creator A, creator B
+insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
+ ('00000000-0000-0000-0000-00000000000a','admin@tapp.id', now(), '{"full_name":"Admin"}'),
+ ('00000000-0000-0000-0000-00000000000b','brand@acme.id', now(), '{"full_name":"Brand"}'),
+ ('00000000-0000-0000-0000-0000000000c1','c1@x.id', now(), '{"full_name":"Creator One"}'),
+ ('00000000-0000-0000-0000-0000000000c2','c2@x.id', null,  '{"full_name":"Creator Two"}');
+update profiles set role='admin' where id='00000000-0000-0000-0000-00000000000a';
+update profiles set role='brand' where id='00000000-0000-0000-0000-00000000000b';
+insert into brands (id,name,slug) values ('10000000-0000-0000-0000-000000000001','Acme Finance','acme');
+insert into brand_members values ('10000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000b','owner');
+
+set role authenticated;
+
+-- Creator 1 onboarding
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$update creator_profiles set status='active' where user_id=auth.uid()$$, 'permission denied');
+select pg_temp.expect_error($$update profiles set role='admin' where id=auth.uid()$$, 'permission denied');
+insert into creator_platforms (creator_id,platform,handle,is_primary) values (auth.uid(),'tiktok','kingclips',true);
+insert into creator_payout_methods (creator_id,kind,provider,account_name,account_number) values (auth.uid(),'bank','BCA','Creator One','1234567890');
+select pg_temp.expect_error($$select join_campaign('20000000-0000-0000-0000-000000000001')$$, 'creator_not_eligible:pending');
+select status from complete_creator_onboarding('Creator One','king.clips','ID','tiktok',array['finance'],array['podcast'],'fast cuts','{}','intermediate');
+
+-- Creator 2 not verified
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select pg_temp.expect_error($$select complete_creator_onboarding('C2','c.two','ID','tiktok',array['finance'],null,null,null,null)$$, 'email_not_verified');
+select pg_temp.expect_error($$insert into creator_platforms (creator_id,platform,handle) values (auth.uid(),'tiktok','KINGCLIPS')$$, 'duplicate key');
+
+-- Brand drafts campaign
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+insert into campaigns (id,brand_id,title,category,cpm,budget,created_by,submission_deadline)
+ values ('20000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000001','Finance podcast clips','finance',3000,600000,auth.uid(), now()+interval '30 days');
+insert into campaign_platforms values ('20000000-0000-0000-0000-000000000001','tiktok');
+insert into campaign_assets (campaign_id,kind,title,url) values ('20000000-0000-0000-0000-000000000001','video','Ep. 12 raw','https://drive.example/ep12');
+select status from submit_campaign_for_approval('20000000-0000-0000-0000-000000000001');
+update campaigns set budget=1 where id='20000000-0000-0000-0000-000000000001';  -- RLS: 0 rows (no longer draft)
+select budget from campaigns where id='20000000-0000-0000-0000-000000000001';
+
+-- Admin approves creator + campaign
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select status from admin_set_creator_status('00000000-0000-0000-0000-0000000000c1','active');
+select status from admin_set_campaign_status('20000000-0000-0000-0000-000000000001','active');
+
+-- Creator joins & submits
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as assets_before_join from campaign_assets;
+select status from join_campaign('20000000-0000-0000-0000-000000000001');
+select status from join_campaign('20000000-0000-0000-0000-000000000001'); -- idempotent
+select count(*) as assets_after_join from campaign_assets;
+select pg_temp.expect_error($$select submit_content('20000000-0000-0000-0000-000000000001','tiktok','not a url',now())$$,'invalid_url');
+select pg_temp.expect_error($$select submit_content('20000000-0000-0000-0000-000000000001','tiktok','https://www.instagram.com/reel/Abc123/',now())$$,'url_platform_mismatch');
+select pg_temp.expect_error($$select submit_content('20000000-0000-0000-0000-000000000001','tiktok','https://vm.tiktok.com/ZSabc/',now())$$,'short_link_not_allowed');
+select pg_temp.expect_error($$select submit_content('20000000-0000-0000-0000-000000000001','tiktok','https://www.tiktok.com/@kingclips/video/7412',now()-interval '3 days')$$,'published_before_join');
+select id as sub_id, status, normalized_url from submit_content('20000000-0000-0000-0000-000000000001','tiktok','https://www.TikTok.com/@kingclips/video/7412?is_from_webapp=1',now()) \gset
+select (select id from submit_content('20000000-0000-0000-0000-000000000001','tiktok','https://tiktok.com/@kingclips/video/7412/',now())) = :'sub_id' as retry_is_idempotent;
+select pg_temp.expect_error(format($$select admin_review_submission(%L,'approved')$$, :'sub_id'),'forbidden');
+select pg_temp.expect_error($$insert into earnings (creator_id,campaign_id,submission_id,snapshot_id,qualified_views_delta,cpm,amount,status,available_at) values (auth.uid(),'20000000-0000-0000-0000-000000000001',gen_random_uuid(),gen_random_uuid(),1,1,999999,'available',now())$$,'permission denied');
+
+-- Admin reviews, records metrics, qualifies
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error(format($$select admin_review_submission(%L,'rejected')$$, :'sub_id'),'reason_required');
+select status from admin_review_submission(:'sub_id','approved');
+select id as metric_id from admin_record_metrics(:'sub_id', 250000, 9000, 300, 120, 80) \gset
+select status from submissions where id = :'sub_id';
+select pg_temp.expect_error(format($$select admin_qualify_views(%L,%L,300000)$$, :'sub_id', :'metric_id'),'qualified_exceeds_raw');
+select qualified_views, budget_capped from admin_qualify_views(:'sub_id', :'metric_id', 185000, 'bot filter');
+select earned, qualified_views from submissions where id = :'sub_id';            -- expect 555000 / 185000
+-- more views → budget cap (600k budget, 555k used)
+select id as metric2 from admin_record_metrics(:'sub_id', 400000) \gset
+select qualified_views, budget_capped from admin_qualify_views(:'sub_id', :'metric2', 300000);
+select budget, earned, status, status_reason from campaigns where id='20000000-0000-0000-0000-000000000001';  -- earned 600000, ending
+select pg_temp.expect_error($$update content_metrics set views = 1$$,'permission denied');
+reset role; select pg_temp.expect_error($$update content_metrics set views = 1$$,'append_only'); set role authenticated;
+
+-- Creator payout: matured?
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select * from my_earnings_summary;
+select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_below_minimum');  -- still on hold
+reset role; update earnings set available_at = now() - interval '1 minute'; set role authenticated;
+select id as payout_id, amount, status from request_payout('30000000-0000-0000-0000-000000000001') \gset
+select id = :'payout_id' as idempotent from request_payout('30000000-0000-0000-0000-000000000001');
+select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_already_open');
+select * from my_earnings_summary;
+
+-- Admin processes payout
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid')$$, :'payout_id'),'invalid_transition');
+select status from admin_update_payout(:'payout_id','reviewing');
+select status from admin_update_payout(:'payout_id','approved');
+select status from admin_update_payout(:'payout_id','processing');
+select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid')$$, :'payout_id'),'reference_required');
+select status from admin_update_payout(:'payout_id','paid', null, 'BCA-TRX-88231');
+select earned, paid from campaigns where id='20000000-0000-0000-0000-000000000001';
+
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select * from my_earnings_summary;
+select type, body from notifications order by created_at;
+select count(*) as audit_rows_visible_to_creator from audit_logs;  -- expect 0
+
+-- ── Phase 2: profile ──
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select is_username_available('king.clips') as taken_expect_f, is_username_available('KING.CLIPS') as case_expect_f,
+       is_username_available('admin') as reserved_expect_f, is_username_available('new.creator') as free_expect_t,
+       is_username_available('ab') as short_expect_f;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select is_username_available('king.clips') as own_expect_t;
+select pg_temp.expect_error($$update profiles set username='admin' where id=auth.uid()$$, 'new row for relation "profiles" violates check');
+select pg_temp.expect_error($$update creator_profiles set niches=array['a','b','c','d'] where user_id=auth.uid()$$, 'new row for relation "creator_profiles" violates check');
+insert into creator_platforms (creator_id,platform,handle) values (auth.uid(),'instagram','king.ig');
+delete from creator_platforms where creator_id=auth.uid() and platform='tiktok';   -- has a tracking submission → RLS keeps it
+select count(*) as tiktok_kept_expect_1 from creator_platforms where platform='tiktok';
+update creator_profiles set main_platform='instagram' where user_id=auth.uid();
+delete from creator_platforms where creator_id=auth.uid() and platform='instagram';
+select main_platform as main_fallback_expect_tiktok from creator_profiles;
+select campaigns_joined, submissions, approved, qualified_views, total_earned from my_creator_stats;
+
+-- ── Phase 3: marketplace ──
+reset role;
+insert into campaigns (id,brand_id,title,category,content_type,cpm,budget,status,submission_deadline) values
+ ('20000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000001','Crypto explainer clips','crypto','tutorial',5000,1000000,'active', now()+interval '3 days'),
+ ('20000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000001','Finance podcast S2','finance','podcast_clips',2500,2000000,'active', now()+interval '20 days'),
+ ('20000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000001','YouTube only','finance','podcast_clips',9000,2000000,'active', null);
+insert into campaign_platforms values ('20000000-0000-0000-0000-000000000002','tiktok'),('20000000-0000-0000-0000-000000000003','tiktok'),
+ ('20000000-0000-0000-0000-000000000003','instagram'),('20000000-0000-0000-0000-000000000004','youtube');
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select title, match_score, match_reasons, joined from campaign_feed();                        -- S2 first; YouTube-only hidden; ending campaign hidden
+select title from campaign_feed(p_sort => 'cpm');                                             -- crypto (5000) first
+select title from campaign_feed(p_categories => array['crypto']);
+select title from campaign_feed(p_ending_within_days => 7);
+select count(*) as yt_filter_expect_0 from campaign_feed(p_platforms => array['youtube']::platform[]);
+select get_campaign('20000000-0000-0000-0000-000000000004')->>'join_block' as block_expect_platform;
+select get_campaign('20000000-0000-0000-0000-000000000003')->>'join_block' as block_expect_null;
+select status from join_campaign('20000000-0000-0000-0000-000000000003');
+select (get_campaign('20000000-0000-0000-0000-000000000003')->'membership'->>'status') as member_expect_joined,
+       (get_campaign('20000000-0000-0000-0000-000000000003')->>'creators_joined') as joined_count;
+select creator_home();
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select count(*) as unverified_feed from campaign_feed();                                      -- c2 has no platforms → 0
+select get_campaign('20000000-0000-0000-0000-000000000003')->>'join_block' as block_expect_creator;
+select pg_temp.expect_error($$select get_campaign('20000000-0000-0000-0000-0000000000ff')$$, 'campaign_not_found');
+
+-- ── Phase 4: submissions ──
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select id as s2 from submit_content('20000000-0000-0000-0000-000000000003','tiktok','https://www.tiktok.com/@kingclips/video/9001',now()) \gset
+select (select id from submit_content('20000000-0000-0000-0000-000000000003','tiktok','https://tiktok.com/@kingclips/video/9001?x=1',now())) = :'s2' as idempotent_expect_t;
+select pg_temp.expect_error($$select submit_content('20000000-0000-0000-0000-000000000001','tiktok','https://www.tiktok.com/@kingclips/video/9002',now())$$,'campaign_not_accepting');
+select pg_temp.expect_error(format($$select resubmit_content(%L,'tiktok','https://www.tiktok.com/@kingclips/video/9003',now())$$, :'s2'),'submission_not_editable');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select status from admin_review_submission(:'s2','needs_changes','Tambahkan tag brand di caption.');
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select status, review_reason from my_submissions where id = :'s2';
+select status, post_url from resubmit_content(:'s2','tiktok','https://www.tiktok.com/@kingclips/video/9003',now(),'@ruangcuan');
+select pg_temp.expect_error(format($$select resubmit_content(%L,'tiktok','https://www.tiktok.com/@kingclips/video/7412',now())$$, :'s2'),'submission_not_editable');
+select withdraw_submission(:'s2');
+select count(*) as withdrawn_expect_0 from submissions where id = :'s2';
+select status from submit_content('20000000-0000-0000-0000-000000000003','tiktok','https://www.tiktok.com/@kingclips/video/9003',now());
+select pg_temp.expect_error($$select withdraw_submission((select id from submissions where normalized_url like '%7412'))$$,'submission_not_editable');
+select campaign_title, status, raw_views, qualified_views, earned from my_submissions order by created_at;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select count(*) as other_creator_sees_expect_0 from my_submissions;
+select pg_temp.expect_error($$select check_submission('20000000-0000-0000-0000-000000000003', auth.uid(), 'tiktok', 'x', now(), null)$$,'permission denied');
+
+-- ── Phase 5: verification read models ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select campaign_title, creator_username, account_handle, status, views, metric_count, creator_approved from admin_submissions order by created_at;
+select * from admin_queue_counts;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select count(*) as c2_sees_expect_0 from admin_submissions;
+select pg_temp.expect_error($$select admin_verify_platform((select id from creator_platforms limit 1), true)$$,'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select verified_at is not null as verified_expect_t from admin_verify_platform((select id from creator_platforms where handle='kingclips'), true);
+
+-- ── Phase 6: performance ──
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as days_expect_30, sum(qualified_gain) as q_gain, sum(earned) as earned from my_daily_performance(30, 'Asia/Makassar');
+select title, posts, approved_posts, raw_views, qualified_views, earned, engagements, gain_7d from my_campaign_performance();
+select count(*) as bad_tz_falls_back from my_daily_performance(7, 'Not/AZone');
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select count(*) as c2_campaigns_expect_0 from my_campaign_performance();
+
+-- ── Phase 7: payouts ops + notifications ──
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select mark_notifications_read() as marked;
+select count(*) filter (where read_at is null) as unread_expect_0 from notifications;
+select pg_temp.expect_error($$select claim_push_batch(10)$$, 'permission denied');
+reset role;
+select count(*) as claimed from claim_push_batch(500);
+select count(*) as reclaim_expect_0 from claim_push_batch(500);
+-- new campaign alert: brand submits, admin approves → c1 (active, finance niche, tiktok) is alerted, c2 isn't
+insert into campaigns (id, brand_id, title, category, cpm, budget, status, submission_deadline)
+  values ('20000000-0000-0000-0000-000000000009','10000000-0000-0000-0000-000000000001','Finance alert test','finance',2000,1000000,'pending_approval', now()+interval '10 days');
+insert into campaign_platforms values ('20000000-0000-0000-0000-000000000009','tiktok');
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select status from admin_set_campaign_status('20000000-0000-0000-0000-000000000009','active');
+reset role;
+select user_id::text like '%c1' as to_c1, type, body from notifications where type = 'campaign_new' order by created_at;
+set role authenticated;
+select amount, status, creator_username, ledger_matches from admin_payouts;
+select payouts_open from admin_queue_counts;
+
+-- ── Phase 8: control center ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select id as draft_id, status from upsert_campaign_draft(null, jsonb_build_object(
+  'brand_id','10000000-0000-0000-0000-000000000001','title','Draft by admin','category','crypto','content_type','podcast_clips',
+  'cpm',2500,'budget',5000000,'platforms',jsonb_build_array('tiktok','youtube'),
+  'guidelines_do',jsonb_build_array('Hook cepat',''),'rules',jsonb_build_array(jsonb_build_object('kind','requirement','body','9:16')))) \gset
+select platforms, status from admin_campaigns where id = :'draft_id';
+select title, cpm from upsert_campaign_draft(:'draft_id', jsonb_build_object('title','Draft v2','cpm',3000,'budget',5000000,'platforms',jsonb_build_array('tiktok')));
+select status from submit_campaign_for_approval(:'draft_id');
+select pg_temp.expect_error(format($$select upsert_campaign_draft(%L, '{"title":"x","cpm":1,"budget":1}'::jsonb)$$, :'draft_id'), 'terms_locked_after_draft');
+select title from admin_update_campaign_copy(:'draft_id', '{"title":"Draft v3 (copy edit)"}'::jsonb);
+select campaigns_pending, disputes_open, tickets_open from admin_queue_counts;
+-- creator raises a ticket + dispute
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+insert into support_tickets (user_id, category, subject, body) values (auth.uid(), 'payout', 'Pencairan', 'Kapan dana saya masuk ya?');
+insert into disputes (raised_by, submission_id, reason)
+  select auth.uid(), id, 'Postingan saya masih publik, mohon dicek ulang.' from submissions where normalized_url like '%7412' limit 1;
+select pg_temp.expect_error($$insert into disputes (raised_by, submission_id, reason) select auth.uid(), id, 'Duplikat keberatan untuk tes.' from submissions where normalized_url like '%7412' limit 1$$, 'duplicate key');
+select pg_temp.expect_error($$select upsert_campaign_draft(null, '{"brand_id":"10000000-0000-0000-0000-000000000001","title":"x","cpm":1,"budget":1}'::jsonb)$$, 'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select status from admin_resolve_dispute((select id from disputes limit 1), 'under_review', null);
+select pg_temp.expect_error($$select admin_resolve_dispute((select id from disputes limit 1), 'resolved', '')$$, 'reason_required');
+select status, resolution from admin_resolve_dispute((select id from disputes limit 1), 'resolved', 'Sudah dicek, metrik diperbarui.');
+select status, admin_reply from admin_reply_ticket((select id from support_tickets limit 1), 'Pencairan diproses 1–3 hari kerja.', 'resolved');
+select action, entity_type, actor_username from admin_audit_logs order by id desc limit 3;
+select platform, submissions, qualified_views from campaign_platform_breakdown('20000000-0000-0000-0000-000000000001');
+
+-- ── Phase 9: audit coverage + product events ──
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+update creator_payout_methods set account_number = '9876543210' where creator_id = auth.uid();
+select count(*) as creator_sees_events_expect_0 from product_events;
+reset role;
+select action, after->>'account_last4' as last4, after ? 'account_number' as leaked_expect_f from audit_logs where entity_type = 'creator_payout_methods' order by id desc limit 1;
+update profiles set role = 'brand' where id = '00000000-0000-0000-0000-0000000000c2';
+select action, before->>'role' as before, after->>'role' as after from audit_logs where action = 'profiles.update' order by id desc limit 1;
+select event, count(*) from product_events group by event order by event;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select signed_up, onboarded, approved, joined_campaign, submitted, approved_submission, earned, paid_out from admin_creator_funnel;
+select count(*) > 0 as admin_sees_events from product_events;
+
+-- ── Brand portal ──
+reset role;
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-0000-0000-0000000000b2','Owner@Ruangcuan.id', null);
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select email, role from admin_invite_brand_member('10000000-0000-0000-0000-000000000001', 'owner@ruangcuan.id', 'owner');
+select kind, email from admin_brand_people('10000000-0000-0000-0000-000000000001') order by kind;
+select pg_temp.act('00000000-0000-0000-0000-0000000000b2');
+select claim_brand_invites() as claimed_unverified_expect_0;
+reset role; update auth.users set email_confirmed_at = now() where id = '00000000-0000-0000-0000-0000000000b2'; set role authenticated;
+select claim_brand_invites() as claimed_expect_1;
+select role from profiles where id = auth.uid();
+select name, role from my_brands();
+select title, status, spent, approved, qualified_views from brand_campaigns();
+select sum(qualified_gain) as q, sum(spend) as spend from brand_daily(null, 30, 'Asia/Makassar');
+select creator_username, qualified_views, spend from brand_top_clips('20000000-0000-0000-0000-000000000001');
+select pg_temp.expect_error($$select brand_top_clips(gen_random_uuid())$$, 'forbidden');
+select pg_temp.expect_error($$select join_campaign('20000000-0000-0000-0000-000000000003')$$, 'creator_not_eligible');
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as creator_sees_brand_campaigns_expect_0 from brand_campaigns();
+select pg_temp.expect_error($$select admin_invite_brand_member('10000000-0000-0000-0000-000000000001','x@y.id')$$, 'forbidden');
+
+-- ── Login verification pre-request ──
+reset role;
+select public.login_policy() as policy_off;
+set role authenticated;
+select set_config('request.jwt.claims', '{"role":"authenticated","amr":[{"method":"password","timestamp":1}]}', false);
+select public.check_request() as off_password_ok;
+reset role; update app_settings set value = 'true'::jsonb where key = 'require_login_otp'; set role authenticated;
+select pg_temp.expect_error($$select public.check_request()$$, 'login_verification_required');
+select set_config('request.jwt.claims', '{"role":"authenticated","amr":[{"method":"otp","timestamp":1}]}', false);
+select public.check_request() as on_otp_ok;
+select set_config('request.jwt.claims', '{"role":"anon"}', false);
+select public.check_request() as anon_ok;
+reset role; update app_settings set value = 'false'::jsonb where key = 'require_login_otp';
+select public.login_policy() as policy_back_off;
+
+-- ── Admin allowlist ──
+reset role;
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-0000-0000-0000000000ad', 'TappCreators@gmail.com', null);
+select role as before_verify from profiles where id = '00000000-0000-0000-0000-0000000000ad';
+update auth.users set email_confirmed_at = now() where id = '00000000-0000-0000-0000-0000000000ad';
+select role as after_verify_expect_admin from profiles where id = '00000000-0000-0000-0000-0000000000ad';
+insert into auth.users (id, email, email_confirmed_at) values ('00000000-0000-0000-0000-0000000000ae', 'someone@else.id', now());
+select role as other_expect_creator from profiles where id = '00000000-0000-0000-0000-0000000000ae';
+
+-- ── Tier system: c1's one submission was re-qualified to 300000 (qualified_views is the submission's
+-- latest value, not additive across re-qualifications) — lands in 'verified' (250k–1m) ──
+select tier, lifetime_qualified_views from creator_profiles cp, lateral (select public.lifetime_qualified_views(cp.user_id)) lv(lifetime_qualified_views)
+  where user_id = '00000000-0000-0000-0000-0000000000c1';   -- expect verified / 300000
+select tier_for_views(0) as t0, tier_for_views(49999) as t1, tier_for_views(50000) as t2,
+  tier_for_views(999999) as t3, tier_for_views(1000000) as t4, tier_for_views(99000000) as t5;
+  -- expect new, new, rising, verified, proven, elite
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select tier, next_tier, views_to_next from my_tier_progress() q, lateral jsonb_to_record(q) as x(tier text, next_tier text, views_to_next bigint);
+  -- expect verified / proven / 700000
+reset role;
+
+-- ── Auto-record foundation ──
+-- connect_platform_account needs Vault (not stubbed locally); confirm it fails closed rather than silently
+-- succeeding without storing a token, then exercise the rest of the surface with a connection row inserted directly.
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1'); set role authenticated;
+select pg_temp.expect_error($$select connect_platform_account('tiktok','pu123','kingclips','tok_abc','ref_abc',3600,array['video.list'])$$, 'vault_unavailable');
+reset role;
+insert into creator_platform_connections (creator_id, platform, platform_user_id, handle, status)
+  values ('00000000-0000-0000-0000-0000000000c1', 'tiktok', 'pu123', 'kingclips', 'connected');
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1'); set role authenticated;
+select platform, handle, status from my_platform_connections();                 -- expect tiktok / kingclips / connected
+select count(*) as other_creators_rows_expect_0 from creator_platform_connections where creator_id <> auth.uid();  -- RLS hides them, no error
+select pg_temp.expect_error($$insert into creator_platform_connections (creator_id, platform, platform_user_id) values (auth.uid(),'youtube','x')$$, 'permission denied');
+-- service_role-only surface: a plain authenticated session must not see these.
+select pg_temp.expect_error($$select * from due_for_auto_metrics()$$, 'permission denied');
+select pg_temp.expect_error($$select get_platform_token(gen_random_uuid())$$, 'permission denied');
+select pg_temp.expect_error(format($$select record_api_metrics(%L, 123)$$, :'sub_id'), 'permission denied');
+reset role;
+-- due_for_auto_metrics excludes it right now: admin_qualify_views above already set last_metrics_at = now()
+-- (well inside the 180-minute cooldown). Back-date it to prove the function picks up a genuinely due submission.
+update submissions set last_metrics_at = now() - interval '4 hours' where id = :'sub_id';
+select submission_id, platform, platform_user_id from due_for_auto_metrics() where submission_id = :'sub_id';  -- expect 1 row now
+select views, source from record_api_metrics(:'sub_id', 777777);
+select views, source from content_metrics where submission_id = :'sub_id' order by created_at desc limit 1;  -- expect 777777 / api
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1'); set role authenticated;
+select pg_temp.expect_error($$select disconnect_platform_account('instagram')$$, 'not_connected');
+select disconnect_platform_account('tiktok');
+select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok';  -- expect revoked
+reset role;
+select count(*) as due_after_disconnect_expect_0 from due_for_auto_metrics();

@@ -1,0 +1,63 @@
+{
+  "expo": {
+    "name": "TAPP Creators",
+    "slug": "tapp-creators",
+    "scheme": "tapp",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "icon": "./assets/tapp-icon.png",
+    "ios": {
+      "bundleIdentifier": "id.tapp.creators",
+      "supportsTablet": false
+    },
+    "android": {
+      "package": "id.tapp.creators",
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/tapp-adaptive-fg.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/tapp-logo.png",
+          "imageWidth": 120,
+          "backgroundColor": "#0A0A0C"
+        }
+      ],
+      "expo-font",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "TAPP butuh akses foto untuk mengatur foto profilmu.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "color": "#4548F5",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    },
+    "backgroundColor": "#0A0A0C",
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/tapp-favicon.png",
+      "name": "TAPP Creators",
+      "shortName": "TAPP",
+      "themeColor": "#0A0A0C",
+      "backgroundColor": "#0A0A0C",
+      "lang": "id"
+    }
+  }
+}

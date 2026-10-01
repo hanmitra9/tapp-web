@@ -1,0 +1,140 @@
+import { createClient } from '@supabase/supabase-js';
+import type { Session } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState, type FormEvent, type ReactNode } from 'react';
+import { supabase } from './lib/supabase';
+
+type Admin = { id: string; name: string | null; email: string | undefined };
+const Ctx = createContext<{ admin: Admin; signOut: () => Promise<void> } | null>(null);
+export const useAdmin = () => useContext(Ctx)!;
+
+// Only profiles.role = 'admin' gets past this gate. The DB enforces the same rule on every read/RPC regardless.
+export function AdminGate({ children }: { children: ReactNode }) {
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const [admin, setAdmin] = useState<Admin | null>(null);
+  const [denied, setDenied] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => data.subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    setAdmin(null); setDenied(false);
+    if (!session) return;
+    supabase.from('profiles').select('id, full_name, role').eq('id', session.user.id).single().then(({ data }) => {
+      if (data?.role === 'admin') setAdmin({ id: data.id, name: data.full_name, email: session.user.email });
+      else setDenied(true);
+    });
+  }, [session]);
+
+  const signOut = async () => { await supabase.auth.signOut(); };
+  if (session === undefined) return null;
+  if (!session) return <Login />;
+  if (denied) return (
+    <div className="login"><div style={{ display: 'grid', gap: 12, maxWidth: 360 }}>
+      <h1>Tidak punya akses</h1>
+      <p className="sub">{session.user.email} bukan akun admin TAPP. Akses admin hanya untuk email yang terdaftar di daftar admin.</p>
+      <button className="btn secondary" onClick={signOut}>Keluar</button>
+    </div></div>
+  );
+  if (!admin) return null;
+  return <Ctx.Provider value={{ admin, signOut }}>{children}</Ctx.Provider>;
+}
+
+// Admin sign-in / sign-up.
+//  - Sign in: password; when app_settings.require_login_otp is on, the password is checked on a throwaway client
+//    and a 6-digit code is emailed (only the session from that code is accepted by the API).
+//  - Sign up: name, email, password, then the 6-digit verification code. Emails listed in app_settings.admin_emails
+//    become admin the moment they are verified; any other email gets a normal account and "Tidak punya akses".
+type Step = 'login' | 'loginCode' | 'register' | 'registerCode';
+function Login() {
+  const [step, setStep] = useState<Step>('login');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [info, setInfo] = useState<string | null>(null);
+  const addr = email.trim().toLowerCase();
+  const friendly = (m: string) =>
+    m === 'Invalid login credentials' ? 'Email atau kata sandi salah. Belum punya akun? Pilih "Daftar".'
+    : /already registered|already exists/i.test(m) ? 'Email ini sudah terdaftar. Silakan masuk.'
+    : /not confirmed/i.test(m) ? 'Email belum diverifikasi. Daftar ulang dengan email yang sama untuk menerima kode baru.'
+    : /rate limit|too many/i.test(m) ? 'Terlalu banyak percobaan. Tunggu beberapa menit lalu coba lagi.'
+    : /expired|invalid.*(otp|token)|token.*invalid/i.test(m) ? 'Kode salah atau sudah kedaluwarsa.'
+    : /password/i.test(m) ? 'Kata sandi minimal 8 karakter.' : m;
+  const go = (st: Step) => { setStep(st); setError(null); setInfo(null); setCode(''); };
+
+  async function sendLoginCode() {
+    const { error: err } = await supabase.auth.signInWithOtp({ email: addr, options: { shouldCreateUser: false } });
+    if (err) throw err;
+  }
+  async function submit(e: FormEvent) {
+    e.preventDefault(); setBusy(true); setError(null); setInfo(null);
+    try {
+      if (step === 'loginCode' || step === 'registerCode') {
+        const { error: err } = await supabase.auth.verifyOtp({ email: addr, token: code.trim(), type: 'email' });
+        if (err) throw err;
+        return;   // AdminGate takes over once the session exists
+      }
+      if (step === 'register') {
+        if (name.trim().length < 2) throw new Error('Isi nama lengkap.');
+        if (password.length < 8 || !/[A-Za-z]/.test(password) || !/\d/.test(password)) throw new Error('Kata sandi minimal 8 karakter, dengan huruf dan angka.');
+        const { data, error: err } = await supabase.auth.signUp({ email: addr, password, options: { data: { full_name: name.trim() } } });
+        if (err) throw err;
+        if (data.session) return;   // email confirmation turned off in Supabase: already signed in
+        if (data.user && (data.user.identities ?? []).length === 0) throw new Error('already registered');
+        setStep('registerCode'); setInfo(`Kode verifikasi 6 digit dikirim ke ${addr}. Cek juga folder Spam.`);
+        return;
+      }
+      const { data: policy } = await supabase.rpc('login_policy');
+      if (!(policy as { require_login_otp?: boolean } | null)?.require_login_otp) {
+        const { error: err } = await supabase.auth.signInWithPassword({ email: addr, password });
+        if (err) throw err;
+        return;
+      }
+      const probe = createClient(import.meta.env.VITE_SUPABASE_URL, import.meta.env.VITE_SUPABASE_ANON_KEY, { auth: { persistSession: false, autoRefreshToken: false, storageKey: 'tapp-admin-probe' } });
+      const { error: err } = await probe.auth.signInWithPassword({ email: addr, password });
+      if (err) throw err;
+      await probe.auth.signOut({ scope: 'local' }).catch(() => {});
+      await sendLoginCode();
+      setStep('loginCode'); setInfo(`Kode 6 digit dikirim ke ${addr}.`);
+    } catch (err) {
+      setError(friendly((err as Error).message ?? String(err)));
+    } finally { setBusy(false); }
+  }
+  async function resend() {
+    setError(null);
+    try {
+      if (step === 'registerCode') { const { error: err } = await supabase.auth.resend({ type: 'signup', email: addr }); if (err) throw err; }
+      else await sendLoginCode();
+      setInfo('Kode baru dikirim.');
+    } catch (err) { setError(friendly((err as Error).message)); }
+  }
+  const codeStep = step === 'loginCode' || step === 'registerCode';
+  return (
+    <div className="login">
+      <form onSubmit={submit}>
+        <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="TAPP" />
+        <h1>{step === 'register' ? 'Daftar akun admin' : step === 'registerCode' ? 'Verifikasi email' : 'TAPP Control'}</h1>
+        {error ? <div className="notice error">{error}</div> : null}
+        {info ? <div className="notice info">{info}</div> : null}
+        {step === 'register' ? <label className="field">Nama lengkap<input autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} required /></label> : null}
+        {!codeStep ? (
+          <>
+            <label className="field">Email<input type="email" autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} required /></label>
+            <label className="field">Kata sandi<input type="password" autoComplete={step === 'register' ? 'new-password' : 'current-password'} value={password} onChange={(e) => setPassword(e.target.value)} required /></label>
+          </>
+        ) : (
+          <label className="field">Kode verifikasi<input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} autoFocus required /></label>
+        )}
+        <button className="btn" disabled={busy || (codeStep && code.length !== 6)}>{busy ? 'Memproses…' : step === 'register' ? 'Daftar' : codeStep ? 'Verifikasi' : 'Masuk'}</button>
+        {codeStep ? <button type="button" className="btn secondary" disabled={busy} onClick={resend}>Kirim ulang kode</button> : null}
+        {step === 'login' ? <p className="sub" style={{ margin: 0, textAlign: 'center' }}>Belum punya akun? <a href="#" onClick={(e) => { e.preventDefault(); go('register'); }}>Daftar</a></p> : null}
+        {step !== 'login' ? <p className="sub" style={{ margin: 0, textAlign: 'center' }}><a href="#" onClick={(e) => { e.preventDefault(); go('login'); }}>Kembali ke halaman masuk</a></p> : null}
+      </form>
+    </div>
+  );
+}

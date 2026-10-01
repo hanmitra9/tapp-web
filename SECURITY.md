@@ -1,0 +1,47 @@
+# TAPP — security model (V1)
+
+## Principles
+1. **Deny by default.** `anon` has no table or function access. `authenticated` gets explicit table/column grants only.
+2. **RLS on every table** (23 public tables). Policy helpers live in the non-exposed `private` schema.
+3. **Money and state never come from the client.** Earnings, qualified views, budgets, statuses, and payouts change only inside `SECURITY DEFINER` RPCs that check the caller (`assert_admin`, `assert_active_creator`) and validate transitions.
+4. **Append-only history.** `content_metrics`, `performance_snapshots`, `audit_logs` reject UPDATE/DELETE.
+5. **Everything sensitive is audited.** RPCs call `write_audit`; direct writes to `brands`, `brand_members`, `campaign_assets`, `campaign_rules`, `creator_payout_methods`, `creator_platforms`, and `profiles.role` are captured by triggers. Account numbers are stored as last-4 only in the audit trail.
+
+## Roles
+| Role | Can | Cannot |
+|---|---|---|
+| Creator | Own profile/socials/payout method; join/leave; submit/resubmit/withdraw own content; request payouts; tickets & objections | Edit status, tier, reliability, qualified views, earnings, budgets; see other creators; see source content before joining |
+| Brand (backend-ready) | Own brand's campaigns (draft edits), their submissions/metrics, funnel | Approve campaigns, change terms after draft, see earnings ledger |
+| Admin | All RPCs (review, metrics, qualify, payouts, statuses, budgets, disputes, support) | Bypass state machines, write metrics history, delete audit logs |
+
+## Financial controls
+- Qualification is totals-based with integer math; per-clip caps and remaining budget enforced under a campaign row lock.
+- `campaigns_budget_guard` check constraint: earned ≤ budget unless an audited admin override.
+- Payouts: advisory lock + idempotency key + one-open-payout index; admin view flags ledger mismatch (blocks "paid"), flagged submissions, open objections, and payout-method changes within 72h of the request.
+- Earnings hold period (default 7 days) before they become payable.
+
+## Abuse controls
+- Global unique canonical URL per post; short links rejected; platform/URL mismatch rejected; posts must be published after joining.
+- One social account per creator (unique platform+handle).
+- Rate limits: 20 submissions/day, 5 support tickets/day, one open objection per submission/payout; Supabase Auth limits for email/OTP.
+- Reserved usernames.
+
+## Secrets
+- App and admin ship only the **publishable/anon** key.
+- Push webhook authenticated with a secret in **Supabase Vault**, verified via a service-role-only RPC.
+- Never commit: DB password, `service_role`/secret keys, Vault secrets.
+
+## Review checklist (run after each migration)
+```sql
+-- all should return 'none'
+select string_agg(proname, ', ') from pg_proc where pronamespace in ('public'::regnamespace,'private'::regnamespace) and has_function_privilege('anon', oid, 'execute');
+select string_agg(proname, ', ') from pg_proc where pronamespace in ('public'::regnamespace,'private'::regnamespace) and prosecdef and proconfig is null;
+select string_agg(relname, ', ') from pg_class where relnamespace='public'::regnamespace and relkind='v' and not coalesce(reloptions @> array['security_invoker=true'], false);
+select string_agg(tablename, ', ') from pg_tables where schemaname='public' and not rowsecurity;
+```
+Plus Supabase Advisors → Security. Remaining "SECURITY DEFINER callable by authenticated" warnings are the intended RPC API; each function authorizes internally.
+
+## Known V1 limits
+- Metrics are entered manually by admins (no platform API verification yet).
+- No 2FA for admin accounts — enable MFA in Supabase Auth before scaling the ops team.
+- Payout destination is self-declared; name matching is checked by the admin at transfer time.
