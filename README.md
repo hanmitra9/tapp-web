@@ -144,7 +144,7 @@ Two homes behind one login: `profiles.role = 'brand'` → `/brand` (TAPP for Bra
 - App: register screen links to terms/privacy when `EXPO_PUBLIC_SITE_URL` is set.
 
 ## Deployment status (live services)
-- **Supabase**: migrations 001–023 applied. **To do:** `supabase db push` for `…024` (web only: drop push), `…025` (reliability score), `…026` (admin 2FA), `…027` (YouTube auto metrics), `…028` (meeting booking); delete the Edge Function `push-dispatch` (`npx supabase functions delete push-dispatch --project-ref njffqsbddzztfxxbavpp`); then `supabase gen types typescript --linked > app/src/lib/database.types.ts`.
+- **Supabase**: migrations 001–023 applied. **To do:** first, once: `bash supabase/tools/sync_migration_history.sh` (live history uses different version numbers for 001–023; without this `db push` would re-run 001). Then `supabase db push` for `…024` (web only: drop push), `…025` (reliability score), `…026` (admin 2FA), `…027` (YouTube auto metrics), `…028` (meeting booking); delete the Edge Function `push-dispatch` (`npx supabase functions delete push-dispatch --project-ref njffqsbddzztfxxbavpp`); then `supabase gen types typescript --linked > app/src/lib/database.types.ts`.
 - **Reliability score** (migration `…025`): automatic, `100 × (approved-and-live + 1) / (reviewed + 2)`, recomputed by a trigger on every submission status / post-state change. Shown on the creator's Profil and in Admin → Kreator.
 - **Admin 2FA** (migration `…026`): TOTP required for admins, enforced in the DB — see `SECURITY.md`.
 - **E2E**: `cd app && npm run e2e` (Playwright) — see `QA.md`.
