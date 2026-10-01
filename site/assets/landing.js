@@ -41,7 +41,7 @@ class DCLogic { constructor(props) { this.props = props || {}; this.state = {}; 
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', tier: 2 };
+    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', tier: 2, budget: 25000000, cpm: 3000, bstep: 0 };
   }
   renderVals() {
     const s = this.state;
@@ -141,8 +141,27 @@ class Component extends DCLogic {
       op: i === ti ? '1' : '0.55',
     }));
 
+    // budget simulator: brand pays creator reward + 15% platform fee; clips are paid up to 100K views each
+    const rp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
+    const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
+    const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 700; '
+      + (on ? 'color: #FFFFFF; background: rgba(69,72,245,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
+    const budget = s.budget || 25000000, cpm = s.cpm || 3000;
+    const views = budget / (cpm * 1.15) * 1000;
+    const budgets = [10000000, 25000000, 50000000, 100000000].map((b) => ({ label: rp(b / 1e6) + ' jt', on: b === budget, style: chipStyle(b === budget), pick: () => this.setState({ budget: b }) }));
+    const cpms = [2000, 3000, 5000].map((c) => ({ label: rp(c), on: c === cpm, style: chipStyle(c === cpm), pick: () => this.setState({ cpm: c }) }));
+    const bstep = s.bstep || 0;
+    const bsteps = [0, 1, 2, 3].map((i) => ({
+      on: i === bstep, pick: () => this.setState({ bstep: i }),
+      tab: 'height: 48px; border-radius: 14px; font-size: 14px; font-weight: 700; white-space: nowrap; '
+        + (i === bstep ? 'color: #FFFFFF; background: rgba(69,72,245,0.22); border: 1px solid rgba(125,162,255,0.5)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent'),
+      panel: (i === bstep ? 'display: grid' : 'display: none') + '; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 32px; padding: 18px',
+    }));
+
     return {
       isCreator: creator, isBrand: !creator,
+      budgets: budgets, cpms: cpms, simBudget: rp(budget), simViews: compact(views), simCost: rp(cpm * 1.15),
+      simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       tiers: tiers, tierName: sel[0], tierNum: String(ti + 1), tierBody: sel[3],
       tierReq: ti === 0 ? 'Mulai dari 0 qualified views' : 'Mulai dari ' + sel[1] + ' qualified views',
       tierPill: 'color: ' + sel[2] + '; background: rgba(255,255,255,0.05); border: 1px solid ' + sel[2],

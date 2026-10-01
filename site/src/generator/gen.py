@@ -4,6 +4,7 @@ sys.path.insert(0, str(HERE))
 from parts import *
 from hero2 import hero_creator_visual, hero_brand_visual
 from hub import hero_hub, LEVELS, PORTFOLIO
+from brandhub import hero_brand, steps_tabs
 GLOBE = open(HERE / 'globe.svg.frag').read()
 
 def pill_btn(label, href, primary=True, big=False):
@@ -204,6 +205,7 @@ a{{color:inherit;text-decoration:none}}
 .lp .hc{{animation:bob 6s ease-in-out infinite}} .lp .hc:nth-of-type(2){{animation-delay:-1.5s}} .lp .hc:nth-of-type(3){{animation-delay:-3s}} .lp .hc:nth-of-type(4){{animation-delay:-4.5s}}
 @keyframes bob{{0%,100%{{transform:translateY(0)}}50%{{transform:translateY(-6px)}}}}
 @media (max-width: 1240px){{ .lp .hstage{{transform:scale(0.82);transform-origin:center top}} .lp .hstage-wrap{{height:330px !important}} }}
+@media (max-width: 1240px){{ .lp .bpanel{{gap:20px !important}} }}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
 @media (max-width: 900px){{
   .lp .nlinks{{display:none !important}}
@@ -232,6 +234,12 @@ a{{color:inherit;text-decoration:none}}
   .lp .hm{{display:flex !important}}
   .lp .tcard{{position:static !important;transform:none !important;margin:-24px auto 0}}
   .lp .tarc text{{font-size:44px}}
+  .lp .hero-hb{{font-size:36px !important;line-height:41px !important;letter-spacing:-1px !important}}
+  .lp .btabs{{grid-template-columns:repeat(4,minmax(150px,1fr)) !important;overflow-x:auto}}
+  .lp .bpanel{{grid-template-columns:minmax(0,1fr) !important}}
+  .lp .bstats{{grid-template-columns:minmax(0,1fr) !important;gap:12px;text-align:left !important}}
+  .lp .bstats > span{{border:0 !important}}
+  .lp .bvis-meet{{grid-template-columns:minmax(0,1fr) !important}}
   .lp .ctiles > div:nth-child(3){{display:none}}
   .lp .pdash{{padding:14px !important}}
 }}
@@ -291,17 +299,14 @@ a{{color:inherit;text-decoration:none}}
 </sc-if>
 
 <sc-if value="{{{{isBrand}}}}" hint-placeholder-val="{{{{ false }}}}">
-  {HERO_B}
+  {hero_brand()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
     {head("Kenapa TAPP", "Kontrol Penuh Atas Distribusi Kontenmu", "Dari Brief Sampai Laporan", "Buat campaign, awasi kualitas views, dan baca hasilnya di satu tempat.", True, 860)}
 {FX3}
   </section>
 
-  <section id="alur" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
-    {head("Cara Kerja", "Dari Brief Sampai Laporan,", "Empat Langkah Terkontrol", "Kamu menentukan brief, tarif, dan budget. TAPP mengurus distribusi, verifikasi views, dan pembayaran creator.")}
-    <div style="display: flex; flex-direction: column; gap: 16px">{''.join(brand_row(i) for i in range(4))}</div>
-  </section>
+  {steps_tabs(VIS_B[3])}
 
   <section id="kontak" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 88px 64px 40px; text-align: center">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 24px">
