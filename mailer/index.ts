@@ -133,6 +133,28 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
       },
     };
   }
+  if (type === "brand_daily_report") {
+    const day = d.day ? new Date(`${d.day}T00:00:00+07:00`).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long" }) : "kemarin";
+    const nf = (n: unknown) => Math.round(Number(n ?? 0)).toLocaleString("id-ID");
+    const camps = (Array.isArray(d.campaigns) ? d.campaigns : []) as Record<string, any>[];
+    const rows: [string, string][] = [
+      ["Qualified views baru", `+${nf(d.qualified_gain)}`],
+      ["Reward creator", idr(Number(d.spend))],
+      [`Fee platform (${nf(d.fee_pct)}%)`, idr(Number(d.fee))],
+      ...camps.slice(0, 5).map((c): [string, string] => [String(c.title ?? "Campaign"),
+        `${nf(c.qualified)} qualified · ${nf(c.raw)} mentah${Number(c.pending) > 0 ? ` · ${nf(c.pending)} menunggu verifikasi` : ""} · sisa ${idr(Number(c.remaining))}`]),
+    ];
+    return {
+      subject: `Laporan ${d.brand ?? "brand"}: +${nf(d.qualified_gain)} qualified views (${day})`,
+      block: {
+        title: `Laporan harian ${esc(d.brand ?? "")}`,
+        intro: `Ringkasan ${esc(day)} (WIB). Angka qualified views dan biaya sudah melalui verifikasi tim TAPP; views mentah yang baru masuk tercatat sebagai "menunggu verifikasi".`,
+        rows,
+        button: APP() ? { label: "Buka dashboard brand", url: `${APP()}/brand` } : undefined,
+        outro: "Tidak ingin menerima laporan harian? Matikan di dashboard brand → Akun.",
+      },
+    };
+  }
   if (type === "meeting_received") {
     return {
       subject: `Permintaan meeting TAPP: ${wib(d.slot)}`,

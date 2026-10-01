@@ -265,6 +265,19 @@ select claim_brand_invites() as claimed_expect_1;
 select role from profiles where id = auth.uid();
 select name, role from my_brands();
 select title, status, spent, approved, qualified_views from brand_campaigns();
+select title, raw_views, qualified_views, pending_views, excluded_views, spent, platform_fee, total_cost, effective_cpm, cpm from brand_campaigns();
+do $$ declare r record; begin
+  for r in select * from brand_campaigns() loop
+    if r.raw_views < r.qualified_views + r.pending_views and r.excluded_views <> 0 then raise exception 'views breakdown inconsistent'; end if;
+    if r.excluded_views <> greatest(r.raw_views - r.qualified_views - r.pending_views, 0) then raise exception 'excluded wrong'; end if;
+    if r.platform_fee <> round(r.spent * 0.15) or r.total_cost <> r.spent + r.platform_fee then raise exception 'fee wrong'; end if;
+    if r.raw_views > 0 and r.effective_cpm <> round(r.spent * 1000.0 / r.raw_views) then raise exception 'effective cpm wrong'; end if;
+  end loop;
+end $$;
+select daily_report as daily_on_default from my_brands();
+select set_brand_daily_report('10000000-0000-0000-0000-000000000001', false);
+select daily_report as daily_off_expect_f from my_brands();
+select set_brand_daily_report('10000000-0000-0000-0000-000000000001', true);
 select sum(qualified_gain) as q, sum(spend) as spend from brand_daily(null, 30, 'Asia/Makassar');
 select creator_username, qualified_views, spend from brand_top_clips('20000000-0000-0000-0000-000000000001');
 select pg_temp.expect_error($$select brand_top_clips(gen_random_uuid())$$, 'forbidden');
@@ -415,3 +428,11 @@ set role anon;
 select count(*) as taken_after_cancel_expect_1 from meeting_slots_taken();
 reset role;
 select 'meeting_booking_ok' as result;
+
+-- ── Brand daily report (0029) ──
+reset role;
+select send_brand_daily_reports() >= 0 as daily_report_runs;
+set role authenticated;
+select pg_temp.expect_error($$select send_brand_daily_reports()$$, 'permission denied');
+reset role;
+select 'brand_reporting_ok' as result;

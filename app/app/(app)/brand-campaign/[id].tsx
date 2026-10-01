@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { useLocalSearchParams } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { BarChart } from '@/components/BarChart';
 import { Header } from '@/components/Header';
@@ -10,9 +10,13 @@ import { Segmented } from '@/components/Segmented';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { StatusBadge } from '@/components/StatusBadge';
 import { compact, dateLabel, idr, num } from '@/lib/format';
+import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
+import { Button } from '@/components/Button';
+import { CostCard, Freshness, ViewsBreakdown } from '@/features/brand/ReportParts';
+import { downloadCsv, printPdf } from '@/features/brand/export';
 import { color, radius, space, type } from '@/theme/tokens';
-import { BRAND_STATUS, cpvLabel, fetchBrandCampaigns, fetchBrandDaily, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
+import { BRAND_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
 
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
@@ -29,11 +33,12 @@ export default function BrandCampaignReport() {
     return { c, platforms, clips };
   }, [id]);
   const daily = useQuery(() => fetchBrandDaily(id, Number(range)), [id, range]);
+  const reloadAll = useCallback(async () => { await Promise.all([q.reload(), daily.reload()]); }, [q.reload, daily.reload]);
+  const refreshedAt = useAutoRefresh(reloadAll);
 
   if (!q.data) return <Screen scroll={false}><Header title="Laporan campaign" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
   const { c, platforms, clips } = q.data;
   const used = c.budget ? Math.min(1, c.spent / c.budget) : 0;
-  const cpv = c.qualified_views ? c.spent / c.qualified_views : null;
   const qualRate = c.raw_views ? c.qualified_views / c.raw_views : null;
   const funnel = [
     { l: 'Kreator bergabung', v: c.creators_joined },
@@ -54,6 +59,7 @@ export default function BrandCampaignReport() {
       <Text style={styles.title} accessibilityRole="header">{c.title}</Text>
       <Text style={styles.meta}>{idr(c.cpm)} per 1.000 qualified views · {c.platforms.map((p) => platformLabel(p as Platform)).join(', ')}
         {c.submission_deadline ? ` · deadline ${dateLabel(c.submission_deadline)}` : ''}</Text>
+      <Freshness metricsAt={c.last_metrics_at} qualifiedAt={c.last_qualified_at} refreshedAt={refreshedAt} />
 
       <View style={styles.budgetCard}>
         <View style={styles.budgetTop}>
@@ -66,9 +72,27 @@ export default function BrandCampaignReport() {
 
       <View style={styles.grid}>
         <Stat label="Qualified views" value={num(c.qualified_views)} />
-        <Stat label="Total views" value={num(c.raw_views)} />
-        <Stat label="Biaya per view (CPV)" value={cpvLabel(cpv)} />
+        <Stat label="Views mentah" value={num(c.raw_views)} />
+        <Stat label="Effective CPM" value={c.effective_cpm == null ? '—' : idr(c.effective_cpm)} />
         <Stat label="Views lolos verifikasi" value={qualRate == null ? '—' : `${Math.round(qualRate * 100)}%`} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Ke mana views mentah pergi</Text>
+        <ViewsBreakdown raw={c.raw_views} qualified={c.qualified_views} pending={c.pending_views} excluded={c.excluded_views} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Biaya &amp; CPM</Text>
+        <CostCard spent={c.spent} fee={c.platform_fee} feePct={c.fee_pct} total={c.total_cost} effectiveCpm={c.effective_cpm} cpm={c.cpm} />
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Export laporan</Text>
+        <View style={styles.exportRow}>
+          <View style={{ flex: 1 }}><Button variant="secondary" label="Download CSV" onPress={() => downloadCsv({ c, daily: daily.data ?? [], clips, platforms })} /></View>
+          <View style={{ flex: 1 }}><Button variant="secondary" label="Simpan PDF" onPress={() => printPdf({ c, daily: daily.data ?? [], clips, platforms })} /></View>
+        </View>
       </View>
 
       <View style={styles.section}>
@@ -114,7 +138,7 @@ export default function BrandCampaignReport() {
             <Text style={styles.rank}>{i + 1}</Text>
             <View style={{ flex: 1 }}>
               <Text style={styles.clipTitle}>@{k.creator_username ?? 'kreator'} <Text style={styles.clipPlat}>· {platformLabel(k.platform as Platform)}</Text></Text>
-              <Text style={styles.cap}>{compact(k.qualified_views)} qualified dari {compact(k.raw_views)} views · {dateLabel(k.published_at)}</Text>
+              <Text style={styles.cap}>{compact(k.qualified_views)} qualified dari {compact(k.raw_views)} views{k.pending_views ? ` · ${compact(k.pending_views)} menunggu verifikasi` : ''} · {dateLabel(k.published_at)}</Text>
             </View>
             <Text style={styles.platSpend}>{idr(k.spend)}</Text>
             <Feather name="external-link" size={14} color={color.textMuted} />
@@ -161,4 +185,5 @@ const styles = StyleSheet.create({
   rank: { ...type.heading, color: color.blueLight, width: 20, fontVariant: ['tabular-nums'] },
   clipTitle: { ...type.label, color: color.text },
   clipPlat: { ...type.caption, color: color.textMuted },
+  exportRow: { flexDirection: 'row', gap: space.sm },
 });

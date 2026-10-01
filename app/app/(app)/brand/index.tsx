@@ -1,5 +1,5 @@
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
 import { BarChart } from '@/components/BarChart';
@@ -9,9 +9,11 @@ import { Screen } from '@/components/Screen';
 import { Segmented } from '@/components/Segmented';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { compact, greeting, idr, num } from '@/lib/format';
+import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
+import { CostCard, Freshness, ViewsBreakdown } from '@/features/brand/ReportParts';
 import { color, radius, space, type } from '@/theme/tokens';
-import { cpvLabel, fetchBrandCampaigns, fetchBrandDaily, fetchMyBrands, totals } from '@/features/brand/api';
+import { fetchBrandCampaigns, fetchBrandDaily, fetchMyBrands, totals } from '@/features/brand/api';
 import { BrandCampaignRow } from '@/features/brand/BrandCampaignRow';
 
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
@@ -25,6 +27,8 @@ export default function BrandHome() {
     return { brands, campaigns, t: totals(campaigns) };
   }, []);
   const daily = useQuery(() => fetchBrandDaily(null, Number(range)), [range]);
+  const reloadAll = useCallback(async () => { await Promise.all([q.reload(), daily.reload()]); }, [q.reload, daily.reload]);
+  const refreshedAt = useAutoRefresh(reloadAll);
   const d = q.data;
   const gain = daily.data?.reduce((a, x) => a + x.qualified_gain, 0) ?? 0;
   const name = d?.brands.map((b) => b.name).join(', ');
@@ -33,12 +37,13 @@ export default function BrandHome() {
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={async () => { await q.refresh(); await daily.refresh(); }} tintColor={color.blue} />}>
       <Text style={styles.hello}>{greeting()}{name ? `, ${name}` : ''}</Text>
       <Text style={styles.title} accessibilityRole="header">Ringkasan campaign</Text>
+      {d ? <Freshness metricsAt={d.t.lastMetricsAt} qualifiedAt={d.t.lastQualifiedAt} refreshedAt={refreshedAt} /> : null}
       {q.error && !d ? <Notice tone="error" message={q.error} /> : null}
 
       <View style={styles.cardWrap}>
         <BalanceCard label="Total qualified views" amount={d ? `${num(d.t.qualified)} views` : null}
-          footLeft={<Text style={cardFootText}>{d ? `Biaya ${idr(d.t.spent)}` : ' '}</Text>}
-          footRight={<Text style={cardFootText}>{d ? `CPV ${cpvLabel(d.t.cpv)}` : ' '}</Text>} />
+          footLeft={<Text style={cardFootText}>{d ? `Total biaya ${idr(d.t.totalCost)}` : ' '}</Text>}
+          footRight={<Text style={cardFootText}>{d ? `Effective CPM ${d.t.effectiveCpm == null ? '—' : idr(d.t.effectiveCpm)}` : ' '}</Text>} />
       </View>
 
       <View style={styles.grid}>
@@ -47,6 +52,19 @@ export default function BrandHome() {
         <Stat label="Klip disetujui" value={d ? num(d.t.approved) : null} />
         <Stat label="Sisa budget" value={d ? idr(d.t.remaining) : null} />
       </View>
+
+      {d && d.t.raw > 0 ? (
+        <>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Ke mana views mentah pergi</Text>
+            <ViewsBreakdown raw={d.t.raw} qualified={d.t.qualified} pending={d.t.pending} excluded={d.t.excluded} />
+          </View>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Biaya</Text>
+            <CostCard spent={d.t.spent} fee={d.t.fee} feePct={d.campaigns[0]?.fee_pct ?? 15} total={d.t.totalCost} effectiveCpm={d.t.effectiveCpm} />
+          </View>
+        </>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Qualified views per hari</Text>
