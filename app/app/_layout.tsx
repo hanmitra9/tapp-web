@@ -2,8 +2,6 @@ import {
   InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold, useFonts,
 } from '@expo-google-fonts/instrument-sans';
 import { Stack, useRouter } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
 import { openedProtectedPage, rememberReturn, takeReturn } from '@/lib/returnTo';
 import { AppState } from 'react-native';
@@ -14,9 +12,6 @@ import { NetworkProvider } from '@/providers/NetworkProvider';
 import { color } from '@/theme/tokens';
 import { trackAppOpened } from '@/lib/analytics';
 
-SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({ duration: 250, fade: true });
-
 function RootNavigator() {
   const { ready, session, recovering } = useAuth();
   const [fontsLoaded, fontError] = useFonts({
@@ -24,7 +19,6 @@ function RootNavigator() {
   });
   const loaded = ready && (fontsLoaded || !!fontError);   // font failure falls back to system font, never blocks
 
-  useEffect(() => { if (loaded) SplashScreen.hideAsync(); }, [loaded]);
   useEffect(() => {
     trackAppOpened();
     const sub = AppState.addEventListener('change', (s) => { if (s === 'active') trackAppOpened(); });
@@ -65,7 +59,6 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <NetworkProvider>
       <AuthProvider>
-        <StatusBar style="light" />
         <RootNavigator />
       </AuthProvider>
       </NetworkProvider>

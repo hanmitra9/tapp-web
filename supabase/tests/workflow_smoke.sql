@@ -195,10 +195,7 @@ select count(*) as c2_campaigns_expect_0 from my_campaign_performance();
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select mark_notifications_read() as marked;
 select count(*) filter (where read_at is null) as unread_expect_0 from notifications;
-select pg_temp.expect_error($$select claim_push_batch(10)$$, 'permission denied');
 reset role;
-select count(*) as claimed from claim_push_batch(500);
-select count(*) as reclaim_expect_0 from claim_push_batch(500);
 -- new campaign alert: brand submits, admin approves → c1 (active, finance niche, tiktok) is alerted, c2 isn't
 insert into campaigns (id, brand_id, title, category, cpm, budget, status, submission_deadline)
   values ('20000000-0000-0000-0000-000000000009','10000000-0000-0000-0000-000000000001','Finance alert test','finance',2000,1000000,'pending_approval', now()+interval '10 days');

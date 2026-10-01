@@ -2,12 +2,10 @@ import { Stack } from 'expo-router';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/providers/AuthProvider';
-import { usePushRouting } from '@/features/notifications/usePushRouting';
 import { color } from '@/theme/tokens';
 
 export default function AppLayout() {
-  const { account, accountError, refreshAccount, session } = useAuth();
-  usePushRouting(session?.user.id, !!account && account.role !== 'brand' && (account.onboarded || account.status !== 'pending'));
+  const { account, accountError, refreshAccount } = useAuth();
   if (!account) {
     return <Screen scroll={false}>
       <LoadState error={accountError ? 'Gagal memuat akun. Periksa koneksi internet.' : null} onRetry={refreshAccount} />

@@ -28,7 +28,6 @@
 
 ## Secrets
 - App and admin ship only the **publishable/anon** key.
-- Push webhook authenticated with a secret in **Supabase Vault**, verified via a service-role-only RPC.
 - Never commit: DB password, `service_role`/secret keys, Vault secrets.
 
 ## Review checklist (run after each migration)

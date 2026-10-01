@@ -15,7 +15,6 @@ import {
   type CreatorProfile, type CreatorStats, type LinkedPlatform, type PayoutMethod,
 } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
-import { NotificationToggle } from '@/features/notifications/NotificationToggle';
 import { AGE_RANGES, CONTENT_CATEGORIES, COUNTRIES, EXPERIENCE, LANGUAGES, labelOf, NICHES, platformLabel } from '@/features/creator/options';
 
 const STATUS: Record<CreatorProfile['status'], { label: string; tone: 'neutral' | 'blue' | 'danger' }> = {
@@ -108,9 +107,6 @@ export default function Profile() {
 
       <Section title="Pencairan" action={locked ? undefined : { label: 'Ubah', onPress: () => router.push('/profile/payout') }}>
         <Row label={payout?.provider ?? 'Metode'} value={payout ? `${maskAccount(payout.account_number)} · ${payout.account_name}` : 'Belum diatur'} />
-      </Section>
-      <Section title="Notifikasi">
-        <NotificationToggle uid={uid} />
       </Section>
       <Pressable onPress={() => router.push('/payouts')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
         <Text style={styles.action}>Riwayat pencairan</Text>

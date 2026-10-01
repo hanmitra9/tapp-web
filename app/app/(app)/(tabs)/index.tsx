@@ -17,7 +17,6 @@ import { Avatar } from '@/components/Avatar';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
 import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { unreadCount } from '@/features/notifications/api';
-import { PushCard } from '@/features/notifications/PushCard';
 
 const STATUS_NOTE: Record<string, string> = {
   verified: 'Akunmu sedang ditinjau. Kamu sudah bisa melihat campaign, dan bisa bergabung setelah disetujui.',
@@ -74,7 +73,6 @@ export default function Home() {
         <ActionCircle icon="grid" label="Lainnya" onPress={() => router.push('/help')} />
       </View>
 
-      {session && account?.onboarded ? <PushCard uid={session.user.id} /> : null}
       {account && STATUS_NOTE[account.status] ? <View style={styles.notice}><Notice tone="info" message={STATUS_NOTE[account.status]!} /></View> : null}
       {q.error && !d ? <View style={styles.notice}><Notice tone="error" message={`${q.error} Tarik ke bawah untuk memuat ulang.`} /></View> : null}
 

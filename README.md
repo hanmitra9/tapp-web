@@ -1,10 +1,10 @@
 # TAPP Creators — V1 foundation (Phase 1)
 
 ## Audit
-- **Existing work found here:** none (no repo or assets uploaded). A TAPP web prototype + Discord bot exists elsewhere; its UI isn't reused because V1 is mobile. Share the repo to reconcile any data model it already has.
+- **Existing work found here:** none (no repo or assets uploaded). A TAPP web prototype + Discord bot exists elsewhere. Share the repo to reconcile any data model it already has.
 - **Reused:** approved TAPP identity — TAPP Blue `#4548F5`, existing logo (not recreated).
 - **Built now:** full database, business logic, authorization, auth app flow.
-- **Architecture:** Expo (Router, TS) → Supabase (Auth, Postgres, Storage). All money/state transitions are Postgres RPCs; the client never computes or writes financial values.
+- **Architecture:** web only — Expo Router + react-native-web (TS, static web export) → Supabase (Auth, Postgres, Storage). All money/state transitions are Postgres RPCs; the client never computes or writes financial values.
 
 ## Layout
 ```
@@ -14,11 +14,11 @@ supabase/
   migrations/…003_security.sql   deny-by-default grants, column grants, RLS, storage buckets/policies
   seed.sql                       dev-only campaign
   tests/run.sh                   applies migrations to local Postgres + full workflow & abuse test
-app/                             Expo app (auth flow + account gate)
+app/                             creator & brand web app (Expo web)
 ```
 
 ## Supabase status (project njffqsbddzztfxxbavpp)
-Migrations 001–021 are applied; cron jobs and the push secret are set up. RLS is on for all 22 tables, anon has no table or function access, and the RLS helper functions live in a non-exposed `private` schema.
+Migrations 001–023 are applied (024 web-only cleanup: pending); cron jobs are set up. RLS is on for all 22 tables, anon has no table or function access, and the RLS helper functions live in a non-exposed `private` schema.
 
 ## Setup
 1. **Logo:** included in `app/assets/` (extracted from the approved mark; see `brand/`). Replace with vector exports when available.
@@ -28,7 +28,7 @@ Migrations 001–021 are applied; cron jobs and the push secret are set up. RLS 
 4. **First admin:** `update profiles set role='admin' where id='<uuid>';` (SQL editor only).
 5. **Cron (optional):** earnings also mature lazily on payout request.
    `select cron.schedule('release-earnings','*/15 * * * *', $$select public.release_matured_earnings()$$);`
-6. **App:** `cd app && cp .env.example .env` (fill values) → `npm i && npx expo install --fix && npx expo start`.
+6. **Web app:** `cd app && cp .env.example .env` (fill values) → `npm i && npm run web`.
 7. **Types:** `supabase gen types typescript --linked > app/src/lib/database.types.ts` and pass to `createClient<Database>`.
 
 ## Key rules enforced in the database
@@ -43,7 +43,7 @@ Migrations 001–021 are applied; cron jobs and the push secret are set up. RLS 
 Onboarding gates, privilege escalation attempts, account-sharing, draft-only terms, join idempotency, source-content gating, URL/platform/date/duplicate validation, review reasons, raw>qualified guard, CPM math (185,000 × Rp3,000/1k = Rp555,000), budget cap, hold period, payout idempotency/double-request, payout state machine, notifications, audit visibility.
 
 ## Phase 2 — onboarding & profile
-- `app/(app)/onboarding.tsx`: 6 steps (profil → akun sosial → konten → penonton → pencairan → periksa). Draft saved locally per step (survives app kill/offline); social accounts, payout method, and photo are written to the server immediately. Server errors send the user back to the step that owns the problem.
+- `app/(app)/onboarding.tsx`: 6 steps (profil → akun sosial → konten → penonton → pencairan → periksa). Draft saved in the browser per step (survives refresh/offline); social accounts, payout method, and photo are written to the server immediately. Server errors send the user back to the step that owns the problem.
 - `app/(app)/profile/*`: profile (stats, reliability, socials, content, payout) + edit, socials, payout screens. Suspended/banned accounts are read-only.
 - Migration `…004`: username availability RPC, reserved usernames, niche/category limits, main-platform fallback, `my_creator_stats` view.
 - Routing: signed in + not onboarded → onboarding only; otherwise onboarding is unreachable.
@@ -79,14 +79,9 @@ Onboarding gates, privilege escalation attempts, account-sharing, draft-only ter
 ## Phase 7 — payouts & notifications
 - Creator: "Cairkan" on Penghasilan → confirmation (amount, destination, 1–3 hari kerja) → `request_payout` with a per-screen idempotency key (double taps/retries never duplicate). Open payout shows as a status card; `payouts` screen shows history with a 5-step tracker, reference number when paid, reason when rejected.
 - Admin (`/payouts`): queue with snapshot destination (copy button), ledger breakdown, risk flags (ledger mismatch blocks payment, flagged submissions, open disputes, account status), state-machine actions with required reason/reference.
-- Notifications: every event is written to `notifications` (in-app inbox `notifications`, bell + unread badge on Beranda). Push: contextual opt-in card + Profil toggle; tokens removed on sign-out/opt-out; taps deep-link to workspace / campaign / payouts.
-- Delivery: INSERT trigger → pg_net → Edge Function `supabase/functions/push-dispatch` (claims rows with SKIP LOCKED, sends via Expo, prunes dead tokens, retries transient failures via a 5-min cron). Auth by a Vault-stored secret. New-campaign alerts only go to active creators whose niche and platforms match.
-- Cron: `push-dispatch-sweep` (5 min), `release-earnings` (15 min).
-- Migrations `…011`–`…013` (applied).
-
-### To finish push delivery (one-time)
-1. Deploy the function: `npx supabase functions deploy push-dispatch --no-verify-jwt --project-ref njffqsbddzztfxxbavpp` (auth is the Vault secret header, so JWT verification is off by design).
-2. `cd app && npx eas init` — writes the EAS projectId Expo needs to issue push tokens. Push works on real devices only.
+- Notifications: every event is written to `notifications` (in-app inbox `notifications`, bell + unread badge on Beranda; opening one deep-links to workspace / campaign / payouts). Important events also go out by email (`mailer/`). New-campaign alerts only go to active creators whose niche and platforms match.
+- Cron: `release-earnings` (15 min).
+- Migrations `…011`–`…013` (applied). Native push was removed in `…024` (web only).
 
 ## Phase 8 — admin control center
 Admin (`admin/`) now covers every operational surface:
@@ -100,7 +95,7 @@ Migration `…014` (applied).
 
 ## Phase 9 — analytics, audit, security
 - **Server events** (`product_events`, migration `…015`): signup, onboarding, approval, joins, submissions and review outcomes, payout requested/completed/rejected — written by triggers, so they're complete regardless of client. Admin sees them only.
-- **Client events** (PostHog, optional): `app_opened`, `signup_started/submitted/completed`, `onboarding_step/completed`, `campaign_viewed/joined/left`, `marketplace_filtered`, `submission_started/submitted`, `performance_viewed`, `earnings_viewed`, `payout_started/requested`, `notification_opened`, `push_enabled`, `dispute_submitted`, `support_ticket_created`. Only the user id is sent. No-op unless `EXPO_PUBLIC_POSTHOG_KEY` is set.
+- **Client events** (PostHog, optional): `app_opened`, `signup_started/submitted/completed`, `onboarding_step/completed`, `campaign_viewed/joined/left`, `marketplace_filtered`, `submission_started/submitted`, `performance_viewed`, `earnings_viewed`, `payout_started/requested`, `notification_opened`, `dispute_submitted`, `support_ticket_created`. Only the user id is sent. No-op unless `EXPO_PUBLIC_POSTHOG_KEY` is set.
 - **Admin Ringkasan**: creator activation funnel (signup → paid out, step conversion) and weekly unique creators per key action.
 - **Audit coverage**: triggers on directly-written sensitive tables; account numbers masked to last 4.
 - **Fraud signal**: payout flagged when the payout method changed within 72h before the request.
@@ -122,12 +117,12 @@ Matches the reference fintech style with TAPP Blue replacing the purple:
 - Home: total earnings headline, gradient "Tersedia untuk dicairkan" card, four quick actions, transaction-style "Sedang kamu kerjakan" list. Floating rounded tab bar.
 - Admin panel uses the same dark system (`admin/src/styles.css`): floating sidebar with blue active item, segmented tabs, surface cards for list/detail, gradient first stat, pill badges.
 
-## Web version (website)
-The creator app now also runs in the browser from the same codebase (Expo web). The native "TAPP app" is unchanged.
+## Web app
+TAPP is web only (no Android/iOS build). `app/` is built with Expo web into a static SPA.
 - Run: `cd app && npm run web` · Build: `npm run build:web` → static site in `app/dist/`.
-- Deploy: Vercel (`app/vercel.json` included) or Netlify (`public/_redirects` included) — SPA rewrites so deep links work. Set `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` (and optional PostHog) as environment variables.
-- Desktop (≥900px): left sidebar instead of the tab bar, content max-width, 2-column marketplace, split Welcome (headline left, fading ribbons right), forms as a centered card. Phone browsers get the app layout.
-- Web differences: native push is off (in-app inbox still works), confirmations use the browser dialog (`src/lib/alert.ts`), analytics via `posthog-js` (`src/lib/analytics.web.ts`).
+- Deploy: see `DEPLOY.md` (Apache `.htaccess`, Nginx, or Netlify `public/_redirects`) — SPA rewrites so deep links work. Set `EXPO_PUBLIC_SUPABASE_URL` / `EXPO_PUBLIC_SUPABASE_ANON_KEY` (and optional PostHog) as environment variables.
+- Desktop (≥900px): left sidebar instead of the tab bar, content max-width, 2-column marketplace, split Welcome (headline left, fading ribbons right), forms as a centered card. Phone browsers get the mobile layout.
+- Confirmations use the browser dialog (`src/lib/alert.ts`), analytics via `posthog-js` (`src/lib/analytics.ts`).
 
 ## Brand portal (V1: laporan saja)
 Two homes behind one login: `profiles.role = 'brand'` → `/brand` (TAPP for Brands), everyone else → the creator app.
@@ -148,7 +143,7 @@ Two homes behind one login: `profiles.role = 'brand'` → `/brand` (TAPP for Bra
 - App: register screen links to terms/privacy when `EXPO_PUBLIC_SITE_URL` is set.
 
 ## Deployment status (live services)
-- **Supabase**: migrations 001–020 applied; Edge Function `push-dispatch` **deployed** (verified: no secret → 401, with Vault secret → 200). Push works once the app is built with an EAS project id.
+- **Supabase**: migrations 001–023 applied. **To do:** apply `…024_web_only.sql` and delete the deployed Edge Function `push-dispatch` (`npx supabase functions delete push-dispatch --project-ref njffqsbddzztfxxbavpp`).
 - **Railway** project `tapp` → `tapp-mailer` **deployed** (welcome, sign-in code, signup code, reset, brand invite, payout emails). Waiting only for the Resend API key + verified domain.
 - **Admin access**: `app_settings.admin_emails` (now `tappcreators@gmail.com`) — listed emails become admin automatically once verified (migration `…021`). Add more emails to the JSON array to add admins.
 - **Brand assets**: vector logo set in `brand/svg/` (mark, white/black mark, app icon, horizontal logo for dark/light backgrounds).
@@ -159,5 +154,5 @@ Two homes behind one login: `profiles.role = 'brand'` → `/brand` (TAPP for Bra
 - **Hosting**: see `DEPLOY.md` — Apache `.htaccess` files ship with the site, web app and admin builds; `deploy/nginx.conf` for a VPS.
 - Recommended in the Supabase dashboard: Authentication → Password security → enable **leaked password protection**.
 
-## Next: Phase 11–13
-Android build, iOS TestFlight, production release prep — needs a real device/Apple & Google developer accounts, outside what this environment can do. App and admin are otherwise feature-complete for V1 per the brief.
+## Next
+Web only — no Android/iOS release. Remaining work is launch prep; see the checklist in `DEPLOY.md`.

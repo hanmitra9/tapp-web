@@ -28,10 +28,10 @@
 | Creator suspended / banned | Blocked at every creator RPC via `assert_active_creator` |
 | Payout rejected | Funds return to available; creator notified; can re-request |
 | Duplicate payout request | Idempotency key + one-open-payout unique index |
-| Network failure (app) | `OfflineBanner` (persistent, auto-hides) + network-aware error copy in `lib/errors.ts` |
+| Network failure (web app) | `OfflineBanner` (persistent, auto-hides) + network-aware error copy in `lib/errors.ts` |
 | Offline app state | `NetworkProvider`/`useOnline`; screens already show retry-capable error states (`LoadState`) |
-| Auth expiration | Supabase auto-refresh while foregrounded; expired-session errors map to "log in again" |
-| Notification failure | `push_error` recorded per notification; failed sends are retried by the dispatch sweep |
+| Auth expiration | Supabase auto-refresh while the tab is visible; expired-session errors map to "log in again" |
+| Notification failure | In-app inbox is the source of truth (written by the DB); email is best-effort via `mailer/` |
 
 ## Known V1 limits (unchanged from earlier phases)
 - No platform API verification — metrics are admin-entered.

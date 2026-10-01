@@ -1,7 +1,6 @@
 import type { Session } from '@supabase/supabase-js';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { supabase } from '@/lib/supabase';
-import { disablePush } from '@/features/notifications/push';
 import { identify, resetAnalytics } from '@/lib/analytics';
 
 export type CreatorStatus = 'pending' | 'verified' | 'active' | 'suspended' | 'banned';
@@ -93,7 +92,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshAccount]);
 
   const signOut = useCallback(async () => {
-    await disablePush();   // stop pushes to this device before the session disappears
     resetAnalytics();
     const { error } = await supabase.auth.signOut();
     if (error) await supabase.auth.signOut({ scope: 'local' });  // offline: still clear the device session
