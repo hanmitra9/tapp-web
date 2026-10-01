@@ -108,6 +108,6 @@ const styles = StyleSheet.create({
   meta: { ...type.caption, color: color.textMuted },
   body: { ...type.body, color: color.text },
   reply: { marginTop: space.sm, padding: space.md, borderRadius: radius.sm, backgroundColor: color.accentSoft, gap: 2 },
-  replyLabel: { ...type.caption, color: color.blue, fontFamily: type.label.fontFamily },
+  replyLabel: { ...type.caption, color: color.link, fontFamily: type.label.fontFamily },
   muted: { ...type.body, color: color.textMuted, marginTop: space.md },
 });

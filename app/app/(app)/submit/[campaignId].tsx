@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
   form: { gap: space.xl },
   urlWrap: { position: 'relative' },
   paste: { position: 'absolute', right: space.lg, top: 26 + 16 },
-  pasteText: { ...type.label, color: color.blue },
+  pasteText: { ...type.label, color: color.link },
   shotRow: { flexDirection: 'row', alignItems: 'center', gap: space.lg },
   shot: { width: 72, height: 128, borderRadius: radius.sm, backgroundColor: color.surface },
   remove: { ...type.label, color: color.danger },

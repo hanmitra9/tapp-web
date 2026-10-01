@@ -94,7 +94,7 @@ export default function Welcome() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: color.bg },
+  root: { flex: 1, backgroundColor: color.canvas },
   safe: { flex: 1, paddingHorizontal: space.xl },
   safeWide: { paddingHorizontal: 72, paddingBottom: 56, justifyContent: 'center' },
   spacer: { flex: 1 },

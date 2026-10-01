@@ -52,7 +52,7 @@ export function Screen({ children, footer, scroll = true, scrollRef, refreshCont
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: color.bg },
+  safe: { flex: 1, backgroundColor: color.canvas },
   flex: { flex: 1 },
   content: { paddingHorizontal: space.xl, paddingTop: space.lg, paddingBottom: space.xl, flexGrow: 1 },
   wideTop: { paddingTop: space.xxxl },

@@ -146,12 +146,12 @@ function FilterSheet({ visible, initial, onClose, onApply }: { visible: boolean;
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: color.bg },
+  safe: { flex: 1, backgroundColor: color.canvas },
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.xl, paddingTop: space.lg + space.md },
   title: { ...type.title, color: color.text },
   filterBtn: { width: 44, height: 44, borderRadius: radius.pill, backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center' },
   filterDot: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: color.blue, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
-  closeText: { ...type.label, color: color.blue },
+  closeText: { ...type.label, color: color.link },
   filterDotText: { color: color.onAccent, fontSize: 11, fontFamily: type.label.fontFamily },
   sortsWrap: { flexGrow: 0, marginTop: space.lg },
   sorts: { paddingHorizontal: space.xl, gap: space.sm },

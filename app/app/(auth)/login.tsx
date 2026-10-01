@@ -67,7 +67,7 @@ export default function Login() {
 
 const styles = StyleSheet.create({
   form: { gap: space.lg },
-  forgot: { ...type.label, color: color.blue, alignSelf: 'flex-start' },
+  forgot: { ...type.label, color: color.link, alignSelf: 'flex-start' },
   foot: { ...type.caption, color: color.textSecondary, marginTop: space.xxl },
-  link: { color: color.blue, fontFamily: type.label.fontFamily },
+  link: { color: color.link, fontFamily: type.label.fontFamily },
 });

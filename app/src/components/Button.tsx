@@ -1,5 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import { ActivityIndicator, Pressable, StyleSheet, Text, type PressableProps } from 'react-native';
-import { color, radius, type } from '@/theme/tokens';
+import { color, gradient, radius, type } from '@/theme/tokens';
 
 type Variant = 'primary' | 'secondary' | 'quiet';
 type Props = Omit<PressableProps, 'children'> & { label: string; variant?: Variant; loading?: boolean };
@@ -20,6 +21,7 @@ export function Button({ label, variant = 'primary', loading = false, disabled, 
       ]}
       {...rest}
     >
+      {variant === 'primary' ? <LinearGradient colors={gradient.button} locations={[0, 0.48, 1]} style={StyleSheet.absoluteFill} pointerEvents="none" /> : null}
       {loading ? (
         <ActivityIndicator color={variant === 'primary' ? color.onAccent : color.blue} />
       ) : (
@@ -30,20 +32,20 @@ export function Button({ label, variant = 'primary', loading = false, disabled, 
 }
 
 const styles = StyleSheet.create({
-  base: { minHeight: 54, borderRadius: radius.md, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22 },
-  primary: { backgroundColor: color.blue },
-  secondary: { backgroundColor: color.surface },
+  base: { minHeight: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden' },
+  primary: { backgroundColor: color.blue, borderWidth: 1, borderColor: 'rgba(198,214,255,0.28)', boxShadow: '0 10px 30px -14px rgba(84,96,255,0.95), inset 0 1px 0 rgba(255,255,255,0.28)' },
+  secondary: { backgroundColor: color.surface, borderWidth: 1, borderColor: color.border },
   quiet: { minHeight: 40, paddingHorizontal: 0, alignSelf: 'center' },
   inactive: { opacity: 0.4 },
   label: { ...type.heading },
 });
 const pressed = StyleSheet.create({
-  primary: { backgroundColor: color.bluePressed, transform: [{ scale: 0.99 }] },
+  primary: { opacity: 0.92, transform: [{ scale: 0.99 }] },
   secondary: { backgroundColor: color.surfaceRaised },
   quiet: { opacity: 0.6 },
 });
 const labels = StyleSheet.create({
   primary: { color: color.onAccent },
   secondary: { color: color.text },
-  quiet: { ...type.label, color: color.blue },
+  quiet: { ...type.label, color: color.link },
 });

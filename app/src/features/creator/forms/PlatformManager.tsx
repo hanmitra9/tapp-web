@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
   mainTag: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: radius.sm },
   mainOn: { backgroundColor: color.accentSoft },
   mainText: { ...type.caption, color: color.textSecondary },
-  mainTextOn: { color: color.blue, fontFamily: type.label.fontFamily },
+  mainTextOn: { color: color.link, fontFamily: type.label.fontFamily },
   remove: { ...type.caption, color: color.danger },
   addBox: { gap: space.lg, paddingTop: space.sm },
 });

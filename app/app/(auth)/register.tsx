@@ -84,5 +84,5 @@ const styles = StyleSheet.create({
   legal: { ...type.caption, color: color.textMuted, marginTop: space.lg },
   form: { gap: space.lg },
   foot: { ...type.caption, color: color.textSecondary, marginTop: space.xl },
-  link: { color: color.blue, fontFamily: type.label.fontFamily },
+  link: { color: color.link, fontFamily: type.label.fontFamily },
 });

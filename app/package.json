@@ -12,11 +12,11 @@
     "e2e": "playwright test"
   },
   "dependencies": {
-    "@expo-google-fonts/instrument-sans": "^0.4.1",
     "@expo/metro-runtime": "~6.1.2",
     "@expo/vector-icons": "^15.1.1",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/netinfo": "~11.4.1",
+    "@react-navigation/native": "^7.4.1",
     "@supabase/supabase-js": "^2.57.0",
     "expo": "~54.0.0",
     "expo-clipboard": "~8.0.7",

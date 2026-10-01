@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   pillLabel: { ...type.caption, color: color.textMuted },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: space.xxl, marginBottom: space.md },
   sectionTitle: { ...type.heading, color: color.text },
-  link: { ...type.label, color: color.blue },
+  link: { ...type.label, color: color.link },
   activeRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md },
   mono: { width: 44, height: 44, borderRadius: 22, backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center' },
   activeText: { gap: 2, flex: 1 },

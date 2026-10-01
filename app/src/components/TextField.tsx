@@ -48,7 +48,7 @@ const styles = StyleSheet.create({
   focused: { borderColor: color.blue },
   errored: { borderColor: color.danger },
   input: { flex: 1, ...type.body, color: color.text, paddingVertical: 14 },
-  toggle: { fontFamily: font.semibold, fontSize: 14, color: color.blue },
+  toggle: { fontFamily: font.semibold, fontSize: 14, color: color.link },
   error: { ...type.caption, color: color.danger },
   hint: { ...type.caption, color: color.textMuted },
 });

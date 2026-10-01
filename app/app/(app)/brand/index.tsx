@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   section: { marginTop: space.xxl, gap: space.md },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },
   sectionTitle: { ...type.heading, color: color.text },
-  link: { ...type.label, color: color.blue },
+  link: { ...type.label, color: color.link },
   big: { ...type.title, color: color.text, fontVariant: ['tabular-nums'] },
   bigUnit: { ...type.caption, color: color.textMuted },
   muted: { ...type.body, color: color.textMuted },

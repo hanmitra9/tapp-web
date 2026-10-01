@@ -65,5 +65,5 @@ const styles = StyleSheet.create({
   segOn: { backgroundColor: color.blue },
   ok: { ...type.caption, color: color.success },
   bad: { ...type.caption, color: color.danger },
-  link: { ...type.label, color: color.blue },
+  link: { ...type.label, color: color.link },
 });

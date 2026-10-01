@@ -77,7 +77,7 @@ const styles = StyleSheet.create({
   rowTop: { flexDirection: 'row', justifyContent: 'space-between' },
   brand: { ...type.caption, color: color.textSecondary },
   badge: { ...type.caption, color: color.textSecondary, backgroundColor: color.surface, paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.sm, overflow: 'hidden' },
-  badgeLive: { color: color.blue, backgroundColor: color.accentSoft },
+  badgeLive: { color: color.link, backgroundColor: color.accentSoft },
   title: { ...type.heading, color: color.text },
   meta: { ...type.caption, color: color.textMuted, fontVariant: ['tabular-nums'] },
 });

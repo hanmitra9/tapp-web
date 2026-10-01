@@ -16,7 +16,7 @@ export default function AppLayout() {
   const needsOnboarding = !isBrand && !account.onboarded && account.status === 'pending';
   const creator = !isBrand && !needsOnboarding;
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
       <Stack.Protected guard={isBrand}>
         <Stack.Screen name="brand" />
         <Stack.Screen name="brand-campaign/[id]" />

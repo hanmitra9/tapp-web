@@ -25,7 +25,7 @@ export default function TabsLayout() {
         },
         tabBarLabelStyle: { fontFamily: font.semibold, fontSize: 11, marginTop: 2 },
         tabBarActiveBackgroundColor: 'transparent',
-        sceneStyle: { backgroundColor: color.bg },
+        sceneStyle: { backgroundColor: color.canvas },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Beranda', tabBarIcon: icon('home') }} />

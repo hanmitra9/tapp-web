@@ -166,7 +166,7 @@ const styles = StyleSheet.create({
   explain: { marginTop: space.xl, padding: space.lg, gap: space.sm, backgroundColor: color.surface, borderRadius: radius.md },
   explainTitle: { ...type.label, color: color.text },
   explainBody: { ...type.caption, color: color.textSecondary },
-  link: { ...type.label, color: color.blue },
+  link: { ...type.label, color: color.link },
   section: { ...type.heading, color: color.text, marginTop: space.xxl, marginBottom: space.sm },
   muted: { ...type.body, color: color.textMuted, marginTop: space.md },
   row: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.lg, borderBottomWidth: 1, borderBottomColor: color.border },
