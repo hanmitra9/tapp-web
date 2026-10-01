@@ -35,8 +35,8 @@ export default function CampaignDetailScreen() {
   const { c, assets } = q.data;
   const joined = c.membership?.status === 'joined';
   const block = joinBlockCopy(c.join_block);
-  const used = Math.max(c.budget - c.remaining, 0);
-  const pct = c.budget ? Math.min(used / c.budget, 1) : 0;
+  // The bar shows what's left, matching its label (and the website's "Budget Tersisa" bars).
+  const pct = c.budget ? Math.min(Math.max(c.remaining, 0) / c.budget, 1) : 0;
   const deadline = c.submission_deadline ?? c.ends_at;
   const rulesBy = (k: keyof typeof RULE_TITLES) => c.rules.filter((r) => r.kind === k);
 
