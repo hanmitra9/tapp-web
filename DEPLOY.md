@@ -20,6 +20,11 @@ Upload the **contents of `dist/`** to the domain's web root (cPanel `public_html
 Rules for this are included: `.htaccess` (Apache/cPanel — enable "show hidden files" when uploading),
 `deploy/nginx.conf` (VPS), `_redirects` (Netlify). Turn on free SSL (AutoSSL / Let's Encrypt).
 
+## Railway (Docker)
+The repo's `Dockerfile` builds everything (landing is taken prerendered from the repo) and serves it with nginx on `$PORT`.
+Create a service from this GitHub repo in Railway, generate a domain, and set the service variable `SITE_URL` to that
+URL (used for canonical/og links). Every push to the deployed branch redeploys.
+
 ## After uploading
 1. Supabase → Authentication → URL Configuration → **Site URL** = `https://tapp.id`; add `https://tapp.id/**` to Redirect URLs.
 2. SQL: `insert into app_settings (key, value) values ('app_url', to_jsonb('https://tapp.id'::text)) on conflict (key) do update set value = excluded.value;`

@@ -5,8 +5,10 @@ One site, one upload. Produces dist/ at the repo root:
   /login, /dashboard/... signed-in pages: the web app, served by app.html for every path that isn't a file
   /admin/                admin panel
 Upload the contents of dist/ to the domain's web root (.htaccess, nginx and Netlify rules are included).
-Flags: --no-prerender skips the landing's SEO prerender (needs Playwright + Chromium)."""
-import os, sys, shutil, subprocess, pathlib
+Flags: --no-prerender skips the landing's SEO prerender (needs Playwright + Chromium).
+       --skip-landing reuses the committed, prerendered landing (index.html) and only swaps in the site URL —
+       what the Docker build uses, so it needs no browser."""
+import os, re, sys, shutil, subprocess, pathlib
 here = pathlib.Path(__file__).resolve().parent
 repo = here.parents[1]
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
@@ -15,7 +17,8 @@ env = {**os.environ, 'SITE_URL': url}
 SUPA = {'url': 'https://njffqsbddzztfxxbavpp.supabase.co', 'key': 'sb_publishable_1Nl1WjCA3Ddeu4kvPtZhEA_xWCMQZ-x'}
 
 # 1. landing + static pages (written into site/)
-subprocess.run([sys.executable, str(here / 'build_landing.py')] + ([] if '--no-prerender' in sys.argv else ['--prerender']), check=True, env=env)
+if '--skip-landing' not in sys.argv:
+    subprocess.run([sys.executable, str(here / 'build_landing.py')] + ([] if '--no-prerender' in sys.argv else ['--prerender']), check=True, env=env)
 subprocess.run([sys.executable, str(here / 'build_pages.py')], check=True, env=env)
 
 # 2. web app at the domain root (no /app prefix)
@@ -41,5 +44,10 @@ for f in app.rglob('*'):
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(f, dest)
 shutil.copytree(repo / 'admin' / 'dist', out / 'admin')
+if '--skip-landing' in sys.argv:   # committed landing was built for another URL: point canonical/og at this one
+    idx = out / 'index.html'
+    html = idx.read_text()
+    m = re.search(r'<link rel="canonical" href="(https?://[^/"]+)/"', html)
+    if m: idx.write_text(html.replace(m.group(1), url))
 (out / '_redirects').write_text('/admin/*  /admin/index.html  200\n/*  /app.html  200\n')   # Netlify: files win, then the SPA
 print('done:', url, '-> upload the contents of', out)
