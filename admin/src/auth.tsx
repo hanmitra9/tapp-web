@@ -27,7 +27,11 @@ export function AdminGate({ children }: { children: ReactNode }) {
       if (data?.role === 'admin') setAdmin({ id: data.id, name: data.full_name, email: session.user.email });
       else setDenied(true);
     });
-    supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => setAal2(data?.currentLevel === 'aal2'));
+    // 2FA is required only while app_settings.require_admin_mfa is on (the database enforces the same switch).
+    Promise.all([supabase.rpc('login_policy'), supabase.auth.mfa.getAuthenticatorAssuranceLevel()]).then(([pol, lvl]) => {
+      const required = (pol.data as { require_admin_mfa?: boolean } | null)?.require_admin_mfa !== false;
+      setAal2(!required || lvl.data?.currentLevel === 'aal2');
+    });
   }, [session]);
 
   const signOut = async () => { await supabase.auth.signOut(); };
@@ -41,7 +45,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
     </div></div>
   );
   if (!admin || aal2 === null) return null;
-  // The DB only treats an admin session as admin at AAL2 (migration 026), so finish 2FA before the panel loads.
+  // When admin 2FA is on, the DB only treats an admin session as admin at AAL2 (migration 026): finish 2FA first.
   if (!aal2) return <TwoFactor email={session.user.email} onSignOut={signOut} />;
   return <Ctx.Provider value={{ admin, signOut }}>{children}</Ctx.Provider>;
 }

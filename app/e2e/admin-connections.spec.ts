@@ -31,3 +31,15 @@ test('admin sees connections and can cut one with a reason', async ({ page }) =>
   await page.getByRole('button', { name: 'Putuskan koneksi' }).click();
   await expect.poll(() => sent).toEqual({ p_connection_id: 'c1', p_reason: 'Akun dipakai bersama', p_unverify: true });
 });
+
+test('admin without 2FA gets in when require_admin_mfa is off', async ({ page }) => {
+  await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, login_policy: { require_login_otp: false, require_admin_mfa: false }, admin_platform_connections: [] });
+  await page.goto('/admin/connections');
+  await expect(page.getByRole('heading', { name: 'Koneksi akun' })).toBeVisible();
+});
+
+test('admin without 2FA is asked for it while require_admin_mfa is on', async ({ page }) => {
+  await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, login_policy: { require_login_otp: false, require_admin_mfa: true } });
+  await page.goto('/admin/connections');
+  await expect(page.getByRole('heading', { name: 'Koneksi akun' })).toHaveCount(0);
+});
