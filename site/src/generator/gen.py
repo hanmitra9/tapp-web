@@ -51,17 +51,17 @@ HERO_B = f'''<div class="hero pad" style="position: relative; display: grid; gri
 </div>'''
 
 STEPS_C = [
-  ('Buat Akun', 'Tentukan niche kontenmu. Akun baru mendapat jalur yang sama dengan akun besar, karena yang dinilai adalah hasil.',
+  ('Buat Akun', 'Daftar gratis dan pilih niche-mu. Akun baru dan akun besar dinilai dengan cara yang sama: dari hasil.',
    '<span style="font-size: 13px; font-weight: 600">Daftar Akun</span><span style="font-size: 12px; color: #8A8A93; font-weight: 500">Nama lengkap</span><span class="inp">Rani Putri</span><span style="font-size: 12px; color: #8A8A93; font-weight: 500">Email</span><span class="inp">rani@email.com</span><span class="btnm">Daftar Sekarang</span>'),
-  ('Hubungkan Akun Sosial', 'Tautkan TikTok, Instagram, atau YouTube. Tim TAPP memverifikasi kepemilikan akun sebelum kamu mulai.',
+  ('Hubungkan Akun Sosial', 'Sambungkan TikTok, Instagram, atau YouTube. Kami pastikan akunnya memang milikmu.',
    '<span style="font-size: 13px; font-weight: 600">Hubungkan Akun</span>'
    + ''.join(f'<span class="row"><span style="display: flex; align-items: center; gap: 10px"><span style="color: #D4D4D8; display: inline-flex">{ICON[k]}</span><span style="display: flex; flex-direction: column"><b style="font-size: 13px">{n}</b><span style="font-size: 11px; color: #8A8A93; font-weight: 500">{h}</span></span></span><span style="{st}">{t}</span></span>'
              for k, n, h, t, st in [('tt', 'TikTok', '@rani.clips', 'Terhubung', 'font-size: 11px; font-weight: 600; color: #34D07A; background: rgba(52,208,122,0.14); padding: 4px 9px; border-radius: 999px'),
                                      ('ig', 'Instagram', 'Belum terhubung', 'Hubungkan', 'font-size: 11px; font-weight: 600; color: #C6D6FF; background: rgba(69,72,245,0.2); padding: 4px 9px; border-radius: 999px'),
                                      ('yt', 'YouTube', 'Belum terhubung', 'Hubungkan', 'font-size: 11px; font-weight: 600; color: #C6D6FF; background: rgba(69,72,245,0.2); padding: 4px 9px; border-radius: 999px')])),
-  ('Ambil Campaign', 'Pilih brief yang cocok dengan gaya kontenmu. Materi sumber dan aturan lengkap terbuka begitu kamu bergabung.',
+  ('Ambil Campaign', 'Pilih brief yang paling cocok dengan gaya kontenmu. Materi sumber langsung terbuka setelah kamu bergabung.',
    f'<span style="display: flex; align-items: center; justify-content: space-between"><span style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 13px"><i style="font-style: normal; width: 22px; height: 22px; border-radius: 7px; background: linear-gradient(180deg, #4F6BFF, #2238C2); display: inline-flex; align-items: center; justify-content: center"><img src="{BLOB_WHITE}" alt="" style="width: 13px; height: 13px"></i>TAPP</span><span style="font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.06)">Clipping</span></span><b style="font-size: 16px">TAPP Campaign</b><span class="tabular"><b style="font-size: 18px">Rp3.000</b><span style="font-size: 12px; color: #8A8A93; font-weight: 500"> /1K Views</span></span><span class="tabular" style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #9A9AA5"><span>Minimal klaim</span><span style="color: #FFF">5.000 views</span></span><span class="tabular" style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #9A9AA5"><span>Maks. per clip</span><span style="color: #FFF">100K views</span></span><span style="height: 6px; border-radius: 3px; background: #1F1F26; display: block"><span style="display: block; width: 62%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #4548F5, #7DA2FF)"></span></span>'),
-  ('Posting &amp; Terima Bayaran', 'Kirim link postingan. Tim TAPP mengecek clip-mu, dan begitu diterima, bayarannya ditransfer langsung ke rekeningmu.',
+  ('Posting &amp; Dibayar', 'Kirim link postingan. Begitu clip-mu diterima, bayarannya langsung ditransfer ke rekeningmu.',
    '<span style="font-size: 13px; font-weight: 600">Submit Clip</span><span style="font-size: 12px; color: #8A8A93; font-weight: 500">Link postingan</span><span class="inp" style="border-color: #4548F5; box-shadow: 0 0 16px rgba(69,72,245,0.35)">tiktok.com/@rani.clips/video/7412</span><span class="btnm">Kirim untuk direview</span><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: rgba(255,176,32,0.14); color: #FFB020">Direview</span><span style="font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 999px; background: rgba(52,208,122,0.14); color: #34D07A">Lolos</span><span class="tabular" style="margin-left: auto; font-weight: 600; color: #34D07A">Rp234.000</span></span>'),
 ]
 def step_card(i, t):
@@ -162,8 +162,8 @@ page = f'''<!doctype html>
 <link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <style>
 @font-face{{font-family:'Geist';src:url('assets/fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}}
-@font-face{{font-family:'Jakarta';src:url('assets/fonts/PlusJakartaSans-Variable.woff2') format('woff2');font-weight:200 800;font-style:normal;font-display:swap}}
-.lp h1,.lp h2,.lp .hero-h,.lp .h2{{font-family:'Jakarta','Geist',system-ui,sans-serif;font-weight:600 !important;letter-spacing:-0.025em !important;word-spacing:0.04em}}
+@font-face{{font-family:'InterTight';src:url('assets/fonts/InterTight-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}}
+.lp h1,.lp h2,.lp .hero-h,.lp .h2{{font-family:'InterTight','Geist',system-ui,sans-serif;font-weight:500 !important;letter-spacing:-0.01em !important}}
 body{{margin:0;background:#060608;color:#F4F4F5;font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;font-weight:400;-webkit-font-smoothing:antialiased}}
 a{{color:inherit;text-decoration:none}}
 .lp *{{box-sizing:border-box}}
@@ -285,11 +285,11 @@ a{{color:inherit;text-decoration:none}}
   {hero_hub()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
-    {head("Campaign Terbuka", "Brief Sudah Menunggu,", "Tinggal Kamu Eksekusi", "Tarif, batas views, dan aturan konten terlihat sejak awal. Kamu tahu nilai sebuah clip sebelum mulai mengedit.")}
+    {head("Campaign Terbuka", "Campaign Siap Diambil,", "Tinggal Kamu Eksekusi", "Tarif per 1.000 views, minimal views, dan aturan konten jelas dari awal. Kamu tahu nilai clip-mu sebelum mulai edit.")}
     <div class="g3" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px">
       {campaign_card(CAMPAIGNS[0])}
-      {soon_card("Campaign brand berikutnya", "Slot ini disiapkan untuk brand yang bergabung selanjutnya.")}
-      {soon_card("Brief baru", "Campaign baru langsung muncul di dashboard-mu begitu dibuka.")}
+      {soon_card("Brand Berikutnya Segera Hadir", "Campaign dari brand partner baru akan muncul di sini.")}
+      {soon_card("Kamu Yang Pertama Tahu", "Begitu campaign baru dibuka, notifikasinya langsung masuk ke akunmu.")}
     </div>
     <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 40px">
       {pill_btn("Jelajahi Semua Campaign", "campaigns.html")}
@@ -298,7 +298,7 @@ a{{color:inherit;text-decoration:none}}
   </section>
 
   <section id="alur" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
-    {head("Cara Kerja", "Empat Langkah,", "Setiap Status Terlihat", "Dari pendaftaran sampai bayaran masuk rekening, posisi clip-mu selalu jelas: direview, diterima, atau dibayar.")}
+    {head("Cara Kerja", "Dari Daftar", "Sampai Dibayar", "Empat langkah, tanpa ribet. Status clip-mu selalu kelihatan: direview, diterima, atau sudah ditransfer.")}
     <div class="g2" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px">{''.join(step_card(i, t) for i, t in enumerate(STEPS_C))}</div>
   </section>
 
@@ -310,14 +310,14 @@ a{{color:inherit;text-decoration:none}}
 {WALL}
   </section>
 
-  {faq_block("FAQ", "Sebelum Kamu", "Mulai Mengedit", "Hubungi Tim TAPP", "#whatsapp", "faqC")}
+  {faq_block("FAQ", "Pertanyaan Yang", "Sering Muncul", "Hubungi Tim TAPP", "#whatsapp", "faqC")}
 </sc-if>
 
 <sc-if value="{{{{isBrand}}}}" hint-placeholder-val="{{{{ false }}}}">
   {hero_brand()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
-    {head("Kenapa TAPP", "Kendali Penuh,", "Dari Brief Hingga Laporan", "Satu tim yang mendampingi, satu sistem yang menyaring views, dan satu dashboard yang membaca hasilnya.", True, 860)}
+    {head("Kenapa TAPP", "Semua Terkendali,", "Dari Brief Sampai Laporan", "Satu account manager, satu sistem penyaring views, dan satu dashboard untuk membaca hasilnya.", True, 860)}
 {FX3}
   </section>
 
@@ -325,8 +325,8 @@ a{{color:inherit;text-decoration:none}}
 
   <section id="kontak" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 88px 64px 40px; text-align: center">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 24px">
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Biarkan Brand-mu <br><span style="color: #7DA2FF">Dibicarakan Di Mana-Mana</span></h2>
-      <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 560px">Ceritakan target campaign-mu. Kami siapkan creator yang tepat untuk menyebarkannya dari berbagai kota.</p>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Bikin Brand-mu <br><span style="color: #7DA2FF">Dibicarakan Di Mana-Mana</span></h2>
+      <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 560px">Ceritakan target campaign-mu. Kami siapkan creator yang tepat untuk menyebarkannya ke seluruh Indonesia.</p>
       <a class="btn-p" href="meeting.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Jadwalkan Meeting</a>
     </div>
     {GLOBE}
@@ -341,7 +341,7 @@ a{{color:inherit;text-decoration:none}}
   <div class="foot" style="max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 40px">
     <div style="display: flex; flex-direction: column; gap: 14px; max-width: 340px">
       <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 20px"><img src="{BLOB_MARK}" alt="" style="width: 28px; height: 28px"><span>TAPP</span></div>
-      <p style="font-size: 15px; line-height: 24px; color: #9A9AA5; font-weight: 400">Platform distribusi konten berbasis performa. Brand membayar hasil yang terverifikasi, creator dibayar untuk kerja yang terbukti.</p>
+      <p style="font-size: 15px; line-height: 24px; color: #9A9AA5; font-weight: 400">Platform clipping berbasis performa. Brand bayar hasil yang terbukti, creator dibayar dari views yang nyata.</p>
     </div>
     <div style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Navigation</span><a class="nl" href="#top">Home</a><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#alur">Cara Kerja</a><a class="nl" href="#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan Privasi</a><a class="nl" href="terms.html">Syarat Layanan</a></div>
     <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Social</span><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>

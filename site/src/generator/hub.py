@@ -110,8 +110,8 @@ def hero_hub():
     </div>
   </div>
   <div class="pad" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 0 24px">
-    <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Dibayar Untuk Setiap<br> <span style="color: #7DA2FF">View Yang Nyata</span></h1>
-    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Ambil brief dari brand, posting dari akunmu sendiri, dan terima bayaran untuk setiap 1.000 views yang lolos verifikasi.</p>
+    <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Ubah Clip Jadi <br><span style="color: #7DA2FF">Penghasilan Nyata</span></h1>
+    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Ambil campaign dari brand, posting dari akunmu sendiri, dan dibayar dari setiap views yang lolos verifikasi. Tanpa minimal follower.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Sekarang", "#app:/register")}{_btn("Jelajahi Campaign", "campaigns.html", False)}</div>
     <div class="hm" style="display: none; width: 100%; max-width: 420px; flex-direction: column; align-items: center; gap: 12px; margin-top: 8px; text-align: left">{_payout_card()}{_campaign_card()}</div>
   </div>
@@ -124,11 +124,11 @@ TIERS = [
     ('Proven', '2 juta', '#A78BFA'), ('Elite', '10 juta', '#F0B429'),
 ]
 TIER_BODY = [
-    'Titik awal. Selesaikan campaign pertama dan kumpulkan clip yang lolos verifikasi.',
-    'Clip-mu mulai konsisten lolos. Pola kerjamu sudah terbentuk dan terbaca.',
-    'Rekam jejak yang teruji di banyak clip dan campaign. Performamu bisa dipercaya.',
-    'Dua juta qualified views. Kamu terbukti menggerakkan audiens nyata.',
-    'Puncak level TAPP: sepuluh juta qualified views yang lolos verifikasi.',
+    'Semua mulai dari sini. Selesaikan campaign pertama dan kumpulkan clip yang lolos.',
+    'Clip-mu mulai konsisten lolos, dan bonus tarif pertamamu aktif.',
+    'Rekam jejakmu terbukti di banyak campaign. Brand mulai melirik clip-mu.',
+    'Dua juta views nyata. Kamu terbukti bisa menggerakkan audiens.',
+    'Level tertinggi di TAPP: sepuluh juta views nyata dan bonus tarif terbesar.',
 ]
 
 # Rate bonus per level (app_settings.tier_bonus_pct, migration 0037), paid by TAPP on top of the clip's pay.
@@ -205,8 +205,8 @@ TIER_CSS = (
 LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 48px">
       <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">Level Creator</span>
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Reputasi Yang Dihitung, <br><span style="color: #7DA2FF">Bukan Diklaim</span></h2>
-      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views. Jumlah follower tidak ikut dihitung. Makin tinggi level, makin besar bonus tarifmu. Pilih level untuk melihat syaratnya.</p>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Makin Konsisten, <br><span style="color: #7DA2FF">Makin Besar Bayaranmu</span></h2>
+      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views, bukan dari jumlah follower. Setiap naik level, bonus tarifmu ikut naik. Pilih level untuk lihat syaratnya.</p>
     </div>
     {''.join(f'<input type="radio" name="tier" id="tr{i}" class="tradio"{" checked" if i == 2 else ""}>' for i in range(len(TIERS)))}
     <div class="tlad">
@@ -246,7 +246,7 @@ PORTFOLIO = f'''<section id="portofolio" class="sec pad" style="max-width: 1180p
       <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
         <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">Creator Profile</span>
         <h2 class="h2" style="font-size: 44px; line-height: 50px; font-weight: 600; letter-spacing: -1.4px">Portofolio Yang <br><span style="color: #7DA2FF">Bicara Lewat Data</span></h2>
-        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap clip yang lolos, setiap view yang terverifikasi, dan setiap bayaran tercatat di profilmu. Bukti kerja yang bisa dipertanggungjawabkan.</p>
+        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap clip yang lolos, setiap view yang terverifikasi, dan setiap bayaran tersimpan di profilmu. Bukti kerja yang bisa kamu tunjukkan ke siapa pun.</p>
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px; width: 100%">
           {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(69,72,245,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 400">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
         </div>

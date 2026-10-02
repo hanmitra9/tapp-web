@@ -3,8 +3,8 @@
 *{box-sizing:border-box}
 b,strong{font-weight:500}
 @font-face{font-family:'Geist';src:url('fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
-@font-face{font-family:'Jakarta';src:url('fonts/PlusJakartaSans-Variable.woff2') format('woff2');font-weight:200 800;font-style:normal;font-display:swap}
-h1,h2,.h1{font-family:'Jakarta','Geist',system-ui,sans-serif;font-weight:600 !important;letter-spacing:-0.025em !important;word-spacing:0.04em}
+@font-face{font-family:'InterTight';src:url('fonts/InterTight-Variable.woff2') format('woff2');font-weight:100 900;font-style:normal;font-display:swap}
+h1,h2,.h1{font-family:'InterTight','Geist',system-ui,sans-serif;font-weight:500 !important;letter-spacing:-0.01em !important}
 body{margin:0;background:var(--bg);color:var(--text);font-family:'Geist',system-ui,-apple-system,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased;font-weight:400}
 a{color:inherit;text-decoration:none}
 h1,h2,h3,p{margin:0}
