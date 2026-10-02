@@ -20,17 +20,47 @@ def _badge(color, size=46):
 
 # ── Hero ──────────────────────────────────────────────────────────────────────────────
 # Stage is a fixed 1200×400 canvas (scaled down by CSS on smaller screens) so the wires meet the cards exactly.
+# Each wire: (card port x, y) → (hub port x, y). Drawn as a smooth S-curve.
 WIRES = [
-    'M290 112 H410 Q420 112 427 119 L462 154 Q469 161 479 161 H540',   # clip   → hub
-    'M272 306 H392 Q402 306 409 299 L470 238 Q477 231 487 231 H540',   # campaign → hub
-    'M890 92 H812 Q802 92 795 99 L744 150 Q737 157 727 157 H660',      # payout → hub
-    'M1000 292 H884 Q874 292 867 285 L794 212 Q787 205 777 205 H660',  # level → hub
+    (290, 112, 540, 161),    # clip     → hub
+    (272, 306, 540, 231),    # campaign → hub
+    (890, 92, 660, 157),     # payout   → hub
+    (1000, 292, 660, 205),   # level    → hub
 ]
+HUB_C = (600, 180)
+
+def _curve(x0, y0, x1, y1):
+    k = (x1 - x0) * 0.5
+    return f'M{x0} {y0} C{x0 + k:.0f} {y0}, {x1 - k:.0f} {y1}, {x1} {y1}'
 
 def _wires():
-    base = ''.join(f'<path d="{d}" stroke="#4548F5" stroke-width="5" opacity="0.45" filter="url(#hwb)"></path><path d="{d}" stroke="#7DA2FF" stroke-width="1.4" opacity="0.75"></path>' for d in WIRES)
-    pulses = ''.join(f'<path class="pulse" pathLength="100" style="animation-delay: -{i*0.9:.1f}s" d="{d}"></path>' for i, d in enumerate(WIRES))
-    return f'<svg class="hwire" viewBox="0 0 1200 400" aria-hidden="true" style="position: absolute; inset: 0; width: 1200px; height: 400px"><defs><filter id="hwb" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="3"></feGaussianBlur></filter></defs><g fill="none" stroke-linecap="round" stroke-linejoin="round">{base}{pulses}</g></svg>'
+    cx, cy = HUB_C
+    defs, base, comets, ports = [], [], [], []
+    for i, (x0, y0, x1, y1) in enumerate(WIRES):
+        d = _curve(x0, y0, x1, y1)
+        # Line brightens toward the hub: faint at the card, near-white where it enters TAPP.
+        defs.append(f'<linearGradient id="hwg{i}" gradientUnits="userSpaceOnUse" x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}">'
+                    '<stop offset="0" stop-color="#7DA2FF" stop-opacity="0.18"></stop><stop offset="0.55" stop-color="#7D8CFF" stop-opacity="0.65"></stop>'
+                    '<stop offset="1" stop-color="#DCE4FF" stop-opacity="1"></stop></linearGradient>')
+        base.append(f'<path d="{d}" stroke="#4548F5" stroke-width="8" opacity="0.3" filter="url(#hwb)"></path>'
+                    f'<path d="{d}" stroke="url(#hwg{i})" stroke-width="1.6"></path>')
+        delay = f'animation-delay: -{i * 1.1:.1f}s'
+        comets.append(f'<path class="comet" pathLength="100" style="{delay}" d="{d}"></path>'
+                      f'<path class="comet-h" pathLength="100" style="{delay}" d="{d}"></path>')
+        ports.append(f'<circle cx="{x0}" cy="{y0}" r="4" fill="#0B0B12" stroke="#7DA2FF" stroke-opacity="0.7" stroke-width="1.2"></circle>'
+                     f'<circle cx="{x1}" cy="{y1}" r="2.4" fill="#DCE4FF"></circle>')
+    rings = (f'<g mask="url(#hwfade)" fill="none">'
+             f'<circle cx="{cx}" cy="{cy}" r="104" stroke="rgba(160,180,255,0.16)"></circle>'
+             f'<circle cx="{cx}" cy="{cy}" r="150" stroke="rgba(160,180,255,0.10)" stroke-dasharray="1 7" stroke-linecap="round"></circle>'
+             f'<circle cx="{cx}" cy="{cy}" r="200" stroke="rgba(160,180,255,0.07)"></circle>'
+             f'<g class="orb"><circle cx="{cx}" cy="{cy - 150}" r="2.6" fill="#C6D6FF"></circle></g>'
+             f'<g class="orb orb2"><circle cx="{cx}" cy="{cy + 104}" r="2" fill="#7DA2FF"></circle></g></g>')
+    return ('<svg class="hwire" viewBox="0 0 1200 400" aria-hidden="true" style="position: absolute; inset: 0; width: 1200px; height: 400px; overflow: visible"><defs>'
+            '<filter id="hwb" x="-20%" y="-50%" width="140%" height="200%"><feGaussianBlur stdDeviation="3.5"></feGaussianBlur></filter>'
+            f'<radialGradient id="hwr" cx="{cx}" cy="{cy}" r="220" gradientUnits="userSpaceOnUse"><stop offset="0.35" stop-color="#FFFFFF"></stop><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"></stop></radialGradient>'
+            '<mask id="hwfade"><rect x="0" y="-100" width="1200" height="600" fill="url(#hwr)"></rect></mask>'
+            + ''.join(defs) + '</defs>' + rings
+            + '<g fill="none" stroke-linecap="round">' + ''.join(base) + ''.join(comets) + '</g>' + ''.join(ports) + '</svg>')
 
 def _payout_card():
     return f'''<div style="width: 260px; padding: 14px 16px; border-radius: 16px; {FLOAT}; display: flex; flex-direction: column; gap: 10px">
@@ -70,7 +100,7 @@ def hero_hub():
     return f'''<div class="hero2" style="position: relative; max-width: 1280px; margin: 0 auto; padding: 8px 0 24px">
   <div class="hstage-wrap" style="position: relative; height: 400px; overflow: visible">
     <div class="hstage" style="position: absolute; left: 50%; top: 0; width: 1200px; height: 400px; margin-left: -600px">
-      <div aria-hidden="true" style="position: absolute; left: 380px; top: 20px; width: 440px; height: 320px; background-image: radial-gradient(rgba(125,162,255,0.35) 1px, transparent 1.4px); background-size: 16px 16px; -webkit-mask-image: radial-gradient(closest-side, #000, transparent); mask-image: radial-gradient(closest-side, #000, transparent)"></div>
+      <div aria-hidden="true" style="position: absolute; left: 400px; top: -20px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(closest-side, rgba(69,72,245,0.28), rgba(69,72,245,0.08) 55%, transparent)"></div>
       {_wires()}
       <div class="hc" style="position: absolute; left: 170px; top: 6px">{clip(120, 196, 'quote', '', '128K', 'tt', small=True)}</div>
       <div class="hc" style="position: absolute; left: 20px; top: 214px">{_campaign_card()}</div>

@@ -181,8 +181,7 @@ a{{color:inherit;text-decoration:none}}
 .lp .mock .inp{{display:flex;align-items:center;height:38px;padding:0 12px;border-radius:10px;background:#15151B;border:1px solid rgba(255,255,255,0.08);font-size:13px;font-weight: 500;color:#D4D4D8}}
 .lp .mock .btnm{{display:flex;align-items:center;justify-content:center;height:40px;border-radius:10px;background:linear-gradient(180deg,#4D63FF,#2F45D6);font-size:13px;font-weight: 600;margin-top:4px}}
 .lp .mock .row{{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-radius:12px;background:#15151B;border:1px solid rgba(255,255,255,0.06)}}
-.lp .pulse{{stroke:#FFFFFF;stroke-width:2.4;stroke-dasharray:6 94;filter:drop-shadow(0 0 6px #7DA2FF);animation:pulse 3.9s linear infinite}}
-@keyframes pulse{{from{{stroke-dashoffset:100}}to{{stroke-dashoffset:0}}}}
+.lp .comet{{stroke:#7DA2FF;stroke-width:2;stroke-dasharray:16 84;opacity:.55;animation:comet 4.4s cubic-bezier(.45,0,.25,1) infinite}}.lp .comet-h{{stroke:#FFFFFF;stroke-width:2.6;stroke-dasharray:2.5 97.5;filter:drop-shadow(0 0 5px #9AB4FF);animation:cometh 4.4s cubic-bezier(.45,0,.25,1) infinite}}@keyframes comet{{from{{stroke-dashoffset:116}}to{{stroke-dashoffset:0}}}}@keyframes cometh{{from{{stroke-dashoffset:102.5}}to{{stroke-dashoffset:-13.5}}}}.lp .orb{{transform-origin:600px 180px;animation:spin 22s linear infinite}} .lp .orb2{{animation-duration:15s;animation-direction:reverse}}
 .lp .fan .t{{position:absolute;left:50%;top:50%;transition:transform .45s cubic-bezier(.2,.8,.2,1)}}
 .lp .fan .t1{{transform:translate(-50%,-50%) translateX(-175px) translateY(20px) rotate(-12deg)}}
 .lp .fan .t3{{transform:translate(-50%,-50%) translateX(175px) translateY(20px) rotate(12deg)}}
