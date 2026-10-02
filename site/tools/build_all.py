@@ -49,5 +49,14 @@ if '--skip-landing' in sys.argv:   # committed landing was built for another URL
     html = idx.read_text()
     m = re.search(r'<link rel="canonical" href="(https?://[^/"]+)/"', html)
     if m: idx.write_text(html.replace(m.group(1), url))
+# Cache-bust the site's own scripts/styles (served with a 7-day cache): assets/x.js -> assets/x.js?v=<content hash>.
+import hashlib
+def _ver(m):
+    f = out / 'assets' / m.group(2)
+    return m.group(1) + 'assets/' + m.group(2) + ('?v=' + hashlib.sha1(f.read_bytes()).hexdigest()[:10] if f.exists() else '') + m.group(3)
+for h in out.glob('*.html'):
+    t = h.read_text()
+    t2 = re.sub(r'((?:src|href)=")assets/([\w.-]+\.(?:js|css))(")', _ver, t)
+    if t2 != t: h.write_text(t2)
 (out / '_redirects').write_text('/admin/*  /admin/index.html  200\n/*  /app.html  200\n')   # Netlify: files win, then the SPA
 print('done:', url, '-> upload the contents of', out)
