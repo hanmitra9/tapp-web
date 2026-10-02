@@ -65,3 +65,16 @@ test('accepted clip is paid from "Siap dibayar": views + transfer reference, amo
   await page.getByRole('button', { name: /Tandai sudah ditransfer Rp60\.000/ }).click();
   await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_views: 20000, p_reference: 'BCA 0210', p_note: null }]);
 });
+
+test('pay form prefills the views read from the public post', async ({ page }) => {
+  await signedInCreator(page, {
+    profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [{ ...SUB, status: 'approved' }],
+    creator_payout_methods: [{ kind: 'bank', provider: 'BCA', account_name: 'Rani Putri', account_number: '1234567890' }],
+    app_settings: [{ value: { new: 0 } }], payout_requests: [],
+  }, { aal: 'aal2' });
+  await page.route('**/functions/v1/public-views', (r) => r.fulfill({ json: { views: 31000, likes: 2100, comments: 40, shares: 12, read_at: '2026-10-02T10:00:00Z' } }));
+  await page.goto('/admin/submissions?q=payable');
+  await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
+  await expect(page.getByLabel('Views')).toHaveValue('31000');
+  await expect(page.getByText(/Terbaca otomatis: 31\.000 views/)).toBeVisible();
+});
