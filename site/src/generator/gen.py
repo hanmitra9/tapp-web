@@ -6,6 +6,7 @@ from hero2 import hero_creator_visual, hero_brand_visual
 from hub import hero_hub, LEVELS, PORTFOLIO, TIER_CSS
 from brandhub import hero_brand, steps_tabs
 from footer import footer, CSS as FOOT_CSS
+MENU_CSS = (HERE / 'menu.css').read_text()
 GLOBE = open(HERE / 'globe.svg.frag').read()
 BRAND_CONTACT = (pathlib.Path(__file__).parent / 'contact_cards.html').read_text()  # brand WhatsApp + email cards (shared with meeting.html)
 
@@ -259,6 +260,7 @@ a{{color:inherit;text-decoration:none}}
   .lp .dbtn{{right:16px;bottom:16px;height:44px;padding:0 13px}}
 }}
 {FOOT_CSS}
+{MENU_CSS}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
 @media (max-width: 900px){{
   .lp .bcontact{{grid-template-columns:minmax(0,1fr) !important}}
@@ -312,6 +314,8 @@ a{{color:inherit;text-decoration:none}}
   <div style="flex-grow: 1"></div>
   <nav class="nlinks" style="display: flex; gap: 26px; font-weight: 500; font-size: 15px"><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#mail">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
   {pill_btn("Sign Up", "#app:/register")}
+  <button type="button" class="hb" aria-label="Buka menu" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
+  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="#alur">Cara Kerja</a><a href="#mail">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
 </header></div>
 
 <main id="top">
