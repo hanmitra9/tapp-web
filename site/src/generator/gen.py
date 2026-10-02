@@ -276,8 +276,8 @@ a{{color:inherit;text-decoration:none}}
     <button role="tab" aria-selected="{{{{isBrand}}}}" onClick="{{{{setBrand}}}}" style="{{{{brandTab}}}}">Brand</button>
   </div>
   <div style="flex-grow: 1"></div>
-  <nav class="nlinks" style="display: flex; gap: 26px; font-weight: 500; font-size: 15px"><a class="nl" href="campaigns.html">Campaign</a><a class="nl" href="#mail">Kontak</a><a class="nl" href="#app:/login">Masuk</a></nav>
-  {pill_btn("Daftar", "#app:/register")}
+  <nav class="nlinks" style="display: flex; gap: 26px; font-weight: 500; font-size: 15px"><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#mail">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
+  {pill_btn("Sign Up", "#app:/register")}
 </header>
 
 <main id="top">
@@ -348,9 +348,9 @@ a{{color:inherit;text-decoration:none}}
       <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 20px"><img src="{BLOB_MARK}" alt="" style="width: 28px; height: 28px"><span>TAPP</span></div>
       <p style="font-size: 15px; line-height: 24px; color: #9A9AA5; font-weight: 400">Platform distribusi konten berbasis performa. Brand membayar hasil yang terverifikasi, creator dibayar untuk kerja yang terbukti.</p>
     </div>
-    <div style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Navigasi</span><a class="nl" href="#top">Beranda</a><a class="nl" href="campaigns.html">Campaign</a><a class="nl" href="#alur">Cara kerja</a><a class="nl" href="#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan privasi</a><a class="nl" href="terms.html">Syarat layanan</a></div>
-    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Sosial</span><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>
-    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Kontak</span><a class="nl" href="#mail">Email</a><a class="nl" href="#whatsapp">WhatsApp</a></div>
+    <div style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Navigation</span><a class="nl" href="#top">Home</a><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#alur">Cara Kerja</a><a class="nl" href="#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan Privasi</a><a class="nl" href="terms.html">Syarat Layanan</a></div>
+    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Social</span><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>
+    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Contact</span><a class="nl" href="#mail">Email Support</a><a class="nl" href="#whatsapp">WhatsApp</a></div>
   </div>
   <div style="max-width: 1280px; margin: 44px auto 0; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #6E6E78; font-weight: 400">© 2026 TAPP. Hak cipta dilindungi.</div>
 </footer>
