@@ -14,6 +14,7 @@ import { cpmLabel, dateLabel, deadlineLabel, idr, idrCompact, num } from '@/lib/
 import { useQuery } from '@/lib/useQuery';
 import { color, radius, space, type } from '@/theme/tokens';
 import { assetLink, fetchAssets, fetchCampaign, joinCampaign, leaveCampaign, type Asset } from '@/features/campaigns/api';
+import { JoinedRow } from '@/features/campaigns/JoinedRow';
 import { CAMPAIGN_STATUS, categoryLabel, joinBlockCopy, platformsLabel } from '@/features/campaigns/copy';
 import { track } from '@/lib/analytics';
 
@@ -83,6 +84,7 @@ export default function CampaignDetailScreen() {
       <Text style={styles.meta}>
         {categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}
       </Text>
+      <View style={styles.gap}><JoinedRow count={c.creators_joined} initials={c.joined_initials} /></View>
 
       {justJoined ? <View style={styles.gap}><Notice tone="info" message="Kamu sudah bergabung. Konten sumber sekarang terbuka di bawah." /></View> : null}
       {error ? <View style={styles.gap}><Notice tone="error" message={error} /></View> : null}

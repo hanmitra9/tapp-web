@@ -86,6 +86,7 @@ def campaign_card(c):
           <span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Minimal klaim</span><b style="font-size: 15px">5.000 views</b></span>
           <span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Maks. per clip</span><b style="font-size: 15px">100K views</b></span>
         </div>
+        <span class="jn" data-joined="{title}"><span class="jn-t">Jadi creator pertama yang ikut</span></span>
         <a class="btn-p" href="#app:/register" data-campaign="{title}" style="display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 12px; font-weight: 600; font-size: 15px; background: linear-gradient(180deg, #4D86FF, #1F52D6)">Ambil campaign</a>
       </div>
     </article>'''

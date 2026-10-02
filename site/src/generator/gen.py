@@ -265,6 +265,11 @@ a{{color:inherit;text-decoration:none}}
 .lp .bslider::-webkit-slider-thumb{{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:#FFFFFF;border:4px solid #2F66F2;box-shadow:0 0 0 6px rgba(47,102,242,0.2),0 4px 14px rgba(0,0,0,0.5)}}
 .lp .bslider::-moz-range-thumb{{width:14px;height:14px;border-radius:50%;background:#FFFFFF;border:4px solid #2F66F2;box-shadow:0 0 0 6px rgba(47,102,242,0.2)}}
 .lp .bslider:focus-visible{{outline:none}} .lp .bslider:focus-visible::-webkit-slider-thumb{{box-shadow:0 0 0 6px rgba(125,162,255,0.45)}}
+.lp .jn{{display:flex;align-items:center;gap:10px;font-size:13px;color:#A1A1AA;font-weight:500}}
+.lp .jn-av{{display:inline-flex}}
+.lp .jn-av i{{font-style:normal;width:26px;height:26px;margin-left:-8px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#E4EDFF;background:radial-gradient(circle at 30% 25%,#1E2A55,#0B0E1A 70%);border:1.5px solid #0B0B10;box-shadow:0 0 0 1px rgba(125,162,255,0.25)}}
+.lp .jn-av i:first-child{{margin-left:0}} .lp .jn-av i.more{{background:#15161D;color:#A9C4FF;font-size:9.5px}}
+.lp .jn-t b{{color:#FFFFFF;font-weight:600}}
 {FOOT_CSS}
 {MENU_CSS}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}

@@ -608,3 +608,17 @@ do $$ begin
   if (select bio_status from creator_platforms where handle = 'bio.test.ig') <> 'verified' then raise exception 'bio status'; end if;
 end $$;
 select 'bio_code_ok' as result;
+
+-- ── Campaign participation on cards (0040) ──
+reset role;
+do $$ declare r record; begin
+  select * into r from campaign_participation(array['20000000-0000-0000-0000-000000000001'::uuid]);
+  if r.creators_joined <> (select count(*) from campaign_creators where campaign_id = '20000000-0000-0000-0000-000000000001' and status = 'joined') then raise exception 'joined count'; end if;
+  if r.creators_joined > 0 and coalesce(array_length(r.initials, 1), 0) = 0 then raise exception 'initials missing'; end if;
+end $$;
+set role anon;
+select count(*) >= 0 as anon_reads_participation from campaign_participation(array['20000000-0000-0000-0000-000000000001'::uuid]);
+select count(*) >= 0 as anon_public_list from public_campaigns() where creators_joined >= 0;
+reset role;
+select private.initials('Rani Putri', 'rani') = 'RP' and private.initials(null, 'budi.s') = 'BU' as initials_ok;
+select 'participation_ok' as result;

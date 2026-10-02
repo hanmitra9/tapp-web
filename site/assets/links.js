@@ -47,6 +47,22 @@
           .catch(function () { /* keep the default link */ });
       }
     }
+    // "N creator ikut" on landing campaign cards (public list; cached so re-renders refill it at once).
+    var jn = (root || document).querySelectorAll('[data-joined]');
+    if (jn.length && c.SUPABASE_URL && c.SUPABASE_ANON_KEY) {
+      if (!window.__tappJoined) window.__tappJoined = fetch(c.SUPABASE_URL + '/rest/v1/rpc/public_campaigns', { method: 'POST', headers: { apikey: c.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: '{}' })
+        .then(function (r) { return r.ok ? r.json() : []; }).catch(function () { return []; });
+      window.__tappJoined.then(function (list) {
+        var by = {}; (list || []).forEach(function (k) { by[String(k.title).toLowerCase()] = k; });
+        jn.forEach(function (el) {
+          var k = by[el.getAttribute('data-joined').toLowerCase()]; if (!k || !k.creators_joined) return;
+          var esc = function (s) { return String(s).replace(/[&<>"']/g, function (m) { return '&#' + m.charCodeAt(0) + ';'; }); };
+          var ini = (k.joined_initials || []).slice(0, 4), n = k.creators_joined;
+          el.innerHTML = '<span class="jn-av">' + ini.map(function (i) { return '<i>' + esc(i) + '</i>'; }).join('') + (n > ini.length ? '<i class="more">+' + (n - ini.length) + '</i>' : '')
+            + '</span><span class="jn-t"><b>' + n.toLocaleString('id-ID') + '</b> creator ikut</span>';
+        });
+      });
+    }
     // Hide a group (e.g. the footer "Social" column) when none of its links are configured.
     (root || document).querySelectorAll('[data-hide-empty]').forEach(function (g) {
       var visible = Array.prototype.some.call(g.querySelectorAll('a'), function (a) { return a.style.display !== 'none'; });

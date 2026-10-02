@@ -6,7 +6,10 @@ import { expect, test } from '@playwright/test';
 test('landing Sign Up opens the register page on the same site', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await page.locator('header').getByRole('link', { name: 'Sign Up' }).click();
+  // Phones get the hamburger menu; Sign Up lives inside it.
+  const menu = page.locator('header .hb').first();
+  if (await menu.isVisible()) { await menu.click(); await page.locator('.mmenu').getByRole('link', { name: 'Sign Up' }).click(); }
+  else await page.locator('header').getByRole('link', { name: 'Sign Up' }).first().click();
   await expect(page).toHaveURL(/\/register$/);
   await expect(page.getByRole('button', { name: 'Log In' })).toBeVisible();   // landing-style header
 });
@@ -28,7 +31,7 @@ test('signed-in page while signed out → login, remembered for after sign-in', 
 test('public pages stay static, deep app links survive a refresh', async ({ page }) => {
   const res = await page.goto('/campaigns');
   expect(res?.status()).toBe(200);
-  await expect(page.locator('h1')).toContainText('Brief yang');
+  await expect(page.locator('#exploreTitle')).toContainText('Jelajahi Semua Campaign');
   await page.goto('/forgot-password');
   await page.reload();
   await expect(page).toHaveURL(/\/forgot-password/);

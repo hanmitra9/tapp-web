@@ -99,6 +99,11 @@
     return '<div class="bn art"><span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span><img class="mk" src="assets/tapp-mark-white.svg" alt="">' + (big || hasBanner(k) ? '' : '<span class="art-t">' + esc(k.title) + '</span>') + '</div>'
       + (hasBanner(k) ? '<img class="bn" src="' + esc(k.banner_url) + '" alt="" loading="' + (big ? 'eager' : 'lazy') + '" onerror="this.remove()">' : '');
   };
+  var joined = function (k) {
+    var n = k.creators_joined || 0, ini = (k.joined_initials || []).slice(0, 4);
+    if (!n) return '<span class="jn"><span class="jn-t">Jadi creator pertama yang ikut</span></span>';
+    return '<span class="jn"><span class="jn-av">' + ini.map(function (i) { return '<i>' + esc(i) + '</i>'; }).join('') + (n > ini.length ? '<i class="more">+' + short(n - ini.length) + '</i>' : '') + '</span><span class="jn-t"><b>' + nf.format(n) + '</b> creator ikut</span></span>';
+  };
   var all = [], state = { q: '', cat: 'all', sort: 'new', plat: 'all' };
 
   // ── Featured carousel ──
@@ -110,6 +115,7 @@
       + '<div class="feat-meta"><span class="tag">' + esc(typeLabel(k.category)) + '</span><span class="brand"><img src="assets/tapp-mark-white.svg" alt="">' + esc(k.brand_name) + '</span>' + (k.status === 'ending' ? '<span class="tag warn">Segera berakhir</span>' : '') + '</div>'
       + '<h1 class="feat-t">' + esc(k.title) + '</h1>'
       + '<div class="feat-row tab"><span class="rate">Rp' + nf.format(k.cpm) + '<small> / 1.000 views</small></span><span class="sep"></span><span class="pl">' + plats(k) + '</span><span class="sep"></span><span class="dl">' + deadline(k) + '</span></div>'
+      + joined(k)
       + '<div class="feat-cta"><a class="btn" href="' + hrefOf(k) + '">Ambil Campaign</a><a class="btn ghost" href="' + hrefOf(k) + '">Lihat Detail</a></div>'
       + '</div></article>';
   }
@@ -157,6 +163,7 @@
       + '<h3 class="cc-t">' + esc(k.title) + '</h3>'
       + '<div class="cc-rate tab"><b>Rp' + nf.format(k.cpm) + '</b><small> / 1K views</small><span class="pl">' + plats(k) + '</span></div>'
       + '<div class="cc-kv tab"><span><small>Min. klaim</small>' + short(k.min_views_to_qualify || 0) + '</span><span><small>Maks. per clip</small>' + (mv ? short(mv) : 'Tanpa batas') + '</span><span><small>Sisa waktu</small>' + (d == null ? '—' : d <= 0 ? 'Hari ini' : d + ' hari') + '</span></div>'
+      + joined(k)
       + '<div class="cc-bud tab"><span>Budget tersisa</span><b>' + k.budget_left_pct + '%</b></div><div class="bar"><i style="width: ' + k.budget_left_pct + '%"></i></div>'
       + '<span class="cc-go">Ambil Campaign<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>'
       + '</div></a>';

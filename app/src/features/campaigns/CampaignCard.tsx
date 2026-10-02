@@ -4,6 +4,7 @@ import { cpmLabel, deadlineLabel, idrCompact, isUrgent } from '@/lib/format';
 import { color, radius, space, type } from '@/theme/tokens';
 import type { FeedItem } from './api';
 import { categoryLabel, platformsLabel } from './copy';
+import { JoinedRow } from './JoinedRow';
 
 // Dark card: brand monogram + reward on the right, like a transaction row grown into a card.
 export const CampaignCard = memo(function CampaignCard({ item, onPress, showReason = true }: { item: FeedItem; onPress: () => void; showReason?: boolean }) {
@@ -30,6 +31,7 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress, showReas
         </View>
         {deadline ? <Text style={[styles.deadline, urgent && styles.urgent]}>{deadline}</Text> : null}
       </View>
+      <JoinedRow count={item.creators_joined ?? 0} initials={item.joined_initials} />
       {showReason && item.match_reasons[0] ? <Text style={styles.reason}>{item.match_reasons[0]}</Text> : null}
     </Pressable>
   );

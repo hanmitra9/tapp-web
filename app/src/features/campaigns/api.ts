@@ -12,6 +12,7 @@ export type FeedItem = {
   platforms: Platform[]; cpm: number; budget: number; remaining: number; min_views_to_qualify: number;
   submission_deadline: string | null; ends_at: string | null; created_at: string;
   joined: boolean; match_score: number; match_reasons: string[]; banner_url?: string | null;
+  creators_joined?: number; joined_initials?: string[];
 };
 
 export type CampaignDetail = {
@@ -23,7 +24,7 @@ export type CampaignDetail = {
   brand: { name: string; logo_url: string | null; website: string | null };
   platforms: Platform[]; rules: { kind: 'requirement' | 'submission' | 'performance'; body: string }[];
   creators_joined: number; membership: { status: 'joined' | 'left' | 'removed'; joined_at: string } | null;
-  join_block: string | null; banner_url?: string | null;
+  join_block: string | null; banner_url?: string | null; joined_initials?: string[];
 };
 export type Asset = { id: string; kind: 'video' | 'audio' | 'image' | 'document' | 'link'; title: string; url: string | null; storage_path: string | null };
 
@@ -38,8 +39,10 @@ export async function fetchFeed(sort: Sort, f: Filters, offset = 0): Promise<Fee
   });
   if (error) throw error;
   const rows = (data ?? []) as FeedItem[];
-  const banners = await fetchBanners(rows.map((r) => r.id));
-  return rows.map((r) => ({ ...r, cpm: num(r.cpm), budget: num(r.budget), remaining: num(r.remaining), banner_url: banners[r.id] ?? null }));
+  const ids = rows.map((r) => r.id);
+  const [banners, joined] = await Promise.all([fetchBanners(ids), fetchParticipation(ids)]);
+  return rows.map((r) => ({ ...r, cpm: num(r.cpm), budget: num(r.budget), remaining: num(r.remaining), banner_url: banners[r.id] ?? null,
+    creators_joined: joined[r.id]?.creators_joined ?? 0, joined_initials: joined[r.id]?.initials ?? [] }));
 }
 
 // Banner photos (migration 0036) live on campaigns.banner_url; the feed/detail RPCs predate it.
@@ -49,12 +52,21 @@ export async function fetchBanners(ids: string[]): Promise<Record<string, string
   return Object.fromEntries((data ?? []).map((r) => [r.id as string, r.banner_url as string]));
 }
 
+// How many creators joined each campaign + initials of the latest ones (migration 0040), for the avatar stack.
+export type Participation = { creators_joined: number; initials: string[] };
+export async function fetchParticipation(ids: string[]): Promise<Record<string, Participation>> {
+  if (!ids.length) return {};
+  const { data } = await supabase.rpc('campaign_participation', { p_ids: ids });
+  return Object.fromEntries(((data ?? []) as { campaign_id: string; creators_joined: number; initials: string[] | null }[])
+    .map((r) => [r.campaign_id, { creators_joined: num(r.creators_joined), initials: r.initials ?? [] }]));
+}
+
 export async function fetchCampaign(id: string): Promise<CampaignDetail> {
   const { data, error } = await supabase.rpc('get_campaign', { p_campaign_id: id });
   if (error) throw error;
   const d = data as CampaignDetail;
-  const banners = await fetchBanners([d.id]);
-  return { ...d, banner_url: banners[d.id] ?? null, cpm: num(d.cpm), budget: num(d.budget), remaining: num(d.remaining), creators_joined: num(d.creators_joined) };
+  const [banners, joined] = await Promise.all([fetchBanners([d.id]), fetchParticipation([d.id])]);
+  return { ...d, banner_url: banners[d.id] ?? null, joined_initials: joined[d.id]?.initials ?? [], cpm: num(d.cpm), budget: num(d.budget), remaining: num(d.remaining), creators_joined: num(d.creators_joined) };
 }
 
 // RLS only returns assets once the creator has joined.
