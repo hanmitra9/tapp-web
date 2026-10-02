@@ -56,79 +56,157 @@ FOOT = '''<footer class="bot">
 
 # ───────────────────────────── Campaigns (live) ─────────────────────────────
 CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang sedang dibuka di TAPP: tarif per 1.000 views, minimal views, dan platform.', 'campaigns') + header('campaigns') + '''
-<main>
-  <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start; margin-bottom: 36px">
-    <span class="pill">Campaign terbuka</span>
-    <h1 class="h1">Brief yang<br><span>Sedang Dibuka</span></h1>
-    <p class="lead">Diperbarui langsung dari sistem TAPP. Pilih brief yang cocok, bergabung, dan mulai mengedit dari akunmu sendiri.</p>
-  </div>
-  <div role="toolbar" aria-label="Filter platform" id="filters" style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px"></div>
-  <div id="list" aria-live="polite" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 18px"></div>
+<main class="cp">
+  <section class="feat" id="feat" aria-roledescription="carousel" aria-label="Campaign unggulan">
+    <div class="feat-track" id="featTrack"><div class="feat-slide sk"></div></div>
+    <div class="feat-ui" id="featUi" hidden>
+      <div class="feat-bars" id="featBars"></div>
+      <div class="feat-nav"><span class="feat-count tab" id="featCount"></span><button type="button" id="featPrev" aria-label="Sebelumnya">&#8249;</button><button type="button" id="featNext" aria-label="Berikutnya">&#8250;</button></div>
+    </div>
+  </section>
+
+  <section class="stats" id="stats" aria-label="Ringkasan"></section>
+
+  <section class="explore" aria-labelledby="exploreTitle">
+    <div class="ex-head">
+      <div><h2 id="exploreTitle">Jelajahi Semua Campaign</h2><p id="exCount" class="ex-sub">Memuat campaign…</p></div>
+    </div>
+    <div class="ex-bar" role="search">
+      <label class="ex-search"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input id="q" type="search" placeholder="Cari campaign atau brand" aria-label="Cari campaign atau brand" autocomplete="off"></label>
+      <label class="ex-sel"><span class="sr">Kategori</span><select id="cat" aria-label="Kategori"><option value="all">Semua kategori</option></select></label>
+      <label class="ex-sel"><span class="sr">Urutkan</span><select id="sort" aria-label="Urutkan"><option value="new">Terbaru</option><option value="rate">Tarif tertinggi</option><option value="end">Segera berakhir</option><option value="budget">Budget terbanyak</option></select></label>
+      <div class="ex-plat" role="group" aria-label="Filter platform" id="plat"></div>
+    </div>
+    <div id="list" class="grid" aria-live="polite"></div>
+  </section>
 </main>
 ''' + FOOT + r'''
 <script>
 (function () {
   var c = window.TAPP_CONFIG || {};
-  var list = document.getElementById('list'), filters = document.getElementById('filters');
+  var $ = function (id) { return document.getElementById(id); };
   var ICON = {
-    tiktok: '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-label="TikTok"><path d="M16.6 5.8A4.3 4.3 0 0 1 15 3.2h-2.7v11.6a2.3 2.3 0 1 1-2.4-2.3c.2 0 .5 0 .7.1V9.8a5.1 5.1 0 1 0 4.4 5V9.2c1 .7 2.2 1.1 3.5 1.1V7.6c-.8 0-1.6-.3-2.3-.8z"/></svg>',
-    instagram: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-label="Instagram"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/></svg>',
-    youtube: '<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" aria-label="YouTube"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2 27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>'
+    tiktok: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M16.6 5.8A4.3 4.3 0 0 1 15 3.2h-2.7v11.6a2.3 2.3 0 1 1-2.4-2.3c.2 0 .5 0 .7.1V9.8a5.1 5.1 0 1 0 4.4 5V9.2c1 .7 2.2 1.1 3.5 1.1V7.6c-.8 0-1.6-.3-2.3-.8z"/></svg>',
+    instagram: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.2" cy="6.8" r="1" fill="currentColor"/></svg>',
+    youtube: '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M21.6 7.2a2.6 2.6 0 0 0-1.8-1.8C18.2 5 12 5 12 5s-6.2 0-7.8.4A2.6 2.6 0 0 0 2.4 7.2 27 27 0 0 0 2 12a27 27 0 0 0 .4 4.8 2.6 2.6 0 0 0 1.8 1.8C5.8 19 12 19 12 19s6.2 0 7.8-.4a2.6 2.6 0 0 0 1.8-1.8A27 27 0 0 0 22 12a27 27 0 0 0-.4-4.8zM10 15V9l5.2 3z"/></svg>'
   };
   var NAME = { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube', x: 'X', facebook: 'Facebook', other: 'Lainnya' };
+  var TYPE = { entertainment: 'Entertainment', brand: 'Brand', music: 'Music', podcast: 'Podcast', gaming: 'Gaming', sports: 'Sports', lifestyle: 'Lifestyle', education: 'Education', other: 'Lainnya' };
+  var typeLabel = function (v) { return TYPE[v] || (v ? String(v).charAt(0).toUpperCase() + String(v).slice(1).replace(/_/g, ' ') : 'Lainnya'); };
   var nf = new Intl.NumberFormat('id-ID');
-  var short = function (n) { return n >= 1000 ? nf.format(Math.round(n / 100) / 10) + 'K' : nf.format(n); };
+  var short = function (n) { return n >= 1e6 ? nf.format(Math.round(n / 1e5) / 10) + ' jt' : n >= 1000 ? nf.format(Math.round(n / 100) / 10) + 'K' : nf.format(n); };
   var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (m) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]; }); };
   var app = (c.APP_URL || '').replace(/\/$/, '');
-  var all = [], active = 'all';
+  var hrefOf = function (k) { return c.APP_URL ? app + '/campaign/' + encodeURIComponent(k.id) : '#'; };
+  var hasBanner = function (k) { return /^https:\/\//.test(k.banner_url || ''); };
+  var daysLeft = function (k) { return k.submission_deadline ? Math.ceil((new Date(k.submission_deadline) - Date.now()) / 864e5) : null; };
+  var deadline = function (k) { var d = daysLeft(k); return d == null ? 'Tanpa batas waktu' : d <= 0 ? 'Berakhir hari ini' : d + ' hari lagi'; };
+  var maxViews = function (k) { return k.max_earning_per_submission ? Math.round(k.max_earning_per_submission / k.cpm * 1000) : null; };
+  var plats = function (k) { return (k.platforms || []).map(function (p) { return '<span class="pi" title="' + esc(NAME[p] || p) + '">' + (ICON[p] || esc(NAME[p] || p)) + '</span>'; }).join(''); };
+  var art = function (k, big) {
+    return '<div class="bn art"><span class="ring r1"></span><span class="ring r2"></span><span class="ring r3"></span><img class="mk" src="assets/tapp-mark-white.svg" alt="">' + (big || hasBanner(k) ? '' : '<span class="art-t">' + esc(k.title) + '</span>') + '</div>'
+      + (hasBanner(k) ? '<img class="bn" src="' + esc(k.banner_url) + '" alt="" loading="' + (big ? 'eager' : 'lazy') + '" onerror="this.remove()">' : '');
+  };
+  var all = [], state = { q: '', cat: 'all', sort: 'new', plat: 'all' };
 
-  function deadline(iso) {
-    if (!iso) return 'Tanpa batas waktu';
-    var d = Math.ceil((new Date(iso) - Date.now()) / 864e5);
-    return d <= 0 ? 'Berakhir hari ini' : d + ' hari lagi';
-  }
-  function card(k) {
-    var maxViews = k.max_earning_per_submission ? Math.round(k.max_earning_per_submission / k.cpm * 1000) : null;
-    var icons = (k.platforms || []).map(function (p) { return '<span style="display: inline-flex; color: #D4D4D8">' + (ICON[p] || esc(NAME[p] || p)) + '</span>'; }).join('');
-    var href = c.APP_URL ? app + '/campaign/' + encodeURIComponent(k.id) : '#';
-    return '<article style="border-radius: 18px; overflow: hidden; background: linear-gradient(180deg, #131318, #0C0C10); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column">'
-      + (/^https:\/\//.test(k.banner_url || '')
-        ? '<div style="position: relative; aspect-ratio: 2 / 1; overflow: hidden; background: #131318"><img src="' + esc(k.banner_url) + '" alt="' + esc(k.title) + '" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>'
-        : '<div style="position: relative; height: 150px; overflow: hidden; background: radial-gradient(70% 90% at 80% 30%, #7DA2FF, transparent 60%), linear-gradient(135deg, #0E1A6B, #2F66F2)">'
-          + '<img src="assets/tapp-mark-white.svg" alt="" style="position: absolute; right: 26px; top: 34px; width: 74px; height: 74px; filter: drop-shadow(0 0 24px rgba(198,214,255,0.8))">'
-          + '<span style="position: absolute; left: 20px; bottom: 16px; font-size: 26px; line-height: 28px; font-weight: 600; letter-spacing: -0.6px; max-width: 60%">' + esc(k.title) + '</span></div>')
-      + '<div style="padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">'
-      + '<span style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px">' + esc(k.brand_name) + (k.status === 'ending' ? '<span style="margin-left: auto; font-size: 12px; color: #FFB020">Segera berakhir</span>' : '') + '</span>'
-      + '<span class="tab"><span style="font-size: 22px; font-weight: 600">Rp' + nf.format(k.cpm) + '</span><span style="font-size: 13px; color: #8A8A93; font-weight: 500"> /1K views</span></span>'
-      + '<div style="display: flex; align-items: center; gap: 10px">' + icons + '<span style="margin-left: auto; font-size: 13px; font-weight: 500; color: #9A9AA5">' + deadline(k.submission_deadline) + '</span></div>'
-      + '<div class="tab" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">'
-      + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 500">Minimal klaim</span><b style="font-size: 15px">' + short(k.min_views_to_qualify || 0) + ' views</b></span>'
-      + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 500">Maks. per clip</span><b style="font-size: 15px">' + (maxViews ? short(maxViews) + ' views' : 'Tanpa batas') + '</b></span></div>'
-      + '<div style="display: flex; flex-direction: column; gap: 8px"><div class="tab" style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; color: #9A9AA5"><span>Budget tersisa</span><span style="color: #FFFFFF">' + k.budget_left_pct + '%</span></div>'
-      + '<div style="height: 6px; border-radius: 3px; background: #1F1F26"><div style="width: ' + k.budget_left_pct + '%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #2F66F2, #7DA2FF)"></div></div></div>'
-      + '<a class="btn" href="' + href + '" style="height: 44px; border-radius: 12px; margin-top: 4px">Ambil campaign</a>'
+  // ── Featured carousel ──
+  var fi = 0, timer = null, feat = [];
+  function slide(k, i) {
+    return '<article class="feat-slide' + (i === 0 ? ' on' : '') + '" aria-roledescription="slide" aria-label="' + (i + 1) + ' dari ' + feat.length + '">'
+      + art(k, true) + '<div class="feat-shade"></div>'
+      + '<div class="feat-body">'
+      + '<div class="feat-meta"><span class="tag">' + esc(typeLabel(k.category)) + '</span><span class="brand"><img src="assets/tapp-mark-white.svg" alt="">' + esc(k.brand_name) + '</span>' + (k.status === 'ending' ? '<span class="tag warn">Segera berakhir</span>' : '') + '</div>'
+      + '<h1 class="feat-t">' + esc(k.title) + '</h1>'
+      + '<div class="feat-row tab"><span class="rate">Rp' + nf.format(k.cpm) + '<small> / 1.000 views</small></span><span class="sep"></span><span class="pl">' + plats(k) + '</span><span class="sep"></span><span class="dl">' + deadline(k) + '</span></div>'
+      + '<div class="feat-cta"><a class="btn" href="' + hrefOf(k) + '">Ambil Campaign</a><a class="btn ghost" href="' + hrefOf(k) + '">Lihat Detail</a></div>'
       + '</div></article>';
   }
-  function empty(title, body) {
-    return '<div style="grid-column: 1 / -1; padding: 56px 24px; border-radius: 18px; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(60% 80% at 50% 0%, rgba(47,102,242,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">'
-      + '<img src="assets/tapp-mark.svg" alt="" style="width: 44px; height: 44px; opacity: 0.85"><h2 style="font-size: 22px; font-weight: 600">' + title + '</h2><p style="font-size: 15px; line-height: 24px; color: #9A9AA5; max-width: 440px">' + body + '</p>'
-      + '<a class="btn" href="' + (c.APP_URL ? app + '/register' : '#') + '" style="margin-top: 6px">Daftar gratis</a></div>';
+  function go(i) {
+    if (!feat.length) return;
+    fi = (i + feat.length) % feat.length;
+    document.querySelectorAll('#featTrack .feat-slide').forEach(function (s, j) { s.classList.toggle('on', j === fi); });
+    document.querySelectorAll('#featBars button').forEach(function (b, j) { b.classList.toggle('on', j === fi); b.classList.toggle('done', j < fi); b.setAttribute('aria-current', j === fi); });
+    $('featCount').textContent = String(fi + 1).padStart(2, '0') + ' / ' + String(feat.length).padStart(2, '0');
+    clearTimeout(timer); if (feat.length > 1) timer = setTimeout(function () { go(fi + 1); }, 6500);
   }
-  function draw() {
-    var shown = all.filter(function (k) { return active === 'all' || (k.platforms || []).indexOf(active) >= 0; });
-    list.innerHTML = shown.length ? shown.map(card).join('') : (all.length ? empty('Belum ada campaign untuk platform ini', 'Coba pilih platform lain, atau cek lagi nanti.') : empty('Campaign pertama segera dibuka', 'Daftar sekarang supaya akunmu sudah terverifikasi saat campaign dibuka.'));
-    var plats = ['all'].concat(Array.from(new Set([].concat.apply([], all.map(function (k) { return k.platforms || []; })))));
-    filters.innerHTML = all.length ? plats.map(function (p) {
-      var on = p === active;
-      return '<button data-p="' + p + '" aria-pressed="' + on + '" style="height: 38px; padding: 0 16px; border-radius: 999px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; ' + (on ? 'background: rgba(47,102,242,0.25); color: #FFFFFF; border: 1px solid #5B7CFA' : 'background: rgba(255,255,255,0.04); color: #A1A1AA; border: 1px solid rgba(255,255,255,0.1)') + '">' + (p === 'all' ? 'Semua' : esc(NAME[p] || p)) + '</button>';
-    }).join('') : '';
-    filters.querySelectorAll('button').forEach(function (b) { b.onclick = function () { active = b.getAttribute('data-p'); draw(); }; });
+  function drawFeat() {
+    feat = all.slice().sort(function (a, b) { return (hasBanner(b) - hasBanner(a)) || (b.cpm - a.cpm); }).slice(0, 5);
+    if (!feat.length) { $('feat').classList.add('none'); $('featTrack').innerHTML = '<div class="feat-slide on">' + art({ title: '' }, true) + '<div class="feat-shade"></div><div class="feat-body"><h1 class="feat-t">Campaign Pertama Segera Dibuka</h1><p class="feat-p">Daftar sekarang supaya akunmu sudah terverifikasi saat brief dibuka.</p><div class="feat-cta"><a class="btn" href="' + (c.APP_URL ? app + '/register' : '#') + '">Daftar Gratis</a></div></div></div>'; return; }
+    $('featTrack').innerHTML = feat.map(slide).join('');
+    $('featUi').hidden = feat.length < 2;
+    $('featBars').innerHTML = feat.map(function (k, j) { return '<button type="button" aria-label="Campaign ' + (j + 1) + '"><i></i></button>'; }).join('');
+    document.querySelectorAll('#featBars button').forEach(function (b, j) { b.onclick = function () { go(j); }; });
+    go(0);
   }
-  list.innerHTML = [0, 1, 2].map(function () { return '<div style="height: 420px; border-radius: 18px; background: linear-gradient(90deg, #0F0F13, #16161C, #0F0F13); border: 1px solid rgba(255,255,255,0.06)"></div>'; }).join('');
+  $('featPrev').onclick = function () { go(fi - 1); };
+  $('featNext').onclick = function () { go(fi + 1); };
+  var tx = null, track = $('featTrack');
+  track.addEventListener('touchstart', function (e) { tx = e.touches[0].clientX; }, { passive: true });
+  track.addEventListener('touchend', function (e) { if (tx == null) return; var d = e.changedTouches[0].clientX - tx; if (Math.abs(d) > 40) go(fi + (d < 0 ? 1 : -1)); tx = null; });
+
+  // ── Stats ──
+  function drawStats() {
+    if (!all.length) { $('stats').hidden = true; return; }
+    var top = all.reduce(function (m, k) { return Math.max(m, k.cpm || 0); }, 0);
+    var ps = Array.from(new Set([].concat.apply([], all.map(function (k) { return k.platforms || []; }))));
+    var cell = function (l, v, s) { return '<div class="st"><span class="st-l">' + l + '</span><b class="st-v tab">' + v + '</b><span class="st-s">' + s + '</span></div>'; };
+    $('stats').innerHTML = cell('Campaign aktif', nf.format(all.length), 'Terbuka untuk semua creator')
+      + cell('Tarif tertinggi', 'Rp' + nf.format(top), 'per 1.000 qualified views')
+      + cell('Platform', '<span class="st-ic">' + ps.map(function (p) { return ICON[p] || ''; }).join('') + '</span>', ps.map(function (p) { return NAME[p] || p; }).join(' · '));
+  }
+
+  // ── Explore ──
+  function card(k) {
+    var mv = maxViews(k), d = daysLeft(k);
+    return '<a class="cc" href="' + hrefOf(k) + '" aria-label="' + esc(k.title) + ' oleh ' + esc(k.brand_name) + '">'
+      + '<div class="cc-media">' + art(k) + '<span class="tag">' + esc(typeLabel(k.category)) + '</span>' + (k.status === 'ending' || (d != null && d <= 3) ? '<span class="tag warn r">Segera berakhir</span>' : '') + '</div>'
+      + '<div class="cc-body">'
+      + '<span class="cc-brand"><img src="assets/tapp-mark-white.svg" alt="">' + esc(k.brand_name) + '</span>'
+      + '<h3 class="cc-t">' + esc(k.title) + '</h3>'
+      + '<div class="cc-rate tab"><b>Rp' + nf.format(k.cpm) + '</b><small> / 1K views</small><span class="pl">' + plats(k) + '</span></div>'
+      + '<div class="cc-kv tab"><span><small>Min. klaim</small>' + short(k.min_views_to_qualify || 0) + '</span><span><small>Maks. per clip</small>' + (mv ? short(mv) : 'Tanpa batas') + '</span><span><small>Sisa waktu</small>' + (d == null ? '—' : d <= 0 ? 'Hari ini' : d + ' hari') + '</span></div>'
+      + '<div class="cc-bud tab"><span>Budget tersisa</span><b>' + k.budget_left_pct + '%</b></div><div class="bar"><i style="width: ' + k.budget_left_pct + '%"></i></div>'
+      + '<span class="cc-go">Ambil Campaign<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>'
+      + '</div></a>';
+  }
+  function empty(t, b) { return '<div class="empty"><img src="assets/tapp-mark.svg" alt=""><h3>' + t + '</h3><p>' + b + '</p></div>'; }
+  function drawList() {
+    var q = state.q.trim().toLowerCase();
+    var shown = all.filter(function (k) {
+      return (state.plat === 'all' || (k.platforms || []).indexOf(state.plat) >= 0)
+        && (state.cat === 'all' || k.category === state.cat)
+        && (!q || (k.title + ' ' + k.brand_name).toLowerCase().indexOf(q) >= 0);
+    });
+    var far = function (k) { var d = daysLeft(k); return d == null ? 1e9 : d; };
+    shown.sort(state.sort === 'rate' ? function (a, b) { return b.cpm - a.cpm; } : state.sort === 'end' ? function (a, b) { return far(a) - far(b); } : state.sort === 'budget' ? function (a, b) { return b.budget_left_pct - a.budget_left_pct; } : function () { return 0; });
+    $('exCount').textContent = all.length ? (shown.length === all.length ? all.length + ' campaign sedang dibuka' : shown.length + ' dari ' + all.length + ' campaign') : 'Belum ada campaign yang dibuka';
+    $('list').innerHTML = shown.length ? shown.map(card).join('') : all.length ? empty('Tidak ada yang cocok', 'Coba kata kunci, kategori, atau platform lain.') : empty('Campaign pertama segera dibuka', 'Daftar sekarang supaya akunmu sudah terverifikasi saat campaign dibuka.');
+  }
+  function drawFilters() {
+    var cats = Array.from(new Set(all.map(function (k) { return k.category; }).filter(Boolean)));
+    $('cat').innerHTML = '<option value="all">Semua kategori</option>' + cats.map(function (v) { return '<option value="' + esc(v) + '">' + esc(typeLabel(v)) + '</option>'; }).join('');
+    var ps = ['tiktok', 'instagram', 'youtube'];
+    $('plat').innerHTML = ps.map(function (p) { return '<button type="button" data-p="' + p + '" aria-pressed="false" aria-label="' + NAME[p] + '" title="' + NAME[p] + '">' + ICON[p] + '</button>'; }).join('');
+    $('plat').querySelectorAll('button').forEach(function (b) {
+      b.onclick = function () {
+        var p = b.getAttribute('data-p'); state.plat = state.plat === p ? 'all' : p;
+        $('plat').querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', x.getAttribute('data-p') === state.plat); });
+        drawList();
+      };
+    });
+  }
+  $('q').oninput = function () { state.q = this.value; drawList(); };
+  $('cat').onchange = function () { state.cat = this.value; drawList(); };
+  $('sort').onchange = function () { state.sort = this.value; drawList(); };
+
+  $('list').innerHTML = [0, 1, 2].map(function () { return '<div class="cc sk"></div>'; }).join('');
   fetch(c.SUPABASE_URL + '/rest/v1/rpc/public_campaigns', { method: 'POST', headers: { apikey: c.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: '{}' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (rows) { all = rows || []; draw(); })
-    .catch(function () { list.innerHTML = '<div style="grid-column: 1 / -1; padding: 32px; border-radius: 18px; background: rgba(255,90,95,0.1); border: 1px solid rgba(255,90,95,0.35); color: #FFB4B6">Daftar campaign belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.</div>'; });
+    .then(function (rows) { all = rows || []; drawFeat(); drawStats(); drawFilters(); drawList(); })
+    .catch(function () {
+      $('feat').classList.add('none'); $('featTrack').innerHTML = ''; $('stats').hidden = true; $('exCount').textContent = '';
+      $('list').innerHTML = '<div class="err">Daftar campaign belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.</div>';
+    });
 })();
 </script>
 </body>
