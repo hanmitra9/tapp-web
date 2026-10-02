@@ -134,7 +134,7 @@ def _level_card():
 
 HUB = f'''<div class="hub" style="position: absolute; left: 540px; top: 120px; width: 120px; height: 120px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #5B74FF, #2238C2); border: 1px solid rgba(198,214,255,0.6); box-shadow: 0 0 0 10px rgba(69,72,245,0.14), 0 0 0 22px rgba(69,72,245,0.06), 0 0 90px rgba(69,72,245,0.85), inset 0 1px 0 rgba(255,255,255,0.35)"><img src="{BLOB_WHITE}" alt="" style="width: 62px; height: 62px"></div>'''
 
-AV = ''.join(f'<i style="font-style: normal; width: 26px; height: 26px; border-radius: 13px; margin-left: {0 if k==0 else -8}px; background: {c}; border: 2px solid #07070A; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600">{n}</i>'
+AV = ''.join(f'<i style="font-style: normal; width: 26px; height: 26px; border-radius: 13px; margin-left: {0 if k==0 else -8}px; background: radial-gradient(circle at 30% 25%, {c}26, #0C0C10 72%); box-shadow: inset 0 0 0 1px {c}55; color: {c}; border: 2px solid #07070A; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600">{n}</i>'
              for k, (n, c) in enumerate([('RP', '#34D07A'), ('DP', '#F2692B'), ('NK', '#2F8CE6')]))
 
 # Phone hero: the same idea turned vertical, cards above and below the TAPP mark, wires running down into it.
@@ -318,11 +318,11 @@ def _dash():
     stat = lambda l, v, extra='': f'<span style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #15151B; border: 1px solid rgba(255,255,255,0.06)"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">{l}</span><b class="tabular" style="font-size: 18px{extra}">{v}</b></span>'
     return f'''<div class="pdash" style="width: 100%; max-width: 440px; padding: 18px; border-radius: 18px; {CARD}; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 40px 90px -40px rgba(69,72,245,0.8), inset 0 1px 0 rgba(255,255,255,0.05)">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
-        <span style="display: flex; align-items: center; gap: 10px"><i style="font-style: normal; width: 36px; height: 36px; border-radius: 18px; background: #34D07A; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600">RP</i><span style="display: flex; flex-direction: column"><b style="font-size: 15px">Rani Putri</b><span style="font-size: 12px; color: #8A8A93; font-weight: 500">@rani.clips</span></span></span>
+        <span style="display: flex; align-items: center; gap: 10px"><i style="font-style: normal; width: 36px; height: 36px; border-radius: 18px; background: radial-gradient(circle at 30% 25%, #34D07A26, #0C0C10 72%); box-shadow: inset 0 0 0 1px #34D07A55, 0 6px 14px -8px #34D07A; color: #34D07A; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; letter-spacing: 0.02em">RP</i><span style="display: flex; flex-direction: column"><b style="font-size: 15px">Rani Putri</b><span style="font-size: 12px; color: #8A8A93; font-weight: 500">@rani.clips</span></span></span>
         <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; background: rgba(125,162,255,0.12); border: 1px solid rgba(125,162,255,0.35); font-size: 12px; font-weight: 600; color: #C6D6FF">{_badge('#7DA2FF', 22)}Verified</span>
       </div>
       <div style="position: relative; overflow: hidden; padding: 16px 18px; border-radius: 18px; background: linear-gradient(135deg, #4F6BFF, #1E2FA8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25)">
-        <span style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8)">Total penghasilan</span>
+        <span style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8)">Total payout</span>
         <b class="tabular" style="display: block; font-size: 30px; letter-spacing: -0.6px; margin-top: 2px">Rp4.250.000</b>
         <img src="{BLOB_WHITE}" alt="" style="position: absolute; right: -10px; top: -14px; width: 104px; height: 104px; opacity: 0.14">
       </div>
