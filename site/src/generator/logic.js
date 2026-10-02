@@ -97,7 +97,14 @@ class Component extends DCLogic {
       + (on ? 'color: #FFFFFF; background: rgba(47,102,242,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
     const budget = s.budget || 25000000, cpm = 1000;   // simulator assumes Rp1.000 per 1.000 views
     const views = budget / cpm * 1000;
-    const budgets = [10000000, 25000000, 50000000, 100000000].map((b) => ({ label: rp(b / 1e6) + ' jt', on: b === budget, style: chipStyle(b === budget), pick: () => this.setState({ budget: b }) }));
+    // Slider: no setState while dragging (a re-render would replace the input); update the numbers in place.
+    const simVals = (b) => ({ simBudget: rp(b), simViews: compact(b / cpm * 1000), simClips: Math.ceil(b / cpm * 1000 / 100000).toLocaleString('id-ID') });
+    const onBudget = (e) => {
+      const jt = Number(e.target.value); s.budget = jt * 1e6;
+      e.target.style.setProperty('--p', ((jt - 5) / 195 * 100) + '%');
+      const v = simVals(s.budget);
+      document.querySelectorAll('[data-sim]').forEach((el) => { const k = el.getAttribute('data-sim'); if (k in v) el.textContent = v[k]; });
+    };
     const bstep = s.bstep || 0;
     const bsteps = [0, 1, 2, 3].map((i) => ({
       on: i === bstep, pick: () => this.setState({ bstep: i }),
@@ -108,7 +115,7 @@ class Component extends DCLogic {
 
     return {
       isCreator: creator, isBrand: !creator,
-      budgets: budgets, simBudget: rp(budget), simViews: compact(views), simRate: rp(1000),
+      simBudget: rp(budget), simViews: compact(views), simRate: rp(1000), simBudgetJt: budget / 1e6, simPct: (budget / 1e6 - 5) / 195 * 100, onBudget: onBudget,
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       creatorTab: tab(creator), brandTab: tab(!creator),
       setCreator: () => this.setState({ mode: 'creator' }),

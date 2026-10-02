@@ -259,6 +259,12 @@ a{{color:inherit;text-decoration:none}}
   .lp .navbar{{height:56px !important;padding:0 8px 0 14px !important;gap:12px !important}}
   .lp .dbtn{{right:16px;bottom:16px;height:44px;padding:0 13px}}
 }}
+.lp .bslider{{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer;margin:2px 0 0;touch-action:pan-y}}
+.lp .bslider::-webkit-slider-runnable-track{{height:6px;border-radius:3px;background:linear-gradient(90deg,#2F66F2 0,#7DA2FF var(--p),rgba(255,255,255,0.1) var(--p))}}
+.lp .bslider::-moz-range-track{{height:6px;border-radius:3px;background:linear-gradient(90deg,#2F66F2 0,#7DA2FF var(--p),rgba(255,255,255,0.1) var(--p))}}
+.lp .bslider::-webkit-slider-thumb{{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:#FFFFFF;border:4px solid #2F66F2;box-shadow:0 0 0 6px rgba(47,102,242,0.2),0 4px 14px rgba(0,0,0,0.5)}}
+.lp .bslider::-moz-range-thumb{{width:14px;height:14px;border-radius:50%;background:#FFFFFF;border:4px solid #2F66F2;box-shadow:0 0 0 6px rgba(47,102,242,0.2)}}
+.lp .bslider:focus-visible{{outline:none}} .lp .bslider:focus-visible::-webkit-slider-thumb{{box-shadow:0 0 0 6px rgba(125,162,255,0.45)}}
 {FOOT_CSS}
 {MENU_CSS}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
