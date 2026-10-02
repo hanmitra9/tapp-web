@@ -11,12 +11,54 @@ def _btn(label, href, primary=True):
 def _mini_mark(sz=22, r=7):
     return f'<i style="font-style: normal; width: {sz}px; height: {sz}px; border-radius: {r}px; background: linear-gradient(180deg, #4F6BFF, #2238C2); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><img src="{BLOB_WHITE}" alt="" style="width: {sz*0.6:.0f}px; height: {sz*0.6:.0f}px"></i>'
 
+# Level emblems: a faceted metal hexagon with the TAPP mark, ornament grows with the level.
+# New = plain steel · Rising = chevron · Verified = crystal fins · Proven = laurel · Elite = crown and rays.
+_BADGE_TIER = {'#8A8A93': 0, '#34D07A': 1, '#7DA2FF': 2, '#A78BFA': 3, '#F0B429': 4}
+_METAL = [  # light, mid, dark per level
+    ('#F4F4F7', '#9A9AA6', '#3A3A44'), ('#D9FBE8', '#34D07A', '#0E4A2C'), ('#E6EEFF', '#6F9BFF', '#16307A'),
+    ('#EFE8FF', '#A78BFA', '#3B2577'), ('#FFF4C7', '#F0B429', '#6B4207'),
+]
+
+def _hexpts(r, cx=32, cy=32, rot=-90):
+    return [(cx + r * math.cos(math.radians(60 * k + rot)), cy + r * math.sin(math.radians(60 * k + rot))) for k in range(6)]
+
 def _badge(color, size=46):
-    pts = lambda r, cx, cy: ' '.join(f'{cx+r*math.cos(math.radians(60*k-90)):.1f},{cy+r*math.sin(math.radians(60*k-90)):.1f}' for k in range(6))
-    return (f'<svg width="{size}" height="{size}" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bd{color[1:]}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="{color}"></stop><stop offset="1" stop-color="{color}" stop-opacity="0.45"></stop></linearGradient></defs>'
-            f'<polygon points="{pts(21, 24, 24)}" fill="url(#bd{color[1:]})" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon>'
-            f'<polygon points="{pts(13, 24, 24)}" fill="#07070A" fill-opacity="0.35"></polygon>'
-            f'<image href="{BLOB_WHITE}" x="15" y="15" width="18" height="18"></image></svg>')
+    t = _BADGE_TIER.get(color, 0)
+    hi, mid, lo = _METAL[t]
+    g = f'bm{t}'
+    pts = lambda ps: ' '.join(f'{x:.1f},{y:.1f}' for x, y in ps)
+    outer, inner = _hexpts(20), _hexpts(14.5)
+    # facets: each outer edge to the inner hexagon, alternating light/dark like a cut stone
+    facets = ''.join(f'<polygon points="{pts([outer[k], outer[(k + 1) % 6], inner[(k + 1) % 6], inner[k]])}" fill="{hi if k in (5, 0) else mid if k in (1, 4) else lo}" fill-opacity="{0.55 if k in (5, 0) else 0.35 if k in (1, 4) else 0.6}"></polygon>' for k in range(6))
+    orn = ''
+    if t == 1:   # Rising: chevron under the stone
+        orn = f'<path d="M22 54 L32 60 L42 54" fill="none" stroke="url(#{g})" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>'
+    elif t == 2:  # Verified: crystal fins either side
+        orn = (f'<polygon points="10,26 3,32 10,38 13,32" fill="url(#{g})" opacity="0.9"></polygon>'
+               f'<polygon points="54,26 61,32 54,38 51,32" fill="url(#{g})" opacity="0.9"></polygon>')
+    elif t == 3:  # Proven: laurel branches
+        leaves = []
+        for side in (-1, 1):
+            for j in range(5):
+                ang = math.radians(100 + j * 21) if side < 0 else math.radians(80 - j * 21)
+                x, y = 32 + 26 * math.cos(ang), 32 + 26 * math.sin(ang)
+                rot = math.degrees(ang) + (90 if side < 0 else -90)
+                leaves.append(f'<ellipse cx="{x:.1f}" cy="{y:.1f}" rx="2.6" ry="5.6" transform="rotate({rot:.0f} {x:.1f} {y:.1f})" fill="url(#{g})" opacity="{0.95 - j * 0.12:.2f}"></ellipse>')
+        orn = ''.join(leaves)
+    elif t == 4:  # Elite: rays behind, crown on top
+        rays = ''.join(f'<polygon points="{pts([(32 + 30 * math.cos(math.radians(a)), 32 + 30 * math.sin(math.radians(a))), (32 + 19 * math.cos(math.radians(a - 7)), 32 + 19 * math.sin(math.radians(a - 7))), (32 + 19 * math.cos(math.radians(a + 7)), 32 + 19 * math.sin(math.radians(a + 7)))])}" fill="{mid}" opacity="0.55"></polygon>'
+                       for a in range(0, 360, 30) if a not in (270,))
+        crown = f'<path d="M23 9 L26 2 L29.5 7 L32 0.5 L34.5 7 L38 2 L41 9 Z" fill="url(#{g})" stroke="{lo}" stroke-width="0.6" stroke-linejoin="round"></path>'
+        orn = rays + crown
+    return (f'<svg width="{size}" height="{size}" viewBox="0 0 64 64" aria-hidden="true" style="overflow: visible">'
+            f'<defs><linearGradient id="{g}" x1="0.15" y1="0" x2="0.85" y2="1"><stop offset="0" stop-color="{hi}"></stop><stop offset="0.45" stop-color="{mid}"></stop><stop offset="1" stop-color="{lo}"></stop></linearGradient>'
+            f'<radialGradient id="{g}c" cx="0.35" cy="0.3" r="0.8"><stop offset="0" stop-color="{mid}"></stop><stop offset="1" stop-color="#07070A"></stop></radialGradient></defs>'
+            + orn
+            + f'<polygon points="{pts(_hexpts(21.5))}" fill="url(#{g})"></polygon>'
+            + facets
+            + f'<polygon points="{pts(inner)}" fill="url(#{g}c)" stroke="{hi}" stroke-opacity="0.5" stroke-width="0.8"></polygon>'
+            + f'<polygon points="{pts(_hexpts(21.5))}" fill="none" stroke="{hi}" stroke-opacity="0.65" stroke-width="0.9"></polygon>'
+            + f'<image href="{BLOB_WHITE}" x="23" y="23" width="18" height="18"></image></svg>')
 
 # ── Hero ──────────────────────────────────────────────────────────────────────────────
 # Stage is a fixed 1200×400 canvas (scaled down by CSS on smaller screens) so the wires meet the cards exactly.
@@ -218,7 +260,7 @@ def _stairs():
     steps = []
     for i, (name, thr, color) in enumerate(TIERS):
         steps.append(f'''<label for="tr{i}" class="tstep ts{i}" aria-label="Level {name}">
-          <span class="tbadge">{_badge(color, 34)}</span>
+          <span class="tbadge">{_badge(color, 44)}</span>
           <span class="tname">{name}</span>
           <span class="tbar" style="height: {STEP_H[i]}px"><span class="tabular">{thr}</span></span>
         </label>''')
