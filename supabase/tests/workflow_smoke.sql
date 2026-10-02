@@ -101,8 +101,8 @@ select earned, paid from campaigns where id='20000000-0000-0000-0000-00000000000
 
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select * from my_earnings_summary;
-select campaign_title, amount, fee, net_amount, processed_reference from my_payments;
-do $$ begin if (select count(*) from my_payments) <> 1 or (select net_amount from my_payments) <> 600000 - (select fee from my_payments) then raise exception 'my_payments wrong'; end if; end $$;
+select campaign_title, amount, fee, bonus, net_amount, processed_reference from my_payments;
+do $$ begin if (select count(*) from my_payments) <> 1 or (select net_amount from my_payments) <> 600000 + (select bonus from my_payments) - (select fee from my_payments) then raise exception 'my_payments wrong'; end if; end $$;
 select type, body from notifications order by created_at;
 select count(*) as audit_rows_visible_to_creator from audit_logs;  -- expect 0
 
@@ -563,7 +563,10 @@ do $$ declare p public.payout_requests; v numeric; begin
   v := withdrawal_fee_pct(p.fee_tier);
   if p.fee_tier is null then raise exception 'fee tier not recorded'; end if;
   if p.fee <> round(p.amount * v / 100) or p.fee_pct <> v then raise exception 'fee % pct % for amount % tier %', p.fee, p.fee_pct, p.amount, p.fee_tier; end if;
-  if p.net_amount <> p.amount - p.fee then raise exception 'net mismatch'; end if;
+  if p.net_amount <> p.amount + p.bonus - p.fee then raise exception 'net mismatch'; end if;
+  if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) or p.bonus_pct <> tier_bonus_pct(p.fee_tier) then raise exception 'bonus % pct % tier %', p.bonus, p.bonus_pct, p.fee_tier; end if;
+  if tier_bonus_pct('elite') <= tier_bonus_pct('new') then raise exception 'higher tier should earn more'; end if;
+  if (select paid from campaigns where id = '20000000-0000-0000-0000-000000000001') <> 600000 then raise exception 'bonus must not touch the campaign budget'; end if;
   if withdrawal_fee_pct('elite') >= withdrawal_fee_pct('new') then raise exception 'higher tier should pay less'; end if;
 end $$;
 select amount, fee, fee_pct, net_amount from admin_payouts limit 1;

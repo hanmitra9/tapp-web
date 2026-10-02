@@ -58,8 +58,10 @@ test('accepted clip is paid from "Siap dibayar": views + transfer reference, amo
   await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
   await page.getByLabel('Views').fill('20.000');
   await expect(page.getByText('Ke BCA 1234567890 a.n. Rani Putri')).toBeVisible();
-  // 20.000 views × Rp3.000 / 1.000 = Rp60.000, minus the New-level fee (5% = Rp3.000) → Rp57.000 transferred
+  // 20.000 views × Rp3.000 / 1.000 = Rp60.000; the mock answers 5% for both the level fee and the level bonus
+  // (Rp3.000 each), so Rp60.000 is transferred and the preview shows both parts.
+  await expect(page.getByText(/\+ bonus level new Rp3\.000 \(dari TAPP\) − fee Rp3\.000/)).toBeVisible();
   await page.getByLabel('Referensi transfer').fill('BCA 0210');
-  await page.getByRole('button', { name: /Tandai sudah ditransfer Rp57\.000/ }).click();
+  await page.getByRole('button', { name: /Tandai sudah ditransfer Rp60\.000/ }).click();
   await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_views: 20000, p_reference: 'BCA 0210', p_note: null }]);
 });

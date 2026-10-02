@@ -91,10 +91,12 @@ export async function fetchPayTo(creatorId: string): Promise<PayTo> {
   if (error) throw error;
   return data as PayTo;
 }
-export async function fetchFeePct(tier: string): Promise<number> {
-  const { data } = await supabase.from('app_settings').select('value').eq('key', 'withdrawal_fee_pct').maybeSingle();
+async function tierPct(key: string, tier: string): Promise<number> {
+  const { data } = await supabase.from('app_settings').select('value').eq('key', key).maybeSingle();
   return Number((data?.value as Record<string, number> | undefined)?.[tier] ?? 0);
 }
+export const fetchFeePct = (tier: string) => tierPct('withdrawal_fee_pct', tier);
+export const fetchBonusPct = (tier: string) => tierPct('tier_bonus_pct', tier);   // 0037: TAPP-paid bonus by level
 export type PaidRow = { id: string; amount: number; fee: number; net_amount: number; processed_reference: string | null; paid_at: string | null };
 export async function fetchPaid(submissionId: string): Promise<PaidRow[]> {
   const { data, error } = await supabase.from('payout_requests').select('id, amount, fee, net_amount, processed_reference, paid_at')
