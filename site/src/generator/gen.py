@@ -225,6 +225,10 @@ a{{color:inherit;text-decoration:none}}
 .lp .gb{{position:relative}}
 .lp .hc > div,.lp .hm > div{{position:relative}}
 .lp .gb::before,.lp .ccard::before,.lp .pdash::before,.lp .hc > div::before,.lp .hm > div::before,.lp .bsim > div::before{{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(160deg,rgba(198,214,255,0.35),rgba(125,140,255,0.08) 35%,rgba(255,255,255,0.02) 60%,rgba(125,140,255,0.2));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}}
+.lp .hstage-m{{display:none}}
+.lp .orbm{{transform-origin:180px 300px;animation:spin 18s linear infinite}}
+@media (max-width: 600px){{ .lp .hero2 .hstage-wrap{{display:none !important}} .lp .hero2 .hstage-m{{display:block;overflow:hidden;padding:4px 0 8px}} .lp .hero2 .hm{{display:none !important}} }}
+@media (max-width: 370px){{ .lp .hstage-m-in{{transform:scale(0.88);transform-origin:top center;margin-bottom:-72px !important}} }}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
 @media (max-width: 900px){{
   .lp .bcontact{{grid-template-columns:minmax(0,1fr) !important}}
