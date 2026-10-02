@@ -1,7 +1,7 @@
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', budget: 25000000, cpm: 3000, bstep: 0 };
+    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', budget: 25000000, bstep: 0 };
   }
   renderVals() {
     const s = this.state;
@@ -95,10 +95,9 @@ class Component extends DCLogic {
     const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
     const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 600; '
       + (on ? 'color: #FFFFFF; background: rgba(69,72,245,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
-    const budget = s.budget || 25000000, cpm = s.cpm || 3000;
+    const budget = s.budget || 25000000, cpm = 1000;   // simulator assumes Rp1.000 per 1.000 views
     const views = budget / cpm * 1000;
     const budgets = [10000000, 25000000, 50000000, 100000000].map((b) => ({ label: rp(b / 1e6) + ' jt', on: b === budget, style: chipStyle(b === budget), pick: () => this.setState({ budget: b }) }));
-    const cpms = [2000, 3000, 5000].map((c) => ({ label: rp(c), on: c === cpm, style: chipStyle(c === cpm), pick: () => this.setState({ cpm: c }) }));
     const bstep = s.bstep || 0;
     const bsteps = [0, 1, 2, 3].map((i) => ({
       on: i === bstep, pick: () => this.setState({ bstep: i }),
@@ -109,7 +108,7 @@ class Component extends DCLogic {
 
     return {
       isCreator: creator, isBrand: !creator,
-      budgets: budgets, cpms: cpms, simBudget: rp(budget), simViews: compact(views), simCost: rp(budget * 1.15),
+      budgets: budgets, simBudget: rp(budget), simViews: compact(views), simCost: rp(budget * 1.15),
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       creatorTab: tab(creator), brandTab: tab(!creator),
       setCreator: () => this.setState({ mode: 'creator' }),

@@ -328,13 +328,7 @@ a{{color:inherit;text-decoration:none}}
 
   {steps_tabs(VIS_B[3])}
 
-  <section id="kontak" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 88px 64px 40px; text-align: center">
-    <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 24px">
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Bikin Brand-mu <br><span style="color: #7DA2FF">Dibicarakan Di Mana-Mana</span></h2>
-      <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 560px">Ceritakan target campaign-mu. Kami siapkan creator yang tepat untuk menyebarkannya ke seluruh Indonesia.</p>
-      <a class="btn-p" href="meeting.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Jadwalkan Meeting</a>
-    </div>
-    {GLOBE}
+  <section id="kontak" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 56px 64px 24px">
     {BRAND_CONTACT}
   </section>
 

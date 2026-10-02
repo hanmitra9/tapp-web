@@ -34,8 +34,6 @@ def _sim():
   <div style="padding: 16px 18px; border-radius: 18px; {FLOAT}; display: flex; flex-direction: column; gap: 12px">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget Kamu</span><b class="tabular" style="font-size: 22px; color: #C6D6FF">{{{{simBudget}}}}</b></div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap">{chip('budgets')}</div>
-    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; font-weight: 500; color: #8A8A93; margin-right: 2px">CPM creator</span>{chip('cpms')}</div>
-    <span style="font-size: 12px; line-height: 18px; font-weight: 400; color: #8A8A93">Simulasi: budget dipakai untuk reward creator; fee platform 15% ditagih terpisah dari reward yang terpakai. Clip dibayar sampai 100K views per clip. Budget yang tidak terpakai tidak ditagih.</span>
   </div>
 </div>'''
 
@@ -47,7 +45,7 @@ def hero_brand():
   <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; margin-top: 48px">
     <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Ribuan Clip Organik, <br><span style="color: #7DA2FF">Bayar Yang Terbukti</span></h1>
     <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Materi brand-mu diolah ratusan creator menjadi clip pendek yang tayang di TikTok, Instagram, dan YouTube. Kamu hanya membayar views yang terverifikasi, tanpa bot dan tanpa angka semu.</p>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Campaign", "#kontak")}</div>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Campaign", "meeting.html")}</div>
   </div>
 </div>'''
 
