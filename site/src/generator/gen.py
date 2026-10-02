@@ -5,6 +5,7 @@ from parts import *
 from hero2 import hero_creator_visual, hero_brand_visual
 from hub import hero_hub, LEVELS, PORTFOLIO, TIER_CSS
 from brandhub import hero_brand, steps_tabs
+from footer import footer, CSS as FOOT_CSS
 GLOBE = open(HERE / 'globe.svg.frag').read()
 BRAND_CONTACT = (pathlib.Path(__file__).parent / 'contact_cards.html').read_text()  # brand WhatsApp + email cards (shared with meeting.html)
 
@@ -145,6 +146,7 @@ def faq_block(pill, l1, l2, btn, href, listname):
   </div>
 </section>'''
 
+FOOTER = footer(BLOB_MARK).replace('class="tf"', 'class="tf pad"')
 WALL = open(HERE / 'wall.html').read()
 FX3 = open(HERE / 'fx3.html').read()
 JS = open(HERE / 'logic.js').read()
@@ -256,6 +258,7 @@ a{{color:inherit;text-decoration:none}}
   .lp .navbar{{height:56px !important;padding:0 8px 0 14px !important;gap:12px !important}}
   .lp .dbtn{{right:16px;bottom:16px;height:44px;padding:0 13px}}
 }}
+{FOOT_CSS}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
 @media (max-width: 900px){{
   .lp .bcontact{{grid-template-columns:minmax(0,1fr) !important}}
@@ -362,18 +365,7 @@ a{{color:inherit;text-decoration:none}}
 </sc-if>
 </main>
 
-<footer class="pad sitefoot" style="position: relative; padding: 72px 64px 36px; margin-top: 24px; background: radial-gradient(60% 120% at 50% 0%, rgba(47,102,242,0.12), transparent 60%)">
-  <div class="foot" style="max-width: 1280px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 2fr) repeat(3, minmax(0, 1fr)); gap: 40px">
-    <div style="display: flex; flex-direction: column; gap: 14px; max-width: 340px">
-      <div style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 20px"><img src="{BLOB_MARK}" alt="" style="width: 28px; height: 28px"><span>TAPP</span></div>
-      <p style="font-size: 15px; line-height: 24px; color: #9A9AA5; font-weight: 400">Platform clipping berbasis performa. Brand bayar hasil yang terbukti, creator dibayar dari views yang nyata.</p>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span class="fh">Navigation</span><a class="nl" href="#top">Home</a><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#alur">Cara Kerja</a><a class="nl" href="#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan Privasi</a><a class="nl" href="terms.html">Syarat Layanan</a></div>
-    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span class="fh">Social</span><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>
-    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span class="fh">Contact</span><a class="nl" href="#mail" data-config-text="SUPPORT_EMAIL">Email Support</a><a class="nl" href="#whatsapp" data-config-text="WHATSAPP_LABEL">WhatsApp Creator</a><a class="nl" href="#whatsapp-brand" data-config-text="WHATSAPP_BRAND_LABEL">WhatsApp Brand</a></div>
-  </div>
-  <div style="max-width: 1280px; margin: 44px auto 0; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #6E6E78; font-weight: 400">© 2026 TAPP. Hak cipta dilindungi.</div>
-</footer>
+{FOOTER}
 
 <a href="#discord" aria-label="Gabung Discord TAPP" class="dbtn" style="position: fixed; right: 24px; bottom: 24px; z-index: 30; display: inline-flex; align-items: center; gap: 9px; height: 46px; padding: 0 18px 0 14px; border-radius: 14px; font-weight: 500; font-size: 14px"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.3 5.3A17 17 0 0 0 15 4l-.5 1a15.7 15.7 0 0 0-5 0L9 4a17 17 0 0 0-4.3 1.3C2 9.4 1.3 13.4 1.6 17.3A17 17 0 0 0 6.9 20l1-1.6a11 11 0 0 1-1.7-.8l.4-.3a12 12 0 0 0 10.8 0l.4.3a11 11 0 0 1-1.7.8l1 1.6a17 17 0 0 0 5.3-2.7c.4-4.6-.7-8.6-2.8-12zM8.7 15c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2zm6.6 0c-1 0-1.9-1-1.9-2.2s.8-2.2 1.9-2.2 1.9 1 1.9 2.2-.8 2.2-1.9 2.2z"></path></svg><span class="dlabel">Gabung Discord</span></a>
 </div>
