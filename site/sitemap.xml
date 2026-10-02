@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://tapp-web-production.up.railway.app/</loc><changefreq>weekly</changefreq></url>
-  <url><loc>https://tapp-web-production.up.railway.app/campaigns</loc><changefreq>daily</changefreq></url>
-  <url><loc>https://tapp-web-production.up.railway.app/privacy</loc><changefreq>weekly</changefreq></url>
-  <url><loc>https://tapp-web-production.up.railway.app/terms</loc><changefreq>weekly</changefreq></url>
-  <url><loc>https://tapp-web-production.up.railway.app/meeting</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tapp.example/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tapp.example/campaigns</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://tapp.example/privacy</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tapp.example/terms</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tapp.example/meeting</loc><changefreq>weekly</changefreq></url>
 </urlset>
