@@ -12,7 +12,7 @@ window.TAPP_CONFIG = {
   WHATSAPP_BRAND_URL: 'https://wa.me/message/6AFUBOMBAWWKM1',
   // Footer text for the two WhatsApp links. Empty = "WhatsApp Creator" / "WhatsApp Brand".
   WHATSAPP_LABEL: '+62 823 1404 9440 (Creator)',
-  WHATSAPP_BRAND_LABEL: '',
+  WHATSAPP_BRAND_LABEL: '+62 823 2916 0953 (Brand)',
   // Brand contact email shown on the brand page and /meeting. Leave empty to hide that card.
   BRAND_EMAIL: 'tappcreators@gmail.com',
   // Public, read-only access for the campaign list (publishable key is safe in the browser)
