@@ -74,7 +74,7 @@ function Detail({ c, onDone }: { c: Connection; onDone: () => Promise<void> }) {
       {c.status !== 'revoked' ? (
         <div className="section card">
           <label className="field">Alasan memutus (dikirim ke kreator)<textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Contoh: akun dipakai bersama kreator lain" /></label>
-          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={unverify} onChange={(e) => setUnverify(e.target.checked)} /> Cabut juga verifikasi akun ini</label>
+          <label className="check"><input type="checkbox" checked={unverify} onChange={(e) => setUnverify(e.target.checked)} />Cabut juga verifikasi akun ini</label>
           {error ? <div className="notice error">{error}</div> : null}
           <div className="actions"><button className="btn danger" disabled={busy} onClick={cut}>Putuskan koneksi</button></div>
         </div>
