@@ -67,7 +67,7 @@ class Component extends DCLogic {
       ['Bagaimana hitungan bayarannya?', 'Qualified views dikali tarif per 1.000 views. Qualified artinya views yang lolos saringan bot dan aktivitas janggal, jadi angka mentah di TikTok bisa berbeda dengan yang dibayar. Rinciannya terlihat per clip.'],
       ['Kapan aku dibayar?', 'Setelah clip-mu diterima tim TAPP, bayarannya ditransfer langsung ke rekening atau e-wallet di profilmu. Tidak perlu mengajukan penarikan.'],
       ['Dibayar ke mana?', 'E-wallet (GoPay, OVO, DANA, ShopeePay, LinkAja) atau rekening bank (BCA, BRI, BNI, Mandiri, dan lainnya) yang kamu isi di profil. Tim TAPP mentransfer setelah clip-mu diterima.'],
-      ['Berapa views minimal supaya dibayar?', 'Tiap campaign punya aturannya sendiri. Di TAPP Campaign, clip mulai dihitung setelah mencapai 5.000 views dan dibayar sampai 100K views per clip, jadi maksimal Rp300.000 per clip.'],
+      ['Berapa views minimal supaya dibayar?', 'Tiap campaign punya aturannya sendiri. Di TAPP Mega Campaign, clip mulai dihitung setelah mencapai 5.000 views dan dibayar sampai 100K views per clip, jadi maksimal Rp300.000 per clip.'],
       ['Follower saya masih sedikit, boleh?', 'Boleh. Tidak ada minimum follower. Level naik dari clip yang lolos dan approval rate-mu, jadi creator baru punya jalur yang sama.'],
       ['Clip saya ditolak, lalu?', 'Kamu langsung melihat alasannya. Kalau diminta revisi, perbaiki lalu kirim ulang selama campaign berjalan. Kalau merasa keliru, ajukan keberatan dari dashboard.'],
     ], 'openC');

@@ -52,7 +52,7 @@ def hero_brand_visual():
     cells = ''.join(f'<div class="bt">{clip(96, 170, kinds[i % 6], "", views[i], "tt", colors=pals[(i * 3) % 7], small=True)}</div>' for i in range(20))
     brief = f'''<div style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 300px; padding: 22px; border-radius: 18px; background: linear-gradient(180deg, rgba(22,22,30,0.96), rgba(12,12,18,0.96)); border: 1px solid rgba(125,162,255,0.45); box-shadow: 0 0 0 10px rgba(69,72,245,0.08), 0 40px 90px -20px rgba(69,72,245,0.85); display: flex; flex-direction: column; gap: 12px; backdrop-filter: blur(8px)">
   <div style="display: flex; align-items: center; justify-content: space-between"><span style="font-size: 12px; font-weight: 600; color: #7DA2FF">Brief campaign TAPP</span><span style="width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(180deg, #4F6BFF, #2238C2); display: inline-flex; align-items: center; justify-content: center"><img src="{BLOB_WHITE}" alt="" style="width: 17px; height: 17px"></span></div>
-  <b style="font-size: 19px; line-height: 24px">TAPP Campaign</b>
+  <b style="font-size: 19px; line-height: 24px">TAPP Mega Campaign</b>
   <div class="tabular" style="display: flex; flex-direction: column; font-size: 13px; font-weight: 500">
     <span style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.07)"><span style="color: #9A9AA5">Platform</span><span>TikTok, IG, YouTube</span></span>
     <span style="display: flex; justify-content: space-between; padding: 7px 0; border-bottom: 1px solid rgba(255,255,255,0.07)"><span style="color: #9A9AA5">Tarif</span><span>Rp3.000 /1K views</span></span>
