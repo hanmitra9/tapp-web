@@ -58,7 +58,7 @@ def _level_card():
       {_badge('#8A8A93', 54)}
       <b style="font-size: 18px">New</b>
       <span style="width: 100%; height: 1px; background: rgba(255,255,255,0.08)"></span>
-      <span style="font-size: 11px; font-weight: 500; color: #9A9AA5; line-height: 15px">Rising di <b class="tabular" style="color: #FFFFFF">50K</b> qualified views</span>
+      <span style="font-size: 11px; font-weight: 500; color: #9A9AA5; line-height: 15px">Rising di <b class="tabular" style="color: #FFFFFF">100K</b> qualified views</span>
     </div>'''
 
 HUB = f'''<div class="hub" style="position: absolute; left: 540px; top: 120px; width: 120px; height: 120px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #5B74FF, #2238C2); border: 1px solid rgba(198,214,255,0.6); box-shadow: 0 0 0 10px rgba(69,72,245,0.14), 0 0 0 22px rgba(69,72,245,0.06), 0 0 90px rgba(69,72,245,0.85), inset 0 1px 0 rgba(255,255,255,0.35)"><img src="{BLOB_WHITE}" alt="" style="width: 62px; height: 62px"></div>'''
@@ -91,15 +91,15 @@ def hero_hub():
 # ── Level arc ─────────────────────────────────────────────────────────────────────────
 # Real tiers and thresholds (app_settings.tier_thresholds, migration 022).
 TIERS = [
-    ('New', '0', '#8A8A93'), ('Rising', '50K', '#34D07A'), ('Verified', '250K', '#7DA2FF'),
-    ('Proven', '1 juta', '#A78BFA'), ('Elite', '5 juta', '#F0B429'),
+    ('New', '0', '#8A8A93'), ('Rising', '100K', '#34D07A'), ('Verified', '500K', '#7DA2FF'),
+    ('Proven', '2 juta', '#A78BFA'), ('Elite', '10 juta', '#F0B429'),
 ]
 TIER_BODY = [
     'Titik awal. Selesaikan campaign pertama dan kumpulkan clip yang lolos verifikasi.',
     'Clip-mu mulai konsisten lolos. Pola kerjamu sudah terbentuk dan terbaca.',
     'Rekam jejak yang teruji di banyak clip dan campaign. Performamu bisa dipercaya.',
-    'Satu juta qualified views. Kamu terbukti menggerakkan audiens nyata.',
-    'Puncak level TAPP: lima juta qualified views yang lolos verifikasi.',
+    'Dua juta qualified views. Kamu terbukti menggerakkan audiens nyata.',
+    'Puncak level TAPP: sepuluh juta qualified views yang lolos verifikasi.',
 ]
 
 # Rate bonus per level (app_settings.tier_bonus_pct, migration 0037), paid by TAPP on top of the clip's pay.
