@@ -11,7 +11,7 @@ export type FeedItem = {
   id: string; title: string; category: string; content_type: string; brand_name: string; brand_logo: string | null;
   platforms: Platform[]; cpm: number; budget: number; remaining: number; min_views_to_qualify: number;
   submission_deadline: string | null; ends_at: string | null; created_at: string;
-  joined: boolean; match_score: number; match_reasons: string[];
+  joined: boolean; match_score: number; match_reasons: string[]; banner_url?: string | null;
 };
 
 export type CampaignDetail = {
@@ -23,7 +23,7 @@ export type CampaignDetail = {
   brand: { name: string; logo_url: string | null; website: string | null };
   platforms: Platform[]; rules: { kind: 'requirement' | 'submission' | 'performance'; body: string }[];
   creators_joined: number; membership: { status: 'joined' | 'left' | 'removed'; joined_at: string } | null;
-  join_block: string | null;
+  join_block: string | null; banner_url?: string | null;
 };
 export type Asset = { id: string; kind: 'video' | 'audio' | 'image' | 'document' | 'link'; title: string; url: string | null; storage_path: string | null };
 
@@ -37,14 +37,24 @@ export async function fetchFeed(sort: Sort, f: Filters, offset = 0): Promise<Fee
     p_sort: sort, p_limit: PAGE, p_offset: offset,
   });
   if (error) throw error;
-  return (data ?? []).map((r: FeedItem) => ({ ...r, cpm: num(r.cpm), budget: num(r.budget), remaining: num(r.remaining) }));
+  const rows = (data ?? []) as FeedItem[];
+  const banners = await fetchBanners(rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, cpm: num(r.cpm), budget: num(r.budget), remaining: num(r.remaining), banner_url: banners[r.id] ?? null }));
+}
+
+// Banner photos (migration 0036) live on campaigns.banner_url; the feed/detail RPCs predate it.
+export async function fetchBanners(ids: string[]): Promise<Record<string, string>> {
+  if (!ids.length) return {};
+  const { data } = await supabase.from('campaigns').select('id, banner_url').in('id', ids).not('banner_url', 'is', null);
+  return Object.fromEntries((data ?? []).map((r) => [r.id as string, r.banner_url as string]));
 }
 
 export async function fetchCampaign(id: string): Promise<CampaignDetail> {
   const { data, error } = await supabase.rpc('get_campaign', { p_campaign_id: id });
   if (error) throw error;
   const d = data as CampaignDetail;
-  return { ...d, cpm: num(d.cpm), budget: num(d.budget), remaining: num(d.remaining), creators_joined: num(d.creators_joined) };
+  const banners = await fetchBanners([d.id]);
+  return { ...d, banner_url: banners[d.id] ?? null, cpm: num(d.cpm), budget: num(d.budget), remaining: num(d.remaining), creators_joined: num(d.creators_joined) };
 }
 
 // RLS only returns assets once the creator has joined.

@@ -568,3 +568,17 @@ do $$ declare p public.payout_requests; v numeric; begin
 end $$;
 select amount, fee, fee_pct, net_amount from admin_payouts limit 1;
 select 'withdrawal_fee_ok' as result;
+
+-- ── Campaign banner (0036) ──
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select admin_set_campaign_banner('20000000-0000-0000-0000-000000000001', 'https://x.supabase.co/b.jpg')$$, 'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error($$select admin_set_campaign_banner('20000000-0000-0000-0000-000000000001', 'http://insecure/b.jpg')$$, 'invalid_banner_url');
+select banner_url from admin_set_campaign_banner('20000000-0000-0000-0000-000000000001', 'https://x.supabase.co/storage/v1/object/public/campaign-banners/b.jpg');
+reset role;
+do $$ begin
+  if (select banner_url from campaigns where id = '20000000-0000-0000-0000-000000000001') is null then raise exception 'banner not saved'; end if;
+end $$;
+select count(*) >= 0 as public_list_has_banner_column from public_campaigns() where banner_url is not null or banner_url is null;
+select 'campaign_banner_ok' as result;

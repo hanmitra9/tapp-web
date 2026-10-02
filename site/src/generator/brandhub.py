@@ -45,7 +45,7 @@ def hero_brand():
   <div class="bwbg" aria-hidden="true" style="position: absolute; left: 50%; top: -40px; width: 900px; margin-left: -450px; opacity: 0.32; pointer-events: none">{_wall()}</div>
   <div style="position: relative">{_sim()}</div>
   <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; margin-top: 48px">
-    <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Jangkauan Organik,<br><span style="color: #7DA2FF">Dibayar Saat Terbukti</span></h1>
+    <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Jangkauan Organik, <br><span style="color: #7DA2FF">Dibayar Saat Terbukti</span></h1>
     <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Creator TAPP mengubah materi brand-mu jadi clip pendek di TikTok, Instagram, dan YouTube. Kamu hanya membayar views yang lolos verifikasi. Bot dan lonjakan janggal tidak pernah masuk tagihan.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Jadwalkan Meeting", "meeting.html")}{_btn("Lihat Cara Kerja", "#alur", False)}</div>
   </div>
@@ -114,7 +114,7 @@ def steps_tabs(report_visual):
     return f'''<section id="alur" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start; max-width: 760px; margin-bottom: 36px">
       <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">How It Works</span>
-      <h2 class="h2" style="font-size: 50px; line-height: 56px; font-weight: 600; letter-spacing: -1.5px">Dari Meeting Pertama<br><span style="color: #7DA2FF">Ke Laporan Pertama</span></h2>
+      <h2 class="h2" style="font-size: 50px; line-height: 56px; font-weight: 600; letter-spacing: -1.5px">Dari Meeting Pertama <br><span style="color: #7DA2FF">Ke Laporan Pertama</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Kamu menentukan arah, tarif, dan budget. Kami mengurus creator, verifikasi views, dan pembayaran.</p>
     </div>
     <div style="border-radius: 18px; padding: 10px; {CARD}">

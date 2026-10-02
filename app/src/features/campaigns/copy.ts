@@ -7,6 +7,7 @@ const CAMPAIGN_TYPES: Record<string, string> = {
   sports: 'Sports', lifestyle: 'Lifestyle', education: 'Education', other: 'Lainnya',
 };
 export const categoryLabel = (c: string) => CAMPAIGN_TYPES[c] ?? labelOf(NICHES, c);
+export const CAMPAIGN_TYPE_OPTIONS = Object.entries(CAMPAIGN_TYPES).map(([value, label]) => ({ value, label }));
 export const contentTypeLabel = (c: string) => labelOf(CONTENT_CATEGORIES, c);
 export const platformsLabel = (ps: Platform[]) => ps.map(platformLabel).join(' · ');
 

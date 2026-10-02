@@ -3,7 +3,7 @@ import { showAlert } from '@/lib/alert';
 import Feather from '@expo/vector-icons/Feather';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Header } from '@/components/Header';
 import { LoadState } from '@/components/LoadState';
@@ -77,6 +77,7 @@ export default function CampaignDetailScreen() {
   return (
     <Screen footer={footer} refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
       <Header title="" />
+      {c.banner_url ? <Image source={{ uri: c.banner_url }} style={styles.banner} resizeMode="cover" accessibilityIgnoresInvertColors /> : null}
       <Text style={styles.brand}>{c.brand.name}</Text>
       <Text style={styles.title} accessibilityRole="header">{c.title}</Text>
       <Text style={styles.meta}>
@@ -169,6 +170,7 @@ function AssetRow({ a }: { a: Asset }) {
 }
 
 const styles = StyleSheet.create({
+  banner: { width: '100%', aspectRatio: 2, borderRadius: radius.lg, marginBottom: space.lg, backgroundColor: color.surface },
   brand: { ...type.label, color: color.textSecondary, marginTop: -space.xl },
   title: { ...type.title, color: color.text, marginTop: space.xs },
   meta: { ...type.caption, color: color.textMuted, marginTop: space.xs },
