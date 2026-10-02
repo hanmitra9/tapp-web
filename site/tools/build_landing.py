@@ -64,10 +64,10 @@ def page(root_html=''):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TAPP: Dibayar untuk setiap view yang nyata</title>
+<title>TAPP: Ubah clip jadi penghasilan nyata</title>
 <meta name="description" content="TAPP mempertemukan brand dan creator short-form. Creator dibayar untuk setiap 1.000 views yang lolos verifikasi, brand hanya membayar hasil yang terbukti.">
 <meta name="theme-color" content="#07070A">
-<meta property="og:title" content="TAPP: Dibayar untuk setiap view yang nyata">
+<meta property="og:title" content="TAPP: Ubah clip jadi penghasilan nyata">
 <meta property="og:description" content="Kerjakan campaign dari brand, posting di akunmu sendiri, dan dibayar dari views yang lolos verifikasi.">
 <link rel="icon" href="assets/tapp-mark.svg" type="image/svg+xml">
 <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
