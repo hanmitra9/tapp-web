@@ -77,7 +77,7 @@ class Component extends DCLogic {
       ['Bisakah saya memilih creator?', 'Campaign ditawarkan ke creator yang cocok dari niche, platform, dan rekam jejak, bukan dari jumlah follower. Account manager-mu bisa membantu mengarahkan profil creator yang dicari.'],
       ['Kalau budget habis di tengah campaign?', 'Campaign otomatis masuk fase segera berakhir dan views berikutnya tidak dibayar, jadi pengeluaranmu tidak pernah melewati budget.'],
       ['Laporan apa yang saya dapat?', 'Views mentah dan qualified, total biaya, CPV, serta performa per platform dan per creator.'],
-      ['Berapa biayanya?', 'Kamu membayar reward untuk views yang lolos ditambah fee platform 15% dari reward yang terpakai.'],
+      ['Berapa biayanya?', 'Kamu hanya membayar views yang lolos verifikasi. Rincian biaya dibahas langsung bersama tim TAPP saat meeting, sesuai brief dan target campaign-mu.'],
     ], 'openB');
 
     // live chart (brand card 3), values from the reference demo
@@ -129,7 +129,7 @@ class Component extends DCLogic {
       return cards.concat(cards);
     };
 
-    // budget simulator: the budget pays creator rewards; the 15% platform fee is billed on top of rewards used.
+    // budget simulator: the budget pays creator rewards at a flat Rp1.000 per 1.000 qualified views.
     // Clips are paid up to 100K views each, so the views also need at least that many paid clips.
     const rp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
     const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
@@ -148,7 +148,7 @@ class Component extends DCLogic {
 
     return {
       isCreator: creator, isBrand: !creator,
-      budgets: budgets, simBudget: rp(budget), simViews: compact(views), simCost: rp(budget * 1.15),
+      budgets: budgets, simBudget: rp(budget), simViews: compact(views), simRate: rp(1000),
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       creatorTab: tab(creator), brandTab: tab(!creator),
       setCreator: () => this.setState({ mode: 'creator' }),

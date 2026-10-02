@@ -26,7 +26,7 @@ def _sim():
     </div>
     <div class="bstats" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center">
       {stat('Qualified Views', 'simViews', '#34D07A')}
-      <span style="border-left: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(255,255,255,0.08)">{stat('Total maks. + fee 15%', 'simCost', '#FFFFFF')}</span>
+      <span style="border-left: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(255,255,255,0.08)">{stat('Tarif per 1K Views', 'simRate', '#FFFFFF')}</span>
       {stat('Min. Video Submitted', 'simClips', '#7DA2FF')}
     </div>
   </div>
