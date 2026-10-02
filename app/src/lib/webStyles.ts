@@ -15,9 +15,12 @@ if (typeof document !== 'undefined' && !document.getElementById('tapp-web-styles
     face('Geist-Regular', 'Geist-Regular.woff2'),
     face('Geist-Medium', 'Geist-Medium.woff2'),
     face('Geist-SemiBold', 'Geist-SemiBold.woff2'),
-    `html,body{background:radial-gradient(1100px 620px at 50% -8%,rgba(84,96,255,0.16),rgba(69,72,245,0.04) 45%,transparent 70%),radial-gradient(800px 700px at 100% 60%,rgba(69,72,245,0.05),transparent 65%),linear-gradient(180deg,#0B0B12 0%,#07070A 30%,#050507 100%) fixed #060608}`,
+    `html,body{background:radial-gradient(1100px 620px at 50% -8%,rgba(60,110,255,0.16),rgba(47,102,242,0.04) 45%,transparent 70%),radial-gradient(800px 700px at 100% 60%,rgba(47,102,242,0.05),transparent 65%),linear-gradient(180deg,#0B0B12 0%,#07070A 30%,#050507 100%) fixed #060608}`,
     `body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.04;mix-blend-mode:overlay;background-image:url("${GRAIN}")}`,
-    `::selection{background:rgba(69,72,245,0.45)}`,
+    `::selection{background:rgba(47,102,242,0.45)}`,
+    // Form fields: the field container draws the focus ring, so no browser outline box inside it; autofill keeps the dark field.
+    `input,textarea,select{outline:none!important;box-shadow:none}`,
+    `input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,textarea:-webkit-autofill{-webkit-text-fill-color:#F4F4F5;caret-color:#F4F4F5;-webkit-box-shadow:0 0 0 1000px #141419 inset;box-shadow:0 0 0 1000px #141419 inset;transition:background-color 9999s ease-out 0s}`,
   ].join('\n');
   document.head.appendChild(el);
 }
