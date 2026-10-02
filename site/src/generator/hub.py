@@ -115,8 +115,8 @@ def _rgba(hex_, a):
 def _tier_card(i):
     name, thr, color = TIERS[i]
     req = 'Mulai dari 0 qualified views' if i == 0 else f'Mulai dari {thr} qualified views'
-    bonus = (f'<span class="tabular" style="padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #34D07A; background: rgba(52,208,122,0.1); border: 1px solid rgba(52,208,122,0.3)">Bonus Tarif +{TIER_BONUS[i]}%</span>'
-             if TIER_BONUS[i] else '<span style="padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #9A9AA5; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)">Tarif standar</span>')
+    bonus = (f'<span class="tabular" style="font-size: 15px; font-weight: 600; color: #34D07A">Bonus tarif +{TIER_BONUS[i]}%</span>'
+             if TIER_BONUS[i] else '<span style="font-size: 15px; font-weight: 600; color: #9A9AA5">Tarif standar</span>')
     return f'''<div class="tcard tc{i}" style="flex-direction: column; gap: 14px; padding: 28px; border-radius: 22px; background: linear-gradient(160deg, {_rgba(color, 0.16)}, rgba(15,15,20,0.9) 55%); border: 1px solid {_rgba(color, 0.35)}">
         <div style="display: flex; align-items: center; gap: 14px">
           {_badge(color, 56)}

@@ -343,7 +343,7 @@ a{{color:inherit;text-decoration:none}}
     </div>
     <div style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Navigation</span><a class="nl" href="#top">Home</a><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#alur">Cara Kerja</a><a class="nl" href="#faq">FAQ</a><a class="nl" href="privacy.html">Kebijakan Privasi</a><a class="nl" href="terms.html">Syarat Layanan</a></div>
     <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Social</span><a class="nl" href="#instagram">Instagram</a><a class="nl" href="#discord">Discord</a></div>
-    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Contact</span><a class="nl" href="#mail">Email Support</a><a class="nl" href="#whatsapp">WhatsApp Creator</a><a class="nl" href="#whatsapp-brand">WhatsApp Brand</a></div>
+    <div data-hide-empty="" style="display: flex; flex-direction: column; gap: 11px; font-size: 15px; font-weight: 500"><span style="color: #FFFFFF; margin-bottom: 4px">Contact</span><a class="nl" href="#mail">Email Support</a><a class="nl" href="#whatsapp" data-config-text="WHATSAPP_LABEL">WhatsApp Creator</a><a class="nl" href="#whatsapp-brand" data-config-text="WHATSAPP_BRAND_LABEL">WhatsApp Brand</a></div>
   </div>
   <div style="max-width: 1280px; margin: 44px auto 0; padding-top: 22px; border-top: 1px solid rgba(255,255,255,0.06); font-size: 14px; color: #6E6E78; font-weight: 400">© 2026 TAPP. Hak cipta dilindungi.</div>
 </footer>
