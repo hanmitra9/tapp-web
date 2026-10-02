@@ -43,6 +43,8 @@ const COPY: Record<string, string> = {
   submission_rate_limited: 'Kamu sudah mencapai batas submission hari ini. Coba lagi besok.',
   payout_below_minimum: 'Saldo tersedia masih di bawah minimum pencairan.',
   payout_by_admin: 'Bayaran ditransfer langsung oleh tim TAPP setelah klipmu diterima.',
+  already_verified: 'Akun ini sudah terverifikasi.',
+  bio_code_unsupported_platform: 'Verifikasi kode bio hanya untuk TikTok dan Instagram.',
   payout_already_open: 'Kamu masih punya pencairan yang sedang diproses.',
   payout_method_missing: 'Tambahkan rekening pembayaran terlebih dahulu.',
   platform_in_use: 'Akun ini masih dipakai di submission yang aktif, jadi belum bisa dihapus.',

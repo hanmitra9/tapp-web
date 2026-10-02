@@ -8,6 +8,7 @@ import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
 import { useAuth } from '@/providers/AuthProvider';
 import { CONNECT_PLATFORMS, connectEnabled, fetchCreatorProfile, fetchPlatforms, setMainPlatform, startConnect, type ConnectPlatform, type LinkedPlatform } from '@/features/creator/api';
+import { BioVerify } from '@/features/creator/forms/BioVerify';
 import { PlatformManager } from '@/features/creator/forms/PlatformManager';
 import type { Platform } from '@/features/creator/options';
 
@@ -60,7 +61,7 @@ export default function Socials() {
 
   return (
     <Screen scroll={!!platforms}>
-      <Header title="Akun media sosial" subtitle="Akun baru akan diverifikasi TAPP sebelum dipakai untuk submission." />
+      <Header title="Akun media sosial" subtitle="Verifikasi akun TikTok dan Instagram-mu dengan kode di bio sebelum dipakai untuk submission." />
       {platforms ? (
         <>
           <Notice tone={returned && q[returned] === 'error' ? 'error' : 'info'} message={result} />
@@ -71,6 +72,9 @@ export default function Socials() {
               onPress={() => connect(p)} />
           ))}
           <PlatformManager uid={uid} platforms={platforms} onPlatforms={setPlatforms} mainPlatform={main} onMainPlatform={changeMain} />
+          {platforms.filter((p) => !p.verified_at && (p.platform === 'tiktok' || p.platform === 'instagram')).map((p) => (
+            <BioVerify key={p.id} p={p} onVerified={load} />
+          ))}
         </>
       ) : <LoadState error={loadError} onRetry={load} />}
     </Screen>

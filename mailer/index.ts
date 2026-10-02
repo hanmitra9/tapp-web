@@ -104,7 +104,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
       block: {
         title: name ? `Selamat datang di TAPP, ${esc(name)}` : "Selamat datang di TAPP",
         intro: "Akunmu sudah aktif. Di TAPP kamu mengerjakan campaign dari brand, posting di akunmu sendiri, dan dibayar dari views yang lolos verifikasi. Ini langkah pertamanya:",
-        rows: [["1. Lengkapi profil", "Niche dan jenis konten"], ["2. Hubungkan akun sosial", "TikTok, Instagram, YouTube"], ["3. Tunggu verifikasi", "Biasanya 1 hari kerja"], ["4. Ambil campaign", "Mulai dari TAPP Campaign"]],
+        rows: [["1. Lengkapi profil", "Niche dan jenis konten"], ["2. Hubungkan akun sosial", "TikTok, Instagram, YouTube"], ["3. Tunggu verifikasi", "Biasanya 1 hari kerja"], ["4. Ambil campaign", "Mulai dari TAPP Mega Campaign"]],
         button: APP() ? { label: "Buka TAPP", url: APP() } : undefined,
         outro: "Pertanyaan? Balas email ini, tim TAPP siap bantu.",
       },
