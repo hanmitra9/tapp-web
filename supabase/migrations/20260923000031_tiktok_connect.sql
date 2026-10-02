@@ -14,6 +14,9 @@
 
 set search_path = public, extensions;
 
+-- Live has an unused, empty oauth_states from an earlier dashboard-applied migration (different columns);
+-- replace it with this shape.
+drop table if exists public.oauth_states;
 create table public.oauth_states (
   state       text primary key,
   user_id     uuid not null references public.profiles(id) on delete cascade,
