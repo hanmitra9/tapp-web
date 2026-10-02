@@ -32,3 +32,14 @@ test('result of the TikTok login is shown on return', async ({ page }) => {
   await page.goto('/profile/socials?tiktok=error&reason=taken');
   await expect(page.getByText('sudah terdaftar di kreator lain', { exact: false })).toBeVisible();
 });
+
+test('Instagram connect works the same way, alongside TikTok', async ({ page }) => {
+  await signedInCreator(page, { app_settings: { value: { tiktok: { enabled: true }, instagram: { enabled: true } } } });
+  await page.route('**/functions/v1/instagram-oauth', (r) => r.fulfill({ json: { url: 'https://www.instagram.com/oauth/authorize?client_id=k&state=s' } }));
+  await page.route('https://www.instagram.com/**', (r) => r.fulfill({ contentType: 'text/html', body: '<title>Instagram login</title>' }));
+  await page.goto('/profile/socials?instagram=error&reason=profile');
+  await expect(page.getByText('akun Instagram Professional', { exact: false })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Hubungkan dengan TikTok' })).toBeVisible();
+  await page.getByRole('button', { name: 'Hubungkan dengan Instagram' }).click();
+  await expect(page).toHaveURL(/instagram\.com\/oauth\/authorize/);
+});

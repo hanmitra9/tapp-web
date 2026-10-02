@@ -23,7 +23,7 @@ export function Connections() {
   return (
     <>
       <div className="page-head">
-        <div><h1>Koneksi akun</h1><p className="sub">Akun TikTok/YouTube yang dihubungkan kreator untuk views otomatis. Login = bukti kepemilikan, jadi akunnya otomatis terverifikasi.</p></div>
+        <div><h1>Koneksi akun</h1><p className="sub">Akun TikTok/Instagram yang dihubungkan kreator untuk views otomatis. Login = bukti kepemilikan, jadi akunnya otomatis terverifikasi.</p></div>
         <input type="search" placeholder="Cari nama, username, handle…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 280 }} />
       </div>
       <div className="tabs">{TABS.map((x) => <button key={x.label} className={`tab ${tab.s === x.s ? 'on' : ''}`} onClick={() => setTab(x)}>{x.label}</button>)}</div>
@@ -38,7 +38,7 @@ export function Connections() {
             </button>
           ))}
         </div>
-        <div className="detail">{c ? <Detail key={c.id + c.status} c={c} onDone={list.reload} /> : <div className="empty">Pilih koneksi di kiri.</div>}</div>
+        <div className="detail">{c ? <Detail key={c.id + c.status} c={c} onDone={list.reload} /> : <div className="empty">Pilih koneksi dari daftar.</div>}</div>
       </div>
     </>
   );
@@ -55,7 +55,7 @@ function Detail({ c, onDone }: { c: Connection; onDone: () => Promise<void> }) {
     setBusy(true); setError(null);
     try { await disconnectPlatform(c.id, reason.trim(), unverify); await onDone(); } catch (e) { setError(adminError(e)); } finally { setBusy(false); }
   }
-  const url = c.platform === 'tiktok' && c.handle ? `https://www.tiktok.com/@${c.handle}` : null;
+  const url = !c.handle ? null : c.platform === 'tiktok' ? `https://www.tiktok.com/@${c.handle}` : c.platform === 'instagram' ? `https://www.instagram.com/${c.handle}` : null;
   return (
     <>
       <h2>{PLATFORM[c.platform] ?? c.platform} @{c.handle ?? '—'}</h2>

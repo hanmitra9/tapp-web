@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
 import { useAdmin } from '../auth';
 import { countNewMeetings, fetchCounts } from '../lib/api';
@@ -8,6 +9,15 @@ export function Layout() {
   const counts = useLoad(fetchCounts, []);
   const meetings = useLoad(countNewMeetings, []);
   const c = counts.data;
+  // On a phone the detail panel sits under the list: bring it into view when an item is picked.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      if (window.innerWidth > 820 || !(e.target as Element | null)?.closest?.('.list-item')) return;
+      setTimeout(() => document.querySelector('.detail')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+    };
+    document.addEventListener('click', onClick);
+    return () => document.removeEventListener('click', onClick);
+  }, []);
   const Count = ({ n }: { n: number | undefined }) => (n ? <span className="count">{n}</span> : null);
   return (
     <div className="shell">

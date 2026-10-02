@@ -25,6 +25,15 @@ The repo's `Dockerfile` builds everything (landing is taken prerendered from the
 Create a service from this GitHub repo in Railway, generate a domain, and set the service variable `SITE_URL` to that
 URL (used for canonical/og links). Every push to the deployed branch redeploys.
 
+## Cloudflare (domain + hosting in one place, no Railway)
+Buy the domain in Cloudflare Registrar, then Workers & Pages → Create → Pages → connect this GitHub repo:
+- Production branch `main`, build command `bash deploy/cloudflare-pages.sh`, output directory `dist`
+- Variables: `SITE_URL=https://<domain>`, `NODE_VERSION=22`, `PYTHON_VERSION=3.11`
+- Custom domains → add the domain (DNS and SSL are set up automatically since the domain is on Cloudflare)
+
+Routing comes from `dist/_redirects` (`/admin/*` → admin, everything else that isn't a file → `app.html`). After the
+first deploy, check `/`, `/privacy`, `/login`, `/dashboard` and `/admin/` load; then the Railway service can be removed.
+
 ## After uploading
 1. Supabase → Authentication → URL Configuration → **Site URL** = `https://tapp.id`; add `https://tapp.id/**` to Redirect URLs.
 2. SQL: `insert into app_settings (key, value) values ('app_url', to_jsonb('https://tapp.id'::text)) on conflict (key) do update set value = excluded.value;`

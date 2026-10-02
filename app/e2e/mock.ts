@@ -15,10 +15,10 @@ type Tables = Record<string, unknown>;
 export async function signedInCreator(page: Page, tables: Tables = {}, claims: Record<string, unknown> = {}) {
   const token = fakeJwt(claims);
   const user = { id: UID, aud: 'authenticated', role: 'authenticated', email: 'kreator@example.com', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' };
-  await page.addInitScript(([key, value]) => localStorage.setItem(key, value), [
-    `sb-${REF}-auth-token`,
-    JSON.stringify({ access_token: token, refresh_token: 'r', token_type: 'bearer', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, user }),
-  ]);
+  await page.addInitScript(({ key, value }) => localStorage.setItem(key, value), {
+    key: `sb-${REF}-auth-token`,
+    value: JSON.stringify({ access_token: token, refresh_token: 'r', token_type: 'bearer', expires_in: 3600, expires_at: Math.floor(Date.now() / 1000) + 3600, user }),
+  });
   const data: Tables = {
     profiles: { id: UID, full_name: 'Rani Putri', username: 'rani', role: 'creator', avatar_url: null, country: 'ID' },
     creator_profiles: { status: 'active', status_reason: null, onboarding_completed_at: '2026-01-01T00:00:00Z', tier: 'new', main_platform: 'tiktok',

@@ -530,3 +530,27 @@ do $$ begin
   if exists (select 1 from due_for_tiktok_metrics() where video_id = '7412') then raise exception 'revoked still queued'; end if;
 end $$;
 select 'admin_connections_ok' as result;
+
+-- ── Instagram connect (0033) ──
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select pg_temp.expect_error($$select oauth_complete_instagram(auth.uid(),'ig1','c2.ig',10,'a',5184000,null)$$, 'permission denied');
+select pg_temp.expect_error($$select oauth_complete_account(auth.uid(),'instagram','ig1','c2.ig',10,'a',null,5184000,null)$$, 'permission denied');
+select pg_temp.expect_error($$select * from due_for_instagram_metrics()$$, 'permission denied');
+reset role;
+select handle, profile_url, followers, verified_at is not null as verified_expect_t
+  from oauth_complete_instagram('00000000-0000-0000-0000-0000000000c2', 'ig1', '@C2.IG', 5400, 'tok', 5184000, array['instagram_business_basic']);
+select pg_temp.expect_error($$select oauth_complete_instagram('00000000-0000-0000-0000-0000000000c1','ig9','c2.ig',1,'t',5184000,null)$$, 'instagram_account_taken');
+select pg_temp.expect_error($$select oauth_complete_instagram('00000000-0000-0000-0000-0000000000c1','ig1','other.name',1,'t',5184000,null)$$, 'instagram_account_taken');
+do $$ begin
+  if (select profile_url from creator_platforms where creator_id = '00000000-0000-0000-0000-0000000000c2' and platform = 'instagram') <> 'https://www.instagram.com/c2.ig'
+    then raise exception 'instagram profile url'; end if;
+  if not exists (select 1 from notifications where user_id = '00000000-0000-0000-0000-0000000000c2' and title = 'Akun Instagram terverifikasi')
+    then raise exception 'instagram notification'; end if;
+  if (select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c2' and platform = 'instagram') <> 'connected'
+    then raise exception 'instagram not connected'; end if;
+end $$;
+select substring('instagram.com/reel/AbC_123' from '^instagram\.com/(?:p|reel|tv)/([A-Za-z0-9_-]+)') as shortcode_expect_AbC_123;
+select count(*) >= 0 as ig_queue_runs from due_for_instagram_metrics();
+select 'instagram_connect_ok' as result;
