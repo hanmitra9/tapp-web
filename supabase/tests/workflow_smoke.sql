@@ -567,7 +567,7 @@ do $$ declare p public.payout_requests; v numeric; begin
   if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) or p.bonus_pct <> tier_bonus_pct(p.fee_tier) then raise exception 'bonus % pct % tier %', p.bonus, p.bonus_pct, p.fee_tier; end if;
   if tier_bonus_pct('elite') <= tier_bonus_pct('new') then raise exception 'higher tier should earn more'; end if;
   if (select paid from campaigns where id = '20000000-0000-0000-0000-000000000001') <> 600000 then raise exception 'bonus must not touch the campaign budget'; end if;
-  if withdrawal_fee_pct('elite') >= withdrawal_fee_pct('new') then raise exception 'higher tier should pay less'; end if;
+  if withdrawal_fee_pct('new') <> 0 or withdrawal_fee_pct('elite') <> 0 or p.fee <> 0 then raise exception 'fee should be 0 since 0038'; end if;
 end $$;
 select amount, fee, fee_pct, net_amount from admin_payouts limit 1;
 select 'withdrawal_fee_ok' as result;
