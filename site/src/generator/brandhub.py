@@ -21,18 +21,18 @@ def _sim():
   <div style="position: relative; padding: 18px 20px; border-radius: 20px; {FLOAT}">
     {_corner(('top','left'))}{_corner(('top','right'))}{_corner(('bottom','left'))}{_corner(('bottom','right'))}
     <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px solid rgba(255,255,255,0.08)">
-      <span style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px">{_mini_mark(28, 9)}Your Brand</span>
+      <span style="display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 15px">{_mini_mark(28, 9)}Brand kamu</span>
       <span style="padding: 4px 11px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.18); font-size: 12px; font-weight: 600; color: #D4D4D8">Clipping</span>
     </div>
     <div class="bstats" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); text-align: center">
-      {stat('Qualified Views', 'simViews', '#34D07A')}
+      {stat('Qualified views', 'simViews', '#34D07A')}
       <span style="border-left: 1px solid rgba(255,255,255,0.08); border-right: 1px solid rgba(255,255,255,0.08)">{stat('Total maks. + fee 15%', 'simCost', '#FFFFFF')}</span>
-      {stat('Min. Video Submitted', 'simClips', '#7DA2FF')}
+      {stat('Min. clip dibutuhkan', 'simClips', '#7DA2FF')}
     </div>
   </div>
   <div style="width: 2px; height: 22px; margin: -6px auto; background: linear-gradient(180deg, #7DA2FF, rgba(125,162,255,0.2)); box-shadow: 0 0 10px #7DA2FF"></div>
   <div style="padding: 16px 18px; border-radius: 18px; {FLOAT}; display: flex; flex-direction: column; gap: 12px">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget Kamu</span><b class="tabular" style="font-size: 22px; color: #C6D6FF">{{{{simBudget}}}}</b></div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget kamu</span><b class="tabular" style="font-size: 22px; color: #C6D6FF">{{{{simBudget}}}}</b></div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap">{chip('budgets')}</div>
     <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; font-weight: 500; color: #8A8A93; margin-right: 2px">CPM creator</span>{chip('cpms')}</div>
     <span style="font-size: 12px; line-height: 18px; font-weight: 400; color: #8A8A93">Simulasi: budget dipakai untuk reward creator; fee platform 15% ditagih terpisah dari reward yang terpakai. Clip dibayar sampai 100K views per clip. Budget yang tidak terpakai tidak ditagih.</span>

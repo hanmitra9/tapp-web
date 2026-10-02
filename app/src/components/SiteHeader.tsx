@@ -17,12 +17,12 @@ export function SiteHeader() {
       <View style={styles.right}>
         {isWide ? (
           <>
-            <Pressable onPress={() => goToSite('/campaigns')} accessibilityRole="link"><Text style={styles.link}>Campaigns</Text></Pressable>
+            <Pressable onPress={() => goToSite('/campaigns')} accessibilityRole="link"><Text style={styles.link}>Campaign</Text></Pressable>
             <Pressable onPress={() => goToSite('/#faq')} accessibilityRole="link"><Text style={styles.link}>FAQ</Text></Pressable>
           </>
         ) : null}
         <Pressable onPress={() => router.replace(onRegister ? '/login' : '/register')} accessibilityRole="button" style={styles.cta}>
-          <Text style={styles.ctaText}>{onRegister ? 'Log In' : 'Sign Up'}</Text>
+          <Text style={styles.ctaText}>{onRegister ? 'Masuk' : 'Daftar'}</Text>
         </Pressable>
       </View>
     </View>

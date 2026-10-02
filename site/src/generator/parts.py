@@ -77,7 +77,7 @@ def campaign_card(c):
           <span style="padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); font-size: 12px; font-weight: 600; color: #D4D4D8">{typ}</span>
         </div>
         <h3 style="font-size: 18px; line-height: 24px; font-weight: 600">{title}</h3>
-        <span class="tabular"><span style="font-size: 20px; font-weight: 600">{rate}</span><span style="font-size: 13px; color: #8A8A93; font-weight: 500"> /1K Views</span></span>
+        <span class="tabular"><span style="font-size: 20px; font-weight: 600">{rate}</span><span style="font-size: 13px; color: #8A8A93; font-weight: 500"> /1.000 views</span></span>
         <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap">
           <span style="display: inline-flex; gap: 8px">{icons}</span>
           <span style="padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); font-size: 10px; font-weight: 600; letter-spacing: 0.4px; color: #B4B4BD">{cat}</span>

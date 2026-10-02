@@ -3,12 +3,12 @@ import { expect, test } from '@playwright/test';
 // Runs against the combined site build (python3 site/tools/build_all.py). Signed-out flows only: they need
 // no live backend, so they run against any build.
 
-test('landing Sign Up opens the register page on the same site', async ({ page }) => {
+test('landing Daftar opens the register page on the same site', async ({ page }) => {
   await page.goto('/');
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-  await page.locator('header').getByRole('link', { name: 'Sign Up' }).click();
+  await page.locator('header').getByRole('link', { name: 'Daftar' }).click();
   await expect(page).toHaveURL(/\/register$/);
-  await expect(page.getByRole('button', { name: 'Log In' })).toBeVisible();   // landing-style header
+  await expect(page.getByRole('button', { name: 'Masuk' })).toBeVisible();   // landing-style header
 });
 
 test('login validates before calling the server', async ({ page }) => {
