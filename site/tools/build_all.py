@@ -12,7 +12,7 @@ import os, re, sys, shutil, subprocess, pathlib
 here = pathlib.Path(__file__).resolve().parent
 repo = here.parents[1]
 args = [a for a in sys.argv[1:] if not a.startswith('--')]
-url = (args[0] if args else os.environ.get('SITE_URL', 'https://tapp.example')).rstrip('/')
+url = (args[0] if args else os.environ.get('SITE_URL', 'https://tappcreators.com')).rstrip('/')
 env = {**os.environ, 'SITE_URL': url}
 SUPA = {'url': 'https://njffqsbddzztfxxbavpp.supabase.co', 'key': 'sb_publishable_1Nl1WjCA3Ddeu4kvPtZhEA_xWCMQZ-x'}
 

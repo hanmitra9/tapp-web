@@ -29,7 +29,7 @@
 ## Secrets
 - App and admin ship only the **publishable/anon** key.
 - Never commit: DB password, `service_role`/secret keys, Vault secrets.
-- TikTok OAuth (migration `…031`): `TIKTOK_CLIENT_SECRET` lives only in Edge Function secrets; the code exchange runs in `tiktok-oauth`, bound to a one-time `oauth_states` row (service-role only, 10-minute lifetime). Access/refresh tokens go straight to Vault. `connect_platform_account` is revoked from `authenticated`, so a client can never hand the DB an unchecked token or claim an account it didn't log in to.
+- TikTok / Instagram OAuth (migrations `…031`, `…033`): `TIKTOK_CLIENT_SECRET` / `INSTAGRAM_APP_SECRET` live only in Edge Function secrets; the code exchange runs in `tiktok-oauth`, bound to a one-time `oauth_states` row (service-role only, 10-minute lifetime). Access/refresh tokens go straight to Vault. `connect_platform_account` is revoked from `authenticated`, so a client can never hand the DB an unchecked token or claim an account it didn't log in to.
 
 ## Review checklist (run after each migration)
 ```sql

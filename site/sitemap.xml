@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://tapp.example/</loc><changefreq>weekly</changefreq></url>
-  <url><loc>https://tapp.example/campaigns</loc><changefreq>daily</changefreq></url>
-  <url><loc>https://tapp.example/privacy</loc><changefreq>weekly</changefreq></url>
-  <url><loc>https://tapp.example/terms</loc><changefreq>weekly</changefreq></url>
-  <url><loc>https://tapp.example/meeting</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tappcreators.com/</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tappcreators.com/campaigns</loc><changefreq>daily</changefreq></url>
+  <url><loc>https://tappcreators.com/privacy</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tappcreators.com/terms</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tappcreators.com/meeting</loc><changefreq>weekly</changefreq></url>
 </urlset>

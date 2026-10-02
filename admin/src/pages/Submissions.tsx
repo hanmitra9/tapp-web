@@ -175,6 +175,14 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
   const [error, setError] = useState<string | null>(null);
   const needsReason = decision && decision !== 'approved';
 
+  // Approving needs no reason: one click. Other decisions are explained to the creator, so they ask for one.
+  async function approveNow() {
+    setBusy(true); setError(null);
+    try { await reviewSubmission(s.id, 'approved', null); setDecision(null); setReason(''); await onDone(); }
+    catch (e) { setError(adminError(e)); }
+    finally { setBusy(false); }
+  }
+
   async function confirm() {
     if (!decision) return;
     if (needsReason && !reason.trim()) return setError('Alasan wajib diisi — kreator akan melihatnya.');
@@ -190,7 +198,7 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
       <div className="actions">
         {options.map((o) => (
           <button key={o.d} className={`btn ${o.cls}`} aria-pressed={decision === o.d} style={decision === o.d ? { outline: '2px solid var(--blue)' } : undefined}
-            onClick={() => { setDecision(o.d); setError(null); }}>{o.label}</button>
+            onClick={() => (o.d === 'approved' ? approveNow() : (setDecision(o.d), setError(null)))} disabled={busy}>{o.label}</button>
         ))}
       </div>
       {decision && PRESETS[decision] ? (
@@ -210,6 +218,7 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
 
 function MetricsPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<void> }) {
   const [f, setF] = useState({ views: '', likes: '', comments: '', shares: '', saves: '', capturedAt: toLocalInput(), state: 'live' });
+  const [toReport, setToReport] = useState(true);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
@@ -222,9 +231,19 @@ function MetricsPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise
     if (bad) return setError('Isi angka saja.');
     setBusy(true);
     try {
-      await recordMetrics(s.id, { views: toInt(f.views), likes: toInt(f.likes), comments: toInt(f.comments), shares: toInt(f.shares), saves: toInt(f.saves),
+      const views = toInt(f.views);
+      const m = await recordMetrics(s.id, { views, likes: toInt(f.likes), comments: toInt(f.comments), shares: toInt(f.shares), saves: toInt(f.saves),
         capturedAt: new Date(f.capturedAt).toISOString(), state: f.state });
-      setOk(f.state === 'live' ? 'Metrik tersimpan.' : 'Metrik tersimpan. Submission otomatis ditandai karena postingan tidak publik.');
+      // One step to the brand report: count these views as qualified right away (raw = qualified). Lower than what
+      // is already counted means earnings would drop — that stays a deliberate decision in the form below.
+      if (toReport && f.state === 'live' && s.status !== 'flagged' && views >= s.qualified_views) {
+        await qualifyViews(s.id, m.id, views, 'Input manual', false);
+        setOk(`${num(views)} views masuk ke laporan brand. Penghasilan kreator diperbarui.`);
+      } else if (toReport && f.state === 'live' && views < s.qualified_views) {
+        setOk(`Metrik tersimpan. Views lebih kecil dari yang sudah dihitung (${num(s.qualified_views)}), jadi atur qualified views di bawah.`);
+      } else {
+        setOk(f.state === 'live' ? 'Metrik tersimpan.' : 'Metrik tersimpan. Submission otomatis ditandai karena postingan tidak publik.');
+      }
       setF({ ...f, views: '', likes: '', comments: '', shares: '', saves: '', capturedAt: toLocalInput() });
       await onDone();
     } catch (e) { setError(adminError(e)); }
@@ -235,7 +254,7 @@ function MetricsPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise
   );
   return (
     <div className="section card">
-      <h2>Catat raw metrics</h2>
+      <h2>Isi views</h2>
       <p className="sub" style={{ margin: 0 }}>Salin angka dari postingan <a href={s.post_url} target="_blank" rel="noreferrer noopener">↗</a>. Data mentah tidak pernah ditimpa; setiap input jadi snapshot baru.</p>
       <div className="grid3">{input('views', 'Views *')}{input('likes', 'Likes')}{input('comments', 'Komentar')}{input('shares', 'Share')}{input('saves', 'Save')}
         <label className="field">Diambil pada<input type="datetime-local" value={f.capturedAt} max={toLocalInput()} onChange={(e) => setF({ ...f, capturedAt: e.target.value })} /></label>
@@ -245,9 +264,12 @@ function MetricsPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise
           <option value="live">Publik</option><option value="private">Diprivat</option><option value="deleted">Dihapus</option><option value="unknown">Tidak bisa dicek</option>
         </select>
       </label>
+      {f.state === 'live' && s.status !== 'flagged' ? (
+        <label className="check"><input type="checkbox" checked={toReport} onChange={(e) => setToReport(e.target.checked)} />Langsung masukkan ke laporan brand (semua views dihitung qualified)</label>
+      ) : null}
       {error ? <div className="notice error">{error}</div> : null}
       {ok ? <div className="notice ok">{ok}</div> : null}
-      <div className="actions"><button className="btn" onClick={save} disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan metrik'}</button></div>
+      <div className="actions"><button className="btn" onClick={save} disabled={busy}>{busy ? 'Menyimpan…' : toReport && f.state === 'live' && s.status !== 'flagged' ? 'Simpan & masukkan ke laporan' : 'Simpan metrik'}</button></div>
     </div>
   );
 }

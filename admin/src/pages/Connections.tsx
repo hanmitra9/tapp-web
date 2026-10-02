@@ -23,7 +23,7 @@ export function Connections() {
   return (
     <>
       <div className="page-head">
-        <div><h1>Koneksi akun</h1><p className="sub">Akun TikTok/YouTube yang dihubungkan kreator untuk views otomatis. Login = bukti kepemilikan, jadi akunnya otomatis terverifikasi.</p></div>
+        <div><h1>Koneksi akun</h1><p className="sub">Akun TikTok/Instagram yang dihubungkan kreator untuk views otomatis. Login = bukti kepemilikan, jadi akunnya otomatis terverifikasi.</p></div>
         <input type="search" placeholder="Cari nama, username, handle…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 280 }} />
       </div>
       <div className="tabs">{TABS.map((x) => <button key={x.label} className={`tab ${tab.s === x.s ? 'on' : ''}`} onClick={() => setTab(x)}>{x.label}</button>)}</div>
@@ -38,7 +38,7 @@ export function Connections() {
             </button>
           ))}
         </div>
-        <div className="detail">{c ? <Detail key={c.id + c.status} c={c} onDone={list.reload} /> : <div className="empty">Pilih koneksi di kiri.</div>}</div>
+        <div className="detail">{c ? <Detail key={c.id + c.status} c={c} onDone={list.reload} /> : <div className="empty">Pilih koneksi dari daftar.</div>}</div>
       </div>
     </>
   );
@@ -55,7 +55,7 @@ function Detail({ c, onDone }: { c: Connection; onDone: () => Promise<void> }) {
     setBusy(true); setError(null);
     try { await disconnectPlatform(c.id, reason.trim(), unverify); await onDone(); } catch (e) { setError(adminError(e)); } finally { setBusy(false); }
   }
-  const url = c.platform === 'tiktok' && c.handle ? `https://www.tiktok.com/@${c.handle}` : null;
+  const url = !c.handle ? null : c.platform === 'tiktok' ? `https://www.tiktok.com/@${c.handle}` : c.platform === 'instagram' ? `https://www.instagram.com/${c.handle}` : null;
   return (
     <>
       <h2>{PLATFORM[c.platform] ?? c.platform} @{c.handle ?? '—'}</h2>
@@ -74,7 +74,7 @@ function Detail({ c, onDone }: { c: Connection; onDone: () => Promise<void> }) {
       {c.status !== 'revoked' ? (
         <div className="section card">
           <label className="field">Alasan memutus (dikirim ke kreator)<textarea rows={2} value={reason} onChange={(e) => setReason(e.target.value)} placeholder="Contoh: akun dipakai bersama kreator lain" /></label>
-          <label style={{ display: 'flex', gap: 8, alignItems: 'center' }}><input type="checkbox" checked={unverify} onChange={(e) => setUnverify(e.target.checked)} /> Cabut juga verifikasi akun ini</label>
+          <label className="check"><input type="checkbox" checked={unverify} onChange={(e) => setUnverify(e.target.checked)} />Cabut juga verifikasi akun ini</label>
           {error ? <div className="notice error">{error}</div> : null}
           <div className="actions"><button className="btn danger" disabled={busy} onClick={cut}>Putuskan koneksi</button></div>
         </div>

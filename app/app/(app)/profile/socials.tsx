@@ -7,16 +7,18 @@ import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
 import { useAuth } from '@/providers/AuthProvider';
-import { fetchCreatorProfile, fetchPlatforms, setMainPlatform, startTiktokConnect, tiktokConnectEnabled, type LinkedPlatform } from '@/features/creator/api';
+import { CONNECT_PLATFORMS, connectEnabled, fetchCreatorProfile, fetchPlatforms, setMainPlatform, startConnect, type ConnectPlatform, type LinkedPlatform } from '@/features/creator/api';
 import { PlatformManager } from '@/features/creator/forms/PlatformManager';
 import type { Platform } from '@/features/creator/options';
 
-// Result of the tiktok-oauth redirect (?tiktok=connected|error&reason=…).
-const TIKTOK_ERRORS: Record<string, string> = {
-  taken: 'Akun TikTok itu sudah terdaftar di kreator lain. Hubungi TAPP kalau itu akunmu.',
-  cancelled: 'Login TikTok dibatalkan.',
-  expired: 'Sesi login TikTok kedaluwarsa. Coba lagi.',
-  no_profile: 'Lengkapi profil kreatormu dulu.',
+const LABEL: Record<ConnectPlatform, string> = { tiktok: 'TikTok', instagram: 'Instagram' };
+// Result of the <platform>-oauth redirect (?tiktok=connected|error&reason=…, same for instagram).
+const ERRORS: Record<string, (label: string) => string> = {
+  taken: (l) => `Akun ${l} itu sudah terdaftar di kreator lain. Hubungi TAPP kalau itu akunmu.`,
+  cancelled: (l) => `Login ${l} dibatalkan.`,
+  expired: (l) => `Sesi login ${l} kedaluwarsa. Coba lagi.`,
+  no_profile: () => 'Lengkapi profil kreatormu dulu.',
+  profile: (l) => (l === 'Instagram' ? 'Gunakan akun Instagram Professional (Business atau Creator), lalu coba lagi.' : `Profil ${l} tidak terbaca. Coba lagi.`),
 };
 
 export default function Socials() {
@@ -26,17 +28,19 @@ export default function Socials() {
   const [main, setMain] = useState<Platform | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const q = useLocalSearchParams<{ tiktok?: string; reason?: string; handle?: string }>();
-  const [ttEnabled, setTtEnabled] = useState(false);
-  const [ttBusy, setTtBusy] = useState(false);
-  const ttResult = q.tiktok === 'connected' ? `TikTok @${q.handle ?? ''} terhubung dan terverifikasi. Views klipmu tercatat otomatis.`
-    : q.tiktok === 'error' ? (TIKTOK_ERRORS[q.reason ?? ''] ?? 'TikTok gagal terhubung. Coba lagi.') : null;
-  useEffect(() => { tiktokConnectEnabled().then(setTtEnabled).catch(() => {}); }, []);
+  const q = useLocalSearchParams<{ tiktok?: string; instagram?: string; reason?: string; handle?: string }>();
+  const [enabled, setEnabled] = useState<Record<ConnectPlatform, boolean>>({ tiktok: false, instagram: false });
+  const [busy, setBusy] = useState<ConnectPlatform | null>(null);
+  const returned = CONNECT_PLATFORMS.find((p) => q[p]);
+  const result = !returned ? null : q[returned] === 'connected'
+    ? `${LABEL[returned]} @${q.handle ?? ''} terhubung dan terverifikasi. Views klipmu tercatat otomatis.`
+    : (ERRORS[q.reason ?? '']?.(LABEL[returned]) ?? `${LABEL[returned]} gagal terhubung. Coba lagi.`);
+  useEffect(() => { connectEnabled().then(setEnabled).catch(() => {}); }, []);
 
-  async function connectTiktok() {
-    setTtBusy(true); setError(null);
-    try { window.location.assign(await startTiktokConnect()); }
-    catch (e) { setError(errorMessage(e)); setTtBusy(false); }
+  async function connect(p: ConnectPlatform) {
+    setBusy(p); setError(null);
+    try { window.location.assign(await startConnect(p)); }
+    catch (e) { setError(errorMessage(e)); setBusy(null); }
   }
 
   const load = useCallback(async () => {
@@ -59,12 +63,13 @@ export default function Socials() {
       <Header title="Akun media sosial" subtitle="Akun baru akan diverifikasi TAPP sebelum dipakai untuk submission." />
       {platforms ? (
         <>
-          <Notice tone={q.tiktok === 'error' ? 'error' : 'info'} message={ttResult} />
+          <Notice tone={returned && q[returned] === 'error' ? 'error' : 'info'} message={result} />
           <Notice tone="error" message={error} />
-          {ttEnabled ? (
-            <Button label={platforms.some((p) => p.platform === 'tiktok' && p.verified_at) ? 'Hubungkan ulang TikTok' : 'Hubungkan dengan TikTok'}
-              onPress={connectTiktok} loading={ttBusy} />
-          ) : null}
+          {CONNECT_PLATFORMS.filter((p) => enabled[p]).map((p) => (
+            <Button key={p} variant={p === 'tiktok' ? 'primary' : 'secondary'} loading={busy === p} disabled={busy !== null && busy !== p}
+              label={platforms.some((x) => x.platform === p && x.verified_at) ? `Hubungkan ulang ${LABEL[p]}` : `Hubungkan dengan ${LABEL[p]}`}
+              onPress={() => connect(p)} />
+          ))}
           <PlatformManager uid={uid} platforms={platforms} onPlatforms={setPlatforms} mainPlatform={main} onMainPlatform={changeMain} />
         </>
       ) : <LoadState error={loadError} onRetry={load} />}
