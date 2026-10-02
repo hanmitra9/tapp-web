@@ -800,8 +800,6 @@ a{color:inherit;text-decoration:none}
   <div style="padding: 16px 18px; border-radius: 18px; background: linear-gradient(180deg, rgba(22,22,28,0.94), rgba(12,12,16,0.94)); border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 24px 48px -24px rgba(0,0,0,0.9), inset 0 1px 0 rgba(255,255,255,0.06); backdrop-filter: blur(10px); display: flex; flex-direction: column; gap: 12px">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget Kamu</span><b class="tabular" style="font-size: 22px; color: #C6D6FF">{{simBudget}}</b></div>
     <div style="display: flex; gap: 6px; flex-wrap: wrap"><sc-for list="{{budgets}}" as="o" hint-placeholder-count="4"><button onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
-    <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"><span style="font-size: 12px; font-weight: 500; color: #8A8A93; margin-right: 2px">CPM creator</span><sc-for list="{{cpms}}" as="o" hint-placeholder-count="4"><button onClick="{{o.pick}}" aria-pressed="{{o.on}}" style="{{o.style}}">{{o.label}}</button></sc-for></div>
-    <span style="font-size: 12px; line-height: 18px; font-weight: 400; color: #8A8A93">Simulasi: budget dipakai untuk reward creator; fee platform 15% ditagih terpisah dari reward yang terpakai. Clip dibayar sampai 100K views per clip. Budget yang tidak terpakai tidak ditagih.</span>
   </div>
 </div></div>
   <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; margin-top: 48px">
@@ -1005,7 +1003,7 @@ a{color:inherit;text-decoration:none}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', budget: 25000000, cpm: 3000, bstep: 0 };
+    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', budget: 25000000, bstep: 0 };
   }
   renderVals() {
     const s = this.state;
@@ -1099,10 +1097,9 @@ class Component extends DCLogic {
     const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
     const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 600; '
       + (on ? 'color: #FFFFFF; background: rgba(69,72,245,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
-    const budget = s.budget || 25000000, cpm = s.cpm || 3000;
+    const budget = s.budget || 25000000, cpm = 1000;   // simulator assumes Rp1.000 per 1.000 views
     const views = budget / cpm * 1000;
     const budgets = [10000000, 25000000, 50000000, 100000000].map((b) => ({ label: rp(b / 1e6) + ' jt', on: b === budget, style: chipStyle(b === budget), pick: () => this.setState({ budget: b }) }));
-    const cpms = [2000, 3000, 5000].map((c) => ({ label: rp(c), on: c === cpm, style: chipStyle(c === cpm), pick: () => this.setState({ cpm: c }) }));
     const bstep = s.bstep || 0;
     const bsteps = [0, 1, 2, 3].map((i) => ({
       on: i === bstep, pick: () => this.setState({ bstep: i }),
@@ -1113,7 +1110,7 @@ class Component extends DCLogic {
 
     return {
       isCreator: creator, isBrand: !creator,
-      budgets: budgets, cpms: cpms, simBudget: rp(budget), simViews: compact(views), simCost: rp(budget * 1.15),
+      budgets: budgets, simBudget: rp(budget), simViews: compact(views), simCost: rp(budget * 1.15),
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       creatorTab: tab(creator), brandTab: tab(!creator),
       setCreator: () => this.setState({ mode: 'creator' }),
