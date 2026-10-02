@@ -47,7 +47,7 @@ def _wires():
         delay = f'animation-delay: -{i * 1.1:.1f}s'
         comets.append(f'<path class="comet" pathLength="100" style="{delay}" d="{d}"></path>'
                       f'<path class="comet-h" pathLength="100" style="{delay}" d="{d}"></path>')
-        ports.append(f'<circle cx="{x0}" cy="{y0}" r="4" fill="#0B0B12" stroke="#7DA2FF" stroke-opacity="0.7" stroke-width="1.2"></circle>'
+        ports.append(f'<circle class="hport" cx="{x0}" cy="{y0}" r="4" fill="#0B0B12" stroke="#7DA2FF" stroke-opacity="0.7" stroke-width="1.2"></circle>'
                      f'<circle cx="{x1}" cy="{y1}" r="2.4" fill="#DCE4FF"></circle>')
     rings = (f'<g mask="url(#hwfade)" fill="none">'
              f'<circle cx="{cx}" cy="{cy}" r="104" stroke="rgba(160,180,255,0.16)"></circle>'

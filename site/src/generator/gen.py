@@ -209,6 +209,7 @@ a{{color:inherit;text-decoration:none}}
 .lp .hc{{animation:bob 6s ease-in-out infinite}} .lp .hc:nth-of-type(2){{animation-delay:-1.5s}} .lp .hc:nth-of-type(3){{animation-delay:-3s}} .lp .hc:nth-of-type(4){{animation-delay:-4.5s}}
 @keyframes bob{{0%,100%{{transform:translateY(0)}}50%{{transform:translateY(-6px)}}}}
 @media (max-width: 1240px){{ .lp .hstage{{transform:scale(0.82);transform-origin:center top}} .lp .hstage-wrap{{height:330px !important}} }}
+@media (min-width: 600px) and (max-width: 900px){{ .lp .hstage-wrap .hstage{{transform:scale(0.66) !important}} .lp .hero2 .hstage-wrap{{height:270px !important}} }}
 @media (max-width: 1240px){{ .lp .bpanel{{gap:20px !important}} }}
 
 /* premium layer: layered black, gradient accents, grain */
@@ -246,9 +247,9 @@ a{{color:inherit;text-decoration:none}}
   .lp .mqc{{width:84px !important;height:84px !important;border-radius: 18px !important}}
   .lp .mqc img{{width:46px !important;height:46px !important}}
   .lp .brow{{padding:24px !important}}
-  .lp .hstage-wrap{{height:170px !important}}
-  .lp .hstage{{transform:scale(0.9) translateY(-100px) !important}}
-  .lp .hstage .hc,.lp .hstage .hwire{{display:none !important}}
+  .lp .hstage-wrap{{height:205px !important;overflow:hidden;-webkit-mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent);mask-image:linear-gradient(90deg,transparent,#000 16%,#000 84%,transparent)}}
+  .lp .hstage{{transform:scale(0.5) !important;transform-origin:center top}}
+  .lp .hstage .hc,.lp .hstage .hport{{display:none !important}}
   .lp .hm{{display:flex !important}}
   .lp .dlabel{{display:none}}
   .lp .hero-hb{{font-size:36px !important;line-height:41px !important;letter-spacing:-1px !important}}
