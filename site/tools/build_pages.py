@@ -94,7 +94,7 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
     return '<article style="border-radius: 18px; overflow: hidden; background: linear-gradient(180deg, #131318, #0C0C10); border: 1px solid rgba(255,255,255,0.08); display: flex; flex-direction: column">'
       + (/^https:\/\//.test(k.banner_url || '')
         ? '<div style="position: relative; aspect-ratio: 2 / 1; overflow: hidden; background: #131318"><img src="' + esc(k.banner_url) + '" alt="' + esc(k.title) + '" loading="lazy" style="width: 100%; height: 100%; object-fit: cover; display: block"></div>'
-        : '<div style="position: relative; height: 150px; overflow: hidden; background: radial-gradient(70% 90% at 80% 30%, #7DA2FF, transparent 60%), linear-gradient(135deg, #0E1A6B, #4548F5)">'
+        : '<div style="position: relative; height: 150px; overflow: hidden; background: radial-gradient(70% 90% at 80% 30%, #7DA2FF, transparent 60%), linear-gradient(135deg, #0E1A6B, #2F66F2)">'
           + '<img src="assets/tapp-mark-white.svg" alt="" style="position: absolute; right: 26px; top: 34px; width: 74px; height: 74px; filter: drop-shadow(0 0 24px rgba(198,214,255,0.8))">'
           + '<span style="position: absolute; left: 20px; bottom: 16px; font-size: 26px; line-height: 28px; font-weight: 600; letter-spacing: -0.6px; max-width: 60%">' + esc(k.title) + '</span></div>')
       + '<div style="padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">'
@@ -105,12 +105,12 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
       + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 500">Minimal klaim</span><b style="font-size: 15px">' + short(k.min_views_to_qualify || 0) + ' views</b></span>'
       + '<span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 500">Maks. per clip</span><b style="font-size: 15px">' + (maxViews ? short(maxViews) + ' views' : 'Tanpa batas') + '</b></span></div>'
       + '<div style="display: flex; flex-direction: column; gap: 8px"><div class="tab" style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 500; color: #9A9AA5"><span>Budget tersisa</span><span style="color: #FFFFFF">' + k.budget_left_pct + '%</span></div>'
-      + '<div style="height: 6px; border-radius: 3px; background: #1F1F26"><div style="width: ' + k.budget_left_pct + '%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #4548F5, #7DA2FF)"></div></div></div>'
+      + '<div style="height: 6px; border-radius: 3px; background: #1F1F26"><div style="width: ' + k.budget_left_pct + '%; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #2F66F2, #7DA2FF)"></div></div></div>'
       + '<a class="btn" href="' + href + '" style="height: 44px; border-radius: 12px; margin-top: 4px">Ambil campaign</a>'
       + '</div></article>';
   }
   function empty(title, body) {
-    return '<div style="grid-column: 1 / -1; padding: 56px 24px; border-radius: 18px; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(60% 80% at 50% 0%, rgba(69,72,245,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">'
+    return '<div style="grid-column: 1 / -1; padding: 56px 24px; border-radius: 18px; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(60% 80% at 50% 0%, rgba(47,102,242,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">'
       + '<img src="assets/tapp-mark.svg" alt="" style="width: 44px; height: 44px; opacity: 0.85"><h2 style="font-size: 22px; font-weight: 600">' + title + '</h2><p style="font-size: 15px; line-height: 24px; color: #9A9AA5; max-width: 440px">' + body + '</p>'
       + '<a class="btn" href="' + (c.APP_URL ? app + '/register' : '#') + '" style="margin-top: 6px">Daftar gratis</a></div>';
   }
@@ -120,7 +120,7 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
     var plats = ['all'].concat(Array.from(new Set([].concat.apply([], all.map(function (k) { return k.platforms || []; })))));
     filters.innerHTML = all.length ? plats.map(function (p) {
       var on = p === active;
-      return '<button data-p="' + p + '" aria-pressed="' + on + '" style="height: 38px; padding: 0 16px; border-radius: 999px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; ' + (on ? 'background: rgba(69,72,245,0.25); color: #FFFFFF; border: 1px solid #5B7CFA' : 'background: rgba(255,255,255,0.04); color: #A1A1AA; border: 1px solid rgba(255,255,255,0.1)') + '">' + (p === 'all' ? 'Semua' : esc(NAME[p] || p)) + '</button>';
+      return '<button data-p="' + p + '" aria-pressed="' + on + '" style="height: 38px; padding: 0 16px; border-radius: 999px; font: inherit; font-weight: 600; font-size: 14px; cursor: pointer; ' + (on ? 'background: rgba(47,102,242,0.25); color: #FFFFFF; border: 1px solid #5B7CFA' : 'background: rgba(255,255,255,0.04); color: #A1A1AA; border: 1px solid rgba(255,255,255,0.1)') + '">' + (p === 'all' ? 'Semua' : esc(NAME[p] || p)) + '</button>';
     }).join('') : '';
     filters.querySelectorAll('button').forEach(function (b) { b.onclick = function () { active = b.getAttribute('data-p'); draw(); }; });
   }
@@ -176,9 +176,9 @@ MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit deng
 .mtg-points{display:flex;flex-direction:column;gap:10px;margin-top:10px;width:100%}
 .mtg-points div{display:flex;flex-direction:column;gap:2px;padding:14px 16px;border-radius:14px;background:#0F0F13;border:1px solid var(--line)}
 .mtg-points b{font-size:15px}.mtg-points span{font-size:14px;color:var(--t2)}
-.mtg-card{display:flex;flex-direction:column;gap:14px;padding:24px;border-radius:20px;background:linear-gradient(180deg,#15151D,#0D0D12 55%,#0A0A0E);border:1px solid rgba(255,255,255,0.08);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 30px 70px -40px rgba(69,72,245,0.7)}
+.mtg-card{display:flex;flex-direction:column;gap:14px;padding:24px;border-radius:20px;background:linear-gradient(180deg,#15151D,#0D0D12 55%,#0A0A0E);border:1px solid rgba(255,255,255,0.08);box-shadow:inset 0 1px 0 rgba(255,255,255,0.05),0 30px 70px -40px rgba(47,102,242,0.7)}
 .mtg-step{display:flex;align-items:center;gap:10px;margin-top:6px;font-size:15px}
-.mtg-n{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:9px;background:rgba(69,72,245,0.18);border:1px solid rgba(125,162,255,0.35);font-size:12px;color:var(--bl2)}
+.mtg-n{display:inline-flex;width:28px;height:28px;align-items:center;justify-content:center;border-radius:9px;background:rgba(47,102,242,0.18);border:1px solid rgba(125,162,255,0.35);font-size:12px;color:var(--bl2)}
 .mtg-muted{color:var(--t3);font-weight:400}
 .cal-head{display:flex;align-items:center;justify-content:space-between}
 .cal-head button{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:#111116;color:#F4F4F5;font-size:20px;cursor:pointer}
@@ -367,7 +367,7 @@ legal('terms.html', 'Syarat Layanan', 'Aturan memakai TAPP untuk creator dan bra
 # ───────────────────────────── 404 ─────────────────────────────
 NOTFOUND = head('Halaman tidak ditemukan | TAPP', 'Halaman ini tidak ada di TAPP.', '404') + header('') + """
 <main style="min-height: 60vh; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 18px">
-  <img src="assets/tapp-mark.svg" alt="" style="width: 72px; height: 72px; filter: drop-shadow(0 0 24px rgba(69,72,245,0.45))">
+  <img src="assets/tapp-mark.svg" alt="" style="width: 72px; height: 72px; filter: drop-shadow(0 0 24px rgba(47,102,242,0.45))">
   <span class="pill">404</span>
   <h1 class="h1">Halaman Ini<br><span>Tidak Ditemukan</span></h1>
   <p class="lead">Mungkin link-nya salah atau halamannya sudah dipindah.</p>
