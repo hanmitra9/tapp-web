@@ -12,6 +12,7 @@ RUN python3 site/tools/build_all.py "$SITE_URL" --skip-landing
 
 FROM nginx:1.27-alpine
 COPY deploy/nginx.railway.conf.template /etc/nginx/templates/default.conf.template
+COPY deploy/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=build /src/dist /usr/share/nginx/html
 ENV PORT=8080
 EXPOSE 8080

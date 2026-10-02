@@ -7,6 +7,8 @@ import { extname, join, normalize } from 'node:path';
 const root = new URL('../../dist/', import.meta.url).pathname;
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.ico': 'image/x-icon', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.svg': 'image/svg+xml' };
 const port = Number(process.env.PORT ?? 4173);
+// Same security headers as production (deploy/security-headers.conf), so tests catch CSP breakage.
+const secHeaders = Object.fromEntries([...(await readFile(new URL('../../deploy/security-headers.conf', import.meta.url), 'utf8')).matchAll(/^add_header (\S+) "([^"]*)"/gm)].map((m) => [m[1], m[2]]).filter(([k]) => k !== 'Strict-Transport-Security'));
 const isFile = async (p) => { try { return (await stat(p)).isFile(); } catch { return false; } };
 
 createServer(async (req, res) => {
@@ -15,6 +17,6 @@ createServer(async (req, res) => {
   let file = null;
   for (const c of candidates) if (await isFile(c)) { file = c; break; }
   if (!file) file = path.startsWith('/admin/') ? join(root, 'admin/index.html') : join(root, 'app.html');
-  res.writeHead(200, { 'content-type': types[extname(file)] ?? 'application/octet-stream' });
+  res.writeHead(200, { ...secHeaders, 'content-type': types[extname(file)] ?? 'application/octet-stream' });
   res.end(await readFile(file));
 }).listen(port, () => console.log(`serving dist on :${port}`));
