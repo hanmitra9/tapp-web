@@ -1,6 +1,6 @@
 """Build the sub-pages (campaigns, privacy, terms) with the shared header/footer. Run: python3 site/tools/build_pages.py"""
 import os, pathlib
-SITE_URL = os.environ.get('SITE_URL', 'https://tapp.example').rstrip('/')
+SITE_URL = os.environ.get('SITE_URL', 'https://tappcreators.com').rstrip('/')
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
 def head(title, desc, path=''):

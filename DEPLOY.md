@@ -7,7 +7,7 @@ admin panel are built together and uploaded as one folder.
 cd app && npm i && cd ../admin && npm i && cd ..
 pip install playwright && python3 -m playwright install chromium   # once, for the landing's SEO prerender
 
-python3 site/tools/build_all.py https://tapp.id
+python3 site/tools/build_all.py https://tappcreators.com
 ```
 Upload the **contents of `dist/`** to the domain's web root (cPanel `public_html`, or `/var/www/tapp` on a VPS).
 
@@ -35,9 +35,9 @@ Routing comes from `dist/_redirects` (`/admin/*` → admin, everything else that
 first deploy, check `/`, `/privacy`, `/login`, `/dashboard` and `/admin/` load; then the Railway service can be removed.
 
 ## After uploading
-1. Supabase → Authentication → URL Configuration → **Site URL** = `https://tapp.id`; add `https://tapp.id/**` to Redirect URLs.
-2. SQL: `insert into app_settings (key, value) values ('app_url', to_jsonb('https://tapp.id'::text)) on conflict (key) do update set value = excluded.value;`
-3. Railway `tapp-mailer` → variable `APP_URL` = `https://tapp.id` (buttons in emails).
+1. Supabase → Authentication → URL Configuration → **Site URL** = `https://tappcreators.com`; add `https://tappcreators.com/**` to Redirect URLs.
+2. SQL: `insert into app_settings (key, value) values ('app_url', to_jsonb('https://tappcreators.com'::text)) on conflict (key) do update set value = excluded.value;`
+3. Railway `tapp-mailer` → variable `APP_URL` = `https://tappcreators.com` (buttons in emails).
 4. `site/assets/config.js` keeps `APP_URL: '/'` (same site). Social links and the support email live there too; it can be edited on the server without rebuilding.
 
 ## Check

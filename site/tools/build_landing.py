@@ -6,7 +6,7 @@
 Run:  python3 site/tools/build_landing.py --prerender
 """
 import re, sys, os, pathlib
-SITE_URL = os.environ.get('SITE_URL', 'https://tapp.example').rstrip('/')
+SITE_URL = os.environ.get('SITE_URL', 'https://tappcreators.com').rstrip('/')
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 src = (ROOT / 'src' / 'landing.dc.html').read_text()
 src = src.replace('/_blob/58aec98a357608dc6fa8a4a440fc9214', 'assets/tapp-mark.svg').replace('/_blob/2d5aebeddb5d0a63b818258d6ea37530', 'assets/tapp-mark-white.svg')

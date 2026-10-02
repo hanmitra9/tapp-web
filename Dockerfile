@@ -2,7 +2,7 @@
 # Build: landing comes prerendered from the repo; the web app and admin panel are built here.
 # Runtime env: PORT (set by Railway). Build arg / Railway variable: SITE_URL (public URL, for canonical/og links).
 FROM node:22-bookworm AS build
-ARG SITE_URL=https://tapp.example
+ARG SITE_URL=https://tappcreators.com
 WORKDIR /src
 COPY app/package.json app/package-lock.json app/
 COPY admin/package.json admin/package-lock.json admin/
