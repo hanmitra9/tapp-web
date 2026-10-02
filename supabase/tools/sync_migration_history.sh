@@ -16,7 +16,7 @@ REMOTE=(20260923121600 20260923121738 20260923121829 20260923121846 202609231219
                                          # 024–031 supersede them — verified to apply cleanly on top
 LOCAL=(); for i in $(seq -w 1 23); do LOCAL+=("202609230000$i"); done
 
-supabase link --project-ref "$REF"
+supabase link --project-ref "$REF" ${SUPABASE_DB_PASSWORD:+--password "$SUPABASE_DB_PASSWORD"}
 supabase migration repair --status reverted "${REMOTE[@]}"
 supabase migration repair --status applied "${LOCAL[@]}"
 supabase migration list            # 001–023 should now show on both sides; 024+ local only

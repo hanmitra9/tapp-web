@@ -34,6 +34,11 @@ Buy the domain in Cloudflare Registrar, then Workers & Pages → Create → Page
 Routing comes from `dist/_redirects` (`/admin/*` → admin, everything else that isn't a file → `app.html`). After the
 first deploy, check `/`, `/privacy`, `/login`, `/dashboard` and `/admin/` load; then the Railway service can be removed.
 
+## Database update without a laptop
+GitHub → Actions → **Database update** → Run workflow. It runs the one-time history sync and `supabase db push`
+(only migrations not yet applied). First add two repository secrets: `SUPABASE_ACCESS_TOKEN` (supabase.com → Account →
+Access Tokens) and `SUPABASE_DB_PASSWORD` (project → Settings → Database).
+
 ## After uploading
 1. Supabase → Authentication → URL Configuration → **Site URL** = `https://tappcreators.com`; add `https://tappcreators.com/**` to Redirect URLs.
 2. SQL: `insert into app_settings (key, value) values ('app_url', to_jsonb('https://tappcreators.com'::text)) on conflict (key) do update set value = excluded.value;`

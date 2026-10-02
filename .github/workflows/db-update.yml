@@ -1,0 +1,31 @@
+# Database update from the browser/phone: GitHub → Actions → "Database update" → Run workflow.
+# Needs two repository secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_ACCESS_TOKEN  — supabase.com → Account → Access Tokens → Generate
+#   SUPABASE_DB_PASSWORD   — Supabase project → Settings → Database (the database password)
+# Safe to run again: the history sync is idempotent and db push only applies migrations not yet applied.
+name: Database update
+on: workflow_dispatch
+concurrency: db-update
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    env:
+      SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: latest
+      - name: Check secrets
+        run: |
+          [ -n "$SUPABASE_ACCESS_TOKEN" ] || { echo "::error::Add the SUPABASE_ACCESS_TOKEN repository secret"; exit 1; }
+          [ -n "$SUPABASE_DB_PASSWORD" ] || { echo "::error::Add the SUPABASE_DB_PASSWORD repository secret"; exit 1; }
+      - name: Project config
+        run: '[ -f supabase/config.toml ] || supabase init --force'
+      - name: Sync migration history (one-time fix, no-op afterwards)
+        run: bash supabase/tools/sync_migration_history.sh
+      - name: Apply new migrations
+        run: echo y | supabase db push --password "$SUPABASE_DB_PASSWORD"
+      - name: Result
+        run: supabase migration list --password "$SUPABASE_DB_PASSWORD"
