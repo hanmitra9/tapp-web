@@ -10,17 +10,17 @@ def big_mark(size, gid):
     """Glowing vector TAPP mark (paths from the reference artifact)."""
     return f'''<svg width="{size}" height="{size*476//516}" viewBox="11.9 9.6 492.7 456.6" aria-hidden="true" style="overflow: visible">
   <defs>
-    <linearGradient id="{gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C6D6FF"></stop><stop offset="0.45" stop-color="#5B7CFA"></stop><stop offset="1" stop-color="#2238C2"></stop></linearGradient>
+    <linearGradient id="{gid}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#C6D6FF"></stop><stop offset="0.45" stop-color="#5B7CFA"></stop><stop offset="1" stop-color="#1D47C4"></stop></linearGradient>
     <filter id="{gid}b" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="22"></feGaussianBlur></filter>
   </defs>
-  <g filter="url(#{gid}b)" opacity="0.9"><path d="{P1}" fill="#4548F5"></path><path d="{P2}" fill="#4548F5"></path></g>
+  <g filter="url(#{gid}b)" opacity="0.9"><path d="{P1}" fill="#2F66F2"></path><path d="{P2}" fill="#2F66F2"></path></g>
   <path d="{P1}" fill="url(#{gid})"></path><path d="{P2}" fill="url(#{gid})"></path>
 </svg>'''
 
 def head(pill, l1, l2, sub, center=True, maxw=760):
     al = 'align-items: center; text-align: center; margin: 0 auto' if center else 'align-items: flex-start'
     return f'''<div style="display: flex; flex-direction: column; gap: 18px; {al}; max-width: {maxw}px; margin-bottom: 48px">
-      <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">{pill}</span>
+      <span class="eyebrow">{pill}</span>
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">{l1} <br><span style="color: #7DA2FF">{l2}</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">{sub}</p>
     </div>'''
@@ -57,7 +57,7 @@ def art(kind, c1, c2):
 
 CAMPAIGNS = [
   # the real first campaign: Rp3.000 / 1K views, claim from 5.000 views, paid up to 100K views per clip
-  ('tapp', '#0E1A6B', '#4548F5', 'TAPP<br>Campaign', '', 'TAPP', '#4548F5', 'Clipping', 'TAPP MEGA CAMPAIGN', 'Rp3.000', ['tt', 'ig', 'yt'], 'SEMUA NICHE', None, None),
+  ('tapp', '#0E1A6B', '#2F66F2', 'TAPP<br>Campaign', '', 'TAPP', '#2F66F2', 'Clipping', 'TAPP MEGA CAMPAIGN', 'Rp3.000', ['tt', 'ig', 'yt'], 'SEMUA NICHE', None, None),
 ]
 
 def campaign_card(c):
@@ -72,7 +72,7 @@ def campaign_card(c):
       </div>
       <div style="padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
-          <span style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px"><i style="font-style: normal; width: 24px; height: 24px; border-radius: 8px; background: linear-gradient(180deg, #4F6BFF, #2238C2); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(69,72,245,0.7)"><img src="{BLOB_WHITE}" alt="" style="width: 14px; height: 14px"></i>{brand}<svg width="14" height="14" viewBox="0 0 24 24" aria-label="Terverifikasi"><circle cx="12" cy="12" r="10" fill="#4548F5"></circle><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
+          <span style="display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px"><i style="font-style: normal; width: 24px; height: 24px; border-radius: 8px; background: linear-gradient(180deg, #4D86FF, #1D47C4); display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 12px rgba(47,102,242,0.7)"><img src="{BLOB_WHITE}" alt="" style="width: 14px; height: 14px"></i>{brand}<svg width="14" height="14" viewBox="0 0 24 24" aria-label="Terverifikasi"><circle cx="12" cy="12" r="10" fill="#2F66F2"></circle><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg></span>
           <span style="padding: 4px 10px; border-radius: 8px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.08); font-size: 12px; font-weight: 600; color: #D4D4D8">{typ}</span>
         </div>
         <h3 style="font-size: 18px; line-height: 24px; font-weight: 600">{title}</h3>
@@ -86,14 +86,14 @@ def campaign_card(c):
           <span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Minimal klaim</span><b style="font-size: 15px">5.000 views</b></span>
           <span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Maks. per clip</span><b style="font-size: 15px">100K views</b></span>
         </div>
-        <a class="btn-p" href="#app:/register" data-campaign="{title}" style="display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 12px; font-weight: 600; font-size: 15px; background: linear-gradient(180deg, #4D63FF, #2F45D6)">Ambil campaign</a>
+        <a class="btn-p" href="#app:/register" data-campaign="{title}" style="display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 12px; font-weight: 600; font-size: 15px; background: linear-gradient(180deg, #4D86FF, #1F52D6)">Ambil campaign</a>
       </div>
     </article>'''
 
 
 def soon_card(title, body):
-    return f'''<article class="cglow" style="border-radius: 18px; overflow: hidden; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(80% 60% at 50% 0%, rgba(69,72,245,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; text-align: center; min-height: 420px">
-      <span style="width: 56px; height: 56px; border-radius: 18px; background: rgba(69,72,245,0.14); border: 1px solid rgba(125,162,255,0.3); display: inline-flex; align-items: center; justify-content: center"><img src="{BLOB_MARK}" alt="" style="width: 28px; height: 28px; opacity: 0.8"></span>
+    return f'''<article class="cglow" style="border-radius: 18px; overflow: hidden; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(80% 60% at 50% 0%, rgba(47,102,242,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; text-align: center; min-height: 420px">
+      <span style="width: 56px; height: 56px; border-radius: 18px; background: rgba(47,102,242,0.14); border: 1px solid rgba(125,162,255,0.3); display: inline-flex; align-items: center; justify-content: center"><img src="{BLOB_MARK}" alt="" style="width: 28px; height: 28px; opacity: 0.8"></span>
       <span style="padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; color: #C6D6FF">Segera hadir</span>
       <h3 style="font-size: 18px; font-weight: 600">{title}</h3>
       <p style="font-size: 14px; line-height: 22px; color: #8A8A93; font-weight: 400; max-width: 240px">{body}</p>

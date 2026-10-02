@@ -58,7 +58,7 @@ def _meeting():
     {_mini_mark(28, 9)}
     <b style="font-size: 17px">Tim TAPP</b><span style="font-size: 13px; color: #9A9AA5; font-weight: 500; margin-top: -8px">Kickoff campaign</span>
     <span style="font-size: 13px; color: #D4D4D8; font-weight: 500">30–60 menit</span><span style="font-size: 13px; color: #D4D4D8; font-weight: 500; margin-top: -6px">Online meeting</span>
-    <a class="btn-p" href="meeting.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 40px; border-radius: 10px; font-size: 13px; font-weight: 600; background: linear-gradient(180deg, #4D63FF, #2F45D6)">Minta jadwal</a>
+    <a class="btn-p" href="meeting.html" style="margin-top: auto; display: flex; align-items: center; justify-content: center; height: 40px; border-radius: 10px; font-size: 13px; font-weight: 600; background: linear-gradient(180deg, #4D86FF, #1F52D6)">Minta jadwal</a>
   </div>
   <div style="padding: 18px 14px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; align-content: start">
     <span style="text-align: center; font-size: 12px; color: #8A8A93; font-weight: 500">Sen</span><span style="text-align: center; font-size: 12px; color: #8A8A93; font-weight: 500">Sel</span><span style="text-align: center; font-size: 12px; color: #8A8A93; font-weight: 500">Rab</span>
@@ -86,7 +86,7 @@ def _posting():
     <span style="padding: 12px 14px; border-radius: 14px; {CARD}; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; color: #8A8A93; font-weight: 500">Total Submissions</span><b class="tabular" style="font-size: 15px">18 clip</b></span>
   </div>
   <svg width="220" height="56" viewBox="0 0 220 56" aria-hidden="true"><path d="M55 0 C 55 30, 110 20, 110 50 M165 0 C 165 30, 110 20, 110 50" fill="none" stroke="#7DA2FF" stroke-opacity="0.6" stroke-width="2"></path></svg>
-  <span style="width: 64px; height: 64px; margin-top: -14px; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #5B74FF, #2238C2); box-shadow: 0 0 0 8px rgba(69,72,245,0.14), 0 0 50px rgba(69,72,245,0.8)"><img src="{BLOB_WHITE}" alt="" style="width: 34px; height: 34px"></span>
+  <span style="width: 64px; height: 64px; margin-top: -14px; border-radius: 20px; display: inline-flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #5B74FF, #1D47C4); box-shadow: 0 0 0 8px rgba(47,102,242,0.14), 0 0 50px rgba(47,102,242,0.8)"><img src="{BLOB_WHITE}" alt="" style="width: 34px; height: 34px"></span>
   <i style="width: 2px; height: 22px; background: #7DA2FF; box-shadow: 0 0 10px #7DA2FF"></i>
   <div style="display: flex; flex-direction: column; gap: 8px; width: 100%">{lst}</div>
 </div>'''
@@ -107,11 +107,11 @@ def steps_tabs(report_visual):
         <p style="font-size: 16px; line-height: 25px; color: #9A9AA5; font-weight: 400; max-width: 420px">{t[2]}</p>
         <div style="display: flex; gap: 10px; margin-top: 6px">{_btn("Jadwalkan Meeting", "meeting.html")}</div>
       </div>
-      <div style="display: flex; align-items: center; justify-content: center; min-height: 340px; padding: 24px; border-radius: 18px; background: radial-gradient(70% 70% at 50% 40%, rgba(69,72,245,0.22), transparent 70%), #0A0A0E; border: 1px solid rgba(125,162,255,0.16)">{t[3] if t[3] else report_visual}</div>
+      <div style="display: flex; align-items: center; justify-content: center; min-height: 340px; padding: 24px; border-radius: 18px; background: radial-gradient(70% 70% at 50% 40%, rgba(47,102,242,0.22), transparent 70%), #0A0A0E; border: 1px solid rgba(125,162,255,0.16)">{t[3] if t[3] else report_visual}</div>
     </div>''' for i, t in enumerate(STEPS))
     return f'''<section id="alur" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start; max-width: 760px; margin-bottom: 36px">
-      <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">How It Works</span>
+      <span class="eyebrow">How It Works</span>
       <h2 class="h2" style="font-size: 50px; line-height: 56px; font-weight: 600; letter-spacing: -1.5px">Dari Meeting Pertama <br><span style="color: #7DA2FF">Sampai Laporan Pertama</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Kamu tentukan arah, tarif, dan budget. Kami urus creator, verifikasi views, dan pembayarannya.</p>
     </div>

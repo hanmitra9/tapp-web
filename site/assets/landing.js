@@ -48,17 +48,17 @@ class Component extends DCLogic {
     const mode = s.mode ?? this.props.startMode ?? 'creator';
     const creator = mode === 'creator';
     const tab = (on) => 'height: 32px; padding: 0 14px; border-radius: 9px; font-weight: 500; font-size: 14px; '
-      + (on ? 'color: #FFFFFF; background: #4548F5; border: 1px solid rgba(255,255,255,0.16)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent');
+      + (on ? 'color: #FFFFFF; background: linear-gradient(180deg, #4D86FF, #2456E0); border: 1px solid rgba(198,214,255,0.3); box-shadow: 0 6px 18px -8px rgba(47,102,242,0.9), inset 0 1px 0 rgba(255,255,255,0.25)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent');
 
     const faqList = (raw, key) => raw.map((f, i) => {
       const open = s[key] === i;
       return {
         q: f[0], a: f[1], open: open, signText: open ? '×' : '+',
         box: 'border-radius: 16px; ' + (open
-          ? 'background: radial-gradient(90% 140% at 0% 0%, rgba(69,72,245,0.22), transparent 60%), #111116; border: 1px solid rgba(125,162,255,0.45); box-shadow: 0 18px 44px -24px rgba(69,72,245,0.9)'
-          : 'background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)'),
-        sign: 'width: 28px; height: 28px; flex-shrink: 0; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 500; '
-          + (open ? 'color: #FFFFFF; background: rgba(69,72,245,0.35)' : 'color: #7DA2FF; background: transparent'),
+          ? 'background: radial-gradient(80% 160% at 0% 0%, rgba(47,102,242,0.18), transparent 60%), linear-gradient(180deg, #12131A, #0C0C11); border: 1px solid rgba(110,150,255,0.38); box-shadow: 0 24px 60px -30px rgba(47,102,242,0.8), inset 0 1px 0 rgba(255,255,255,0.05)'
+          : 'background: linear-gradient(180deg, #101015, #0B0B0F); border: 1px solid rgba(255,255,255,0.07)'),
+        sign: 'width: 28px; height: 28px; flex-shrink: 0; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 400; transition: transform .25s ease; '
+          + (open ? 'color: #FFFFFF; background: linear-gradient(180deg, #4D86FF, #2456E0); transform: rotate(0deg)' : 'color: #A9C4FF; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08)'),
         toggle: () => this.setState({ [key]: open ? -1 : i }),
       };
     });
@@ -100,7 +100,7 @@ class Component extends DCLogic {
     const metrics = Object.keys(MET).map((k) => ({
       label: k === 'Engagement' ? 'Eng. rate' : k, value: MET[k].v, on: met === k, pick: () => this.setState({ met: k }),
       style: 'padding: 8px 6px; border-radius: 10px; text-align: left; '
-        + (met === k ? 'background: rgba(69,72,245,0.25); border: 1px solid #5B7CFA; color: #C6D6FF' : 'background: rgba(255,255,255,0.04); border: 1px solid #26262C; color: #8A8A93'),
+        + (met === k ? 'background: rgba(47,102,242,0.25); border: 1px solid #5B7CFA; color: #C6D6FF' : 'background: rgba(255,255,255,0.04); border: 1px solid #26262C; color: #8A8A93'),
     }));
 
     // creator wall (reference): demo names and payouts from the reference artifact
@@ -134,7 +134,7 @@ class Component extends DCLogic {
     const rp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
     const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
     const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 600; '
-      + (on ? 'color: #FFFFFF; background: rgba(69,72,245,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
+      + (on ? 'color: #FFFFFF; background: rgba(47,102,242,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
     const budget = s.budget || 25000000, cpm = 1000;   // simulator assumes Rp1.000 per 1.000 views
     const views = budget / cpm * 1000;
     const budgets = [10000000, 25000000, 50000000, 100000000].map((b) => ({ label: rp(b / 1e6) + ' jt', on: b === budget, style: chipStyle(b === budget), pick: () => this.setState({ budget: b }) }));
@@ -142,7 +142,7 @@ class Component extends DCLogic {
     const bsteps = [0, 1, 2, 3].map((i) => ({
       on: i === bstep, pick: () => this.setState({ bstep: i }),
       tab: 'height: 48px; border-radius: 14px; font-size: 14px; font-weight: 600; white-space: nowrap; '
-        + (i === bstep ? 'color: #FFFFFF; background: rgba(69,72,245,0.22); border: 1px solid rgba(125,162,255,0.5)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent'),
+        + (i === bstep ? 'color: #FFFFFF; background: rgba(47,102,242,0.22); border: 1px solid rgba(125,162,255,0.5)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent'),
       panel: (i === bstep ? 'display: grid' : 'display: none') + '; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 32px; padding: 18px',
     }));
 

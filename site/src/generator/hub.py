@@ -4,12 +4,12 @@ from parts import ICON, BLOB_WHITE, FLOAT, CARD
 from hero2 import clip, EYE
 
 def _btn(label, href, primary=True):
-    st = ('background: linear-gradient(180deg, #5767FF, #3B44E4); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 24px -14px rgba(69,72,245,0.9), inset 0 1px 0 rgba(255,255,255,0.2)'
+    st = ('background: linear-gradient(180deg, #5767FF, #3B44E4); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 24px -14px rgba(47,102,242,0.9), inset 0 1px 0 rgba(255,255,255,0.2)'
           if primary else 'background: #111115; border: 1px solid rgba(255,255,255,0.1)')
     return f'<a class="{"btn-p" if primary else "btn-s"}" href="{href}" style="display: inline-flex; align-items: center; white-space: nowrap; height: 50px; padding: 0 24px; border-radius: 12px; font-weight: 500; font-size: 15px; {st}">{label}</a>'
 
 def _mini_mark(sz=22, r=7):
-    return f'<i style="font-style: normal; width: {sz}px; height: {sz}px; border-radius: {r}px; background: linear-gradient(180deg, #4F6BFF, #2238C2); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><img src="{BLOB_WHITE}" alt="" style="width: {sz*0.6:.0f}px; height: {sz*0.6:.0f}px"></i>'
+    return f'<i style="font-style: normal; width: {sz}px; height: {sz}px; border-radius: {r}px; background: linear-gradient(180deg, #4D86FF, #1D47C4); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><img src="{BLOB_WHITE}" alt="" style="width: {sz*0.6:.0f}px; height: {sz*0.6:.0f}px"></i>'
 
 # Level emblems: a faceted metal hexagon with the TAPP mark, ornament grows with the level.
 # New = plain steel · Rising = chevron · Verified = crystal fins · Proven = laurel · Elite = crown and rays.
@@ -83,7 +83,7 @@ def _wires():
         defs.append(f'<linearGradient id="hwg{i}" gradientUnits="userSpaceOnUse" x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}">'
                     '<stop offset="0" stop-color="#7DA2FF" stop-opacity="0.18"></stop><stop offset="0.55" stop-color="#7D8CFF" stop-opacity="0.65"></stop>'
                     '<stop offset="1" stop-color="#DCE4FF" stop-opacity="1"></stop></linearGradient>')
-        base.append(f'<path d="{d}" stroke="#4548F5" stroke-width="8" opacity="0.3" filter="url(#hwb)"></path>'
+        base.append(f'<path d="{d}" stroke="#2F66F2" stroke-width="8" opacity="0.3" filter="url(#hwb)"></path>'
                     f'<path d="{d}" stroke="url(#hwg{i})" stroke-width="1.6"></path>')
         delay = f'animation-delay: -{i * 1.1:.1f}s'
         comets.append(f'<path class="comet" pathLength="100" style="{delay}" d="{d}"></path>'
@@ -114,13 +114,13 @@ def _payout_card():
 
 def _campaign_card():
     return f'''<div style="width: 252px; padding: 14px; border-radius: 16px; {FLOAT}; display: flex; flex-direction: column; gap: 9px">
-      <div style="position: relative; height: 62px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #0E1A6B, #4548F5)">
+      <div style="position: relative; height: 62px; border-radius: 10px; overflow: hidden; background: linear-gradient(135deg, #0E1A6B, #2F66F2)">
         <img src="{BLOB_WHITE}" alt="" style="position: absolute; right: 12px; top: 9px; width: 44px; height: 44px; opacity: 0.9"><span style="position: absolute; left: 12px; bottom: 9px; font-size: 16px; font-weight: 600; letter-spacing: -0.3px">TAPP Campaign</span>
       </div>
       <span style="display: flex; align-items: center; justify-content: space-between"><span style="display: flex; align-items: center; gap: 7px; font-size: 12px; font-weight: 600">{_mini_mark(18, 6)}TAPP</span><span style="font-size: 10px; font-weight: 600; padding: 3px 7px; border-radius: 6px; background: rgba(255,255,255,0.06)">CLIPPING</span></span>
       <span class="tabular"><b style="font-size: 16px">Rp3.000</b><span style="font-size: 11px; color: #8A8A93; font-weight: 500"> /1K Views</span></span>
       <span style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 500; color: #9A9AA5"><span>Budget Tersisa</span><span class="tabular" style="color: #FFFFFF">100%</span></span>
-      <span style="height: 5px; border-radius: 3px; background: #1F1F26; display: block"><span style="display: block; width: 100%; height: 5px; border-radius: 3px; background: linear-gradient(90deg, #4548F5, #7DA2FF)"></span></span>
+      <span style="height: 5px; border-radius: 3px; background: #1F1F26; display: block"><span style="display: block; width: 100%; height: 5px; border-radius: 3px; background: linear-gradient(90deg, #2F66F2, #7DA2FF)"></span></span>
     </div>'''
 
 def _level_card():
@@ -132,7 +132,7 @@ def _level_card():
       <span style="font-size: 11px; font-weight: 500; color: #9A9AA5; line-height: 15px">Rising di <b class="tabular" style="color: #FFFFFF">100K</b> qualified views</span>
     </div>'''
 
-HUB = f'''<div class="hub" style="position: absolute; left: 540px; top: 120px; width: 120px; height: 120px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #5B74FF, #2238C2); border: 1px solid rgba(198,214,255,0.6); box-shadow: 0 0 0 10px rgba(69,72,245,0.14), 0 0 0 22px rgba(69,72,245,0.06), 0 0 90px rgba(69,72,245,0.85), inset 0 1px 0 rgba(255,255,255,0.35)"><img src="{BLOB_WHITE}" alt="" style="width: 62px; height: 62px"></div>'''
+HUB = f'''<div class="hub" style="position: absolute; left: 540px; top: 120px; width: 120px; height: 120px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #5B74FF, #1D47C4); border: 1px solid rgba(198,214,255,0.6); box-shadow: 0 0 0 10px rgba(47,102,242,0.14), 0 0 0 22px rgba(47,102,242,0.06), 0 0 90px rgba(47,102,242,0.85), inset 0 1px 0 rgba(255,255,255,0.35)"><img src="{BLOB_WHITE}" alt="" style="width: 62px; height: 62px"></div>'''
 
 AV = ''.join(f'<i style="font-style: normal; width: 26px; height: 26px; border-radius: 13px; margin-left: {0 if k==0 else -8}px; background: radial-gradient(circle at 30% 25%, {c}26, #0C0C10 72%); box-shadow: inset 0 0 0 1px {c}55; color: {c}; border: 2px solid #07070A; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600">{n}</i>'
              for k, (n, c) in enumerate([('RP', '#34D07A'), ('DP', '#F2692B'), ('NK', '#2F8CE6')]))
@@ -190,7 +190,7 @@ def hero_hub():
     return f'''<div class="hero2" style="position: relative; max-width: 1280px; margin: 0 auto; padding: 8px 0 24px">
   <div class="hstage-wrap" style="position: relative; height: 400px; overflow: visible">
     <div class="hstage" style="position: absolute; left: 50%; top: 0; width: 1200px; height: 400px; margin-left: -600px">
-      <div aria-hidden="true" style="position: absolute; left: 400px; top: -20px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(closest-side, rgba(69,72,245,0.28), rgba(69,72,245,0.08) 55%, transparent)"></div>
+      <div aria-hidden="true" style="position: absolute; left: 400px; top: -20px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,102,242,0.28), rgba(47,102,242,0.08) 55%, transparent)"></div>
       {_wires()}
       <div class="hc" style="position: absolute; left: 20px; top: 96px">{_campaign_card()}</div>
       <div class="hc" style="position: absolute; left: 890px; top: 40px">{_payout_card()}</div>
@@ -294,7 +294,7 @@ TIER_CSS = (
 
 LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 48px">
-      <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">Level Creator</span>
+      <span class="eyebrow">Level Creator</span>
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Makin Konsisten, <br><span style="color: #7DA2FF">Makin Besar Bayaranmu</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views, bukan dari jumlah follower. Setiap naik level, bonus tarifmu ikut naik. Pilih level untuk lihat syaratnya.</p>
     </div>
@@ -316,12 +316,12 @@ def _dash():
     tiles = ''.join(f'<div style="flex: 1; min-width: 0">{clip(110, 170, k, "", v, "tt", colors=c, small=True)}</div>'
                     for k, v, c in [('quote', '128K', ('#4F7BFF', '#0F1B4D')), ('reaction', '86K', ('#F97316', '#431407')), ('compare', '98K', ('#06B6D4', '#083344'))])
     stat = lambda l, v, extra='': f'<span style="display: flex; flex-direction: column; gap: 4px; padding: 12px 14px; border-radius: 14px; background: #15151B; border: 1px solid rgba(255,255,255,0.06)"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">{l}</span><b class="tabular" style="font-size: 18px{extra}">{v}</b></span>'
-    return f'''<div class="pdash" style="width: 100%; max-width: 440px; padding: 18px; border-radius: 18px; {CARD}; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 40px 90px -40px rgba(69,72,245,0.8), inset 0 1px 0 rgba(255,255,255,0.05)">
+    return f'''<div class="pdash" style="width: 100%; max-width: 440px; padding: 18px; border-radius: 18px; {CARD}; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 40px 90px -40px rgba(47,102,242,0.8), inset 0 1px 0 rgba(255,255,255,0.05)">
       <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px">
         <span style="display: flex; align-items: center; gap: 10px"><i style="font-style: normal; width: 36px; height: 36px; border-radius: 18px; background: radial-gradient(circle at 30% 25%, #34D07A26, #0C0C10 72%); box-shadow: inset 0 0 0 1px #34D07A55, 0 6px 14px -8px #34D07A; color: #34D07A; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; letter-spacing: 0.02em">RP</i><span style="display: flex; flex-direction: column"><b style="font-size: 15px">Rani Putri</b><span style="font-size: 12px; color: #8A8A93; font-weight: 500">@rani.clips</span></span></span>
         <span style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px 4px 4px; border-radius: 999px; background: rgba(125,162,255,0.12); border: 1px solid rgba(125,162,255,0.35); font-size: 12px; font-weight: 600; color: #C6D6FF">{_badge('#7DA2FF', 22)}Verified</span>
       </div>
-      <div style="position: relative; overflow: hidden; padding: 16px 18px; border-radius: 18px; background: linear-gradient(135deg, #4F6BFF, #1E2FA8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25)">
+      <div style="position: relative; overflow: hidden; padding: 16px 18px; border-radius: 18px; background: linear-gradient(135deg, #4D86FF, #1E2FA8); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25)">
         <span style="font-size: 12px; font-weight: 500; color: rgba(255,255,255,0.8)">Total payout</span>
         <b class="tabular" style="display: block; font-size: 30px; letter-spacing: -0.6px; margin-top: 2px">Rp4.250.000</b>
         <img src="{BLOB_WHITE}" alt="" style="position: absolute; right: -10px; top: -14px; width: 104px; height: 104px; opacity: 0.14">
@@ -334,11 +334,11 @@ def _dash():
 PORTFOLIO = f'''<section id="portofolio" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div class="g2" style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 48px; align-items: center">
       <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
-        <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">Creator Profile</span>
+        <span class="eyebrow">Creator Profile</span>
         <h2 class="h2" style="font-size: 44px; line-height: 50px; font-weight: 600; letter-spacing: -1.4px">Portofolio Yang <br><span style="color: #7DA2FF">Bicara Lewat Data</span></h2>
         <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap clip yang lolos, setiap view yang terverifikasi, dan setiap bayaran tersimpan di profilmu. Bukti kerja yang bisa kamu tunjukkan ke siapa pun.</p>
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px; width: 100%">
-          {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(69,72,245,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 400">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
+          {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(47,102,242,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 400">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
         </div>
       </div>
       <div style="display: flex; flex-direction: column; align-items: center; gap: 12px">{_dash()}</div>
