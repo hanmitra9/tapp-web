@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ago, idr, num } from '@/lib/format';
+import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
 
 // "Views masuk 12 menit lalu · verifikasi 2 jam lalu · diperbarui otomatis" — so a brand knows how fresh the numbers are.
@@ -24,9 +25,9 @@ export function Freshness({ metricsAt, qualifiedAt, refreshedAt }: { metricsAt: 
 export function ViewsBreakdown({ raw, qualified, pending, excluded }: { raw: number; qualified: number; pending: number; excluded: number }) {
   const total = Math.max(raw, qualified + pending + excluded, 1);
   const seg = [
-    { k: 'Qualified (dibayar)', v: qualified, c: color.blue, note: 'Lolos verifikasi tim TAPP. Hanya ini yang ditagih.' },
-    { k: 'Menunggu verifikasi', v: pending, c: color.warning, note: 'Views baru yang masuk setelah verifikasi terakhir. Akan diputuskan tim TAPP.' },
-    { k: 'Tidak dihitung', v: excluded, c: color.borderStrong, note: 'Di bawah minimum views, di atas batas per klip, klip ditolak, atau aktivitas tidak wajar (bot/lonjakan).' },
+    { k: 'Qualified (dibayar)', v: qualified, t: 'seg-q', c: color.blue, note: 'Lolos verifikasi tim TAPP. Hanya ini yang ditagih.' },
+    { k: 'Menunggu verifikasi', v: pending, t: 'seg-p', c: '#E8B65A', note: 'Views baru yang masuk setelah verifikasi terakhir. Akan diputuskan tim TAPP.' },
+    { k: 'Tidak dihitung', v: excluded, t: 'seg-x', c: color.borderStrong, note: 'Di bawah minimum views, di atas batas per klip, klip ditolak, atau aktivitas tidak wajar (bot/lonjakan).' },
   ];
   return (
     <View style={styles.card}>
@@ -34,12 +35,12 @@ export function ViewsBreakdown({ raw, qualified, pending, excluded }: { raw: num
         <Text style={styles.cap}>Views mentah dari platform</Text>
         <Text style={styles.big}>{num(raw)}</Text>
       </View>
-      <View style={styles.bar}>
-        {seg.map((s) => (s.v > 0 ? <View key={s.k} style={{ flex: s.v / total, backgroundColor: s.c }} /> : null))}
+      <View style={styles.bar} {...web('track')}>
+        {seg.map((s) => (s.v > 0 ? <View key={s.k} style={{ flex: s.v / total, backgroundColor: s.c, borderRadius: 6 }} {...web(s.t)} /> : null))}
       </View>
       {seg.map((s) => (
         <View key={s.k} style={styles.legendRow}>
-          <View style={[styles.sw, { backgroundColor: s.c }]} />
+          <View style={[styles.sw, { backgroundColor: s.c }]} {...web(s.t)} />
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={styles.legendTitle}>{s.k}</Text>
             <Text style={styles.cap}>{s.note}</Text>
@@ -98,9 +99,9 @@ const styles = StyleSheet.create({
   cardHead: { gap: 2 },
   big: { ...type.metric, fontSize: 26, color: color.text },
   cap: { ...type.caption, color: color.textMuted, fontVariant: ['tabular-nums'] },
-  bar: { flexDirection: 'row', height: 10, borderRadius: 5, overflow: 'hidden', backgroundColor: color.surfaceRaised, gap: 2 },
+  bar: { flexDirection: 'row', height: 12, borderRadius: 6, overflow: 'hidden', backgroundColor: color.surfaceRaised, gap: 3, padding: 0 },
   legendRow: { flexDirection: 'row', alignItems: 'flex-start', gap: space.md },
-  sw: { width: 10, height: 10, borderRadius: 3, marginTop: 4 },
+  sw: { width: 10, height: 10, borderRadius: 5, marginTop: 4 },
   legendTitle: { ...type.label, color: color.text },
   legendValue: { ...type.label, color: color.text, fontVariant: ['tabular-nums'] },
   row: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md, paddingVertical: space.sm, borderBottomWidth: 1, borderBottomColor: color.border },
