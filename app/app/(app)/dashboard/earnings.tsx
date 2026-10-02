@@ -52,7 +52,7 @@ export default function Payments() {
       <View style={styles.explain}>
         <Text style={styles.explainTitle}>Cara kamu dibayar</Text>
         <Text style={styles.explainBody}>
-          1. Submit klip dari campaign yang kamu ikuti.{'\n'}2. Tim TAPP mengecek dan menerima klipmu.{'\n'}3. Tim TAPP mentransfer bayarannya langsung ke rekening atau e-wallet di atas. Besarnya dari views klip × tarif campaign per 1.000 views.
+          1. Submit klip dari campaign yang kamu ikuti.{'\n'}2. Tim TAPP mengecek dan menerima klipmu.{'\n'}3. Tim TAPP mentransfer bayarannya langsung ke rekening atau e-wallet di atas. Besarnya dari views klip × tarif campaign per 1.000 views, ditambah bonus tarif sesuai level-mu.
         </Text>
       </View>
 
@@ -93,7 +93,7 @@ function PaymentRow({ p }: { p: Payment }) {
         <Text style={styles.rowMeta}>
           {p.paid_at ? dateLabel(p.paid_at) : ''}{p.provider ? ` · ${p.provider} ••${p.account_last4 ?? ''}` : ''}{p.processed_reference ? ` · Ref. ${p.processed_reference}` : ''}
         </Text>
-        {p.fee > 0 ? <Text style={styles.rowMeta}>Bayaran {idr(p.amount)} · fee level {idr(p.fee)}</Text> : null}
+        {p.bonus > 0 || p.fee > 0 ? <Text style={styles.rowMeta}>Bayaran {idr(p.amount)}{p.bonus > 0 ? ` · bonus level +${idr(p.bonus)}` : ''}{p.fee > 0 ? ` · fee ${idr(p.fee)}` : ''}</Text> : null}
       </View>
       <Text style={styles.amount}>{idr(p.net_amount)}</Text>
     </View>

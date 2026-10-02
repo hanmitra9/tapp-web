@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchFeePct, fetchHistory, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, qualifyViews, recordMetrics, reviewSubmission,
+  fetchBonusPct, fetchFeePct, fetchHistory, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, qualifyViews, recordMetrics, reviewSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { previewEarnings, signals } from '../lib/engine';
@@ -221,8 +221,8 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
 // Accepted clip → pay it: views in, amount computed (CPM, minimum, cap, budget), level fee off, transferred by hand.
 function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews: number | null; onDone: () => Promise<void> }) {
   const info = useLoad(async () => {
-    const [to, pct, paid] = await Promise.all([fetchPayTo(s.creator_id), fetchFeePct(s.creator_tier), fetchPaid(s.id)]);
-    return { to, pct, paid };
+    const [to, pct, bonusPct, paid] = await Promise.all([fetchPayTo(s.creator_id), fetchFeePct(s.creator_tier), fetchBonusPct(s.creator_tier), fetchPaid(s.id)]);
+    return { to, pct, bonusPct, paid };
   }, [s.id]);
   const [views, setViews] = useState(String(Math.max(latestViews ?? 0, s.qualified_views) || ''));
   const [reference, setReference] = useState('');
@@ -238,6 +238,8 @@ function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews:
   const paidSoFar = (info.data?.paid ?? []).reduce((a, r) => a + r.amount, 0);
   const amount = Math.max(p.delta, 0) + Math.max(s.earned - paidSoFar, 0);   // new + accepted-but-unpaid
   const fee = info.data ? Math.min(Math.round(amount * info.data.pct / 100), Math.max(amount - 1, 0)) : 0;
+  const bonus = info.data ? Math.round(amount * info.data.bonusPct / 100) : 0;   // paid by TAPP, outside the campaign budget
+  const transfer = amount + bonus - fee;
   const to = info.data?.to;
 
   async function pay() {
@@ -265,8 +267,8 @@ function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews:
       </div>
       <div className="preview">
         <span>Transfer ke kreator</span>
-        <strong>{idr(amount - fee)}</strong>
-        <span className="sub">Bayaran {idr(amount)}{fee ? ` − fee level ${s.creator_tier} ${idr(fee)}` : ''}</span>
+        <strong>{idr(transfer)}</strong>
+        <span className="sub">Bayaran {idr(amount)}{bonus ? ` + bonus level ${s.creator_tier} ${idr(bonus)} (dari TAPP)` : ''}{fee ? ` − fee ${idr(fee)}` : ''}</span>
         {to ? <span>Ke {to.provider} {to.account_number} a.n. {to.account_name}</span>
           : info.data ? <span style={{ color: 'var(--warning)' }}>Kreator belum mengisi rekening / e-wallet.</span> : null}
         {p.belowMin ? <span style={{ color: 'var(--warning)' }}>Di bawah minimum {num(s.min_views_to_qualify)} views, jadi bayarannya 0.</span> : null}
@@ -274,7 +276,7 @@ function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews:
       </div>
       {error ? <div className="notice error">{error}</div> : null}
       {ok ? <div className="notice ok">{ok}</div> : null}
-      <div className="actions"><button className="btn" onClick={pay} disabled={busy || !valid || amount <= 0 || !to}>{busy ? 'Menyimpan…' : `Tandai sudah ditransfer ${idr(amount - fee)}`}</button></div>
+      <div className="actions"><button className="btn" onClick={pay} disabled={busy || !valid || amount <= 0 || !to}>{busy ? 'Menyimpan…' : `Tandai sudah ditransfer ${idr(transfer)}`}</button></div>
     </div>
   );
 }

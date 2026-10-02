@@ -102,6 +102,9 @@ TIER_BODY = [
     'Puncak level TAPP: lima juta qualified views yang lolos verifikasi.',
 ]
 
+# Rate bonus per level (app_settings.tier_bonus_pct, migration 0037), paid by TAPP on top of the clip's pay.
+TIER_BONUS = [0, 2, 5, 10, 15]
+
 # Picking a level is plain HTML/CSS (radio + label), so it also works where scripts are blocked.
 def _tier_card(i):
     name, thr, color = TIERS[i]
@@ -110,6 +113,7 @@ def _tier_card(i):
         <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: {color}; background: rgba(255,255,255,0.05); border: 1px solid {color}">Level {i + 1} dari 5</span>
         <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">{name}</b>
         <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{req}</span>
+        {f'<span class="tabular" style="padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #34D07A; background: rgba(52,208,122,0.1); border: 1px solid rgba(52,208,122,0.3)">Bonus Tarif +{TIER_BONUS[i]}%</span>' if TIER_BONUS[i] else ''}
         <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{TIER_BODY[i]}</p>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
           <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
@@ -141,7 +145,7 @@ LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margi
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 40px">
       <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">Level Creator</span>
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Reputasi Yang Dihitung, <br><span style="color: #7DA2FF">Bukan Diklaim</span></h2>
-      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views. Jumlah follower tidak ikut dihitung. Makin tinggi level, makin kecil fee penarikanmu. Pilih level untuk melihat syaratnya.</p>
+      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views. Jumlah follower tidak ikut dihitung. Makin tinggi level, makin besar bonus tarifmu. Pilih level untuk melihat syaratnya.</p>
     </div>
     {''.join(f'<input type="radio" name="tier" id="tr{i}" class="tradio"{" checked" if i == 2 else ""}>' for i in range(len(TIERS)))}
     <div class="tarc" style="position: relative; max-width: 1000px; margin: 0 auto">
