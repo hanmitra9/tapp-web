@@ -6,11 +6,13 @@ export type BrandCampaign = {
   cpm: number; budget: number; spent: number; remaining: number; starts_at: string | null; ends_at: string | null;
   submission_deadline: string | null; platforms: string[]; creators_joined: number; submissions: number; approved: number;
   qualified_views: number; raw_views: number;
+  pending_views: number; excluded_views: number; fee_pct: number; platform_fee: number; total_cost: number; effective_cpm: number | null;
+  last_metrics_at: string | null; last_qualified_at: string | null;
 };
 export type Daily = { day: string; qualified_gain: number; spend: number };
 export type Clip = { submission_id: string; creator_username: string | null; platform: string; post_url: string; status: string;
-  published_at: string; raw_views: number; qualified_views: number; spend: number };
-export type MyBrand = { id: string; name: string; logo_url: string | null; role: 'owner' | 'member' | 'viewer' };
+  published_at: string; raw_views: number; qualified_views: number; spend: number; pending_views: number; last_metrics_at: string | null };
+export type MyBrand = { id: string; name: string; logo_url: string | null; role: 'owner' | 'member' | 'viewer'; daily_report: boolean };
 
 const n = (x: unknown) => Number(x ?? 0);
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta'; } catch { return 'Asia/Jakarta'; } };
@@ -26,6 +28,8 @@ export async function fetchBrandCampaigns(): Promise<BrandCampaign[]> {
   return (data as BrandCampaign[]).map((c) => ({
     ...c, cpm: n(c.cpm), budget: n(c.budget), spent: n(c.spent), remaining: n(c.remaining), creators_joined: n(c.creators_joined),
     submissions: n(c.submissions), approved: n(c.approved), qualified_views: n(c.qualified_views), raw_views: n(c.raw_views),
+    pending_views: n(c.pending_views), excluded_views: n(c.excluded_views), fee_pct: n(c.fee_pct ?? 15), platform_fee: n(c.platform_fee),
+    total_cost: n(c.total_cost ?? c.spent), effective_cpm: c.effective_cpm == null ? null : n(c.effective_cpm),
   }));
 }
 export async function fetchBrandDaily(campaignId: string | null, days: number): Promise<Daily[]> {
@@ -36,7 +40,11 @@ export async function fetchBrandDaily(campaignId: string | null, days: number): 
 export async function fetchTopClips(campaignId: string): Promise<Clip[]> {
   const { data, error } = await supabase.rpc('brand_top_clips', { p_campaign_id: campaignId, p_limit: 20 });
   if (error) throw error;
-  return (data as Clip[]).map((c) => ({ ...c, raw_views: n(c.raw_views), qualified_views: n(c.qualified_views), spend: n(c.spend) }));
+  return (data as Clip[]).map((c) => ({ ...c, raw_views: n(c.raw_views), qualified_views: n(c.qualified_views), spend: n(c.spend), pending_views: n(c.pending_views) }));
+}
+export async function setDailyReport(brandId: string, on: boolean) {
+  const { error } = await supabase.rpc('set_brand_daily_report', { p_brand_id: brandId, p_on: on });
+  if (error) throw error;
 }
 export async function fetchPlatformBreakdown(campaignId: string) {
   const { data, error } = await supabase.rpc('campaign_platform_breakdown', { p_campaign_id: campaignId });
@@ -45,14 +53,19 @@ export async function fetchPlatformBreakdown(campaignId: string) {
     .map((r) => ({ ...r, submissions: n(r.submissions), approved: n(r.approved), qualified_views: n(r.qualified_views), earned: n(r.earned) }));
 }
 
-export type Totals = { active: number; creators: number; approved: number; qualified: number; raw: number; spent: number; budget: number; remaining: number; cpv: number | null };
+export type Totals = { active: number; creators: number; approved: number; qualified: number; raw: number; spent: number; budget: number; remaining: number; cpv: number | null;
+  pending: number; excluded: number; fee: number; totalCost: number; effectiveCpm: number | null; lastMetricsAt: string | null; lastQualifiedAt: string | null };
+const latest = (a: string | null, b: string | null) => (!a ? b : !b ? a : a > b ? a : b);
 export function totals(cs: BrandCampaign[]): Totals {
   const t = cs.reduce((a, c) => ({
     active: a.active + (c.status === 'active' || c.status === 'ending' ? 1 : 0), creators: a.creators + c.creators_joined,
     approved: a.approved + c.approved, qualified: a.qualified + c.qualified_views, raw: a.raw + c.raw_views,
     spent: a.spent + c.spent, budget: a.budget + c.budget, remaining: a.remaining + c.remaining,
-  }), { active: 0, creators: 0, approved: 0, qualified: 0, raw: 0, spent: 0, budget: 0, remaining: 0 });
-  return { ...t, cpv: t.qualified > 0 ? t.spent / t.qualified : null };
+    pending: a.pending + c.pending_views, excluded: a.excluded + c.excluded_views, fee: a.fee + c.platform_fee, totalCost: a.totalCost + c.total_cost,
+    lastMetricsAt: latest(a.lastMetricsAt, c.last_metrics_at), lastQualifiedAt: latest(a.lastQualifiedAt, c.last_qualified_at),
+  }), { active: 0, creators: 0, approved: 0, qualified: 0, raw: 0, spent: 0, budget: 0, remaining: 0, pending: 0, excluded: 0, fee: 0, totalCost: 0,
+        lastMetricsAt: null as string | null, lastQualifiedAt: null as string | null });
+  return { ...t, cpv: t.qualified > 0 ? t.spent / t.qualified : null, effectiveCpm: t.raw > 0 ? Math.round((t.spent * 1000) / t.raw) : null };
 }
 
 export const BRAND_STATUS: Record<BrandCampaign['status'], { label: string; tone: 'neutral' | 'blue' | 'success' | 'warning' | 'danger' }> = {

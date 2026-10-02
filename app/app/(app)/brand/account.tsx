@@ -1,4 +1,5 @@
-import { Linking, StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Linking, StyleSheet, Switch, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Header } from '@/components/Header';
 import { Screen } from '@/components/Screen';
@@ -6,13 +7,21 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type } from '@/theme/tokens';
-import { fetchMyBrands } from '@/features/brand/api';
+import { fetchMyBrands, setDailyReport } from '@/features/brand/api';
+import { errorMessage } from '@/lib/errors';
 
 const ROLE = { owner: 'Pemilik', member: 'Anggota', viewer: 'Hanya lihat' } as const;
 
 export default function BrandAccount() {
   const { session, signOut } = useAuth();
   const q = useQuery(fetchMyBrands, []);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+  async function toggle(id: string, on: boolean) {
+    setBusy(id); setErr(null);
+    q.setData((xs) => xs?.map((b) => (b.id === id ? { ...b, daily_report: on } : b)) ?? xs);
+    try { await setDailyReport(id, on); } catch (e) { setErr(errorMessage(e)); await q.reload(); } finally { setBusy(null); }
+  }
   return (
     <Screen inTabs>
       <Header title="Akun" back={false} />
@@ -27,6 +36,16 @@ export default function BrandAccount() {
           <StatusBadge label={ROLE[b.role]} tone="neutral" />
         </View>
       ))}
+      <Text style={styles.section}>Laporan harian via email</Text>
+      <Text style={styles.helpBody}>Setiap pagi sekitar 08.00 WIB: qualified views baru, biaya kemarin, dan status tiap campaign.</Text>
+      {q.data?.map((b) => (
+        <View key={`r-${b.id}`} style={styles.row}>
+          <Text style={styles.value}>{b.name}</Text>
+          <Switch value={b.daily_report} disabled={busy === b.id} onValueChange={(on) => void toggle(b.id, on)}
+            trackColor={{ false: color.surfaceRaised, true: color.blue }} thumbColor={color.text} accessibilityLabel={`Laporan harian ${b.name}`} />
+        </View>
+      ))}
+      {err ? <Text style={[styles.helpBody, { color: color.danger }]}>{err}</Text> : null}
       <View style={styles.help}>
         <Text style={styles.helpTitle}>Mau campaign baru atau ubah budget?</Text>
         <Text style={styles.helpBody}>Untuk saat ini campaign disiapkan oleh tim TAPP. Hubungi account manager-mu dan kami akan mengaturnya.</Text>

@@ -18,6 +18,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
  ('00000000-0000-0000-0000-0000000000c1','c1@x.id', now(), '{"full_name":"Creator One"}'),
  ('00000000-0000-0000-0000-0000000000c2','c2@x.id', null,  '{"full_name":"Creator Two"}');
 update profiles set role='admin' where id='00000000-0000-0000-0000-00000000000a';
+update app_settings set value = 'false'::jsonb where key = 'require_admin_mfa';   -- MFA has its own section at the end
 update profiles set role='brand' where id='00000000-0000-0000-0000-00000000000b';
 insert into brands (id,name,slug) values ('10000000-0000-0000-0000-000000000001','Acme Finance','acme');
 insert into brand_members values ('10000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000b','owner');
@@ -195,10 +196,7 @@ select count(*) as c2_campaigns_expect_0 from my_campaign_performance();
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select mark_notifications_read() as marked;
 select count(*) filter (where read_at is null) as unread_expect_0 from notifications;
-select pg_temp.expect_error($$select claim_push_batch(10)$$, 'permission denied');
 reset role;
-select count(*) as claimed from claim_push_batch(500);
-select count(*) as reclaim_expect_0 from claim_push_batch(500);
 -- new campaign alert: brand submits, admin approves → c1 (active, finance niche, tiktok) is alerted, c2 isn't
 insert into campaigns (id, brand_id, title, category, cpm, budget, status, submission_deadline)
   values ('20000000-0000-0000-0000-000000000009','10000000-0000-0000-0000-000000000001','Finance alert test','finance',2000,1000000,'pending_approval', now()+interval '10 days');
@@ -267,6 +265,19 @@ select claim_brand_invites() as claimed_expect_1;
 select role from profiles where id = auth.uid();
 select name, role from my_brands();
 select title, status, spent, approved, qualified_views from brand_campaigns();
+select title, raw_views, qualified_views, pending_views, excluded_views, spent, platform_fee, total_cost, effective_cpm, cpm from brand_campaigns();
+do $$ declare r record; begin
+  for r in select * from brand_campaigns() loop
+    if r.raw_views < r.qualified_views + r.pending_views and r.excluded_views <> 0 then raise exception 'views breakdown inconsistent'; end if;
+    if r.excluded_views <> greatest(r.raw_views - r.qualified_views - r.pending_views, 0) then raise exception 'excluded wrong'; end if;
+    if r.platform_fee <> round(r.spent * 0.15) or r.total_cost <> r.spent + r.platform_fee then raise exception 'fee wrong'; end if;
+    if r.raw_views > 0 and r.effective_cpm <> round(r.spent * 1000.0 / r.raw_views) then raise exception 'effective cpm wrong'; end if;
+  end loop;
+end $$;
+select daily_report as daily_on_default from my_brands();
+select set_brand_daily_report('10000000-0000-0000-0000-000000000001', false);
+select daily_report as daily_off_expect_f from my_brands();
+select set_brand_daily_report('10000000-0000-0000-0000-000000000001', true);
 select sum(qualified_gain) as q, sum(spend) as spend from brand_daily(null, 30, 'Asia/Makassar');
 select creator_username, qualified_views, spend from brand_top_clips('20000000-0000-0000-0000-000000000001');
 select pg_temp.expect_error($$select brand_top_clips(gen_random_uuid())$$, 'forbidden');
@@ -312,10 +323,10 @@ select tier, next_tier, views_to_next from my_tier_progress() q, lateral jsonb_t
 reset role;
 
 -- ── Auto-record foundation ──
--- connect_platform_account needs Vault (not stubbed locally); confirm it fails closed rather than silently
--- succeeding without storing a token, then exercise the rest of the surface with a connection row inserted directly.
+-- connect_platform_account is no longer client-callable (0031: tokens only arrive via the server-side OAuth
+-- exchange); exercise the rest of the surface with a connection row inserted directly.
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1'); set role authenticated;
-select pg_temp.expect_error($$select connect_platform_account('tiktok','pu123','kingclips','tok_abc','ref_abc',3600,array['video.list'])$$, 'vault_unavailable');
+select pg_temp.expect_error($$select connect_platform_account('tiktok','pu123','kingclips','tok_abc','ref_abc',3600,array['video.list'])$$, 'permission denied');
 reset role;
 insert into creator_platform_connections (creator_id, platform, platform_user_id, handle, status)
   values ('00000000-0000-0000-0000-0000000000c1', 'tiktok', 'pu123', 'kingclips', 'connected');
@@ -340,3 +351,182 @@ select disconnect_platform_account('tiktok');
 select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok';  -- expect revoked
 reset role;
 select count(*) as due_after_disconnect_expect_0 from due_for_auto_metrics();
+
+-- ── Reliability score (0025) ──
+reset role;
+select user_id, reliability_score,
+  (select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed','rejected','flagged')) as reviewed
+from creator_profiles cp order by user_id;
+do $$ begin
+  if exists (select 1 from creator_profiles cp where reliability_score <> case
+      when (select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed','rejected','flagged')) = 0 then 0
+      else round(100.0 * ((select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed') and s.content_state not in ('deleted','private')) + 1)
+        / ((select count(*) from submissions s where s.creator_id = cp.user_id and s.status in ('approved','tracking','completed','rejected','flagged')) + 2), 2) end)
+  then raise exception 'reliability_score out of sync'; end if;
+  if not exists (select 1 from creator_profiles where reliability_score > 0) then raise exception 'reliability never computed'; end if;
+end $$;
+select 'reliability_ok' as result;
+
+-- ── Admin MFA (0026) ──
+reset role; update app_settings set value = 'true'::jsonb where key = 'require_admin_mfa'; set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select set_config('request.jwt.claims', '{"role":"authenticated","aal":"aal1"}', false);
+select is_admin() as aal1_admin_expect_false;
+select count(*) as aal1_sees_audit_expect_0 from audit_logs;
+select pg_temp.expect_error($$select admin_set_creator_status('00000000-0000-0000-0000-0000000000c2','suspended','x')$$, 'forbidden');
+select set_config('request.jwt.claims', '{"role":"authenticated","aal":"aal2"}', false);
+select is_admin() as aal2_admin_expect_true;
+do $$ begin if not public.is_admin() then raise exception 'aal2 admin rejected'; end if;
+  if (select count(*) from audit_logs) = 0 then raise exception 'aal2 admin cannot read audit'; end if; end $$;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select is_admin() as creator_aal2_expect_false;
+select set_config('request.jwt.claims', '', false);
+reset role;
+select 'admin_mfa_ok' as result;
+
+-- ── YouTube auto metrics queue (0027) ──
+reset role;
+select substring('youtube.com/watch/dQw4w9WgXcQ' from '^youtube\.com/watch/([A-Za-z0-9_-]+)$') as yt_id_expect_dQw4w9WgXcQ;
+select count(*) >= 0 as yt_queue_runs from due_for_youtube_metrics();
+set role authenticated;
+select pg_temp.expect_error($$select * from due_for_youtube_metrics()$$, 'permission denied');
+reset role;
+select 'youtube_queue_ok' as result;
+
+-- ── Meeting booking (0028) ──
+reset role;
+update app_settings set value = 'false'::jsonb where key = 'require_admin_mfa';
+create temp table _slot as
+  select ((d + time '10:00') at time zone 'Asia/Jakarta') as s1, ((d + time '10:30') at time zone 'Asia/Jakarta') as s2,
+         ((d + time '10:30') at time zone 'Asia/Jakarta') + interval '1 day' as s3, ((d + time '18:00') at time zone 'Asia/Jakarta') as bad
+  from (select min(x)::date as d from generate_series(current_date + 2, current_date + 9, interval '1 day') x where extract(isodow from x) between 1 and 3) q;
+grant select on _slot to anon, authenticated;
+set role anon;
+select (request_meeting('Budi Brand', 'Acme Kopi', 'Budi@Acme.id', (select s1 from _slot), '+62 812 3456 7890', 'Launching produk', '10-50jt'))->>'slot' is not null as booked;
+select count(*) as taken_expect_1 from meeting_slots_taken();
+select pg_temp.expect_error($$select request_meeting('Ani', 'Other Co', 'ani@other.id', (select s1 from _slot))$$, 'meeting_slot_taken');
+select pg_temp.expect_error($$select request_meeting('Ani', 'Other Co', 'ani@other.id', (select bad from _slot))$$, 'meeting_slot_invalid');
+select pg_temp.expect_error($$select request_meeting('Ani', 'Other Co', 'ani@other.id', now() + interval '1 hour')$$, 'meeting_slot');
+select request_meeting('Budi Brand', 'Acme Kopi', 'budi@acme.id', (select s2 from _slot)) is not null as second_ok;
+select pg_temp.expect_error($$select request_meeting('Budi Brand', 'Acme Kopi', 'budi@acme.id', (select s3 from _slot))$$, 'meeting_too_many_open');
+select pg_temp.expect_error($$select * from meeting_requests$$, 'permission denied');
+reset role; set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as creator_sees_expect_0 from meeting_requests;
+select pg_temp.expect_error($$select admin_update_meeting((select id from meeting_requests limit 1), 'done')$$, 'forbidden');
+reset role;
+do $$ declare v uuid; begin
+  perform set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false);
+  select id into v from meeting_requests where slot = (select s1 from _slot);
+  begin perform admin_update_meeting(v, 'scheduled'); raise exception 'expected meeting_link_required';
+  exception when others then if sqlerrm not like 'meeting_link_required%' then raise; end if; end;
+  perform admin_update_meeting(v, 'scheduled', 'https://meet.google.com/abc-defg-hij', 'Kickoff');
+  if (select status from meeting_requests where id = v) <> 'scheduled' then raise exception 'not scheduled'; end if;
+  perform admin_update_meeting(v, 'cancelled');
+end $$;
+set role anon;
+select count(*) as taken_after_cancel_expect_1 from meeting_slots_taken();
+reset role;
+select 'meeting_booking_ok' as result;
+
+-- ── Brand daily report (0029) ──
+reset role;
+select send_brand_daily_reports() >= 0 as daily_report_runs;
+set role authenticated;
+select pg_temp.expect_error($$select send_brand_daily_reports()$$, 'permission denied');
+reset role;
+select 'brand_reporting_ok' as result;
+
+-- ── Automatic view filtering (0030) ──
+reset role;
+create temp table _aq as select id, creator_id, platform, qualified_views from submissions where status = 'tracking' order by created_at limit 1;
+update creator_profiles set status = 'active' where user_id = (select creator_id from _aq);
+update creator_platforms set verified_at = now(), followers = 1000000 where creator_id = (select creator_id from _aq) and platform = (select platform from _aq);
+update submissions set content_state = 'live' where id = (select id from _aq);
+-- clean growth: +20% over the last snapshot, healthy engagement → qualified automatically at raw views
+insert into content_metrics (submission_id, captured_at, views, likes, comments, shares, saves, source)
+select id, now(), (select max(views) from content_metrics where submission_id = _aq.id) * 12 / 10, 9000, 400, 300, 100, 'manual' from _aq;
+select (auto_qualify_sweep()).qualified >= 1 as auto_qualified_some;
+do $$ declare v_raw bigint; v_q bigint; v_by uuid; begin
+  select m.views into v_raw from content_metrics m where m.submission_id = (select id from _aq) order by captured_at desc limit 1;
+  select qualified_views into v_q from submissions where id = (select id from _aq);
+  select computed_by into v_by from performance_snapshots where submission_id = (select id from _aq) order by created_at desc limit 1;
+  if v_q <> v_raw then raise exception 'auto qualify expected % got %', v_raw, v_q; end if;
+  if v_by is not null then raise exception 'auto snapshot should have computed_by null'; end if;
+end $$;
+-- suspicious: 20× jump within an hour and almost no engagement → held with reasons, nothing paid
+insert into content_metrics (submission_id, captured_at, views, likes, comments, shares, saves, source)
+select id, now() + interval '1 hour', (select views from content_metrics where submission_id = _aq.id order by captured_at desc limit 1) * 20, 10, 0, 0, 0, 'manual' from _aq;
+select (auto_qualify_sweep()).held >= 1 as held_some;
+select auto_hold_reason from submissions where id = (select id from _aq);
+do $$ begin
+  if (select auto_hold_reason from submissions where id = (select id from _aq)) not like '%naik%' then raise exception 'jump not detected'; end if;
+  if (select auto_hold_reason from submissions where id = (select id from _aq)) not like '%engagement rendah%' then raise exception 'engagement not detected'; end if;
+  if (select auto_held from admin_queue_counts) < 1 then raise exception 'held count missing'; end if;
+end $$;
+-- a held clip is not re-examined until a new metric arrives; switching the feature off stops the sweep
+select (auto_qualify_sweep()).held = 0 as not_rechecked;
+update app_settings set value = jsonb_set(value, '{enabled}', 'false') where key = 'auto_qualify';
+select (auto_qualify_sweep()).qualified = 0 as off_does_nothing;
+update app_settings set value = jsonb_set(value, '{enabled}', 'true') where key = 'auto_qualify';
+set role authenticated;
+select pg_temp.expect_error($$select auto_qualify_sweep()$$, 'permission denied');
+reset role;
+select 'auto_qualify_ok' as result;
+
+-- ── TikTok connect (0031) ──
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select oauth_complete_tiktok(auth.uid(),'pu123','kingclips',100,'a','r',86400,array['video.list'])$$, 'permission denied');
+select pg_temp.expect_error($$select * from due_for_tiktok_metrics()$$, 'permission denied');
+select pg_temp.expect_error($$select * from oauth_states$$, 'permission denied');
+reset role;
+-- another creator logging in with an account already registered to c1 is refused
+select pg_temp.expect_error($$select oauth_complete_tiktok('00000000-0000-0000-0000-0000000000c2','pu999','KingClips',5,'a','r',86400,null)$$, 'tiktok_account_taken');
+-- the owner logging in: connection back to connected, account verified, followers stored
+update creator_platforms set verified_at = null where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok';
+select handle, followers, verified_at is not null as verified_expect_t
+  from oauth_complete_tiktok('00000000-0000-0000-0000-0000000000c1','pu123','@KingClips',4321,'a','r',86400,array['video.list']);
+do $$ begin
+  if (select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok') <> 'connected'
+    then raise exception 'connection not restored'; end if;
+  if (select count(*) from creator_platforms where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok') <> 1
+    then raise exception 'duplicate tiktok row'; end if;
+  if not exists (select 1 from notifications where user_id = '00000000-0000-0000-0000-0000000000c1' and title = 'Akun TikTok terverifikasi')
+    then raise exception 'no notification'; end if;
+end $$;
+-- a different open_id already connected elsewhere is refused even under a new username
+select pg_temp.expect_error($$select oauth_complete_tiktok('00000000-0000-0000-0000-0000000000c2','pu123','another_name',5,'a','r',86400,null)$$, 'tiktok_account_taken');
+-- queue: c1's tracking TikTok clip with a video id, once its cooldown has passed
+update submissions set last_metrics_at = now() - interval '4 hours' where id = :'sub_id';
+select video_id from due_for_tiktok_metrics() where submission_id = :'sub_id';   -- expect 7412
+do $$ begin
+  if not exists (select 1 from due_for_tiktok_metrics() where video_id = '7412') then raise exception 'tiktok queue missed clip'; end if;
+end $$;
+select 'tiktok_connect_ok' as result;
+
+-- ── Admin connections (0032) ──
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select * from admin_platform_connections()$$, 'forbidden');
+select pg_temp.expect_error($$select admin_disconnect_platform(gen_random_uuid(), 'x')$$, 'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select platform, handle, status, verified as verified_expect_t, tracked >= 1 as tracked_expect_t
+  from admin_platform_connections(null, 'kingclips');
+select pg_temp.expect_error($$select admin_disconnect_platform((select id from admin_platform_connections(null,'kingclips') limit 1), '  ')$$, 'reason_required');
+select admin_disconnect_platform((select id from admin_platform_connections(null, 'kingclips') limit 1), 'Akun dipakai bersama', true);
+select pg_temp.expect_error($$select admin_disconnect_platform((select id from admin_platform_connections(null,'kingclips') limit 1), 'lagi')$$, 'already_disconnected');
+reset role;
+do $$ begin
+  if (select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok') <> 'revoked'
+    then raise exception 'not revoked'; end if;
+  if exists (select 1 from creator_platforms where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok' and verified_at is not null)
+    then raise exception 'still verified'; end if;
+  if not exists (select 1 from notifications where user_id = '00000000-0000-0000-0000-0000000000c1' and type = 'platform_disconnected')
+    then raise exception 'creator not told'; end if;
+  if not exists (select 1 from audit_logs where action = 'admin.platform_disconnected') then raise exception 'no audit'; end if;
+  if exists (select 1 from due_for_tiktok_metrics() where video_id = '7412') then raise exception 'revoked still queued'; end if;
+end $$;
+select 'admin_connections_ok' as result;

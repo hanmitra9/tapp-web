@@ -1,9 +1,6 @@
-import {
-  InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold, useFonts,
-} from '@expo-google-fonts/instrument-sans';
+import '@/lib/webStyles';
+import { DarkTheme, ThemeProvider } from '@react-navigation/native';
 import { Stack, useRouter } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
 import { useEffect, useRef } from 'react';
 import { openedProtectedPage, rememberReturn, takeReturn } from '@/lib/returnTo';
 import { AppState } from 'react-native';
@@ -14,17 +11,13 @@ import { NetworkProvider } from '@/providers/NetworkProvider';
 import { color } from '@/theme/tokens';
 import { trackAppOpened } from '@/lib/analytics';
 
-SplashScreen.preventAutoHideAsync();
-SplashScreen.setOptions({ duration: 250, fade: true });
+// Navigation containers stay transparent so the page background (src/lib/webStyles.ts) shows through.
+const NAV_THEME = { ...DarkTheme, colors: { ...DarkTheme.colors, background: 'transparent', card: 'transparent', primary: color.blue } };
 
 function RootNavigator() {
   const { ready, session, recovering } = useAuth();
-  const [fontsLoaded, fontError] = useFonts({
-    InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold, InstrumentSans_700Bold,
-  });
-  const loaded = ready && (fontsLoaded || !!fontError);   // font failure falls back to system font, never blocks
+  const loaded = ready;   // fonts load through CSS (src/lib/webStyles.ts) with font-display: swap, never blocking
 
-  useEffect(() => { if (loaded) SplashScreen.hideAsync(); }, [loaded]);
   useEffect(() => {
     trackAppOpened();
     const sub = AppState.addEventListener('change', (s) => { if (s === 'active') trackAppOpened(); });
@@ -48,7 +41,7 @@ function RootNavigator() {
   return (
     <>
     <OfflineBanner />
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg }, animation: 'slide_from_right' }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas }, animation: 'slide_from_right' }}>
       <Stack.Protected guard={signedIn}>
         <Stack.Screen name="(app)" options={{ animation: 'fade' }} />
       </Stack.Protected>
@@ -63,12 +56,13 @@ function RootNavigator() {
 export default function RootLayout() {
   return (
     <SafeAreaProvider>
+      <ThemeProvider value={NAV_THEME}>
       <NetworkProvider>
       <AuthProvider>
-        <StatusBar style="light" />
         <RootNavigator />
       </AuthProvider>
       </NetworkProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
   );
 }

@@ -24,7 +24,7 @@ export default function BrandTabs() {
           borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, height: 84, paddingTop: 10, position: 'absolute',
         },
         tabBarLabelStyle: { fontFamily: font.semibold, fontSize: 11, marginTop: 2 },
-        sceneStyle: { backgroundColor: color.bg },
+        sceneStyle: { backgroundColor: color.canvas },
       }}
     >
       <Tabs.Screen name="index" options={{ title: 'Ringkasan', tabBarIcon: icon('pie-chart') }} />

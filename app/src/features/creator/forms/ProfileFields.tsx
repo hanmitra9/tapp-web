@@ -70,5 +70,5 @@ export function ProfileFields({ uid, values, onChange, avatarUrl, onAvatar, user
 const styles = StyleSheet.create({
   form: { gap: space.xl },
   avatarRow: { flexDirection: 'row', alignItems: 'center', gap: space.lg },
-  link: { ...type.label, color: color.blue },
+  link: { ...type.label, color: color.link },
 });

@@ -35,8 +35,8 @@ export default function CampaignDetailScreen() {
   const { c, assets } = q.data;
   const joined = c.membership?.status === 'joined';
   const block = joinBlockCopy(c.join_block);
-  const used = Math.max(c.budget - c.remaining, 0);
-  const pct = c.budget ? Math.min(used / c.budget, 1) : 0;
+  // The bar shows what's left, matching its label (and the website's "Budget Tersisa" bars).
+  const pct = c.budget ? Math.min(Math.max(c.remaining, 0) / c.budget, 1) : 0;
   const deadline = c.submission_deadline ?? c.ends_at;
   const rulesBy = (k: keyof typeof RULE_TITLES) => c.rules.filter((r) => r.kind === k);
 
@@ -189,12 +189,12 @@ const styles = StyleSheet.create({
   body: { ...type.body, color: color.text },
   muted: { ...type.body, color: color.textMuted },
   bullet: { flexDirection: 'row', gap: space.sm },
-  mark: { ...type.body, color: color.blue, width: 12 },
+  mark: { ...type.body, color: color.link, width: 12 },
   bulletText: { ...type.body, color: color.text, flex: 1 },
   asset: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.lg, borderWidth: 1, borderColor: color.border, borderRadius: radius.md },
   assetTitle: { ...type.label, color: color.text },
   assetErr: { ...type.caption, color: color.danger },
   joinedBar: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: space.sm, minHeight: 52, borderRadius: radius.md, backgroundColor: color.accentSoft },
-  joinedText: { ...type.heading, color: color.blue },
+  joinedText: { ...type.heading, color: color.link },
   blockNote: { ...type.caption, color: color.textSecondary, textAlign: 'center' },
 });

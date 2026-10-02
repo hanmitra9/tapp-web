@@ -12,6 +12,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [denied, setDenied] = useState(false);
+  const [aal2, setAal2] = useState<boolean | null>(null);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
@@ -20,12 +21,13 @@ export function AdminGate({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    setAdmin(null); setDenied(false);
+    setAdmin(null); setDenied(false); setAal2(null);
     if (!session) return;
     supabase.from('profiles').select('id, full_name, role').eq('id', session.user.id).single().then(({ data }) => {
       if (data?.role === 'admin') setAdmin({ id: data.id, name: data.full_name, email: session.user.email });
       else setDenied(true);
     });
+    supabase.auth.mfa.getAuthenticatorAssuranceLevel().then(({ data }) => setAal2(data?.currentLevel === 'aal2'));
   }, [session]);
 
   const signOut = async () => { await supabase.auth.signOut(); };
@@ -38,7 +40,9 @@ export function AdminGate({ children }: { children: ReactNode }) {
       <button className="btn secondary" onClick={signOut}>Keluar</button>
     </div></div>
   );
-  if (!admin) return null;
+  if (!admin || aal2 === null) return null;
+  // The DB only treats an admin session as admin at AAL2 (migration 026), so finish 2FA before the panel loads.
+  if (!aal2) return <TwoFactor email={session.user.email} onSignOut={signOut} />;
   return <Ctx.Provider value={{ admin, signOut }}>{children}</Ctx.Provider>;
 }
 
@@ -134,6 +138,59 @@ function Login() {
         {codeStep ? <button type="button" className="btn secondary" disabled={busy} onClick={resend}>Kirim ulang kode</button> : null}
         {step === 'login' ? <p className="sub" style={{ margin: 0, textAlign: 'center' }}>Belum punya akun? <a href="#" onClick={(e) => { e.preventDefault(); go('register'); }}>Daftar</a></p> : null}
         {step !== 'login' ? <p className="sub" style={{ margin: 0, textAlign: 'center' }}><a href="#" onClick={(e) => { e.preventDefault(); go('login'); }}>Kembali ke halaman masuk</a></p> : null}
+      </form>
+    </div>
+  );
+}
+
+// Two-factor (TOTP authenticator app). First time: scan the QR code and confirm a code. After that: code only.
+// Verifying upgrades the session to AAL2; onAuthStateChange then re-runs the gate above.
+function TwoFactor({ email, onSignOut }: { email: string | undefined; onSignOut: () => Promise<void> }) {
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [enroll, setEnroll] = useState<{ qr: string; secret: string } | null>(null);
+  const [code, setCode] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error: err } = await supabase.auth.mfa.listFactors();
+      if (err) return setError(err.message);
+      const verified = data.totp.find((f) => f.status === 'verified');
+      if (verified) return setFactorId(verified.id);
+      // Leftover unverified factors (an abandoned setup) block a new enrollment — clear them first.
+      for (const f of data.all.filter((x) => x.factor_type === 'totp' && x.status !== 'verified')) await supabase.auth.mfa.unenroll({ factorId: f.id });
+      const { data: e, error: enrollErr } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `TAPP Control ${Date.now()}` });
+      if (enrollErr) return setError(enrollErr.message);
+      setFactorId(e.id); setEnroll({ qr: e.totp.qr_code, secret: e.totp.secret });
+    })();
+  }, []);
+
+  async function submit(ev: FormEvent) {
+    ev.preventDefault();
+    if (!factorId) return;
+    setBusy(true); setError(null);
+    const { error: err } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
+    setBusy(false);
+    if (err) setError(/invalid|expired/i.test(err.message) ? 'Kode salah atau sudah kedaluwarsa. Coba kode terbaru.' : err.message);
+  }
+
+  return (
+    <div className="login">
+      <form onSubmit={submit}>
+        <img src={`${import.meta.env.BASE_URL}favicon.svg`} alt="TAPP" />
+        <h1>{enroll ? 'Aktifkan verifikasi 2 langkah' : 'Verifikasi 2 langkah'}</h1>
+        {error ? <div className="notice error">{error}</div> : null}
+        {enroll ? (
+          <>
+            <p className="sub" style={{ margin: 0 }}>Wajib untuk akun admin. Pindai kode QR ini dengan Google Authenticator, Authy, atau 1Password, lalu masukkan kode 6 digit.</p>
+            <img src={enroll.qr} alt="Kode QR authenticator" style={{ width: 180, height: 180, background: '#fff', borderRadius: 12, padding: 8, justifySelf: 'center' }} />
+            <p className="sub" style={{ margin: 0, wordBreak: 'break-all' }}>Tidak bisa pindai? Masukkan kode: <code>{enroll.secret}</code></p>
+          </>
+        ) : <p className="sub" style={{ margin: 0 }}>Masukkan kode 6 digit dari aplikasi authenticator untuk {email}.</p>}
+        <label className="field">Kode authenticator<input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} autoFocus required /></label>
+        <button className="btn" disabled={busy || !factorId || code.length !== 6}>{busy ? 'Memproses…' : 'Verifikasi'}</button>
+        <button type="button" className="btn secondary" onClick={onSignOut}>Keluar</button>
       </form>
     </div>
   );

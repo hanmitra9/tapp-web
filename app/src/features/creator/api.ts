@@ -7,7 +7,7 @@ export type PayoutMethod = { id: string; kind: 'bank' | 'ewallet'; provider: str
 export type Audience = { countries: string[]; age_ranges: string[]; languages: string[] };
 export type CreatorProfile = {
   userId: string; fullName: string | null; username: string | null; avatarUrl: string | null; country: string | null;
-  status: 'pending' | 'verified' | 'active' | 'suspended' | 'banned'; tier: 'new' | 'rising' | 'proven';
+  status: 'pending' | 'verified' | 'active' | 'suspended' | 'banned'; tier: 'new' | 'rising' | 'verified' | 'proven' | 'elite';
   mainPlatform: Platform | null; niches: string[]; categories: string[]; contentStyle: string | null;
   audience: Audience; experience: Experience | null; reliability: number;
 };
@@ -60,6 +60,19 @@ export async function removePlatform(id: string) {
   const { data, error } = await supabase.from('creator_platforms').delete().eq('id', id).select('id');
   if (error) throw error;
   if (!data?.length) throw { code: 'platform_in_use' };   // RLS keeps accounts that have live submissions
+}
+
+// "Hubungkan dengan TikTok": on only once the TikTok app is approved (app_settings.platform_oauth_config.tiktok.enabled).
+export async function tiktokConnectEnabled(): Promise<boolean> {
+  const { data } = await supabase.from('app_settings').select('value').eq('key', 'platform_oauth_config').maybeSingle();
+  return (data?.value as { tiktok?: { enabled?: boolean } } | null)?.tiktok?.enabled === true;
+}
+
+// Login URL from the tiktok-oauth function (it stores a one-time state bound to this user).
+export async function startTiktokConnect(): Promise<string> {
+  const { data, error } = await supabase.functions.invoke<{ url?: string }>('tiktok-oauth', { method: 'POST' });
+  if (error || !data?.url) throw new Error('Login TikTok belum bisa dibuka. Coba lagi sebentar lagi.');
+  return data.url;
 }
 
 export async function setMainPlatform(uid: string, platform: Platform | null) {

@@ -1,0 +1,7 @@
+**/node_modules
+dist
+app/dist
+admin/dist
+app/test-results
+**/__pycache__
+.git

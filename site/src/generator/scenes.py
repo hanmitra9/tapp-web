@@ -2,7 +2,7 @@
 from parts import ICON, BLOB_WHITE, BLOB_MARK
 
 W, H = 200, 356
-CAPTION = 'font-weight: 700; color: #FFFFFF; letter-spacing: -0.3px; text-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.55)'
+CAPTION = 'font-weight: 600; color: #FFFFFF; letter-spacing: -0.3px; text-shadow: 0 2px 0 rgba(0,0,0,0.35), 0 6px 18px rgba(0,0,0,0.55)'
 def hl(t, bg='#4548F5', fg='#FFFFFF'):
     return f'<span style="display: inline-block; padding: 0 7px; border-radius: 7px; background: {bg}; color: {fg}; text-shadow: none; box-shadow: 0 6px 18px -4px {bg}">{t}</span>'
 def grain():
@@ -24,7 +24,7 @@ def quote(a='#4F7BFF', b='#0F1B4D'):
     <div style="position: absolute; left: 14px; right: 14px; top: 88px; display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; {CAPTION}; font-size: 21px; line-height: 25px">
       <span>clip pertama gue</span><span>{hl('dibayar')} beneran</span>
     </div>
-    <span style="position: absolute; left: 14px; top: 44px; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.14); font-size: 10px; font-weight: 700; color: #FFFFFF; letter-spacing: 0.6px">PODCAST EP. 14</span>
+    <span style="position: absolute; left: 14px; top: 44px; padding: 3px 8px; border-radius: 6px; background: rgba(255,255,255,0.14); font-size: 10px; font-weight: 600; color: #FFFFFF; letter-spacing: 0.6px">PODCAST EP. 14</span>
     {grain()}'''
 
 def reaction(a='#F97316', b='#431407'):
@@ -32,7 +32,7 @@ def reaction(a='#F97316', b='#431407'):
     <div style="position: absolute; left: 50%; top: 40%; width: 260px; height: 260px; margin: -130px 0 0 -130px; border-radius: 50%; background: conic-gradient(from 200deg, transparent, rgba(255,255,255,0.18), transparent 30%, transparent 60%, rgba(255,255,255,0.12), transparent 80%)"></div>
     <div style="position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%)">{tile_mark(74, a)}</div>
     <div style="position: absolute; left: 10px; right: 36px; top: 214px; text-align: left; {CAPTION}; font-size: 24px; line-height: 27px">views<br>{hl('jadi cuan.', '#FFFFFF', '#0A0A0C')}</div>
-    <span class="tabular" style="position: absolute; right: 12px; top: 44px; padding: 6px 9px; border-radius: 10px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.18); font-size: 12px; font-weight: 700; color: #7CF0B0; backdrop-filter: blur(6px)">+248%</span>
+    <span class="tabular" style="position: absolute; right: 12px; top: 44px; padding: 6px 9px; border-radius: 10px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.18); font-size: 12px; font-weight: 600; color: #7CF0B0; backdrop-filter: blur(6px)">+248%</span>
     {grain()}'''
 
 def app_pov(a='#4548F5', b='#1A2CA8'):
@@ -41,11 +41,11 @@ def app_pov(a='#4548F5', b='#1A2CA8'):
     <div style="position: absolute; left: 60%; top: -40px; width: 18px; height: 280px; background: linear-gradient(180deg, rgba(255,255,255,0.25), transparent); transform: rotate(22deg); filter: blur(6px)"></div>
     <div style="position: absolute; left: 22px; right: 22px; top: 92px; padding: 10px; border-radius: 18px; background: #0B0B12; border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 24px 50px -12px rgba(0,0,0,0.8), 0 0 40px rgba(69,72,245,0.45); transform: rotate(-4deg)">
       <div style="padding: 11px; border-radius: 12px; background: linear-gradient(45deg, #2238C2, #4548F5 55%, #7DA2FF); display: flex; flex-direction: column; gap: 6px">
-        <span style="display: flex; justify-content: space-between; align-items: center; font-size: 8px; font-weight: 600; color: rgba(255,255,255,0.85)">Tersedia untuk dicairkan<img src="{BLOB_WHITE}" alt="" style="width: 12px; height: 12px"></span>
-        <span class="tabular" style="font-size: 20px; font-weight: 700; color: #FFFFFF; letter-spacing: -0.5px">Rp555.000</span>
+        <span style="display: flex; justify-content: space-between; align-items: center; font-size: 8px; font-weight: 500; color: rgba(255,255,255,0.85)">Tersedia untuk dicairkan<img src="{BLOB_WHITE}" alt="" style="width: 12px; height: 12px"></span>
+        <span class="tabular" style="font-size: 20px; font-weight: 600; color: #FFFFFF; letter-spacing: -0.5px">Rp555.000</span>
       </div>
       <svg viewBox="0 0 120 34" width="100%" height="34" aria-hidden="true" style="display: block; margin-top: 8px"><path d="M0 28 C 20 26, 30 18, 48 20 S 80 8, 96 9 S 114 3, 120 2" stroke="#7DA2FF" stroke-width="2" fill="none"></path></svg>
-      <span style="display: flex; align-items: center; justify-content: center; height: 22px; margin-top: 6px; border-radius: 7px; background: #4548F5; font-size: 9px; font-weight: 700; color: #FFFFFF">Cairkan</span>
+      <span style="display: flex; align-items: center; justify-content: center; height: 22px; margin-top: 6px; border-radius: 7px; background: #4548F5; font-size: 9px; font-weight: 600; color: #FFFFFF">Cairkan</span>
     </div>
     <div style="position: absolute; left: 10px; right: 36px; top: 244px; text-align: left; {CAPTION}; font-size: 18px; line-height: 23px">POV: cek saldo<br>{hl('TAPP')} tiap pagi</div>
     {grain()}'''
@@ -62,16 +62,16 @@ def orbit(a='#3B82F6', b='#0B2A6B'):
 def compare(a='#06B6D4', b='#083344'):
     return f'''<div style="position: absolute; inset: 0; background: radial-gradient(70% 50% at 80% 20%, {a}, transparent 70%), linear-gradient(180deg, {b}, #07070D 80%)"></div>
     <div class="tabular" style="position: absolute; left: 16px; right: 16px; top: 70px; display: flex; flex-direction: column; gap: 10px">
-      <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.6px; color: rgba(255,255,255,0.7)">VIEWS CLIP INI</span>
-      <span style="font-size: 32px; line-height: 34px; font-weight: 700; color: #FFFFFF; letter-spacing: -1px">98.400</span>
+      <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.6px; color: rgba(255,255,255,0.7)">VIEWS CLIP INI</span>
+      <span style="font-size: 32px; line-height: 34px; font-weight: 600; color: #FFFFFF; letter-spacing: -1px">98.400</span>
       <span style="height: 10px; border-radius: 5px; background: rgba(255,255,255,0.15); overflow: hidden; display: flex"><i style="width: 79%; background: linear-gradient(90deg, #4548F5, #7DA2FF); box-shadow: 0 0 12px #7DA2FF"></i></span>
-      <span style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700"><span style="color: #C6D6FF">78.000 lolos</span><span style="color: rgba(255,255,255,0.55)">20.400 bot</span></span>
+      <span style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 600"><span style="color: #C6D6FF">78.000 lolos</span><span style="color: rgba(255,255,255,0.55)">20.400 bot</span></span>
     </div>
     <div style="position: absolute; left: 10px; right: 36px; top: 232px; text-align: left; {CAPTION}; font-size: 20px; line-height: 25px">yang dibayar cuma<br>{hl('views asli')}</div>
     {grain()}'''
 
 def checklist(a='#F43F5E', b='#4C0519'):
-    rows = ''.join(f'<span style="display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px; background: rgba(10,10,16,0.7); border: 1px solid rgba(255,255,255,0.12); font-size: 11px; font-weight: 700; color: #FFFFFF"><i style="width: 16px; height: 16px; border-radius: 8px; background: #34D07A; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></i>{t}</span>' for t in ['Format 9:16', 'Sesuai brief', 'Posting di akunmu', 'Submit max 48 jam'])
+    rows = ''.join(f'<span style="display: flex; align-items: center; gap: 8px; padding: 9px 10px; border-radius: 10px; background: rgba(10,10,16,0.7); border: 1px solid rgba(255,255,255,0.12); font-size: 11px; font-weight: 600; color: #FFFFFF"><i style="width: 16px; height: 16px; border-radius: 8px; background: #34D07A; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5L20 7"></path></svg></i>{t}</span>' for t in ['Format 9:16', 'Sesuai brief', 'Posting di akunmu', 'Submit max 48 jam'])
     return f'''<div style="position: absolute; inset: 0; background: radial-gradient(70% 50% at 15% 15%, {a}, transparent 70%), linear-gradient(180deg, {b}, #07070D 80%)"></div>
     <div style="position: absolute; left: 12px; right: 12px; top: 50px; {CAPTION}; font-size: 19px; line-height: 23px">4 cara clip<br>{hl('lolos review')}</div>
     <div style="position: absolute; left: 14px; right: 14px; top: 116px; display: flex; flex-direction: column; gap: 7px; transform: rotate(-2deg)">{rows}</div>

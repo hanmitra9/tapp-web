@@ -4,7 +4,7 @@
 // Routes
 //   GET  /            health check
 //   POST /auth-hook   Supabase Auth "Send Email" hook (signup OTP, password reset, email change, magic link, invite, reauth)
-//   POST /send        app emails from the database (brand invite, payout paid/rejected); Bearer MAILER_SECRET
+//   POST /send        app emails from the database (brand invite, payout paid/rejected, meeting booking); Bearer MAILER_SECRET
 //
 // Env
 //   RESEND_API_KEY          Resend API key (re_...)
@@ -26,6 +26,7 @@ const APP = () => env("APP_URL").replace(/\/$/, "");
 // ─────────────────────────────── templates ───────────────────────────────
 const esc = (s: unknown) => String(s ?? "").replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[m]!);
 const idr = (n: number) => "Rp" + Math.round(n).toLocaleString("id-ID");
+const wib = (iso: unknown) => iso ? new Date(String(iso)).toLocaleString("id-ID", { timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" }) + " WIB" : "-";
 
 type Block = { title: string; intro: string; code?: string; button?: { label: string; url: string }; rows?: [string, string][]; outro?: string };
 function layout(preheader: string, b: Block) {
@@ -129,6 +130,62 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
         rows: [["Jumlah", idr(Number(d.amount))], ["Alasan", d.reason ?? "-"]],
         button: APP() ? { label: "Buka aplikasi TAPP", url: `${APP()}/payouts` } : undefined,
         outro: "Merasa keputusan ini keliru? Ajukan keberatan dari halaman riwayat pencairan.",
+      },
+    };
+  }
+  if (type === "brand_daily_report") {
+    const day = d.day ? new Date(`${d.day}T00:00:00+07:00`).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", weekday: "long", day: "numeric", month: "long" }) : "kemarin";
+    const nf = (n: unknown) => Math.round(Number(n ?? 0)).toLocaleString("id-ID");
+    const camps = (Array.isArray(d.campaigns) ? d.campaigns : []) as Record<string, any>[];
+    const rows: [string, string][] = [
+      ["Qualified views baru", `+${nf(d.qualified_gain)}`],
+      ["Reward creator", idr(Number(d.spend))],
+      [`Fee platform (${nf(d.fee_pct)}%)`, idr(Number(d.fee))],
+      ...camps.slice(0, 5).map((c): [string, string] => [String(c.title ?? "Campaign"),
+        `${nf(c.qualified)} qualified · ${nf(c.raw)} mentah${Number(c.pending) > 0 ? ` · ${nf(c.pending)} menunggu verifikasi` : ""} · sisa ${idr(Number(c.remaining))}`]),
+    ];
+    return {
+      subject: `Laporan ${d.brand ?? "brand"}: +${nf(d.qualified_gain)} qualified views (${day})`,
+      block: {
+        title: `Laporan harian ${esc(d.brand ?? "")}`,
+        intro: `Ringkasan ${esc(day)} (WIB). Angka qualified views dan biaya sudah melalui verifikasi tim TAPP; views mentah yang baru masuk tercatat sebagai "menunggu verifikasi".`,
+        rows,
+        button: APP() ? { label: "Buka dashboard brand", url: `${APP()}/brand` } : undefined,
+        outro: "Tidak ingin menerima laporan harian? Matikan di dashboard brand → Akun.",
+      },
+    };
+  }
+  if (type === "meeting_received") {
+    return {
+      subject: `Permintaan meeting TAPP: ${wib(d.slot)}`,
+      block: {
+        title: "Permintaan meeting kamu sudah kami terima",
+        intro: `Halo ${esc(String(d.name ?? "").split(/\s+/)[0] || "")}, tim TAPP akan mengonfirmasi jadwal ini dan mengirim link meeting ke email ini, biasanya dalam 1 hari kerja.`,
+        rows: [["Waktu", wib(d.slot)], ["Durasi", "30–60 menit, online"]],
+        outro: "Perlu ganti jadwal? Balas email ini.",
+      },
+    };
+  }
+  if (type === "meeting_admin_alert") {
+    return {
+      subject: `Meeting baru: ${d.company ?? "-"} · ${wib(d.slot)}`,
+      block: {
+        title: "Permintaan meeting baru",
+        intro: `${esc(d.name)} dari ${esc(d.company)} memilih jadwal di website. Konfirmasi dan kirim link meeting dari panel admin.`,
+        rows: [["Waktu", wib(d.slot)], ["Email", d.email ?? "-"], ["WhatsApp", d.whatsapp ?? "-"], ["Budget", d.budget_range ?? "-"], ["Tujuan", d.goal ?? "-"]],
+        button: APP() ? { label: "Buka Admin → Meeting", url: `${APP()}/admin/meetings` } : undefined,
+      },
+    };
+  }
+  if (type === "meeting_scheduled") {
+    return {
+      subject: `Jadwal meeting TAPP dikonfirmasi: ${wib(d.slot)}`,
+      block: {
+        title: "Sampai jumpa di meeting",
+        intro: `Jadwalmu dengan tim TAPP sudah dikonfirmasi. Kita akan membahas tujuan, audiens, platform, dan tarif campaign-mu.`,
+        rows: [["Waktu", wib(d.slot)], ["Link", d.meet_link ?? "-"]],
+        button: d.meet_link ? { label: "Gabung meeting", url: d.meet_link } : undefined,
+        outro: "Perlu ganti jadwal? Balas email ini.",
       },
     };
   }

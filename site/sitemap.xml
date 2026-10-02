@@ -4,4 +4,5 @@
   <url><loc>https://tapp.example/campaigns</loc><changefreq>daily</changefreq></url>
   <url><loc>https://tapp.example/privacy</loc><changefreq>weekly</changefreq></url>
   <url><loc>https://tapp.example/terms</loc><changefreq>weekly</changefreq></url>
+  <url><loc>https://tapp.example/meeting</loc><changefreq>weekly</changefreq></url>
 </urlset>

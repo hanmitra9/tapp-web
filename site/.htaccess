@@ -1,4 +1,4 @@
-# TAPP website (Apache / cPanel). Upload the contents of site/ to the domain's public_html.
+# TAPP (Apache / cPanel). Upload the contents of dist/ (python3 site/tools/build_all.py https://yourdomain) to public_html.
 Options -Indexes
 DirectoryIndex index.html
 ErrorDocument 404 /404.html
@@ -15,6 +15,12 @@ RewriteCond %{REQUEST_FILENAME}.html -f
 RewriteRule ^(.+)$ $1.html [L]
 # Keep the build tooling private
 RewriteRule ^(src|tools)(/|$) - [F,L]
+# Signed-in pages (/login, /dashboard, /campaign/..., /brand ...): any path that isn't a file is the web app.
+# The admin panel has its own rules in /admin/.htaccess.
+RewriteCond %{REQUEST_URI} !^/admin/
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /app.html [L]
 <IfModule mod_headers.c>
   Header always set X-Content-Type-Options "nosniff"
   Header always set Referrer-Policy "strict-origin-when-cross-origin"
@@ -22,7 +28,7 @@ RewriteRule ^(src|tools)(/|$) - [F,L]
   <FilesMatch "\.(png|jpg|svg|ttf|woff2?)$">
     Header set Cache-Control "public, max-age=604800"
   </FilesMatch>
-  <FilesMatch "^config\.js$">
+  <FilesMatch "^(config\.js|app\.html|index\.html)$">
     Header set Cache-Control "no-cache"
   </FilesMatch>
 </IfModule>

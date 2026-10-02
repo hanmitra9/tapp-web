@@ -20,7 +20,7 @@ export default function Payouts() {
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {q.data && !q.data.length ? (
         <EmptyState title="Belum ada pencairan" body="Ajukan pencairan dari tab Penghasilan setelah saldo tersedia mencapai minimum."
-          action={{ label: 'Ke Penghasilan', onPress: () => router.navigate('/earnings') }} />
+          action={{ label: 'Ke Penghasilan', onPress: () => router.navigate('/dashboard/earnings') }} />
       ) : null}
       {q.data?.map((p) => <PayoutRow key={p.id} p={p} />)}
     </Screen>
@@ -65,5 +65,5 @@ const styles = StyleSheet.create({
   segOn: { backgroundColor: color.blue },
   ok: { ...type.caption, color: color.success },
   bad: { ...type.caption, color: color.danger },
-  link: { ...type.label, color: color.blue },
+  link: { ...type.label, color: color.link },
 });

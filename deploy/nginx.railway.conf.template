@@ -1,0 +1,21 @@
+# Used by the Dockerfile (nginx image substitutes ${PORT} at start). Same rules as deploy/nginx.conf.
+server {
+  listen ${PORT};
+  root /usr/share/nginx/html;
+  index index.html;
+  absolute_redirect off;
+
+  location ~ ^/(src|tools)(/|$) { return 404; }
+  location /admin/ { try_files $uri $uri/ /admin/index.html; add_header X-Frame-Options DENY always; }
+  # Landing pages with clean URLs (/privacy, /campaigns); anything else is a signed-in page of the web app.
+  location / { try_files $uri $uri.html $uri/ /app.html; }
+
+  location ~ ^/(index|app)\.html$ { add_header Cache-Control "no-cache"; }
+  location = /assets/config.js { add_header Cache-Control "no-cache"; }
+  location ~ ^/(assets|_expo|fonts)/ { add_header Cache-Control "public, max-age=604800"; }
+  add_header X-Content-Type-Options nosniff always;
+  add_header Referrer-Policy strict-origin-when-cross-origin always;
+  add_header X-Frame-Options SAMEORIGIN always;
+  gzip on;
+  gzip_types text/css application/javascript application/json image/svg+xml;
+}

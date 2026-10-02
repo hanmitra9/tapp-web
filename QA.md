@@ -28,13 +28,15 @@
 | Creator suspended / banned | Blocked at every creator RPC via `assert_active_creator` |
 | Payout rejected | Funds return to available; creator notified; can re-request |
 | Duplicate payout request | Idempotency key + one-open-payout unique index |
-| Network failure (app) | `OfflineBanner` (persistent, auto-hides) + network-aware error copy in `lib/errors.ts` |
+| Network failure (web app) | `OfflineBanner` (persistent, auto-hides) + network-aware error copy in `lib/errors.ts` |
 | Offline app state | `NetworkProvider`/`useOnline`; screens already show retry-capable error states (`LoadState`) |
-| Auth expiration | Supabase auto-refresh while foregrounded; expired-session errors map to "log in again" |
-| Notification failure | `push_error` recorded per notification; failed sends are retried by the dispatch sweep |
+| Auth expiration | Supabase auto-refresh while the tab is visible; expired-session errors map to "log in again" |
+| Notification failure | In-app inbox is the source of truth (written by the DB); email is best-effort via `mailer/` |
 
-## Known V1 limits (unchanged from earlier phases)
-- No platform API verification — metrics are admin-entered.
-- No admin MFA yet (see `SECURITY.md`).
-- Creator tier (New/Rising/Proven) and reliability score are stored but not yet auto-computed — still manual/flat.
-- No automated E2E tests against a running app; all testing here is at the database layer (`supabase/tests/`).
+## Automated tests
+- Database: `supabase/tests/run.sh` (full workflow, abuse cases, reliability score, admin MFA enforcement).
+- Web app: `cd app && npm run build:web && npm run e2e` — Playwright smoke tests on desktop + phone viewports (welcome → register, login validation, protected deep link → login → return, deep-link refresh). Signed-out flows only, so they need no live backend.
+
+## Known V1 limits
+- TikTok and Instagram metrics are admin-entered (YouTube is automatic once `YOUTUBE_API_KEY` is set).
+- E2E covers signed-out flows only; signed-in flows are covered at the database layer.

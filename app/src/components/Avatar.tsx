@@ -16,5 +16,5 @@ export function Avatar({ uri, name, size = 72 }: { uri: string | null; name: str
 const styles = StyleSheet.create({
   img: { backgroundColor: color.surface },
   fallback: { backgroundColor: color.accentSoft, alignItems: 'center', justifyContent: 'center' },
-  initials: { fontFamily: font.bold, color: color.blue },
+  initials: { fontFamily: font.bold, color: color.link },
 });

@@ -13,6 +13,6 @@ export async function openNotification(data: Record<string, unknown> | undefined
     const { data: s } = await supabase.from('my_submissions').select('campaign_id').eq('id', d.submission_id).maybeSingle();
     if (s?.campaign_id) return router.push({ pathname: '/workspace/[id]', params: { id: s.campaign_id as string } });
   }
-  if (d.type === 'account_status') return router.navigate('/');
+  if (d.type === 'account_status') return router.navigate('/dashboard');
   router.push('/notifications');
 }

@@ -2,6 +2,7 @@
 const COPY: Record<string, string> = {
   forbidden: 'Akun ini bukan admin.',
   reason_required: 'Alasan wajib diisi.',
+  already_disconnected: 'Koneksi ini sudah diputus.',
   invalid_transition: 'Perubahan status ini tidak diizinkan dari status sekarang.',
   submission_not_trackable: 'Submission harus disetujui dulu sebelum metrik dicatat.',
   submission_not_tracking: 'Qualified views hanya bisa dihitung untuk submission berstatus Dilacak.',

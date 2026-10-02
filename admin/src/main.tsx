@@ -9,6 +9,8 @@ import { Audit } from './pages/Audit';
 import { Brands } from './pages/Brands';
 import { Campaigns } from './pages/Campaigns';
 import { Disputes } from './pages/Disputes';
+import { Meetings } from './pages/Meetings';
+import { Connections } from './pages/Connections';
 import { Payouts } from './pages/Payouts';
 import { Support } from './pages/Support';
 import { Submissions } from './pages/Submissions';
@@ -29,6 +31,8 @@ createRoot(document.getElementById('root')!).render(
             <Route path="brands" element={<Brands />} />
             <Route path="disputes" element={<Disputes />} />
             <Route path="support" element={<Support />} />
+            <Route path="meetings" element={<Meetings />} />
+            <Route path="connections" element={<Connections />} />
             <Route path="audit" element={<Audit />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

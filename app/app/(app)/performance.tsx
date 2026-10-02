@@ -73,7 +73,7 @@ export default function Performance() {
         <Text style={styles.sectionTitle}>Per campaign</Text>
         {d && !d.campaigns.length ? (
           <EmptyState title="Belum ada data performa" body="Data muncul setelah kamu submit klip dan views-nya mulai dilacak."
-            action={{ label: 'Cari campaign', onPress: () => router.navigate('/campaigns') }} />
+            action={{ label: 'Cari campaign', onPress: () => router.navigate('/dashboard/campaigns') }} />
         ) : null}
         {d?.campaigns.map((c) => <CampaignRow key={c.campaign_id} c={c} />)}
       </View>

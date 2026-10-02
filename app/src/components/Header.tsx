@@ -1,5 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
-import { router } from 'expo-router';
+import { router, useSegments } from 'expo-router';
+import { goToSite } from '@/lib/site';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { color, radius, space, type } from '@/theme/tokens';
@@ -8,14 +9,17 @@ type Props = { title: string; subtitle?: string; back?: boolean; right?: ReactNo
 
 // Reference style: a quiet top bar (chevron back, optional right action) with a bold title beneath.
 export function Header({ title, subtitle, back = true, right }: Props) {
-  // On web a page can be opened directly (no history); back then returns to the role's home instead of vanishing.
+  // A page can be opened directly (no history): back then returns to the landing page when signed out,
+  // or to the role's home when signed in, instead of vanishing.
   const canBack = back;
+  const signedOutPage = useSegments()[0] === '(auth)';
+  const fallback = () => (signedOutPage ? goToSite('/') : router.replace('/dashboard'));
   return (
     <View style={styles.wrap}>
       {canBack || right ? (
         <View style={styles.bar}>
           {canBack ? (
-            <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} hitSlop={12} accessibilityRole="button" accessibilityLabel="Kembali"
+            <Pressable onPress={() => (router.canGoBack() ? router.back() : fallback())} hitSlop={12} accessibilityRole="button" accessibilityLabel="Kembali"
               style={({ pressed }) => [styles.icon, pressed && { backgroundColor: color.surfaceRaised }]}>
               <Feather name="chevron-left" size={24} color={color.text} />
             </Pressable>

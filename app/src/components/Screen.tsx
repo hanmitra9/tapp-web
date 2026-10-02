@@ -1,6 +1,6 @@
 import type React from 'react';
 import type { ReactNode, RefObject } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLayout } from '@/lib/useLayout';
 import { color, radius, space } from '@/theme/tokens';
@@ -8,14 +8,14 @@ import { color, radius, space } from '@/theme/tokens';
 type Props = {
   children: ReactNode; footer?: ReactNode; scroll?: boolean; scrollRef?: RefObject<ScrollView | null>;
   refreshControl?: React.ReactElement<any>; inTabs?: boolean;
-  width?: 'narrow' | 'regular';   // desktop web max content width: forms 480, everything else 760
+  width?: 'narrow' | 'regular';   // max content width: forms 480, everything else 760
 };
 
-// Standard screen: content scrolls, the primary action stays pinned above the keyboard.
-// On desktop web the column is centered with a max width so lines stay readable.
+// Standard screen: content scrolls, the primary action stays pinned at the bottom.
+// The column is centered with a max width so lines stay readable.
 export function Screen({ children, footer, scroll = true, scrollRef, refreshControl, inTabs = false, width = 'regular' }: Props) {
-  const { isWide, isWeb } = useLayout();
-  const column = isWeb ? [styles.column, { maxWidth: width === 'narrow' ? 480 : 760 }] : null;
+  const { isWide } = useLayout();
+  const column = [styles.column, { maxWidth: width === 'narrow' ? 480 : 760 }];
   const tabPad = inTabs && !isWide ? styles.tabsPad : null;
 
   // Desktop forms (login, onboarding, submit…): a centered card with the action inside it,
@@ -36,7 +36,7 @@ export function Screen({ children, footer, scroll = true, scrollRef, refreshCont
 
   return (
     <SafeAreaView style={styles.safe} edges={inTabs ? ['top'] : ['top', 'bottom']}>
-      <KeyboardAvoidingView style={styles.flex} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      <View style={styles.flex}>
         {scroll ? (
           <ScrollView ref={scrollRef} refreshControl={refreshControl} style={styles.flex}
             contentContainerStyle={[styles.content, isWide && styles.wideTop, tabPad, column]} keyboardShouldPersistTaps="handled">
@@ -46,13 +46,13 @@ export function Screen({ children, footer, scroll = true, scrollRef, refreshCont
           <View style={[styles.flex, styles.content, isWide && styles.wideTop, tabPad, column]}>{children}</View>
         )}
         {footer ? <View style={[styles.footer, column]}>{footer}</View> : null}
-      </KeyboardAvoidingView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: color.bg },
+  safe: { flex: 1, backgroundColor: color.canvas },
   flex: { flex: 1 },
   content: { paddingHorizontal: space.xl, paddingTop: space.lg, paddingBottom: space.xl, flexGrow: 1 },
   wideTop: { paddingTop: space.xxxl },

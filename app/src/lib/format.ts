@@ -22,6 +22,15 @@ export function deadlineLabel(iso: string | null): string | null {
 }
 export const isUrgent = (iso: string | null) => !!iso && new Date(iso).getTime() - Date.now() < 3 * DAY;
 
+/** "baru saja", "12 menit lalu", "3 jam lalu", "2 hari lalu" */
+export function ago(iso: string | null): string | null {
+  if (!iso) return null;
+  const m = Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000));
+  if (m < 1) return 'baru saja';
+  if (m < 60) return `${m} menit lalu`;
+  const h = Math.round(m / 60);
+  return h < 24 ? `${h} jam lalu` : `${Math.round(h / 24)} hari lalu`;
+}
 export const dateLabel = (iso: string) => new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
 
 export function greeting(d = new Date()) {

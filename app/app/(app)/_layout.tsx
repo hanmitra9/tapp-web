@@ -2,12 +2,10 @@ import { Stack } from 'expo-router';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/providers/AuthProvider';
-import { usePushRouting } from '@/features/notifications/usePushRouting';
 import { color } from '@/theme/tokens';
 
 export default function AppLayout() {
-  const { account, accountError, refreshAccount, session } = useAuth();
-  usePushRouting(session?.user.id, !!account && account.role !== 'brand' && (account.onboarded || account.status !== 'pending'));
+  const { account, accountError, refreshAccount } = useAuth();
   if (!account) {
     return <Screen scroll={false}>
       <LoadState error={accountError ? 'Gagal memuat akun. Periksa koneksi internet.' : null} onRetry={refreshAccount} />
@@ -18,7 +16,7 @@ export default function AppLayout() {
   const needsOnboarding = !isBrand && !account.onboarded && account.status === 'pending';
   const creator = !isBrand && !needsOnboarding;
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.bg } }}>
+    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
       <Stack.Protected guard={isBrand}>
         <Stack.Screen name="brand" />
         <Stack.Screen name="brand-campaign/[id]" />
@@ -27,7 +25,7 @@ export default function AppLayout() {
         <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
       </Stack.Protected>
       <Stack.Protected guard={creator}>
-        <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="dashboard" />
         <Stack.Screen name="campaign/[id]" />
         <Stack.Screen name="workspace/[id]" />
         <Stack.Screen name="performance" />
