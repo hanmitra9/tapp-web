@@ -106,19 +106,20 @@ class Component extends DCLogic {
     // creator wall (reference): demo names and payouts from the reference artifact
     const GLOW = ['#34D07A', '#F2692B', '#2F8CE6', '#3B82F6', '#E2445C', '#F0B429'];
     const people = [
-      ['Rani Putri', 'Creator Keuangan'], ['Dimas Pratama', ''], ['Nadia Kusuma', 'Creator Gaming'], ['Bagus Santoso', ''],
-      ['Sari Wulandari', 'Creator Edukasi'], ['Ayu Lestari', ''], ['Tika Anjani', 'Creator Lifestyle'], ['Kevin Wijaya', ''],
-      ['Lina Marlina', 'Creator Komedi'], ['Rio Hartono', 'Clipper Podcast'], ['Maya Puspita', ''], ['Hendra Gunawan', 'Creator Kripto'],
+      ['Rani Putri', 'Rp4.250.000'], ['Dimas Pratama', 'Rp1.870.000'], ['Nadia Kusuma', 'Rp3.120.000'], ['Bagus Santoso', 'Rp960.000'],
+      ['Sari Wulandari', 'Rp2.480.000'], ['Ayu Lestari', 'Rp5.630.000'], ['Tika Anjani', 'Rp1.340.000'], ['Kevin Wijaya', 'Rp7.210.000'],
+      ['Lina Marlina', 'Rp2.050.000'], ['Rio Hartono', 'Rp3.790.000'], ['Maya Puspita', 'Rp1.120.000'], ['Hendra Gunawan', 'Rp6.480.000'],
     ];
     const wall = (offset) => {
       const set = people.slice(offset).concat(people.slice(0, offset));
       const cards = set.map((pp, i) => {
-        const name = pp[0], pay = pp[1], g = GLOW[(i + offset) % 6], big = !pay;
+        const name = pp[0], pay = pp[1], g = GLOW[(i + offset) % 6], big = false;
         return {
           name: name, sub: pay, ini: name.split(' ').map((w) => w[0]).join('').slice(0, 2).toUpperCase(),
           card: 'flex-shrink: 0; height: 88px; min-width: 230px; padding: 0 22px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 16px; background: linear-gradient(180deg, #15151B, #0D0D11); border: 1px solid rgba(255,255,255,0.08)',
           whoRow: 'display: flex; align-items: center; gap: 10px; white-space: nowrap; font-weight: 500; color: #E4E4E7; font-size: ' + (big ? '17px' : '14px'),
-          av: 'font-style: normal; width: ' + (big ? '30px' : '24px') + '; height: ' + (big ? '30px' : '24px') + '; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: ' + (big ? '11px' : '9px') + '; font-weight: 600; color: #FFFFFF; background: ' + g + '; box-shadow: 0 0 0 3px ' + g + '33, 0 0 16px ' + g + '99',
+          // dark avatar: deep tile, initials and a hairline ring in the accent color, no neon glow
+          av: 'font-style: normal; width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 600; letter-spacing: 0.02em; color: ' + g + '; background: radial-gradient(circle at 30% 25%, ' + g + '26, #0C0C10 72%); box-shadow: inset 0 0 0 1px ' + g + '55, 0 6px 14px -8px ' + g,
         };
       });
       return cards.concat(cards);
