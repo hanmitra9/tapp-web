@@ -1,12 +1,12 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-  addAssetLink, adjustBudget, deleteAsset, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
+  addAssetLink, adjustBudget, deleteAsset, ensureBrand, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
 } from '../lib/api';
 import { adminError } from '../lib/errors';
 import { dt, idr, num, toLocalInput } from '../lib/format';
-import { CONTENT_TYPES, label, NICHES, PLATFORMS } from '../lib/options';
+import { CAMPAIGN_TYPES, campaignTypeLabel, label, PLATFORMS } from '../lib/options';
 import { useLoad } from '../lib/useLoad';
 
 const TABS: { key: string; label: string; statuses: CampaignStatus[] }[] = [
@@ -89,7 +89,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <div><h2>{f.title}</h2><p className="sub">{c?.brand_name} · {label(NICHES, f.category)} · {label(CONTENT_TYPES, f.content_type)} · {f.platforms.map((p) => label(PLATFORMS, p.platform)).join(', ')}</p></div>
+        <div><h2>{f.title}</h2><p className="sub">{c?.brand_name} · {campaignTypeLabel(f.category)} · {f.platforms.map((p) => label(PLATFORMS, p.platform)).join(', ')}</p></div>
         <span className={`badge ${CSTATUS[f.status].tone}`}>{CSTATUS[f.status].t}</span>
       </div>
       {c?.status_reason ? <div className="notice warn" style={{ marginTop: 12 }}>Catatan status: {c.status_reason}</div> : null}
@@ -255,7 +255,8 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
   const byKind = (k: string) => (initial?.rules ?? []).filter((r) => r.kind === k).map((r) => r.body).join('\n');
   const [f, setF] = useState({
     brand_id: initial?.brand_id ?? '', title: initial?.title ?? '', objective: initial?.objective ?? '', description: initial?.description ?? '',
-    category: initial?.category ?? 'finance', content_type: initial?.content_type ?? 'podcast_clips',
+    brand_name: initial ? (brands.data?.find((b) => b.id === initial.brand_id)?.name ?? '') : '',
+    category: initial?.category ?? 'entertainment', content_type: initial?.content_type ?? '',
     cpm: initial ? String(initial.cpm) : '', budget: initial ? String(initial.budget) : '',
     max_earning_per_submission: initial?.max_earning_per_submission ? String(initial.max_earning_per_submission) : '',
     min_views_to_qualify: initial ? String(initial.min_views_to_qualify) : '1000',
@@ -271,14 +272,16 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
 
   async function save(e: FormEvent) {
     e.preventDefault(); setError(null);
-    if (!f.brand_id) return setError('Pilih brand.');
+    const brandName = f.brand_name || (initial ? brands.data?.find((b) => b.id === initial.brand_id)?.name ?? '' : '');
+    if (!id && !brandName.trim()) return setError('Isi nama brand.');
     if (!f.platforms.length) return setError('Pilih minimal satu platform.');
     if (f.submission_deadline && f.ends_at && f.submission_deadline > f.ends_at) return setError('Deadline submit harus sebelum tanggal berakhir.');
     setBusy(true);
     try {
       const rules = (['requirement', 'submission', 'performance'] as const).flatMap((k) => lines(f[k]).map((body) => ({ kind: k, body })));
+      const brandId = id ? f.brand_id : await ensureBrand(brandName);
       const r = await upsertCampaignDraft(id, {
-        brand_id: f.brand_id, title: f.title, objective: f.objective, description: f.description, category: f.category, content_type: f.content_type,
+        brand_id: brandId, title: f.title, objective: f.objective, description: f.description, category: f.category, content_type: f.content_type,
         cpm: n(f.cpm), budget: n(f.budget), max_earning_per_submission: n(f.max_earning_per_submission), min_views_to_qualify: n(f.min_views_to_qualify),
         starts_at: iso(f.starts_at), submission_deadline: iso(f.submission_deadline), ends_at: iso(f.ends_at), platforms: f.platforms,
         guidelines_do: lines(f.do), guidelines_dont: lines(f.dont), terms: f.terms, rules,
@@ -291,11 +294,13 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
       <h2>{id ? 'Ubah draft' : 'Campaign baru'}</h2>
       <p className="sub" style={{ margin: 0 }}>Disimpan sebagai draft. Setelah diajukan dan disetujui, CPM, budget, dan minimum views terkunci.</p>
       <div className="grid2">
-        <label className="field">Brand<select value={f.brand_id} onChange={set('brand_id')} disabled={!!id}>
-          <option value="">Pilih brand…</option>{brands.data?.filter((b) => b.status === 'active').map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
+        <label className="field">Brand<input list="brand-names" value={id ? (brands.data?.find((b) => b.id === f.brand_id)?.name ?? '') : f.brand_name}
+          onChange={set('brand_name')} disabled={!!id} placeholder="Ketik nama brand" maxLength={80} required={!id} />
+          <datalist id="brand-names">{brands.data?.filter((b) => b.status === 'active').map((b) => <option key={b.id} value={b.name} />)}</datalist></label>
         <label className="field">Judul<input value={f.title} onChange={set('title')} required maxLength={120} /></label>
-        <label className="field">Kategori (niche)<select value={f.category} onChange={set('category')}>{NICHES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
-        <label className="field">Jenis konten<select value={f.content_type} onChange={set('content_type')}>{CONTENT_TYPES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+        <label className="field">Jenis campaign<select value={f.category} onChange={set('category')}>
+          {CAMPAIGN_TYPES.some(([k]) => k === f.category) ? null : <option value={f.category}>{campaignTypeLabel(f.category)}</option>}
+          {CAMPAIGN_TYPES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       </div>
       <label className="field">Tujuan<input value={f.objective} onChange={set('objective')} /></label>
       <label className="field">Deskripsi / brief<textarea value={f.description} onChange={set('description')} rows={4} /></label>

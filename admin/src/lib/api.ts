@@ -21,16 +21,17 @@ const norm = (r: Record<string, unknown>) => {
   return o as unknown as AdminSubmission;
 };
 
-export type Queue = 'review' | 'flagged' | 'metrics' | 'tracking' | 'held' | 'closed';
+export type Queue = 'review' | 'flagged' | 'metrics' | 'tracking' | 'held' | 'closed' | 'payable' | 'paid';
 const QUEUE_FILTER: Record<Queue, SubStatus[]> = {
-  review: ['pending_review'], flagged: ['flagged'], metrics: ['approved'], tracking: ['tracking'], held: ['tracking'], closed: ['rejected', 'needs_changes', 'completed'],
+  review: ['pending_review'], flagged: ['flagged'], metrics: ['approved'], tracking: ['tracking'], held: ['tracking'], closed: ['rejected', 'needs_changes'],
+  payable: ['approved', 'tracking'], paid: ['completed'],
 };
 
 export async function listSubmissions(queue: Queue, search: string): Promise<AdminSubmission[]> {
   let q = supabase.from('admin_submissions').select('*').in('status', QUEUE_FILTER[queue]).limit(200);
   // Review queues: oldest first (FIFO). Tracking: stalest metrics first.
   q = queue === 'tracking' ? q.order('last_metrics_at', { ascending: true, nullsFirst: true })
-    : queue === 'closed' ? q.order('reviewed_at', { ascending: false }) : q.order('created_at', { ascending: true });
+    : queue === 'closed' || queue === 'paid' ? q.order('reviewed_at', { ascending: false }) : q.order('created_at', { ascending: true });
   if (queue === 'held') q = q.not('auto_hold_reason', 'is', null);
   const s = clean(search);
   if (s) q = q.or(`campaign_title.ilike.%${s}%,creator_username.ilike.%${s}%,post_url.ilike.%${s}%`);
@@ -82,6 +83,32 @@ async function rpc<T>(fn: string, args: Record<string, unknown>): Promise<T> {
   if (error) throw error;
   return data as T;
 }
+// ── Direct payout (0035): accept → pay the clip ──
+export type PayTo = { kind: string; provider: string; account_name: string; account_number: string } | null;
+export async function fetchPayTo(creatorId: string): Promise<PayTo> {
+  const { data, error } = await supabase.from('creator_payout_methods').select('kind, provider, account_name, account_number')
+    .eq('creator_id', creatorId).eq('is_default', true).maybeSingle();
+  if (error) throw error;
+  return data as PayTo;
+}
+export async function fetchFeePct(tier: string): Promise<number> {
+  const { data } = await supabase.from('app_settings').select('value').eq('key', 'withdrawal_fee_pct').maybeSingle();
+  return Number((data?.value as Record<string, number> | undefined)?.[tier] ?? 0);
+}
+export type PaidRow = { id: string; amount: number; fee: number; net_amount: number; processed_reference: string | null; paid_at: string | null };
+export async function fetchPaid(submissionId: string): Promise<PaidRow[]> {
+  const { data, error } = await supabase.from('payout_requests').select('id, amount, fee, net_amount, processed_reference, paid_at')
+    .eq('submission_id', submissionId).eq('status', 'paid').order('paid_at', { ascending: false });
+  if (error) throw error;
+  return (data ?? []).map((r) => ({ ...r, amount: Number(r.amount), fee: Number(r.fee), net_amount: Number(r.net_amount) })) as PaidRow[];
+}
+export async function countPayable(): Promise<number> {
+  const { count, error } = await supabase.from('submissions').select('id', { count: 'exact', head: true }).in('status', ['approved', 'tracking']);
+  if (error) throw error;
+  return count ?? 0;
+}
+export const paySubmission = (id: string, views: number, reference: string, note: string | null) =>
+  rpc('admin_pay_submission', { p_submission_id: id, p_views: views, p_reference: reference, p_note: note });
 export const reviewSubmission = (id: string, decision: SubStatus, reason: string | null) =>
   rpc('admin_review_submission', { p_submission_id: id, p_decision: decision, p_reason: reason });
 export const recordMetrics = (id: string, m: { views: number; likes: number; comments: number; shares: number; saves: number; capturedAt: string; state: string }) =>
@@ -151,6 +178,21 @@ export async function listBrands(): Promise<Brand[]> {
   const { data, error } = await supabase.from('brands').select('*').order('name');
   if (error) throw error;
   return data as Brand[];
+}
+// Typed brand name → that brand's id, creating the brand when it doesn't exist yet.
+export async function ensureBrand(name: string): Promise<string> {
+  const n = name.trim().replace(/\s+/g, ' ');
+  if (!n) throw new Error('brand_required');
+  const found = await supabase.from('brands').select('id, name').ilike('name', n.replace(/[%_\\]/g, (m) => '\\' + m)).limit(1);
+  if (found.error) throw found.error;
+  if (found.data?.[0]) return found.data[0].id as string;
+  const base = n.toLowerCase().normalize('NFKD').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'brand';
+  for (const slug of [base, `${base}-${Math.random().toString(36).slice(2, 6)}`]) {
+    const { data, error } = await supabase.from('brands').insert({ name: n, slug, status: 'active' }).select('id').single();
+    if (!error) return data.id as string;
+    if (!/duplicate|unique/i.test(error.message)) throw error;
+  }
+  throw new Error('brand_slug_taken');
 }
 export async function saveBrand(b: Partial<Brand> & { name: string; slug: string }) {
   const row = { name: b.name.trim(), slug: b.slug.trim().toLowerCase(), website: b.website?.trim() || null, logo_url: b.logo_url?.trim() || null, status: b.status ?? 'active' };

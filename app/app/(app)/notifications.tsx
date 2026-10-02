@@ -28,7 +28,7 @@ export default function Notifications() {
       <Header title="Notifikasi" />
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {!q.data && !q.error ? [0, 1, 2].map((i) => <View key={i} style={styles.row}><SkeletonBlock width="60%" height={16} /><SkeletonBlock width="90%" height={14} /></View>) : null}
-      {q.data && !q.data.length ? <EmptyState title="Belum ada notifikasi" body="Kabar soal submission, penghasilan, dan pencairan akan muncul di sini." /> : null}
+      {q.data && !q.data.length ? <EmptyState title="Belum ada notifikasi" body="Kabar soal submission dan pembayaran akan muncul di sini." /> : null}
       {q.data?.map((n) => <Row key={n.id} n={n} />)}
     </Screen>
   );

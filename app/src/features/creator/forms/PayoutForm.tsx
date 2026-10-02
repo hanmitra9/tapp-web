@@ -47,7 +47,7 @@ export function PayoutForm({ values, onChange, showErrors }: Props) {
       </Field>
       <TextField label={values.kind === 'bank' ? 'Nama pemilik rekening' : 'Nama pemilik akun'} value={values.account_name}
         onChangeText={(account_name) => onChange({ ...values, account_name })} autoCapitalize="words"
-        hint="Harus sama persis dengan nama di rekening/akun agar pencairan tidak gagal." error={errs.account_name} />
+        hint="Harus sama persis dengan nama di rekening/akun agar transfer tidak gagal." error={errs.account_name} />
       <TextField label={values.kind === 'bank' ? 'Nomor rekening' : 'Nomor HP'} value={values.account_number}
         onChangeText={(account_number) => onChange({ ...values, account_number })} keyboardType="number-pad"
         error={errs.account_number} />

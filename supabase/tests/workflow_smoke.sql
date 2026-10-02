@@ -85,28 +85,24 @@ select budget, earned, status, status_reason from campaigns where id='20000000-0
 select pg_temp.expect_error($$update content_metrics set views = 1$$,'permission denied');
 reset role; select pg_temp.expect_error($$update content_metrics set views = 1$$,'append_only'); set role authenticated;
 
--- Creator payout: matured?
+-- Payout (0035): creators no longer withdraw; the admin pays the accepted clip directly.
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select * from my_earnings_summary;
-select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_below_minimum');  -- still on hold
-reset role; update earnings set available_at = now() - interval '1 minute'; set role authenticated;
-select id as payout_id, amount, status from request_payout('30000000-0000-0000-0000-000000000001') \gset
-select id = :'payout_id' as idempotent from request_payout('30000000-0000-0000-0000-000000000001');
-select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_already_open');
-select * from my_earnings_summary;
-
--- Admin processes payout
+select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_by_admin');
+select pg_temp.expect_error(format($$select admin_pay_submission(%L, 300000, 'X')$$, :'sub_id'),'forbidden');
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
-select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid')$$, :'payout_id'),'invalid_transition');
-select status from admin_update_payout(:'payout_id','reviewing');
-select status from admin_update_payout(:'payout_id','approved');
-select status from admin_update_payout(:'payout_id','processing');
-select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid')$$, :'payout_id'),'reference_required');
-select status from admin_update_payout(:'payout_id','paid', null, 'BCA-TRX-88231');
+select pg_temp.expect_error(format($$select admin_pay_submission(%L, 300000, ' ')$$, :'sub_id'),'reference_required');
+select pg_temp.expect_error(format($$select admin_pay_submission(%L, 100, 'X')$$, :'sub_id'),'views_below_paid');
+select id as payout_id, amount, status from admin_pay_submission(:'sub_id', 300000, 'BCA-TRX-88231') \gset
+select status from submissions where id = :'sub_id';                                -- completed
+select pg_temp.expect_error(format($$select admin_pay_submission(%L, 300000, 'BCA-2')$$, :'sub_id'),'nothing_to_pay');  -- nothing new
+select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid', null, 'again')$$, :'payout_id'),'invalid_transition');
 select earned, paid from campaigns where id='20000000-0000-0000-0000-000000000001';
 
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select * from my_earnings_summary;
+select campaign_title, amount, fee, net_amount, processed_reference from my_payments;
+do $$ begin if (select count(*) from my_payments) <> 1 or (select net_amount from my_payments) <> 600000 - (select fee from my_payments) then raise exception 'my_payments wrong'; end if; end $$;
 select type, body from notifications order by created_at;
 select count(*) as audit_rows_visible_to_creator from audit_logs;  -- expect 0
 
@@ -120,6 +116,8 @@ select is_username_available('king.clips') as own_expect_t;
 select pg_temp.expect_error($$update profiles set username='admin' where id=auth.uid()$$, 'new row for relation "profiles" violates check');
 select pg_temp.expect_error($$update creator_profiles set niches=array['a','b','c','d'] where user_id=auth.uid()$$, 'new row for relation "creator_profiles" violates check');
 insert into creator_platforms (creator_id,platform,handle) values (auth.uid(),'instagram','king.ig');
+-- the rest of this suite keeps working with c1's clip as a live, tracked one (as before 0035's direct payout)
+reset role; update submissions set status = 'tracking' where id = :'sub_id'; set role authenticated;
 delete from creator_platforms where creator_id=auth.uid() and platform='tiktok';   -- has a tracking submission → RLS keeps it
 select count(*) as tiktok_kept_expect_1 from creator_platforms where platform='tiktok';
 update creator_profiles set main_platform='instagram' where user_id=auth.uid();
@@ -439,6 +437,7 @@ select 'brand_reporting_ok' as result;
 
 -- ── Automatic view filtering (0030) ──
 reset role;
+update app_settings set value = jsonb_set(value, '{enabled}', 'true') where key = 'auto_qualify';   -- off by default since 0035
 create temp table _aq as select id, creator_id, platform, qualified_views from submissions where status = 'tracking' order by created_at limit 1;
 update creator_profiles set status = 'active' where user_id = (select creator_id from _aq);
 update creator_platforms set verified_at = now(), followers = 1000000 where creator_id = (select creator_id from _aq) and platform = (select platform from _aq);
@@ -560,7 +559,7 @@ reset role;
 select withdrawal_fee_pct('new') as new_5, withdrawal_fee_pct('rising') as rising_4, withdrawal_fee_pct('verified') as verified_3,
        withdrawal_fee_pct('proven') as proven_2, withdrawal_fee_pct('elite') as elite_0;
 do $$ declare p public.payout_requests; v numeric; begin
-  select * into p from payout_requests where id = '30000000-0000-0000-0000-000000000001' or idempotency_key = '30000000-0000-0000-0000-000000000001' limit 1;
+  select * into p from payout_requests where submission_id is not null order by created_at limit 1;
   v := withdrawal_fee_pct(p.fee_tier);
   if p.fee_tier is null then raise exception 'fee tier not recorded'; end if;
   if p.fee <> round(p.amount * v / 100) or p.fee_pct <> v then raise exception 'fee % pct % for amount % tier %', p.fee, p.fee_pct, p.amount, p.fee_tier; end if;

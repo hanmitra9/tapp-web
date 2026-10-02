@@ -29,7 +29,7 @@ const STEPS = [
   { title: 'Akun media sosial', subtitle: 'Tempat kamu memposting klip. TAPP memverifikasi akun ini sebelum kamu bisa ikut campaign.' },
   { title: 'Konten kamu', subtitle: 'Dipakai untuk mencocokkan kamu dengan campaign yang relevan.' },
   { title: 'Penonton kamu', subtitle: 'Perkiraan saja. Bisa diubah kapan pun.' },
-  { title: 'Metode pencairan', subtitle: 'Ke mana penghasilanmu dikirim.' },
+  { title: 'Rekening pembayaran', subtitle: 'Ke mana bayaran klipmu ditransfer.' },
   { title: 'Periksa lagi', subtitle: 'Setelah dikirim, tim TAPP akan meninjau akunmu.' },
 ];
 
@@ -176,7 +176,7 @@ export default function Onboarding() {
               value={platforms.map((p) => `${platformLabel(p.platform)} @${p.handle}${p.platform === draft.mainPlatform ? ' (utama)' : ''}`).join('\n')} />
             <ReviewRow label="Niche" value={draft.niches.map((n) => labelOf(NICHES, n)).join(', ')} onEdit={() => goTo(2)} />
             <ReviewRow label="Pengalaman" value={labelOf(EXPERIENCE, draft.experience ?? '')} onEdit={() => goTo(2)} />
-            <ReviewRow label="Pencairan" onEdit={() => goTo(4)}
+            <ReviewRow label="Pembayaran" onEdit={() => goTo(4)}
               value={payout ? `${payout.provider} ${maskAccount(payout.account_number)} · ${payout.account_name}` : '—'} />
           </View>
         ) : null}

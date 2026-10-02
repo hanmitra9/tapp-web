@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchHistory, getSubmission, listSubmissions, proofUrl, qualifyViews, recordMetrics, reviewSubmission,
+  fetchFeePct, fetchHistory, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, qualifyViews, recordMetrics, reviewSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { previewEarnings, signals } from '../lib/engine';
@@ -11,11 +11,11 @@ import { useLoad } from '../lib/useLoad';
 
 const STATUS: Record<SubStatus, { label: string; tone: string }> = {
   pending_review: { label: 'Menunggu review', tone: '' }, needs_changes: { label: 'Perlu revisi', tone: 'warning' },
-  approved: { label: 'Disetujui', tone: 'blue' }, tracking: { label: 'Dilacak', tone: 'blue' }, flagged: { label: 'Ditandai', tone: 'warning' },
-  rejected: { label: 'Ditolak', tone: 'danger' }, completed: { label: 'Selesai', tone: 'success' },
+  approved: { label: 'Diterima', tone: 'blue' }, tracking: { label: 'Diterima', tone: 'blue' }, flagged: { label: 'Ditandai', tone: 'warning' },
+  rejected: { label: 'Ditolak', tone: 'danger' }, completed: { label: 'Dibayar', tone: 'success' },
 };
 const TABS: Record<'review' | 'performance', { q: Queue; label: string }[]> = {
-  review: [{ q: 'review', label: 'Perlu review' }, { q: 'flagged', label: 'Ditandai' }, { q: 'closed', label: 'Selesai diproses' }],
+  review: [{ q: 'review', label: 'Perlu review' }, { q: 'payable', label: 'Siap dibayar' }, { q: 'paid', label: 'Sudah dibayar' }, { q: 'flagged', label: 'Ditandai' }, { q: 'closed', label: 'Ditolak / revisi' }],
   performance: [{ q: 'held', label: 'Ditahan otomatis' }, { q: 'metrics', label: 'Belum ada metrik' }, { q: 'tracking', label: 'Dilacak' }, { q: 'flagged', label: 'Ditandai' }],
 };
 const PRESETS: Partial<Record<SubStatus, string[]>> = {
@@ -47,9 +47,9 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
     <>
       <div className="page-head">
         <div>
-          <h1>{mode === 'review' ? 'Verifikasi submission' : 'Performa & qualified views'}</h1>
+          <h1>{mode === 'review' ? 'Submission' : 'Performa & qualified views'}</h1>
           <p className="sub">{mode === 'review'
-            ? 'Cek postingan terhadap brief. Setiap keputusan non-setuju wajib punya alasan yang dilihat kreator.'
+            ? 'Terima atau tolak klip kreator, lalu bayar klip yang diterima langsung ke rekening kreator. Penolakan wajib punya alasan yang dilihat kreator.'
             : 'Catat raw metrics, lalu tetapkan qualified views. Penghasilan dihitung di server.'}</p>
         </div>
         <input type="search" placeholder="Cari campaign, username, link…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 280 }} />
@@ -68,6 +68,7 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
             <button key={s.id} className={`list-item ${selected === s.id ? 'on' : ''}`} onClick={() => setSelected(s.id)}>
               <div className="row"><span className="title">{s.campaign_title}</span><span className={`badge ${STATUS[s.status].tone}`}>{STATUS[s.status].label}</span></div>
               <div className="meta">@{s.creator_username ?? '—'} · {s.platform} · masuk {ago(s.created_at)}</div>
+              {s.status === 'completed' ? <div className="meta">Dibayar {idr(s.earned)} · {num(s.qualified_views)} views</div> : null}
               {mode === 'performance' ? <div className="meta">Raw {num(s.views)} · Qualified {num(s.qualified_views)} · metrik {ago(s.last_metrics_at)}</div> : null}
               {mode === 'performance' && s.auto_hold_reason ? <div className="meta" style={{ color: 'var(--warning)' }}>Ditahan: {s.auto_hold_reason}</div> : null}
             </button>
@@ -123,6 +124,7 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
       {s.caption ? <div className="section"><h3>Caption</h3><p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{s.caption}</p></div> : null}
       {shot ? <div className="section"><h3>Screenshot</h3><a href={shot} target="_blank" rel="noreferrer noopener"><img src={shot} alt="Screenshot bukti" className="shot" /></a></div> : null}
 
+      {mode === 'review' && ['approved', 'tracking', 'completed'].includes(s.status) ? <PayPanel s={s} latestViews={h.metrics[0]?.views ?? null} onDone={refresh} /> : null}
       {mode === 'review' && reviewable ? <ReviewPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && trackable ? <MetricsPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && s.status === 'tracking' && s.auto_hold_reason ? <div className="notice warn" style={{ marginTop: 16 }}>Ditahan penyaringan otomatis: {s.auto_hold_reason}. Cek klipnya, lalu tetapkan qualified views secara manual di bawah.</div> : null}
@@ -212,6 +214,67 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
           <button className="btn secondary" onClick={() => setDecision(null)}>Batal</button>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+// Accepted clip → pay it: views in, amount computed (CPM, minimum, cap, budget), level fee off, transferred by hand.
+function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews: number | null; onDone: () => Promise<void> }) {
+  const info = useLoad(async () => {
+    const [to, pct, paid] = await Promise.all([fetchPayTo(s.creator_id), fetchFeePct(s.creator_tier), fetchPaid(s.id)]);
+    return { to, pct, paid };
+  }, [s.id]);
+  const [views, setViews] = useState(String(Math.max(latestViews ?? 0, s.qualified_views) || ''));
+  const [reference, setReference] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [ok, setOk] = useState<string | null>(null);
+  const v = Number(views.replace(/[.,\s]/g, ''));
+  const valid = /^\d+$/.test(views.replace(/[.,\s]/g, ''));
+  const p = useMemo(() => previewEarnings({
+    qualified: valid ? v : 0, minViews: s.min_views_to_qualify, cpm: s.cpm, maxPerSubmission: s.max_earning_per_submission,
+    alreadyEarned: s.earned, budget: s.budget, campaignEarned: s.campaign_earned, override: s.budget_override,
+  }), [v, valid, s]);
+  const paidSoFar = (info.data?.paid ?? []).reduce((a, r) => a + r.amount, 0);
+  const amount = Math.max(p.delta, 0) + Math.max(s.earned - paidSoFar, 0);   // new + accepted-but-unpaid
+  const fee = info.data ? Math.min(Math.round(amount * info.data.pct / 100), Math.max(amount - 1, 0)) : 0;
+  const to = info.data?.to;
+
+  async function pay() {
+    setError(null); setOk(null);
+    if (!valid) return setError('Isi angka views.');
+    if (v < s.qualified_views) return setError(`Views tidak boleh lebih kecil dari yang sudah dibayar (${num(s.qualified_views)}).`);
+    if (!reference.trim()) return setError('Isi nomor referensi / bukti transfer.');
+    setBusy(true);
+    try { await paySubmission(s.id, v, reference.trim(), null); setOk(`Tercatat dibayar. Kreator mendapat notifikasi dan email.`); setReference(''); await info.reload(); await onDone(); }
+    catch (e) { setError(adminError(e)); }
+    finally { setBusy(false); }
+  }
+  return (
+    <div className="section card">
+      <h2>{s.status === 'completed' ? 'Sudah dibayar' : 'Bayar klip ini'}</h2>
+      {info.data?.paid.length ? (
+        <table><thead><tr><th>Dibayar</th><th className="n">Transfer</th><th>Referensi</th></tr></thead>
+          <tbody>{info.data.paid.map((r) => <tr key={r.id}><td>{dt(r.paid_at)}</td><td className="n">{idr(r.net_amount)}</td><td>{r.processed_reference}</td></tr>)}</tbody></table>
+      ) : null}
+      {s.status === 'completed' ? <p className="sub" style={{ margin: 0 }}>Views naik lagi? Isi views terbaru untuk membayar selisihnya.</p> : null}
+      <p className="sub" style={{ margin: 0 }}>Cek views di <a href={s.post_url} target="_blank" rel="noreferrer noopener">postingan ↗</a>. Tarif {idr(s.cpm)} per 1.000 views, minimal {num(s.min_views_to_qualify)} views{s.max_earning_per_submission ? `, maks ${idr(s.max_earning_per_submission)} per klip` : ''}.</p>
+      <div className="grid2">
+        <label className="field">Views<input inputMode="numeric" value={views} onChange={(e) => setViews(e.target.value)} /></label>
+        <label className="field">Referensi transfer<input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="mis. BCA 0210-8823" /></label>
+      </div>
+      <div className="preview">
+        <span>Transfer ke kreator</span>
+        <strong>{idr(amount - fee)}</strong>
+        <span className="sub">Bayaran {idr(amount)}{fee ? ` − fee level ${s.creator_tier} ${idr(fee)}` : ''}</span>
+        {to ? <span>Ke {to.provider} {to.account_number} a.n. {to.account_name}</span>
+          : info.data ? <span style={{ color: 'var(--warning)' }}>Kreator belum mengisi rekening / e-wallet.</span> : null}
+        {p.belowMin ? <span style={{ color: 'var(--warning)' }}>Di bawah minimum {num(s.min_views_to_qualify)} views, jadi bayarannya 0.</span> : null}
+        {p.capped ? <span style={{ color: 'var(--warning)' }}>Dibatasi sisa budget campaign.</span> : null}
+      </div>
+      {error ? <div className="notice error">{error}</div> : null}
+      {ok ? <div className="notice ok">{ok}</div> : null}
+      <div className="actions"><button className="btn" onClick={pay} disabled={busy || !valid || amount <= 0 || !to}>{busy ? 'Menyimpan…' : `Tandai sudah ditransfer ${idr(amount - fee)}`}</button></div>
     </div>
   );
 }

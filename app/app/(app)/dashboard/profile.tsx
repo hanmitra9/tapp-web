@@ -107,11 +107,11 @@ export default function Profile() {
         ].filter(Boolean).join(' · ')} />
       </Section>
 
-      <Section title="Pencairan" action={locked ? undefined : { label: 'Ubah', onPress: () => router.push('/profile/payout') }}>
+      <Section title="Pembayaran" action={locked ? undefined : { label: 'Ubah', onPress: () => router.push('/profile/payout') }}>
         <Row label={payout?.provider ?? 'Metode'} value={payout ? `${maskAccount(payout.account_number)} · ${payout.account_name}` : 'Belum diatur'} />
       </Section>
-      <Pressable onPress={() => router.push('/payouts')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
-        <Text style={styles.action}>Riwayat pencairan</Text>
+      <Pressable onPress={() => router.navigate('/dashboard/earnings')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
+        <Text style={styles.action}>Riwayat pembayaran</Text>
       </Pressable>
       <Pressable onPress={() => router.push('/help')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
         <Text style={styles.action}>Bantuan & keberatan</Text>

@@ -154,7 +154,7 @@ LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margi
 POINTS = [
     ('Clip Portfolio', 'Semua clip yang lolos tersusun rapi, lengkap dengan views dan penghasilannya.'),
     ('Performance &amp; Reliability', 'Qualified views, approval rate, dan reliability score yang dihitung otomatis dari setiap review.'),
-    ('Payout History', 'Setiap pencairan tercatat, dari diajukan hingga diterima di rekeningmu.'),
+    ('Payout History', 'Setiap bayaran tercatat, lengkap dengan clip dan tanggal transfernya.'),
 ]
 
 def _dash():
@@ -181,7 +181,7 @@ PORTFOLIO = f'''<section id="portofolio" class="sec pad" style="max-width: 1180p
       <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
         <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">Creator Profile</span>
         <h2 class="h2" style="font-size: 44px; line-height: 50px; font-weight: 600; letter-spacing: -1.4px">Portofolio Yang<br><span style="color: #7DA2FF">Bicara Lewat Data</span></h2>
-        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap clip yang lolos, setiap view yang terverifikasi, dan setiap pencairan tercatat di profilmu. Bukti kerja yang bisa dipertanggungjawabkan.</p>
+        <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 480px">Setiap clip yang lolos, setiap view yang terverifikasi, dan setiap bayaran tercatat di profilmu. Bukti kerja yang bisa dipertanggungjawabkan.</p>
         <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 8px; width: 100%">
           {''.join(f'<div style="display: flex; gap: 14px; align-items: flex-start; padding: 16px 18px; border-radius: 18px; background: #0F0F13; border: 1px solid rgba(255,255,255,0.07)"><span class="tabular" style="width: 32px; height: 32px; flex-shrink: 0; border-radius: 10px; background: rgba(69,72,245,0.18); border: 1px solid rgba(125,162,255,0.35); display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #C6D6FF">0{i+1}</span><span style="display: flex; flex-direction: column; gap: 4px"><b style="font-size: 16px">{t}</b><span style="font-size: 14px; line-height: 21px; color: #9A9AA5; font-weight: 400">{b}</span></span></div>' for i, (t, b) in enumerate(POINTS))}
         </div>

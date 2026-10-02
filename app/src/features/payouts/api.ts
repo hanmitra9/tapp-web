@@ -16,6 +16,16 @@ export const PAYOUT_STATUS: Record<PayoutStatus, { label: string; tone: 'neutral
 // Linear progress shown to the creator (rejected is terminal and shown separately).
 export const STEPS: PayoutStatus[] = ['requested', 'reviewing', 'approved', 'processing', 'paid'];
 
+// Direct payouts (migration 035): one row per paid clip.
+export type Payment = { id: string; submission_id: string | null; amount: number; fee: number; net_amount: number; processed_reference: string | null;
+  paid_at: string | null; provider: string | null; account_last4: string | null; post_url: string | null; campaign_id: string | null; campaign_title: string | null };
+export async function fetchPayments(): Promise<Payment[]> {
+  const { data, error } = await supabase.from('my_payments').select('*').order('paid_at', { ascending: false }).limit(100);
+  if (error) throw error;
+  return (data ?? []).map((p) => ({ ...p, amount: Number(p.amount), fee: Number(p.fee ?? 0), net_amount: Number(p.net_amount ?? p.amount) })) as Payment[];
+}
+export const paidTotal = (rows: Payment[]) => rows.reduce((a, p) => a + p.net_amount, 0);
+
 export async function fetchPayouts(): Promise<Payout[]> {
   const { data, error } = await supabase.from('payout_requests')
     .select('*')

@@ -1,7 +1,12 @@
 import { CONTENT_CATEGORIES, labelOf, NICHES, platformLabel, type Platform } from '@/features/creator/options';
 import type { CampaignDetail } from './api';
 
-export const categoryLabel = (c: string) => labelOf(NICHES, c);
+// Campaign types (admin picks one). Older campaigns may carry a niche slug, so fall back to the niche label.
+const CAMPAIGN_TYPES: Record<string, string> = {
+  entertainment: 'Entertainment', brand: 'Brand', music: 'Music', podcast: 'Podcast', gaming: 'Gaming',
+  sports: 'Sports', lifestyle: 'Lifestyle', education: 'Education', other: 'Lainnya',
+};
+export const categoryLabel = (c: string) => CAMPAIGN_TYPES[c] ?? labelOf(NICHES, c);
 export const contentTypeLabel = (c: string) => labelOf(CONTENT_CATEGORIES, c);
 export const platformsLabel = (ps: Platform[]) => ps.map(platformLabel).join(' · ');
 

@@ -31,7 +31,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="index" options={{ title: 'Beranda', tabBarIcon: icon('home') }} />
       <Tabs.Screen name="campaigns" options={{ title: 'Campaign', tabBarIcon: icon('compass') }} />
       <Tabs.Screen name="activity" options={{ title: 'Aktivitas', tabBarIcon: icon('repeat') }} />
-      <Tabs.Screen name="earnings" options={{ title: 'Penghasilan', tabBarIcon: icon('credit-card') }} />
+      <Tabs.Screen name="earnings" options={{ title: 'Pembayaran', tabBarIcon: icon('credit-card') }} />
       <Tabs.Screen name="profile" options={{ title: 'Profil', tabBarIcon: icon('user') }} />
     </Tabs>
   );

@@ -41,13 +41,13 @@ def app_pov(a='#4548F5', b='#1A2CA8'):
     <div style="position: absolute; left: 60%; top: -40px; width: 18px; height: 280px; background: linear-gradient(180deg, rgba(255,255,255,0.25), transparent); transform: rotate(22deg); filter: blur(6px)"></div>
     <div style="position: absolute; left: 22px; right: 22px; top: 92px; padding: 10px; border-radius: 18px; background: #0B0B12; border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 24px 50px -12px rgba(0,0,0,0.8), 0 0 40px rgba(69,72,245,0.45); transform: rotate(-4deg)">
       <div style="padding: 11px; border-radius: 12px; background: linear-gradient(45deg, #2238C2, #4548F5 55%, #7DA2FF); display: flex; flex-direction: column; gap: 6px">
-        <span style="display: flex; justify-content: space-between; align-items: center; font-size: 8px; font-weight: 500; color: rgba(255,255,255,0.85)">Tersedia untuk dicairkan<img src="{BLOB_WHITE}" alt="" style="width: 12px; height: 12px"></span>
+        <span style="display: flex; justify-content: space-between; align-items: center; font-size: 8px; font-weight: 500; color: rgba(255,255,255,0.85)">Total dibayar<img src="{BLOB_WHITE}" alt="" style="width: 12px; height: 12px"></span>
         <span class="tabular" style="font-size: 20px; font-weight: 600; color: #FFFFFF; letter-spacing: -0.5px">Rp555.000</span>
       </div>
       <svg viewBox="0 0 120 34" width="100%" height="34" aria-hidden="true" style="display: block; margin-top: 8px"><path d="M0 28 C 20 26, 30 18, 48 20 S 80 8, 96 9 S 114 3, 120 2" stroke="#7DA2FF" stroke-width="2" fill="none"></path></svg>
-      <span style="display: flex; align-items: center; justify-content: center; height: 22px; margin-top: 6px; border-radius: 7px; background: #4548F5; font-size: 9px; font-weight: 600; color: #FFFFFF">Cairkan</span>
+      <span style="display: flex; align-items: center; justify-content: center; height: 22px; margin-top: 6px; border-radius: 7px; background: #4548F5; font-size: 9px; font-weight: 600; color: #FFFFFF">Masuk rekening</span>
     </div>
-    <div style="position: absolute; left: 10px; right: 36px; top: 244px; text-align: left; {CAPTION}; font-size: 18px; line-height: 23px">POV: cek saldo<br>{hl('TAPP')} tiap pagi</div>
+    <div style="position: absolute; left: 10px; right: 36px; top: 244px; text-align: left; {CAPTION}; font-size: 18px; line-height: 23px">POV: bayaran clip<br>{hl('TAPP')} tiap pagi</div>
     {grain()}'''
 
 def orbit(a='#3B82F6', b='#0B2A6B'):

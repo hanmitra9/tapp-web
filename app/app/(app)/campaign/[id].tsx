@@ -14,7 +14,7 @@ import { cpmLabel, dateLabel, deadlineLabel, idr, idrCompact, num } from '@/lib/
 import { useQuery } from '@/lib/useQuery';
 import { color, radius, space, type } from '@/theme/tokens';
 import { assetLink, fetchAssets, fetchCampaign, joinCampaign, leaveCampaign, type Asset } from '@/features/campaigns/api';
-import { CAMPAIGN_STATUS, categoryLabel, contentTypeLabel, joinBlockCopy, platformsLabel } from '@/features/campaigns/copy';
+import { CAMPAIGN_STATUS, categoryLabel, joinBlockCopy, platformsLabel } from '@/features/campaigns/copy';
 import { track } from '@/lib/analytics';
 
 const RULE_TITLES = { requirement: 'Syarat konten', submission: 'Aturan submission', performance: 'Aturan performa' } as const;
@@ -80,7 +80,7 @@ export default function CampaignDetailScreen() {
       <Text style={styles.brand}>{c.brand.name}</Text>
       <Text style={styles.title} accessibilityRole="header">{c.title}</Text>
       <Text style={styles.meta}>
-        {categoryLabel(c.category)} · {contentTypeLabel(c.content_type)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}
+        {categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}
       </Text>
 
       {justJoined ? <View style={styles.gap}><Notice tone="info" message="Kamu sudah bergabung. Konten sumber sekarang terbuka di bawah." /></View> : null}
