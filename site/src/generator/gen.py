@@ -202,8 +202,17 @@ a{{color:inherit;text-decoration:none}}
 @keyframes blip{{0%,55%{{opacity:0.25}}62%,90%{{opacity:1}}100%{{opacity:0.25}}}}
 
 .lp .tchip{{padding:6px 11px;border-radius:999px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);font-size:12px;font-weight: 600;color:#D4D4D8}}
-.lp .tarc path{{transition:fill .25s ease,stroke .25s ease}}
-.lp .tarc g[role=button]:hover path{{stroke:#7DA2FF}}
+.lp .tarc path{{transition:fill .25s ease,stroke .25s ease}} .lp .tarc .tb{{transition:opacity .25s ease}}
+.lp .tradio{{position:absolute;opacity:0;pointer-events:none}}
+.lp .tcard{{display:none}}
+.lp .tlab{{position:absolute;cursor:pointer;border-radius:24px;-webkit-tap-highlight-color:transparent}}
+.lp .tradio:focus-visible ~ .tarc .tsvg{{outline:2px solid #7DA2FF;outline-offset:6px;border-radius:12px}}
+.lp #tr0:checked ~ .tarc .tc0{{display:flex}} .lp #tr0:checked ~ .tarc .tp0{{fill:url(#arcOn);stroke:#8A8A93}} .lp #tr0:checked ~ .tarc .tt0{{fill:#FFFFFF}} .lp #tr0:checked ~ .tarc .tb0{{opacity:1}}
+.lp #tr1:checked ~ .tarc .tc1{{display:flex}} .lp #tr1:checked ~ .tarc .tp1{{fill:url(#arcOn);stroke:#34D07A}} .lp #tr1:checked ~ .tarc .tt1{{fill:#FFFFFF}} .lp #tr1:checked ~ .tarc .tb1{{opacity:1}}
+.lp #tr2:checked ~ .tarc .tc2{{display:flex}} .lp #tr2:checked ~ .tarc .tp2{{fill:url(#arcOn);stroke:#7DA2FF}} .lp #tr2:checked ~ .tarc .tt2{{fill:#FFFFFF}} .lp #tr2:checked ~ .tarc .tb2{{opacity:1}}
+.lp #tr3:checked ~ .tarc .tc3{{display:flex}} .lp #tr3:checked ~ .tarc .tp3{{fill:url(#arcOn);stroke:#A78BFA}} .lp #tr3:checked ~ .tarc .tt3{{fill:#FFFFFF}} .lp #tr3:checked ~ .tarc .tb3{{opacity:1}}
+.lp #tr4:checked ~ .tarc .tc4{{display:flex}} .lp #tr4:checked ~ .tarc .tp4{{fill:url(#arcOn);stroke:#F0B429}} .lp #tr4:checked ~ .tarc .tt4{{fill:#FFFFFF}} .lp #tr4:checked ~ .tarc .tb4{{opacity:1}}
+
 .lp .hub{{animation:hubglow 3.2s ease-in-out infinite}}
 @keyframes hubglow{{0%,100%{{box-shadow:0 0 0 8px rgba(69,72,245,0.1),0 0 60px rgba(69,72,245,0.45),inset 0 1px 0 rgba(255,255,255,0.3)}}50%{{box-shadow:0 0 0 10px rgba(69,72,245,0.13),0 0 80px rgba(69,72,245,0.6),inset 0 1px 0 rgba(255,255,255,0.3)}}}}
 .lp .hc{{animation:bob 6s ease-in-out infinite}} .lp .hc:nth-of-type(2){{animation-delay:-1.5s}} .lp .hc:nth-of-type(3){{animation-delay:-3s}} .lp .hc:nth-of-type(4){{animation-delay:-4.5s}}

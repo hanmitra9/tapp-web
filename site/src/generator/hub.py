@@ -94,25 +94,48 @@ TIERS = [
     ('New', '0', '#8A8A93'), ('Rising', '50K', '#34D07A'), ('Verified', '250K', '#7DA2FF'),
     ('Proven', '1 juta', '#A78BFA'), ('Elite', '5 juta', '#F0B429'),
 ]
+TIER_BODY = [
+    'Titik awal. Selesaikan campaign pertama dan kumpulkan clip yang lolos verifikasi.',
+    'Clip-mu mulai konsisten lolos. Pola kerjamu sudah terbentuk dan terbaca.',
+    'Rekam jejak yang teruji di banyak clip dan campaign. Performamu bisa dipercaya.',
+    'Satu juta qualified views. Kamu terbukti menggerakkan audiens nyata.',
+    'Puncak level TAPP: lima juta qualified views yang lolos verifikasi.',
+]
+
+# Picking a level is plain HTML/CSS (radio + label), so it also works where scripts are blocked.
+def _tier_card(i):
+    name, thr, color = TIERS[i]
+    req = 'Mulai dari 0 qualified views' if i == 0 else f'Mulai dari {thr} qualified views'
+    return f'''<div class="tcard tc{i}" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: {color}; background: rgba(255,255,255,0.05); border: 1px solid {color}">Level {i + 1} dari 5</span>
+        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">{name}</b>
+        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{req}</span>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{TIER_BODY[i]}</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
+          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
+        </div>
+      </div>'''
 
 def _arc():
     cx, cy, R, r = 500, 500, 480, 290
     pt = lambda rad, a: (cx + rad * math.cos(math.radians(a)), cy + rad * math.sin(math.radians(a)))
-    out = []
+    out, labels = [], []
     for i, (name, thr, color) in enumerate(TIERS):
         a0, a1 = 180 + 36 * i, 180 + 36 * (i + 1)
         (x0, y0), (x1, y1) = pt(R, a0), pt(R, a1)
         (x2, y2), (x3, y3) = pt(r, a1), pt(r, a0)
         d = f'M{x0:.1f} {y0:.1f} A{R} {R} 0 0 1 {x1:.1f} {y1:.1f} L{x2:.1f} {y2:.1f} A{r} {r} 0 0 0 {x3:.1f} {y3:.1f} Z'
         mx, my = pt((R + r) / 2, (a0 + a1) / 2)
-        out.append(f'''<g role="button" tabindex="0" aria-label="Level {name}" onClick="{{{{tiers.{i}.pick}}}}" style="cursor: pointer">
-        <path d="{d}" fill="{{{{tiers.{i}.fill}}}}" stroke="{{{{tiers.{i}.stroke}}}}" stroke-width="1.5"></path>
-        <text x="{mx:.1f}" y="{my-46:.1f}" text-anchor="middle" font-size="19" font-weight="600" fill="{{{{tiers.{i}.label}}}}">{name}</text>
-        <g transform="translate({mx-26:.1f} {my-24:.1f})" opacity="{{{{tiers.{i}.op}}}}">{_badge(color, 52)}</g>
+        out.append(f'''<g aria-hidden="true">
+        <path class="tp tp{i}" d="{d}" fill="#0F0F14" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"></path>
+        <text class="tt tt{i}" x="{mx:.1f}" y="{my-46:.1f}" text-anchor="middle" font-size="19" font-weight="600" fill="#8A8A93">{name}</text>
+        <g class="tb tb{i}" transform="translate({mx-26:.1f} {my-24:.1f})" opacity="0.55">{_badge(color, 52)}</g>
       </g>''')
-    return ('<svg viewBox="0 0 1000 510" width="100%" role="group" aria-label="Level creator TAPP" style="display: block; overflow: visible">'
+        # Transparent tap target over the segment (badge + name), in % of the 1000×510 viewBox.
+        labels.append(f'<label for="tr{i}" class="tlab" aria-label="Level {name}" style="left: {(mx-80)/10:.2f}%; top: {(my-90)/5.1:.2f}%; width: 16%; height: {150/5.1:.2f}%"></label>')
+    return ('<div class="tsvg" style="position: relative"><svg viewBox="0 0 1000 510" width="100%" role="group" aria-label="Level creator TAPP" style="display: block; overflow: visible">'
             '<defs><radialGradient id="arcOn" cx="50%" cy="100%" r="100%"><stop offset="0.3" stop-color="#4548F5" stop-opacity="0.55"></stop><stop offset="1" stop-color="#4548F5" stop-opacity="0.08"></stop></radialGradient></defs>'
-            + ''.join(out) + '</svg>')
+            + ''.join(out) + '</svg>' + ''.join(labels) + '</div>')
 
 LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 40px">
@@ -120,17 +143,10 @@ LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margi
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Reputasi yang dihitung,<br><span style="color: #7DA2FF">bukan diklaim.</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views. Jumlah follower tidak ikut dihitung. Yang dinilai hanya hasil. Pilih level untuk melihat syaratnya.</p>
     </div>
+    {''.join(f'<input type="radio" name="tier" id="tr{i}" class="tradio"{" checked" if i == 2 else ""}>' for i in range(len(TIERS)))}
     <div class="tarc" style="position: relative; max-width: 1000px; margin: 0 auto">
       {_arc()}
-      <div class="tcard" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
-        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; {{{{tierPill}}}}">Level {{{{tierNum}}}} dari 5</span>
-        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">{{{{tierName}}}}</b>
-        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{{{{tierReq}}}}</span>
-        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{{{{tierBody}}}}</p>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
-          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
-        </div>
-      </div>
+      {''.join(_tier_card(i) for i in range(len(TIERS)))}
     </div>
   </section>'''
 

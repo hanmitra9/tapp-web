@@ -52,8 +52,17 @@ a{color:inherit;text-decoration:none}
 @keyframes blip{0%,55%{opacity:0.25}62%,90%{opacity:1}100%{opacity:0.25}}
 
 .lp .tchip{padding:6px 11px;border-radius:999px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);font-size:12px;font-weight: 600;color:#D4D4D8}
-.lp .tarc path{transition:fill .25s ease,stroke .25s ease}
-.lp .tarc g[role=button]:hover path{stroke:#7DA2FF}
+.lp .tarc path{transition:fill .25s ease,stroke .25s ease} .lp .tarc .tb{transition:opacity .25s ease}
+.lp .tradio{position:absolute;opacity:0;pointer-events:none}
+.lp .tcard{display:none}
+.lp .tlab{position:absolute;cursor:pointer;border-radius:24px;-webkit-tap-highlight-color:transparent}
+.lp .tradio:focus-visible ~ .tarc .tsvg{outline:2px solid #7DA2FF;outline-offset:6px;border-radius:12px}
+.lp #tr0:checked ~ .tarc .tc0{display:flex} .lp #tr0:checked ~ .tarc .tp0{fill:url(#arcOn);stroke:#8A8A93} .lp #tr0:checked ~ .tarc .tt0{fill:#FFFFFF} .lp #tr0:checked ~ .tarc .tb0{opacity:1}
+.lp #tr1:checked ~ .tarc .tc1{display:flex} .lp #tr1:checked ~ .tarc .tp1{fill:url(#arcOn);stroke:#34D07A} .lp #tr1:checked ~ .tarc .tt1{fill:#FFFFFF} .lp #tr1:checked ~ .tarc .tb1{opacity:1}
+.lp #tr2:checked ~ .tarc .tc2{display:flex} .lp #tr2:checked ~ .tarc .tp2{fill:url(#arcOn);stroke:#7DA2FF} .lp #tr2:checked ~ .tarc .tt2{fill:#FFFFFF} .lp #tr2:checked ~ .tarc .tb2{opacity:1}
+.lp #tr3:checked ~ .tarc .tc3{display:flex} .lp #tr3:checked ~ .tarc .tp3{fill:url(#arcOn);stroke:#A78BFA} .lp #tr3:checked ~ .tarc .tt3{fill:#FFFFFF} .lp #tr3:checked ~ .tarc .tb3{opacity:1}
+.lp #tr4:checked ~ .tarc .tc4{display:flex} .lp #tr4:checked ~ .tarc .tp4{fill:url(#arcOn);stroke:#F0B429} .lp #tr4:checked ~ .tarc .tt4{fill:#FFFFFF} .lp #tr4:checked ~ .tarc .tb4{opacity:1}
+
 .lp .hub{animation:hubglow 3.2s ease-in-out infinite}
 @keyframes hubglow{0%,100%{box-shadow:0 0 0 8px rgba(69,72,245,0.1),0 0 60px rgba(69,72,245,0.45),inset 0 1px 0 rgba(255,255,255,0.3)}50%{box-shadow:0 0 0 10px rgba(69,72,245,0.13),0 0 80px rgba(69,72,245,0.6),inset 0 1px 0 rgba(255,255,255,0.3)}}
 .lp .hc{animation:bob 6s ease-in-out infinite} .lp .hc:nth-of-type(2){animation-delay:-1.5s} .lp .hc:nth-of-type(3){animation-delay:-3s} .lp .hc:nth-of-type(4){animation-delay:-4.5s}
@@ -297,33 +306,66 @@ a{color:inherit;text-decoration:none}
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Reputasi yang dihitung,<br><span style="color: #7DA2FF">bukan diklaim.</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views. Jumlah follower tidak ikut dihitung. Yang dinilai hanya hasil. Pilih level untuk melihat syaratnya.</p>
     </div>
+    <input type="radio" name="tier" id="tr0" class="tradio"><input type="radio" name="tier" id="tr1" class="tradio"><input type="radio" name="tier" id="tr2" class="tradio" checked><input type="radio" name="tier" id="tr3" class="tradio"><input type="radio" name="tier" id="tr4" class="tradio">
     <div class="tarc" style="position: relative; max-width: 1000px; margin: 0 auto">
-      <svg viewBox="0 0 1000 510" width="100%" role="group" aria-label="Level creator TAPP" style="display: block; overflow: visible"><defs><radialGradient id="arcOn" cx="50%" cy="100%" r="100%"><stop offset="0.3" stop-color="#4548F5" stop-opacity="0.55"></stop><stop offset="1" stop-color="#4548F5" stop-opacity="0.08"></stop></radialGradient></defs><g role="button" tabindex="0" aria-label="Level New" onClick="{{tiers.0.pick}}" style="cursor: pointer">
-        <path d="M20.0 500.0 A480 480 0 0 1 111.7 217.9 L265.4 329.5 A290 290 0 0 0 210.0 500.0 Z" fill="{{tiers.0.fill}}" stroke="{{tiers.0.stroke}}" stroke-width="1.5"></path>
-        <text x="133.8" y="335.0" text-anchor="middle" font-size="19" font-weight="600" fill="{{tiers.0.label}}">New</text>
-        <g transform="translate(107.8 357.0)" opacity="{{tiers.0.op}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bd8A8A93" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#8A8A93"></stop><stop offset="1" stop-color="#8A8A93" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bd8A8A93)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
-      </g><g role="button" tabindex="0" aria-label="Level Rising" onClick="{{tiers.1.pick}}" style="cursor: pointer">
-        <path d="M111.7 217.9 A480 480 0 0 1 351.7 43.5 L410.4 224.2 A290 290 0 0 0 265.4 329.5 Z" fill="{{tiers.1.fill}}" stroke="{{tiers.1.stroke}}" stroke-width="1.5"></path>
-        <text x="273.7" y="142.5" text-anchor="middle" font-size="19" font-weight="600" fill="{{tiers.1.label}}">Rising</text>
-        <g transform="translate(247.7 164.5)" opacity="{{tiers.1.op}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bd34D07A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#34D07A"></stop><stop offset="1" stop-color="#34D07A" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bd34D07A)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
-      </g><g role="button" tabindex="0" aria-label="Level Verified" onClick="{{tiers.2.pick}}" style="cursor: pointer">
-        <path d="M351.7 43.5 A480 480 0 0 1 648.3 43.5 L589.6 224.2 A290 290 0 0 0 410.4 224.2 Z" fill="{{tiers.2.fill}}" stroke="{{tiers.2.stroke}}" stroke-width="1.5"></path>
-        <text x="500.0" y="69.0" text-anchor="middle" font-size="19" font-weight="600" fill="{{tiers.2.label}}">Verified</text>
-        <g transform="translate(474.0 91.0)" opacity="{{tiers.2.op}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bd7DA2FF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#7DA2FF"></stop><stop offset="1" stop-color="#7DA2FF" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bd7DA2FF)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
-      </g><g role="button" tabindex="0" aria-label="Level Proven" onClick="{{tiers.3.pick}}" style="cursor: pointer">
-        <path d="M648.3 43.5 A480 480 0 0 1 888.3 217.9 L734.6 329.5 A290 290 0 0 0 589.6 224.2 Z" fill="{{tiers.3.fill}}" stroke="{{tiers.3.stroke}}" stroke-width="1.5"></path>
-        <text x="726.3" y="142.5" text-anchor="middle" font-size="19" font-weight="600" fill="{{tiers.3.label}}">Proven</text>
-        <g transform="translate(700.3 164.5)" opacity="{{tiers.3.op}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bdA78BFA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#A78BFA"></stop><stop offset="1" stop-color="#A78BFA" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bdA78BFA)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
-      </g><g role="button" tabindex="0" aria-label="Level Elite" onClick="{{tiers.4.pick}}" style="cursor: pointer">
-        <path d="M888.3 217.9 A480 480 0 0 1 980.0 500.0 L790.0 500.0 A290 290 0 0 0 734.6 329.5 Z" fill="{{tiers.4.fill}}" stroke="{{tiers.4.stroke}}" stroke-width="1.5"></path>
-        <text x="866.2" y="335.0" text-anchor="middle" font-size="19" font-weight="600" fill="{{tiers.4.label}}">Elite</text>
-        <g transform="translate(840.2 357.0)" opacity="{{tiers.4.op}}"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bdF0B429" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#F0B429"></stop><stop offset="1" stop-color="#F0B429" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bdF0B429)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
-      </g></svg>
-      <div class="tcard" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
-        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; {{tierPill}}">Level {{tierNum}} dari 5</span>
-        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">{{tierName}}</b>
-        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{{tierReq}}</span>
-        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{{tierBody}}</p>
+      <div class="tsvg" style="position: relative"><svg viewBox="0 0 1000 510" width="100%" role="group" aria-label="Level creator TAPP" style="display: block; overflow: visible"><defs><radialGradient id="arcOn" cx="50%" cy="100%" r="100%"><stop offset="0.3" stop-color="#4548F5" stop-opacity="0.55"></stop><stop offset="1" stop-color="#4548F5" stop-opacity="0.08"></stop></radialGradient></defs><g aria-hidden="true">
+        <path class="tp tp0" d="M20.0 500.0 A480 480 0 0 1 111.7 217.9 L265.4 329.5 A290 290 0 0 0 210.0 500.0 Z" fill="#0F0F14" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"></path>
+        <text class="tt tt0" x="133.8" y="335.0" text-anchor="middle" font-size="19" font-weight="600" fill="#8A8A93">New</text>
+        <g class="tb tb0" transform="translate(107.8 357.0)" opacity="0.55"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bd8A8A93" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#8A8A93"></stop><stop offset="1" stop-color="#8A8A93" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bd8A8A93)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
+      </g><g aria-hidden="true">
+        <path class="tp tp1" d="M111.7 217.9 A480 480 0 0 1 351.7 43.5 L410.4 224.2 A290 290 0 0 0 265.4 329.5 Z" fill="#0F0F14" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"></path>
+        <text class="tt tt1" x="273.7" y="142.5" text-anchor="middle" font-size="19" font-weight="600" fill="#8A8A93">Rising</text>
+        <g class="tb tb1" transform="translate(247.7 164.5)" opacity="0.55"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bd34D07A" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#34D07A"></stop><stop offset="1" stop-color="#34D07A" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bd34D07A)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
+      </g><g aria-hidden="true">
+        <path class="tp tp2" d="M351.7 43.5 A480 480 0 0 1 648.3 43.5 L589.6 224.2 A290 290 0 0 0 410.4 224.2 Z" fill="#0F0F14" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"></path>
+        <text class="tt tt2" x="500.0" y="69.0" text-anchor="middle" font-size="19" font-weight="600" fill="#8A8A93">Verified</text>
+        <g class="tb tb2" transform="translate(474.0 91.0)" opacity="0.55"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bd7DA2FF" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#7DA2FF"></stop><stop offset="1" stop-color="#7DA2FF" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bd7DA2FF)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
+      </g><g aria-hidden="true">
+        <path class="tp tp3" d="M648.3 43.5 A480 480 0 0 1 888.3 217.9 L734.6 329.5 A290 290 0 0 0 589.6 224.2 Z" fill="#0F0F14" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"></path>
+        <text class="tt tt3" x="726.3" y="142.5" text-anchor="middle" font-size="19" font-weight="600" fill="#8A8A93">Proven</text>
+        <g class="tb tb3" transform="translate(700.3 164.5)" opacity="0.55"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bdA78BFA" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#A78BFA"></stop><stop offset="1" stop-color="#A78BFA" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bdA78BFA)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
+      </g><g aria-hidden="true">
+        <path class="tp tp4" d="M888.3 217.9 A480 480 0 0 1 980.0 500.0 L790.0 500.0 A290 290 0 0 0 734.6 329.5 Z" fill="#0F0F14" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"></path>
+        <text class="tt tt4" x="866.2" y="335.0" text-anchor="middle" font-size="19" font-weight="600" fill="#8A8A93">Elite</text>
+        <g class="tb tb4" transform="translate(840.2 357.0)" opacity="0.55"><svg width="52" height="52" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="bdF0B429" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0.9"></stop><stop offset="0.35" stop-color="#F0B429"></stop><stop offset="1" stop-color="#F0B429" stop-opacity="0.45"></stop></linearGradient></defs><polygon points="24.0,3.0 42.2,13.5 42.2,34.5 24.0,45.0 5.8,34.5 5.8,13.5" fill="url(#bdF0B429)" stroke="#FFFFFF" stroke-opacity="0.35" stroke-width="1.2"></polygon><polygon points="24.0,11.0 35.3,17.5 35.3,30.5 24.0,37.0 12.7,30.5 12.7,17.5" fill="#07070A" fill-opacity="0.35"></polygon><image href="/_blob/2d5aebeddb5d0a63b818258d6ea37530" x="15" y="15" width="18" height="18"></image></svg></g>
+      </g></svg><label for="tr0" class="tlab" aria-label="Level New" style="left: 5.38%; top: 57.06%; width: 16%; height: 29.41%"></label><label for="tr1" class="tlab" aria-label="Level Rising" style="left: 19.37%; top: 19.32%; width: 16%; height: 29.41%"></label><label for="tr2" class="tlab" aria-label="Level Verified" style="left: 42.00%; top: 4.90%; width: 16%; height: 29.41%"></label><label for="tr3" class="tlab" aria-label="Level Proven" style="left: 64.63%; top: 19.32%; width: 16%; height: 29.41%"></label><label for="tr4" class="tlab" aria-label="Level Elite" style="left: 78.62%; top: 57.06%; width: 16%; height: 29.41%"></label></div>
+      <div class="tcard tc0" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #8A8A93; background: rgba(255,255,255,0.05); border: 1px solid #8A8A93">Level 1 dari 5</span>
+        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">New</b>
+        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">Mulai dari 0 qualified views</span>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">Titik awal. Selesaikan campaign pertama dan kumpulkan clip yang lolos verifikasi.</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
+          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
+        </div>
+      </div><div class="tcard tc1" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #34D07A; background: rgba(255,255,255,0.05); border: 1px solid #34D07A">Level 2 dari 5</span>
+        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">Rising</b>
+        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">Mulai dari 50K qualified views</span>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">Clip-mu mulai konsisten lolos. Pola kerjamu sudah terbentuk dan terbaca.</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
+          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
+        </div>
+      </div><div class="tcard tc2" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #7DA2FF; background: rgba(255,255,255,0.05); border: 1px solid #7DA2FF">Level 3 dari 5</span>
+        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">Verified</b>
+        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">Mulai dari 250K qualified views</span>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">Rekam jejak yang teruji di banyak clip dan campaign. Performamu bisa dipercaya.</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
+          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
+        </div>
+      </div><div class="tcard tc3" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #A78BFA; background: rgba(255,255,255,0.05); border: 1px solid #A78BFA">Level 4 dari 5</span>
+        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">Proven</b>
+        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">Mulai dari 1 juta qualified views</span>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">Satu juta qualified views. Kamu terbukti menggerakkan audiens nyata.</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
+          <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
+        </div>
+      </div><div class="tcard tc4" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: #F0B429; background: rgba(255,255,255,0.05); border: 1px solid #F0B429">Level 5 dari 5</span>
+        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">Elite</b>
+        <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">Mulai dari 5 juta qualified views</span>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">Puncak level TAPP: lima juta qualified views yang lolos verifikasi.</p>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
           <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
         </div>
@@ -964,7 +1006,7 @@ a{color:inherit;text-decoration:none}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', tier: 2, budget: 25000000, cpm: 3000, bstep: 0 };
+    this.state = { mode: null, openC: 0, openB: 0, met: 'Views', budget: 25000000, cpm: 3000, bstep: 0 };
   }
   renderVals() {
     const s = this.state;
@@ -1047,23 +1089,6 @@ class Component extends DCLogic {
       return cards.concat(cards);
     };
 
-    // level arc: real tiers + thresholds (app_settings.tier_thresholds)
-    const TIERS = [
-      ['New', '0', '#8A8A93', 'Titik awal. Selesaikan campaign pertama dan kumpulkan clip yang lolos verifikasi.'],
-      ['Rising', '50K', '#34D07A', 'Clip-mu mulai konsisten lolos. Pola kerjamu sudah terbentuk dan terbaca.'],
-      ['Verified', '250K', '#7DA2FF', 'Rekam jejak yang teruji di banyak clip dan campaign. Performamu bisa dipercaya.'],
-      ['Proven', '1 juta', '#A78BFA', 'Satu juta qualified views. Kamu terbukti menggerakkan audiens nyata.'],
-      ['Elite', '5 juta', '#F0B429', 'Puncak level TAPP: lima juta qualified views yang lolos verifikasi.'],
-    ];
-    const ti = s.tier == null ? 2 : s.tier, sel = TIERS[ti];
-    const tiers = TIERS.map((t, i) => ({
-      pick: () => this.setState({ tier: i }),
-      fill: i === ti ? 'url(#arcOn)' : '#0F0F14',
-      stroke: i === ti ? t[2] : 'rgba(255,255,255,0.08)',
-      label: i === ti ? '#FFFFFF' : '#8A8A93',
-      op: i === ti ? '1' : '0.55',
-    }));
-
     // budget simulator: the budget pays creator rewards; the 15% platform fee is billed on top of rewards used.
     // Clips are paid up to 100K views each, so the views also need at least that many paid clips.
     const rp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
@@ -1086,9 +1111,6 @@ class Component extends DCLogic {
       isCreator: creator, isBrand: !creator,
       budgets: budgets, cpms: cpms, simBudget: rp(budget), simViews: compact(views), simCost: rp(budget * 1.15),
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
-      tiers: tiers, tierName: sel[0], tierNum: String(ti + 1), tierBody: sel[3],
-      tierReq: ti === 0 ? 'Mulai dari 0 qualified views' : 'Mulai dari ' + sel[1] + ' qualified views',
-      tierPill: 'color: ' + sel[2] + '; background: rgba(255,255,255,0.05); border: 1px solid ' + sel[2],
       creatorTab: tab(creator), brandTab: tab(!creator),
       setCreator: () => this.setState({ mode: 'creator' }),
       setBrand: () => this.setState({ mode: 'brand' }),
