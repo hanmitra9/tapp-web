@@ -167,6 +167,7 @@ MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit deng
       <button class="btn" id="go" type="submit" style="width: 100%; height: 50px">Kirim Permintaan Meeting</button>
     </form>
   </div>
+  '''+(ROOT / 'src' / 'generator' / 'contact_cards.html').read_text()+'''
 </main>
 <style>
 .mtg{display:grid;grid-template-columns:minmax(0,0.9fr) minmax(0,1.1fr);gap:56px;align-items:start}
@@ -200,7 +201,7 @@ MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit deng
 .mtg-done{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .mtg-done h2{font-size:26px;font-weight:500;letter-spacing:-0.02em}
 .mtg-done p{color:var(--t2);font-size:15px;line-height:24px}
-@media (max-width:900px){.mtg{grid-template-columns:minmax(0,1fr);gap:32px}.fgrid{grid-template-columns:minmax(0,1fr)}.mtg-card{padding:18px}}
+@media (max-width:900px){.bcontact{grid-template-columns:minmax(0,1fr) !important}.mtg{grid-template-columns:minmax(0,1fr);gap:32px}.fgrid{grid-template-columns:minmax(0,1fr)}.mtg-card{padding:18px}}
 </style>
 ''' + FOOT + r'''
 <script>

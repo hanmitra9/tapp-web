@@ -10,6 +10,8 @@ window.TAPP_CONFIG = {
   // WhatsApp: creators and brands go to different numbers.
   WHATSAPP_URL: 'https://wa.me/6282314049440?text=Halo%20TAPP!%20%F0%9F%91%8B%0ASaya%20ingin%20bertanya%20mengenai%20platformnya.%20Bisa%20dibantu%3F',
   WHATSAPP_BRAND_URL: 'https://wa.me/message/6AFUBOMBAWWKM1',
+  // Brand contact email shown on the brand page and /meeting. Leave empty to hide that card.
+  BRAND_EMAIL: '',
   // Public, read-only access for the campaign list (publishable key is safe in the browser)
   SUPABASE_URL: 'https://njffqsbddzztfxxbavpp.supabase.co',
   SUPABASE_ANON_KEY: 'sb_publishable_1Nl1WjCA3Ddeu4kvPtZhEA_xWCMQZ-x',

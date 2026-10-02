@@ -6,6 +6,7 @@ from hero2 import hero_creator_visual, hero_brand_visual
 from hub import hero_hub, LEVELS, PORTFOLIO
 from brandhub import hero_brand, steps_tabs
 GLOBE = open(HERE / 'globe.svg.frag').read()
+BRAND_CONTACT = (pathlib.Path(__file__).parent / 'contact_cards.html').read_text()  # brand WhatsApp + email cards (shared with meeting.html)
 
 def pill_btn(label, href, primary=True, big=False):
     h = '52px' if big else '46px'
@@ -234,6 +235,7 @@ a{{color:inherit;text-decoration:none}}
 .lp .gb::before,.lp .ccard::before,.lp .pdash::before,.lp .hc > div::before,.lp .hm > div::before,.lp .bsim > div::before{{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(160deg,rgba(198,214,255,0.35),rgba(125,140,255,0.08) 35%,rgba(255,255,255,0.02) 60%,rgba(125,140,255,0.2));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}
 @media (max-width: 900px){{
+  .lp .bcontact{{grid-template-columns:minmax(0,1fr) !important}}
   .lp .nlinks{{display:none !important}}
   .lp header{{gap:10px !important}}
   .lp header .btn-p{{padding:0 16px !important;height:40px !important;font-size:14px !important}}
@@ -345,6 +347,7 @@ a{{color:inherit;text-decoration:none}}
       <a class="btn-p" href="meeting.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Jadwalkan Meeting</a>
     </div>
     {GLOBE}
+    {BRAND_CONTACT}
   </section>
 
   {faq_block("FAQ Brand", "Sebelum Kamu", "Menaruh Budget", "Hubungi Tim TAPP", "#mail", "faqB")}
