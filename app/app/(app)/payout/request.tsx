@@ -15,7 +15,7 @@ import { color, radius, space, type } from '@/theme/tokens';
 import { fetchEarnings } from '@/features/campaigns/earnings';
 import { fetchPayoutMethod } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
-import { fetchPayouts, OPEN, requestPayout, uuid, type Payout } from '@/features/payouts/api';
+import { fetchPayouts, fetchWithdrawalFee, OPEN, requestPayout, TIER_LABEL, uuid, type Payout } from '@/features/payouts/api';
 import { track } from '@/lib/analytics';
 
 export default function RequestPayout() {
@@ -24,16 +24,18 @@ export default function RequestPayout() {
   const uid = session!.user.id;
   const key = useRef(uuid()).current;   // same key on retry → server returns the same request, never a duplicate
   const q = useQuery(async () => {
-    const [e, method, payouts] = await Promise.all([fetchEarnings(uid), fetchPayoutMethod(uid), fetchPayouts()]);
-    return { e, method, open: payouts.find((p) => OPEN.includes(p.status)) ?? null };
+    const [e, method, payouts, fee] = await Promise.all([fetchEarnings(uid), fetchPayoutMethod(uid), fetchPayouts(), fetchWithdrawalFee(uid)]);
+    return { e, method, fee, open: payouts.find((p) => OPEN.includes(p.status)) ?? null };
   }, [uid]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState<Payout | null>(null);
 
   if (!q.data) return <Screen width="narrow" scroll={false}><Header title="Cairkan penghasilan" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
-  const { e, method, open } = q.data;
+  const { e, method, open, fee } = q.data;
   const available = Math.max(e.summary.available, 0);
+  const feeAmount = Math.round(available * fee.pct / 100);   // same rounding as request_payout
+  const net = available - feeAmount;
 
   if (done) {
     return (
@@ -41,7 +43,7 @@ export default function RequestPayout() {
         <View style={styles.done}>
           <View style={styles.doneIcon}><Feather name="check" size={28} color={color.blue} /></View>
           <Text style={styles.doneTitle}>Pencairan diajukan</Text>
-          <Text style={styles.doneBody}>{idr(done.amount)} akan ditinjau tim TAPP lalu dikirim ke {done.payout_method.provider} {maskAccount(done.payout_method.account_number)}. Kamu akan mendapat notifikasi di setiap tahap.</Text>
+          <Text style={styles.doneBody}>{idr(done.net_amount ?? done.amount)} akan ditinjau tim TAPP lalu dikirim ke {done.payout_method.provider} {maskAccount(done.payout_method.account_number)}. Kamu akan mendapat notifikasi di setiap tahap.</Text>
         </View>
       </Screen>
     );
@@ -64,20 +66,21 @@ export default function RequestPayout() {
     <Screen width="narrow" footer={
       block ? (!method ? <Button label="Tambah metode pencairan" onPress={() => router.push('/profile/payout')} />
         : open ? <Button variant="secondary" label="Lihat status pencairan" onPress={() => router.replace('/payouts')} /> : null)
-      : <Button label={`Cairkan ${idr(available)}`} onPress={confirm} loading={busy} />
+      : <Button label={`Cairkan ${idr(net)}`} onPress={confirm} loading={busy} />
     }>
       <Header title="Cairkan penghasilan" />
       <View style={styles.body}>
         {block ? <Notice tone="info" message={block} /> : null}
         <Notice tone="error" message={error} />
         <View style={styles.summary}>
-          <Line label="Jumlah" value={idr(available)} strong />
-          <Line label="Biaya" value="Rp0" />
+          <Line label="Saldo ditarik" value={idr(available)} />
+          <Line label={`Fee penarikan (${TIER_LABEL[fee.tier] ?? fee.tier}, ${fee.pct}%)`} value={fee.pct ? `−${idr(feeAmount)}` : 'Gratis'} />
+          <Line label="Kamu terima" value={idr(net)} strong />
           <Line label="Tujuan" value={method ? `${method.provider} ${maskAccount(method.account_number)}` : '—'} />
           <Line label="Atas nama" value={method?.account_name ?? '—'} />
           <Line label="Estimasi" value="1–3 hari kerja" />
         </View>
-        <Text style={styles.note}>Seluruh saldo tersedia dicairkan sekaligus. Penghasilan yang masih tertunda tidak ikut. Pastikan nama pemilik sama persis dengan di rekening agar transfer tidak gagal.</Text>
+        <Text style={styles.note}>Seluruh saldo tersedia dicairkan sekaligus. Fee penarikan makin kecil saat level-mu naik. Penghasilan yang masih tertunda tidak ikut. Pastikan nama pemilik sama persis dengan di rekening agar transfer tidak gagal.</Text>
       </View>
     </Screen>
   );

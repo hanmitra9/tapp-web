@@ -125,13 +125,15 @@ export type AdminPayout = {
   created_at: string; updated_at: string; creator_name: string | null; creator_username: string | null; creator_status: string;
   earning_rows: number; creator_flagged: number; creator_open_disputes: number; creator_paid_total: number; ledger_matches: boolean;
   method_changed_recently: boolean;
+  fee: number; fee_pct: number; fee_tier: string | null; net_amount: number;   // migration 034
 };
 export async function listPayouts(statuses: PayoutStatus[]): Promise<AdminPayout[]> {
   const { data, error } = await supabase.from('admin_payouts').select('*').in('status', statuses)
     .order('created_at', { ascending: !statuses.includes('paid') }).limit(200);
   if (error) throw error;
   return (data ?? []).map((r) => ({ ...r, amount: Number(r.amount), earning_rows: Number(r.earning_rows), creator_flagged: Number(r.creator_flagged),
-    creator_open_disputes: Number(r.creator_open_disputes), creator_paid_total: Number(r.creator_paid_total) })) as AdminPayout[];
+    creator_open_disputes: Number(r.creator_open_disputes), creator_paid_total: Number(r.creator_paid_total),
+    fee: Number(r.fee ?? 0), fee_pct: Number(r.fee_pct ?? 0), net_amount: Number(r.net_amount ?? r.amount) })) as AdminPayout[];
 }
 export type PayoutEarning = { id: string; amount: number; qualified_views_delta: number; created_at: string; campaign: { title: string } | null; submission_id: string };
 export async function payoutEarnings(payoutId: string): Promise<PayoutEarning[]> {

@@ -554,3 +554,18 @@ end $$;
 select substring('instagram.com/reel/AbC_123' from '^instagram\.com/(?:p|reel|tv)/([A-Za-z0-9_-]+)') as shortcode_expect_AbC_123;
 select count(*) >= 0 as ig_queue_runs from due_for_instagram_metrics();
 select 'instagram_connect_ok' as result;
+
+-- ── Withdrawal fee by tier (0034) ──
+reset role;
+select withdrawal_fee_pct('new') as new_5, withdrawal_fee_pct('rising') as rising_4, withdrawal_fee_pct('verified') as verified_3,
+       withdrawal_fee_pct('proven') as proven_2, withdrawal_fee_pct('elite') as elite_0;
+do $$ declare p public.payout_requests; v numeric; begin
+  select * into p from payout_requests where id = '30000000-0000-0000-0000-000000000001' or idempotency_key = '30000000-0000-0000-0000-000000000001' limit 1;
+  v := withdrawal_fee_pct(p.fee_tier);
+  if p.fee_tier is null then raise exception 'fee tier not recorded'; end if;
+  if p.fee <> round(p.amount * v / 100) or p.fee_pct <> v then raise exception 'fee % pct % for amount % tier %', p.fee, p.fee_pct, p.amount, p.fee_tier; end if;
+  if p.net_amount <> p.amount - p.fee then raise exception 'net mismatch'; end if;
+  if withdrawal_fee_pct('elite') >= withdrawal_fee_pct('new') then raise exception 'higher tier should pay less'; end if;
+end $$;
+select amount, fee, fee_pct, net_amount from admin_payouts limit 1;
+select 'withdrawal_fee_ok' as result;
