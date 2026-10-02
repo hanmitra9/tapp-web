@@ -64,8 +64,7 @@ def _badge(color, size=46):
 # Stage is a fixed 1200×400 canvas (scaled down by CSS on smaller screens) so the wires meet the cards exactly.
 # Each wire: (card port x, y) → (hub port x, y). Drawn as a smooth S-curve.
 WIRES = [
-    (290, 112, 540, 161),    # clip     → hub
-    (272, 306, 540, 231),    # campaign → hub
+    (272, 188, 540, 182),    # campaign → hub
     (890, 92, 660, 157),     # payout   → hub
     (1000, 292, 660, 205),   # level    → hub
 ]
@@ -143,12 +142,11 @@ AV = ''.join(f'<i style="font-style: normal; width: 26px; height: 26px; border-r
 M_W, M_H = 360, 600
 M_HUB = (180, 300, 88)   # centre x, centre y, size
 M_CARDS = [  # (html, left, top, scale, port side, port x, port y) — port = where the wire leaves the card
-    ('campaign', 12, 8, 0.62),
-    ('clip', 250, 40, 0.8),
+    ('campaign', 102, 40, 0.62),
     ('level', 22, 418, 0.8),
     ('payout', 170, 470, 0.66),
 ]
-M_WIRES = [(90, 124, 166, 256), (298, 197, 194, 256), (86, 418, 166, 344), (256, 470, 194, 344)]   # card port → hub port (boxes measured)
+M_WIRES = [(180, 156, 180, 256), (86, 418, 166, 344), (256, 470, 194, 344)]   # card port → hub port (boxes measured)
 
 def _mcurve(x0, y0, x1, y1):
     k = (y1 - y0) * 0.55
@@ -194,8 +192,7 @@ def hero_hub():
     <div class="hstage" style="position: absolute; left: 50%; top: 0; width: 1200px; height: 400px; margin-left: -600px">
       <div aria-hidden="true" style="position: absolute; left: 400px; top: -20px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(closest-side, rgba(69,72,245,0.28), rgba(69,72,245,0.08) 55%, transparent)"></div>
       {_wires()}
-      <div class="hc" style="position: absolute; left: 170px; top: 6px">{clip(120, 196, 'quote', '', '128K', 'tt', small=True)}</div>
-      <div class="hc" style="position: absolute; left: 20px; top: 214px">{_campaign_card()}</div>
+      <div class="hc" style="position: absolute; left: 20px; top: 96px">{_campaign_card()}</div>
       <div class="hc" style="position: absolute; left: 890px; top: 40px">{_payout_card()}</div>
       <div class="hc" style="position: absolute; left: 1000px; top: 206px">{_level_card()}</div>
       {HUB}
