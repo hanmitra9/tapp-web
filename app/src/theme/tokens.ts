@@ -1,4 +1,4 @@
-import type { TextStyle } from 'react-native';
+import type { TextStyle, ViewStyle } from 'react-native';
 
 // TAPP design tokens — dark theme. Near-black canvas, dark gray surfaces, TAPP Blue as the single accent.
 export const color = {
@@ -38,19 +38,27 @@ export const font = {
   medium: 'Geist-Medium',
   semibold: 'Geist-SemiBold',
   bold: 'Geist-SemiBold',
+  display: 'InterTight',       // headings and big numbers, same face as the website
 } as const;
 
 // ≈1.2 modular scale. Medium headings with tight tracking, regular body (matches the website). Display sizes track tight; metrics use tabular figures so numbers don't jitter when they animate.
 export const type = {
-  display: { fontFamily: font.medium, fontSize: 32, lineHeight: 38, letterSpacing: -1.1 },
-  title: { fontFamily: font.medium, fontSize: 24, lineHeight: 30, letterSpacing: -0.7 },
-  heading: { fontFamily: font.medium, fontSize: 17, lineHeight: 22, letterSpacing: -0.3 },
+  display: { fontFamily: font.display, fontWeight: '500', fontSize: 34, lineHeight: 40, letterSpacing: -0.6 },
+  title: { fontFamily: font.display, fontWeight: '500', fontSize: 26, lineHeight: 32, letterSpacing: -0.4 },
+  heading: { fontFamily: font.display, fontWeight: '500', fontSize: 18, lineHeight: 24, letterSpacing: -0.2 },
   body: { fontFamily: font.regular, fontSize: 16, lineHeight: 23 },
   label: { fontFamily: font.medium, fontSize: 14, lineHeight: 18 },
   caption: { fontFamily: font.regular, fontSize: 13, lineHeight: 18 },
-  metric: { fontFamily: font.medium, fontSize: 30, lineHeight: 36, letterSpacing: -1, fontVariant: ['tabular-nums'] },
+  metric: { fontFamily: font.display, fontWeight: '500', fontSize: 32, lineHeight: 38, letterSpacing: -0.6, fontVariant: ['tabular-nums'] },
 } satisfies Record<string, TextStyle>;
 
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32, xxxl: 48 } as const;
 export const radius = { sm: 10, md: 14, lg: 18, xl: 22, pill: 999 } as const;
 export const hairline = 1;
+
+// Premium card surface (web): top-lit gradient, hairline border, deep soft shadow — same as the website cards.
+export const card = {
+  backgroundColor: '#101016', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
+  backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.012) 45%, rgba(255,255,255,0) 100%)',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 24px 60px -34px rgba(0,0,0,0.95)',
+} as ViewStyle;

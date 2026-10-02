@@ -2,8 +2,9 @@ import Feather from '@expo/vector-icons/Feather';
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
 import { WebSidebar } from '@/components/WebSidebar';
+import { tabChrome } from '@/components/tabChrome';
 import { useLayout } from '@/lib/useLayout';
-import { color, font, radius } from '@/theme/tokens';
+import { color } from '@/theme/tokens';
 
 type Icon = ComponentProps<typeof Feather>['name'];
 const icon = (name: Icon) => ({ color: c }: { color: string }) => <Feather name={name} color={c} size={21} />;
@@ -17,14 +18,7 @@ export default function TabsLayout() {
       screenOptions={{
         tabBarPosition: isWide ? 'left' : 'bottom',
         headerShown: false,
-        tabBarActiveTintColor: color.blue,
-        tabBarInactiveTintColor: color.textMuted,
-        tabBarStyle: {
-          backgroundColor: color.surface, borderTopWidth: 0, elevation: 0,
-          borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, height: 84, paddingTop: 10, position: 'absolute',
-        },
-        tabBarLabelStyle: { fontFamily: font.semibold, fontSize: 11, marginTop: 2 },
-        tabBarActiveBackgroundColor: 'transparent',
+        ...tabChrome,
         sceneStyle: { backgroundColor: color.canvas },
       }}
     >

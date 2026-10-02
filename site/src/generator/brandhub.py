@@ -33,8 +33,12 @@ def _sim():
   <div style="width: 2px; height: 22px; margin: -6px auto; background: linear-gradient(180deg, #7DA2FF, rgba(125,162,255,0.2)); box-shadow: 0 0 10px #7DA2FF"></div>
   <div style="padding: 16px 18px; border-radius: 18px; {FLOAT}; display: flex; flex-direction: column; gap: 12px">
     <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget Kamu</span><b class="tabular" data-sim="simBudget" style="font-size: 22px; color: #C6D6FF">{{{{simBudget}}}}</b></div>
-    <input type="range" class="bslider" min="5" max="200" step="1" value="{{{{simBudgetJt}}}}" style="--p: {{{{simPct}}}}%" onInput="{{{{onBudget}}}}" aria-label="Geser untuk mengatur budget campaign">
-    <div class="tabular" style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #6E7690; margin-top: -4px"><span>Rp5 jt</span><span>Rp200 jt</span></div>
+    <div class="bsl" style="--p: {{{{simPct}}}}%">
+      <div class="bsl-bars" aria-hidden="true"><sc-for list="{{{{simBars}}}}" as="b" hint-placeholder-count="36"><i class="{{{{b.cls}}}}" style="height: {{{{b.h}}}}%"></i></sc-for></div>
+      <div class="bsl-mark" aria-hidden="true"><b></b></div>
+      <input type="range" class="bslider" min="5" max="200" step="1" value="{{{{simBudgetJt}}}}" onInput="{{{{onBudget}}}}" aria-label="Geser untuk mengatur budget campaign">
+    </div>
+    <div class="tabular" style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #6E7690; margin-top: -2px"><span>Rp5 jt</span><span>Rp100 jt</span><span>Rp200 jt</span></div>
   </div>
 </div>'''
 

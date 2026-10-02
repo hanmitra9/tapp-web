@@ -9,7 +9,7 @@ import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
 import { useAuth } from '@/providers/AuthProvider';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import {
   fetchCreatorProfile, fetchPayoutMethod, fetchPlatforms, fetchStats,
   type CreatorProfile, type CreatorStats, type LinkedPlatform, type PayoutMethod,
@@ -159,8 +159,8 @@ const styles = StyleSheet.create({
   badgeBlue: { color: color.link, backgroundColor: color.accentSoft },
   badgeDanger: { color: color.danger, backgroundColor: color.dangerSoft },
   stats: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.xxl, gap: space.sm },
-  stat: { flexGrow: 1, flexBasis: '45%', padding: space.lg, gap: 4, backgroundColor: color.surface, borderRadius: radius.lg },
-  statValue: { ...type.metric, fontSize: 22, lineHeight: 26, color: color.text },
+  stat: { flexGrow: 1, flexBasis: '45%', padding: space.lg, gap: 4, ...card, borderRadius: radius.lg },
+  statValue: { ...type.metric, fontSize: 20, lineHeight: 26, letterSpacing: -0.5, color: color.text },
   statLabel: { ...type.caption, color: color.textMuted },
   section: { marginTop: space.xxl, gap: space.md },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },

@@ -13,7 +13,7 @@ import { errorMessage } from '@/lib/errors';
 import { compact, cpmLabel, deadlineLabel, idr } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { assetLink, fetchAssets, fetchCampaign, type Asset, type CampaignDetail } from '@/features/campaigns/api';
 import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { fetchMySubmissions, withdrawSubmission } from '@/features/submissions/api';
@@ -146,7 +146,7 @@ const styles = StyleSheet.create({
   meta: { ...type.caption, color: color.textMuted, marginTop: space.xs, fontVariant: ['tabular-nums'] },
   gap: { marginTop: space.lg },
   stats: { flexDirection: 'row', marginTop: space.xl, gap: space.sm },
-  stat: { flex: 1, padding: space.md, gap: 4, backgroundColor: color.surface, borderRadius: radius.md },
+  stat: { flex: 1, padding: space.md, gap: 4, ...card, borderRadius: radius.md },
   statValue: { ...type.heading, color: color.text, fontVariant: ['tabular-nums'] },
   statLabel: { ...type.caption, color: color.textMuted },
   section: { marginTop: space.xxl, gap: space.md },

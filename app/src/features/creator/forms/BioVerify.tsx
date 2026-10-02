@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Notice } from '@/components/Notice';
 import { errorMessage } from '@/lib/errors';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { checkBio, issueBioCode, requestBioReview, type BioStatus, type LinkedPlatform } from '../api';
 
 const LABEL: Record<string, string> = { tiktok: 'TikTok', instagram: 'Instagram' };
@@ -71,7 +71,7 @@ export function BioVerify({ p, onVerified }: { p: LinkedPlatform; onVerified: ()
 }
 
 const styles = StyleSheet.create({
-  box: { gap: space.md, padding: space.lg, marginTop: space.lg, borderRadius: radius.md, borderWidth: 1, borderColor: color.border, backgroundColor: color.surface },
+  box: { gap: space.md, padding: space.lg, marginTop: space.lg, borderRadius: radius.md, ...card },
   title: { ...type.heading, color: color.text },
   body: { ...type.caption, color: color.textSecondary, lineHeight: 20 },
   codeBox: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: space.md, paddingHorizontal: space.lg,

@@ -259,17 +259,19 @@ a{{color:inherit;text-decoration:none}}
   .lp .navbar{{height:56px !important;padding:0 8px 0 14px !important;gap:12px !important}}
   .lp .dbtn{{right:16px;bottom:16px;height:44px;padding:0 13px}}
 }}
-.lp .bslider{{-webkit-appearance:none;appearance:none;width:100%;height:28px;background:transparent;cursor:pointer;margin:2px 0 0;touch-action:pan-y}}
-.lp .bslider::-webkit-slider-runnable-track{{height:6px;border-radius:3px;background:linear-gradient(90deg,#2F66F2 0,#7DA2FF var(--p),rgba(255,255,255,0.1) var(--p))}}
-.lp .bslider::-moz-range-track{{height:6px;border-radius:3px;background:linear-gradient(90deg,#2F66F2 0,#7DA2FF var(--p),rgba(255,255,255,0.1) var(--p))}}
-.lp .bslider::-webkit-slider-thumb{{-webkit-appearance:none;width:22px;height:22px;margin-top:-8px;border-radius:50%;background:#FFFFFF;border:4px solid #2F66F2;box-shadow:0 0 0 6px rgba(47,102,242,0.2),0 4px 14px rgba(0,0,0,0.5)}}
-.lp .bslider::-moz-range-thumb{{width:14px;height:14px;border-radius:50%;background:#FFFFFF;border:4px solid #2F66F2;box-shadow:0 0 0 6px rgba(47,102,242,0.2)}}
-.lp .bslider:focus-visible{{outline:none}} .lp .bslider:focus-visible::-webkit-slider-thumb{{box-shadow:0 0 0 6px rgba(125,162,255,0.45)}}
 .lp .jn{{display:flex;align-items:center;gap:10px;font-size:13px;color:#A1A1AA;font-weight:500}}
 .lp .jn-av{{display:inline-flex}}
 .lp .jn-av i{{font-style:normal;width:26px;height:26px;margin-left:-8px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:#E4EDFF;background:radial-gradient(circle at 30% 25%,#1E2A55,#0B0E1A 70%);border:1.5px solid #0B0B10;box-shadow:0 0 0 1px rgba(125,162,255,0.25)}}
 .lp .jn-av i:first-child{{margin-left:0}} .lp .jn-av i.more{{background:#15161D;color:#A9C4FF;font-size:9.5px}}
 .lp .jn-t b{{color:#FFFFFF;font-weight:600}}
+.lp .bsl{{position:relative;height:78px;margin-top:4px;border-radius:12px}}
+.lp .bsl-bars{{position:absolute;left:0;right:0;bottom:4px;height:60px;display:flex;align-items:flex-end;gap:3px}}
+.lp .bsl-bars i{{flex:1;min-width:0;border-radius:3px 3px 1px 1px;background:rgba(255,255,255,0.08);transition:background .18s ease,box-shadow .18s ease}}
+.lp .bsl-bars i.on{{background:linear-gradient(180deg,#A9C4FF 0%,#5E8EFF 45%,#2F66F2 100%);box-shadow:0 0 14px -3px rgba(47,102,242,0.9)}}
+.lp .bsl-mark{{position:absolute;top:0;bottom:0;left:var(--p);width:2px;margin-left:-1px;background:linear-gradient(180deg,#FFFFFF 0%,rgba(198,214,255,0.7) 30%,rgba(125,162,255,0) 100%);box-shadow:0 0 14px rgba(125,162,255,0.9);pointer-events:none}}
+.lp .bsl-mark b{{position:absolute;top:-2px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#FFFFFF;border:4px solid #2F66F2;box-shadow:0 0 0 5px rgba(47,102,242,0.22),0 0 18px rgba(125,162,255,0.9)}}
+.lp .bslider{{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y}}
+.lp .bsl:has(.bslider:focus-visible){{box-shadow:0 0 0 2px rgba(125,162,255,0.45)}}
 {FOOT_CSS}
 {MENU_CSS}
 @media (prefers-reduced-motion: reduce){{.lp *{{transition:none !important;animation:none !important}}}}

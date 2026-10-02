@@ -97,11 +97,18 @@ class Component extends DCLogic {
       + (on ? 'color: #FFFFFF; background: rgba(47,102,242,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
     const budget = s.budget || 25000000, cpm = 1000;   // simulator assumes Rp1.000 per 1.000 views
     const views = budget / cpm * 1000;
+    const BARS = 36, simPct = (budget / 1e6 - 5) / 195 * 100;
+    const simBars = Array.from({ length: BARS }, (_, i) => ({
+      h: Math.round(16 + 84 * Math.pow(i / (BARS - 1), 1.5) + 5 * Math.sin(i * 1.7)),
+      cls: (i + 0.5) / BARS * 100 <= simPct ? 'on' : '',
+    }));
     // Slider: no setState while dragging (a re-render would replace the input); update the numbers in place.
     const simVals = (b) => ({ simBudget: rp(b), simViews: compact(b / cpm * 1000), simClips: Math.ceil(b / cpm * 1000 / 100000).toLocaleString('id-ID') });
     const onBudget = (e) => {
       const jt = Number(e.target.value); s.budget = jt * 1e6;
-      e.target.style.setProperty('--p', ((jt - 5) / 195 * 100) + '%');
+      const pct = (jt - 5) / 195 * 100;
+      e.target.parentNode.style.setProperty('--p', pct + '%');
+      e.target.parentNode.querySelectorAll('.bsl-bars i').forEach((el, i) => { el.className = (i + 0.5) / BARS * 100 <= pct ? 'on' : ''; });
       const v = simVals(s.budget);
       document.querySelectorAll('[data-sim]').forEach((el) => { const k = el.getAttribute('data-sim'); if (k in v) el.textContent = v[k]; });
     };
@@ -115,7 +122,7 @@ class Component extends DCLogic {
 
     return {
       isCreator: creator, isBrand: !creator,
-      simBudget: rp(budget), simViews: compact(views), simRate: rp(1000), simBudgetJt: budget / 1e6, simPct: (budget / 1e6 - 5) / 195 * 100, onBudget: onBudget,
+      simBudget: rp(budget), simViews: compact(views), simRate: rp(1000), simBudgetJt: budget / 1e6, simPct: simPct, simBars: simBars, onBudget: onBudget,
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       creatorTab: tab(creator), brandTab: tab(!creator),
       setCreator: () => this.setState({ mode: 'creator' }),

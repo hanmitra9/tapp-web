@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { cpmLabel, deadlineLabel, idrCompact, isUrgent } from '@/lib/format';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import type { FeedItem } from './api';
 import { categoryLabel, platformsLabel } from './copy';
 import { JoinedRow } from './JoinedRow';
@@ -38,7 +38,7 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress, showReas
 });
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md, overflow: 'hidden' },
+  card: { ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md, overflow: 'hidden' },
   banner: { marginTop: -space.lg, marginHorizontal: -space.lg, aspectRatio: 2, backgroundColor: color.surfaceRaised },
   pressed: { backgroundColor: color.surfaceRaised },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.md },
