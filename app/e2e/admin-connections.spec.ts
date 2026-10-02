@@ -43,3 +43,22 @@ test('admin without 2FA is asked for it while require_admin_mfa is on', async ({
   await page.goto('/admin/connections');
   await expect(page.getByRole('heading', { name: 'Koneksi akun' })).toHaveCount(0);
 });
+
+test('2FA setup survives leaving the page (same QR and secret after a reload, no new enrollment)', async ({ page }) => {
+  await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, login_policy: { require_login_otp: false, require_admin_mfa: true } });
+  let enrolled = 0, unenrolled = 0, factors: object[] = [];
+  const user = { id: UID, aud: 'authenticated', role: 'authenticated', email: 'admin@example.com', app_metadata: {}, user_metadata: {}, created_at: '2026-01-01T00:00:00Z' };
+  await page.route('**/auth/v1/user', (r) => r.fulfill({ json: { ...user, factors } }));
+  await page.route('**/auth/v1/factors**', (r) => {
+    if (r.request().method() === 'DELETE') { unenrolled++; return r.fulfill({ json: { id: 'f1' } }); }
+    enrolled++;
+    factors = [{ id: 'f1', factor_type: 'totp', status: 'unverified', friendly_name: 'TAPP', created_at: '2026-01-01T00:00:00Z', updated_at: '2026-01-01T00:00:00Z' }];
+    return r.fulfill({ json: { id: 'f1', type: 'totp', totp: { qr_code: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg"/>', secret: 'SECRETONE', uri: 'otpauth://x' } } });
+  });
+  await page.goto('/admin/');
+  await expect(page.getByText('SECRETONE')).toBeVisible();
+  await page.reload();
+  await expect(page.getByText('SECRETONE')).toBeVisible();
+  expect(enrolled).toBe(1);
+  expect(unenrolled).toBe(0);
+});

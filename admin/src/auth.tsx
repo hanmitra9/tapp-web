@@ -13,13 +13,21 @@ export function AdminGate({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<Admin | null>(null);
   const [denied, setDenied] = useState(false);
   const [aal2, setAal2] = useState<boolean | null>(null);
+  // Bumped only on events that can change who is signed in or their 2FA level. A silent token refresh (it happens
+  // whenever the tab comes back, e.g. after switching to the authenticator app) must not re-run the gate: that
+  // unmounted the 2FA screen and started a brand-new QR setup.
+  const [epoch, setEpoch] = useState(0);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    const { data } = supabase.auth.onAuthStateChange((e, s) => {
+      setSession(s);
+      if (e !== 'TOKEN_REFRESHED' && e !== 'INITIAL_SESSION') setEpoch((n) => n + 1);
+    });
     return () => data.subscription.unsubscribe();
   }, []);
 
+  const uid = session?.user.id;
   useEffect(() => {
     setAdmin(null); setDenied(false); setAal2(null);
     if (!session) return;
@@ -32,7 +40,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
       const required = (pol.data as { require_admin_mfa?: boolean } | null)?.require_admin_mfa !== false;
       setAal2(!required || lvl.data?.currentLevel === 'aal2');
     });
-  }, [session]);
+  }, [uid, epoch]); // session itself is read but deliberately not a dependency (see epoch)
 
   const signOut = async () => { await supabase.auth.signOut(); };
   if (session === undefined) return null;
@@ -46,7 +54,7 @@ export function AdminGate({ children }: { children: ReactNode }) {
   );
   if (!admin || aal2 === null) return null;
   // When admin 2FA is on, the DB only treats an admin session as admin at AAL2 (migration 026): finish 2FA first.
-  if (!aal2) return <TwoFactor email={session.user.email} onSignOut={signOut} />;
+  if (!aal2) return <TwoFactor uid={session.user.id} email={session.user.email} onSignOut={signOut} />;
   return <Ctx.Provider value={{ admin, signOut }}>{children}</Ctx.Provider>;
 }
 
@@ -149,7 +157,16 @@ function Login() {
 
 // Two-factor (TOTP authenticator app). First time: scan the QR code and confirm a code. After that: code only.
 // Verifying upgrades the session to AAL2; onAuthStateChange then re-runs the gate above.
-function TwoFactor({ email, onSignOut }: { email: string | undefined; onSignOut: () => Promise<void> }) {
+// The pending setup (QR + secret) is kept in this browser for 30 minutes, so coming back from the authenticator app
+// — even after the phone reloaded the tab — shows the same QR instead of a new one.
+const SETUP_KEY = 'tapp_admin_mfa_setup';
+type Setup = { uid: string; factorId: string; qr: string; secret: string; at: number };
+const readSetup = (uid: string): Setup | null => {
+  try { const v = JSON.parse(localStorage.getItem(SETUP_KEY) ?? 'null') as Setup | null; return v && v.uid === uid && Date.now() - v.at < 30 * 60_000 ? v : null; } catch { return null; }
+};
+const writeSetup = (v: Setup | null) => { try { if (v) localStorage.setItem(SETUP_KEY, JSON.stringify(v)); else localStorage.removeItem(SETUP_KEY); } catch { /* storage blocked */ } };
+
+function TwoFactor({ uid, email, onSignOut }: { uid: string; email: string | undefined; onSignOut: () => Promise<void> }) {
   const [factorId, setFactorId] = useState<string | null>(null);
   const [enroll, setEnroll] = useState<{ qr: string; secret: string } | null>(null);
   const [code, setCode] = useState('');
@@ -161,14 +178,19 @@ function TwoFactor({ email, onSignOut }: { email: string | undefined; onSignOut:
       const { data, error: err } = await supabase.auth.mfa.listFactors();
       if (err) return setError(err.message);
       const verified = data.totp.find((f) => f.status === 'verified');
-      if (verified) return setFactorId(verified.id);
+      if (verified) { writeSetup(null); return setFactorId(verified.id); }
+      const pending = data.all.filter((x) => x.factor_type === 'totp' && x.status !== 'verified');
+      // Same setup still pending (user went to the authenticator app and came back): keep showing it.
+      const saved = readSetup(uid);
+      if (saved && pending.some((f) => f.id === saved.factorId)) { setFactorId(saved.factorId); return setEnroll({ qr: saved.qr, secret: saved.secret }); }
       // Leftover unverified factors (an abandoned setup) block a new enrollment — clear them first.
-      for (const f of data.all.filter((x) => x.factor_type === 'totp' && x.status !== 'verified')) await supabase.auth.mfa.unenroll({ factorId: f.id });
+      for (const f of pending) await supabase.auth.mfa.unenroll({ factorId: f.id });
       const { data: e, error: enrollErr } = await supabase.auth.mfa.enroll({ factorType: 'totp', friendlyName: `TAPP Control ${Date.now()}` });
       if (enrollErr) return setError(enrollErr.message);
+      writeSetup({ uid, factorId: e.id, qr: e.totp.qr_code, secret: e.totp.secret, at: Date.now() });
       setFactorId(e.id); setEnroll({ qr: e.totp.qr_code, secret: e.totp.secret });
     })();
-  }, []);
+  }, [uid]);
 
   async function submit(ev: FormEvent) {
     ev.preventDefault();
@@ -177,6 +199,7 @@ function TwoFactor({ email, onSignOut }: { email: string | undefined; onSignOut:
     const { error: err } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
     setBusy(false);
     if (err) setError(/invalid|expired/i.test(err.message) ? 'Kode salah atau sudah kedaluwarsa. Coba kode terbaru.' : err.message);
+    else writeSetup(null);
   }
 
   return (
