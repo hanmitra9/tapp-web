@@ -57,7 +57,7 @@ def art(kind, c1, c2):
 
 CAMPAIGNS = [
   # the real first campaign: Rp3.000 / 1K views, claim from 5.000 views, paid up to 100K views per clip
-  ('tapp', '#0E1A6B', '#4548F5', 'TAPP MEGA<br>CAMPAIGN', '', 'TAPP', '#4548F5', 'Clipping', 'Kenalkan TAPP lewat clip pendekmu', 'Rp3.000', ['tt', 'ig', 'yt'], 'SEMUA NICHE', None, None),
+  ('tapp', '#0E1A6B', '#4548F5', 'TAPP<br>Campaign', '', 'TAPP', '#4548F5', 'Clipping', 'TAPP MEGA CAMPAIGN', 'Rp3.000', ['tt', 'ig', 'yt'], 'SEMUA NICHE', None, None),
 ]
 
 def campaign_card(c):
@@ -86,7 +86,7 @@ def campaign_card(c):
           <span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Minimal klaim</span><b style="font-size: 15px">5.000 views</b></span>
           <span style="padding: 10px 12px; border-radius: 12px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); display: flex; flex-direction: column; gap: 2px"><span style="font-size: 11px; font-weight: 500; color: #8A8A93">Maks. per clip</span><b style="font-size: 15px">100K views</b></span>
         </div>
-        <a class="btn-p" href="#app:/register" data-campaign="{htitle.replace('<br>', ' ')}" style="display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 12px; font-weight: 600; font-size: 15px; background: linear-gradient(180deg, #4D63FF, #2F45D6)">Ambil campaign</a>
+        <a class="btn-p" href="#app:/register" data-campaign="{title}" style="display: flex; align-items: center; justify-content: center; height: 44px; border-radius: 12px; font-weight: 600; font-size: 15px; background: linear-gradient(180deg, #4D63FF, #2F45D6)">Ambil campaign</a>
       </div>
     </article>'''
 
