@@ -15,7 +15,7 @@ def _corner(pos):
     return f'<i style="position: absolute; {v}: -7px; {h}: -7px; width: 12px; height: 12px; border-{v}: 2px solid #7DA2FF; border-{h}: 2px solid #7DA2FF"></i>'
 
 def _sim():
-    stat = lambda l, hole, color: f'<span style="display: flex; flex-direction: column; gap: 4px; padding: 0 14px"><span style="font-size: 12px; font-weight: 500; color: #8A8A93">{l}</span><b class="tabular" style="font-size: 26px; letter-spacing: -0.5px; color: {color}">{{{{{hole}}}}}</b></span>'
+    stat = lambda l, hole, color: f'<span style="display: flex; flex-direction: column; gap: 4px; padding: 0 14px"><span style="font-size: 12px; font-weight: 500; color: #8A8A93">{l}</span><b class="tabular" data-sim="{hole}" style="font-size: 26px; letter-spacing: -0.5px; color: {color}">{{{{{hole}}}}}</b></span>'
     chip = lambda lst: f'''<sc-for list="{{{{{lst}}}}}" as="o" hint-placeholder-count="4"><button onClick="{{{{o.pick}}}}" aria-pressed="{{{{o.on}}}}" style="{{{{o.style}}}}">{{{{o.label}}}}</button></sc-for>'''
     return f'''<div class="bsim" style="position: relative; width: 640px; max-width: 100%; margin: 0 auto; display: flex; flex-direction: column; gap: 14px">
   <div style="position: relative; padding: 18px 20px; border-radius: 20px; {FLOAT}">
@@ -32,8 +32,9 @@ def _sim():
   </div>
   <div style="width: 2px; height: 22px; margin: -6px auto; background: linear-gradient(180deg, #7DA2FF, rgba(125,162,255,0.2)); box-shadow: 0 0 10px #7DA2FF"></div>
   <div style="padding: 16px 18px; border-radius: 18px; {FLOAT}; display: flex; flex-direction: column; gap: 12px">
-    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget Kamu</span><b class="tabular" style="font-size: 22px; color: #C6D6FF">{{{{simBudget}}}}</b></div>
-    <div style="display: flex; gap: 6px; flex-wrap: wrap">{chip('budgets')}</div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><span style="font-size: 14px; font-weight: 500; color: #D4D4D8">Budget Kamu</span><b class="tabular" data-sim="simBudget" style="font-size: 22px; color: #C6D6FF">{{{{simBudget}}}}</b></div>
+    <input type="range" class="bslider" min="5" max="200" step="1" value="{{{{simBudgetJt}}}}" style="--p: {{{{simPct}}}}%" onInput="{{{{onBudget}}}}" aria-label="Geser untuk mengatur budget campaign">
+    <div class="tabular" style="display: flex; justify-content: space-between; font-size: 12px; font-weight: 500; color: #6E7690; margin-top: -4px"><span>Rp5 jt</span><span>Rp200 jt</span></div>
   </div>
 </div>'''
 
@@ -43,7 +44,7 @@ def hero_brand():
   <div class="bwbg" aria-hidden="true" style="position: absolute; left: 50%; top: -40px; width: 900px; margin-left: -450px; opacity: 0.32; pointer-events: none">{_wall()}</div>
   <div style="position: relative">{_sim()}</div>
   <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; margin-top: 48px">
-    <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Ribuan Clip Organik, <br><span style="color: #7DA2FF">Bayar Yang Terbukti</span></h1>
+    <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Clip Organik, <br><span style="color: #7DA2FF">Bayar Yang Terbukti</span></h1>
     <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Materi brand-mu diolah ratusan creator menjadi clip pendek yang tayang di TikTok, Instagram, dan YouTube. Kamu hanya membayar views yang terverifikasi, tanpa bot dan tanpa angka semu.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Campaign", "meeting.html")}</div>
   </div>
