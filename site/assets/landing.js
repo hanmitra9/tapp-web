@@ -105,13 +105,17 @@ class Component extends DCLogic {
 
     // creator wall (reference): demo names and payouts from the reference artifact
     const GLOW = ['#34D07A', '#F2692B', '#2F8CE6', '#3B82F6', '#E2445C', '#F0B429'];
-    const people = [
-      ['Rani Putri', 'Rp4.250.000'], ['Dimas Pratama', 'Rp1.870.000'], ['Nadia Kusuma', 'Rp3.120.000'], ['Bagus Santoso', 'Rp960.000'],
-      ['Sari Wulandari', 'Rp2.480.000'], ['Ayu Lestari', 'Rp5.630.000'], ['Tika Anjani', 'Rp1.340.000'], ['Kevin Wijaya', 'Rp7.210.000'],
-      ['Lina Marlina', 'Rp2.050.000'], ['Rio Hartono', 'Rp3.790.000'], ['Maya Puspita', 'Rp1.120.000'], ['Hendra Gunawan', 'Rp6.480.000'],
+    // three rows, three different sets of creators (demo names and payouts)
+    const rows = [
+      [['Rani Putri', 'Rp4.250.000'], ['Dimas Pratama', 'Rp1.870.000'], ['Nadia Kusuma', 'Rp3.120.000'], ['Bagus Santoso', 'Rp960.000'],
+       ['Sari Wulandari', 'Rp2.480.000'], ['Ayu Lestari', 'Rp5.630.000'], ['Tika Anjani', 'Rp1.340.000'], ['Kevin Wijaya', 'Rp7.210.000']],
+      [['Lina Marlina', 'Rp2.050.000'], ['Rio Hartono', 'Rp3.790.000'], ['Maya Puspita', 'Rp1.120.000'], ['Hendra Gunawan', 'Rp6.480.000'],
+       ['Fajar Nugroho', 'Rp2.940.000'], ['Citra Ayuningtyas', 'Rp4.870.000'], ['Yoga Pratama', 'Rp1.560.000'], ['Intan Permata', 'Rp3.410.000']],
+      [['Arif Setiawan', 'Rp5.120.000'], ['Dewi Anggraini', 'Rp2.230.000'], ['Reza Mahendra', 'Rp8.040.000'], ['Putri Maharani', 'Rp1.790.000'],
+       ['Bima Saputra', 'Rp3.660.000'], ['Nabila Zahra', 'Rp2.710.000'], ['Galih Prakoso', 'Rp4.390.000'], ['Salsa Amelia', 'Rp1.250.000']],
     ];
     const wall = (offset) => {
-      const set = people.slice(offset).concat(people.slice(0, offset));
+      const set = rows[offset].concat(rows[offset]);
       const cards = set.map((pp, i) => {
         const name = pp[0], pay = pp[1], g = GLOW[(i + offset) % 6], big = false;
         return {
@@ -152,7 +156,7 @@ class Component extends DCLogic {
       setBrand: () => this.setState({ mode: 'brand' }),
       faqC: faqC, faqB: faqB,
       metrics: metrics, lcLine: line, lcArea: line + 'L' + px(6) + ',' + (H - pb) + 'L0,' + (H - pb) + 'Z', lcLabel: 'Grafik ' + met + ' 7 hari',
-      wall1: wall(0), wall2: wall(4), wall3: wall(8),
+      wall1: wall(0), wall2: wall(1), wall3: wall(2),
     };
   }
 }
