@@ -18,7 +18,9 @@ export function validateName(v: string): string | null {
   return s.length > 80 ? 'Maksimal 80 karakter.' : null;
 }
 
-export const validateOtp = (v: string): string | null => (/^\d{6}$/.test(v) ? null : 'Masukkan kode 6 digit.');
+// Supabase's email OTP length is a project setting (6–10); the live project sends 8 digits.
+export const OTP_MAX = 10;
+export const validateOtp = (v: string): string | null => (/^\d{6,10}$/.test(v) ? null : 'Masukkan kode dari email.');
 
 export function validateUsername(v: string): string | null {
   const s = v.trim().toLowerCase();

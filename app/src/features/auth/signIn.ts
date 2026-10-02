@@ -13,7 +13,7 @@ async function loginNeedsCode(): Promise<boolean> {
 }
 
 // Two-step sign-in: check the password on a throwaway client (its session is discarded, the app never sees it),
-// then email a 6-digit code. Only the session created from that code is accepted by the API.
+// then email a one-time code. Only the session created from that code is accepted by the API.
 export async function signIn(email: string, password: string): Promise<Result> {
   if (!(await loginNeedsCode())) {
     const { error } = await supabase.auth.signInWithPassword({ email, password });

@@ -33,7 +33,7 @@ export default function ForgotPassword() {
 
   return (
     <Screen width="narrow" footer={<Button label="Kirim kode reset" onPress={submit} loading={busy} />}>
-      <Header title="Reset kata sandi" subtitle="Kami akan mengirim kode 6 digit ke email kamu." />
+      <Header title="Reset kata sandi" subtitle="Kami akan mengirim kode verifikasi ke email kamu." />
       <View style={styles.form}>
         <Notice tone="error" message={error} />
         <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoComplete="email"
