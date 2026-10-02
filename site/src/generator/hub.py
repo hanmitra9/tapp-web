@@ -96,6 +96,56 @@ HUB = f'''<div class="hub" style="position: absolute; left: 540px; top: 120px; w
 AV = ''.join(f'<i style="font-style: normal; width: 26px; height: 26px; border-radius: 13px; margin-left: {0 if k==0 else -8}px; background: {c}; border: 2px solid #07070A; display: inline-flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 600">{n}</i>'
              for k, (n, c) in enumerate([('RP', '#34D07A'), ('DP', '#F2692B'), ('NK', '#2F8CE6')]))
 
+# Phone hero: the same idea turned vertical, cards above and below the TAPP mark, wires running down into it.
+# Stage is 360×600 (CSS-scaled to the screen width); card boxes measured from the rendered cards.
+M_W, M_H = 360, 600
+M_HUB = (180, 300, 88)   # centre x, centre y, size
+M_CARDS = [  # (html, left, top, scale, port side, port x, port y) — port = where the wire leaves the card
+    ('campaign', 12, 8, 0.62),
+    ('clip', 250, 40, 0.8),
+    ('level', 22, 418, 0.8),
+    ('payout', 170, 470, 0.66),
+]
+M_WIRES = [(90, 124, 166, 256), (298, 197, 194, 256), (86, 418, 166, 344), (256, 470, 194, 344)]   # card port → hub port (boxes measured)
+
+def _mcurve(x0, y0, x1, y1):
+    k = (y1 - y0) * 0.55
+    return f'M{x0:.0f} {y0:.0f} C{x0:.0f} {y0 + k:.0f}, {x1:.0f} {y1 - k:.0f}, {x1:.0f} {y1:.0f}'
+
+def _mwires():
+    cx, cy, sz = M_HUB
+    defs, base, comets, ports = [], [], [], []
+    for i, (x0, y0, x1, y1) in enumerate(M_WIRES):
+        d = _mcurve(x0, y0, x1, y1)
+        defs.append(f'<linearGradient id="mwg{i}" gradientUnits="userSpaceOnUse" x1="{x0}" y1="{y0}" x2="{x1}" y2="{y1}">'
+                    '<stop offset="0" stop-color="#7DA2FF" stop-opacity="0.2"></stop><stop offset="0.55" stop-color="#6F93FF" stop-opacity="0.7"></stop>'
+                    '<stop offset="1" stop-color="#DCE4FF"></stop></linearGradient>')
+        base.append(f'<path d="{d}" stroke="#2F66F2" stroke-width="7" opacity="0.3" filter="url(#mwb)"></path><path d="{d}" stroke="url(#mwg{i})" stroke-width="1.5"></path>')
+        delay = f'animation-delay: -{i * 1.1:.1f}s'
+        comets.append(f'<path class="comet" pathLength="100" style="{delay}" d="{d}"></path><path class="comet-h" pathLength="100" style="{delay}" d="{d}"></path>')
+        ports.append(f'<circle cx="{x0}" cy="{y0}" r="3.5" fill="#0B0B12" stroke="#7DA2FF" stroke-opacity="0.75" stroke-width="1.2"></circle><circle cx="{x1}" cy="{y1}" r="2.2" fill="#DCE4FF"></circle>')
+    rings = (f'<g fill="none"><circle cx="{cx}" cy="{cy}" r="78" stroke="rgba(160,180,255,0.16)"></circle>'
+             f'<circle cx="{cx}" cy="{cy}" r="112" stroke="rgba(160,180,255,0.09)" stroke-dasharray="1 6" stroke-linecap="round"></circle>'
+             f'<g class="orbm"><circle cx="{cx}" cy="{cy - 112}" r="2.2" fill="#C6D6FF"></circle></g></g>')
+    return (f'<svg viewBox="0 0 {M_W} {M_H}" aria-hidden="true" style="position: absolute; inset: 0; width: {M_W}px; height: {M_H}px; overflow: visible"><defs>'
+            '<filter id="mwb" x="-50%" y="-20%" width="200%" height="140%"><feGaussianBlur stdDeviation="3"></feGaussianBlur></filter>'
+            + ''.join(defs) + '</defs>' + rings + '<g fill="none" stroke-linecap="round">' + ''.join(base) + ''.join(comets) + '</g>' + ''.join(ports) + '</svg>')
+
+def _mcard(kind):
+    return {'campaign': _campaign_card, 'clip': lambda: clip(120, 196, 'quote', '', '128K', 'tt', small=True),
+            'level': _level_card, 'payout': _payout_card}[kind]()
+
+def hero_hub_mobile():
+    cx, cy, sz = M_HUB
+    cards = ''.join(f'<div class="hmc hmc-{k}" style="position: absolute; left: {x}px; top: {y}px; transform: scale({sc}); transform-origin: top left">{_mcard(k)}</div>'
+                    for k, x, y, sc in M_CARDS)
+    hub = (f'<div class="hub" style="position: absolute; left: {cx - sz // 2}px; top: {cy - sz // 2}px; width: {sz}px; height: {sz}px; border-radius: 24px; display: flex; align-items: center; justify-content: center; '
+           'background: linear-gradient(180deg, #5B8CFF, #1F4FD6); border: 1px solid rgba(198,214,255,0.6); box-shadow: 0 0 0 9px rgba(47,102,242,0.14), 0 0 0 20px rgba(47,102,242,0.06), 0 0 80px rgba(47,102,242,0.8), inset 0 1px 0 rgba(255,255,255,0.35)">'
+           f'<img src="{BLOB_WHITE}" alt="" style="width: 46px; height: 46px"></div>')
+    return (f'<div class="hstage-m" aria-hidden="true"><div class="hstage-m-in" style="position: relative; width: {M_W}px; height: {M_H}px; margin: 0 auto">'
+            f'<div style="position: absolute; left: {cx - 190}px; top: {cy - 190}px; width: 380px; height: 380px; border-radius: 50%; background: radial-gradient(closest-side, rgba(47,102,242,0.3), rgba(47,102,242,0.08) 55%, transparent)"></div>'
+            + _mwires() + cards + hub + '</div></div>')
+
 def hero_hub():
     return f'''<div class="hero2" style="position: relative; max-width: 1280px; margin: 0 auto; padding: 8px 0 24px">
   <div class="hstage-wrap" style="position: relative; height: 400px; overflow: visible">
@@ -109,6 +159,7 @@ def hero_hub():
       {HUB}
     </div>
   </div>
+  {hero_hub_mobile()}
   <div class="pad" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 0 24px">
     <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Ubah Clip Jadi <br><span style="color: #7DA2FF">Penghasilan Nyata</span></h1>
     <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Ambil campaign dari brand, posting dari akunmu sendiri, dan dibayar dari setiap views yang lolos verifikasi. Tanpa minimal follower.</p>
