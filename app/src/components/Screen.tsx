@@ -1,5 +1,6 @@
 import type React from 'react';
 import type { ReactNode, RefObject } from 'react';
+import { useIsFocused } from '@react-navigation/native';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLayout } from '@/lib/useLayout';
@@ -15,6 +16,9 @@ type Props = {
 // The column is centered with a max width so lines stay readable.
 export function Screen({ children, footer, scroll = true, scrollRef, refreshControl, inTabs = false, width = 'regular' }: Props) {
   const { isWide } = useLayout();
+  // Screens are transparent (the page background shows through), so a screen that isn't on top — another tab,
+  // or the page under a pushed one — must not paint, or the two overlap.
+  const hidden = !useIsFocused();
   const column = [styles.column, { maxWidth: width === 'narrow' ? 480 : 760 }];
   const tabPad = inTabs && !isWide ? styles.tabsPad : null;
 
@@ -22,7 +26,7 @@ export function Screen({ children, footer, scroll = true, scrollRef, refreshCont
   // instead of a field list at the top and a button pinned to the bottom of a huge window.
   if (isWide && width === 'narrow') {
     return (
-      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+      <SafeAreaView style={[styles.safe, hidden && styles.hidden]} edges={['top', 'bottom']}>
         <ScrollView ref={scrollRef} refreshControl={refreshControl} style={styles.flex}
           contentContainerStyle={[styles.content, styles.centered]} keyboardShouldPersistTaps="handled">
           <View style={[styles.card, column]}>
@@ -35,7 +39,7 @@ export function Screen({ children, footer, scroll = true, scrollRef, refreshCont
   }
 
   return (
-    <SafeAreaView style={styles.safe} edges={inTabs ? ['top'] : ['top', 'bottom']}>
+    <SafeAreaView style={[styles.safe, hidden && styles.hidden]} edges={inTabs ? ['top'] : ['top', 'bottom']}>
       <View style={styles.flex}>
         {scroll ? (
           <ScrollView ref={scrollRef} refreshControl={refreshControl} style={styles.flex}
@@ -53,6 +57,7 @@ export function Screen({ children, footer, scroll = true, scrollRef, refreshCont
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: color.canvas },
+  hidden: { display: 'none' },
   flex: { flex: 1 },
   content: { paddingHorizontal: space.xl, paddingTop: space.lg, paddingBottom: space.xl, flexGrow: 1 },
   wideTop: { paddingTop: space.xxxl },

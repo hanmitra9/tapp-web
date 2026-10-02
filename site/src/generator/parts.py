@@ -21,7 +21,7 @@ def head(pill, l1, l2, sub, center=True, maxw=760):
     al = 'align-items: center; text-align: center; margin: 0 auto' if center else 'align-items: flex-start'
     return f'''<div style="display: flex; flex-direction: column; gap: 18px; {al}; max-width: {maxw}px; margin-bottom: 48px">
       <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">{pill}</span>
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">{l1}<br><span style="color: #7DA2FF">{l2}</span></h2>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">{l1} <br><span style="color: #7DA2FF">{l2}</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">{sub}</p>
     </div>'''
 

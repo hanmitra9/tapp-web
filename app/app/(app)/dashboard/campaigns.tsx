@@ -2,6 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useIsFocused } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Chips } from '@/components/Chips';
@@ -14,7 +15,8 @@ import { useLayout } from '@/lib/useLayout';
 import { color, radius, space, type } from '@/theme/tokens';
 import { activeFilterCount, EMPTY_FILTERS, fetchFeed, PAGE, type FeedItem, type Filters, type Sort } from '@/features/campaigns/api';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
-import { CONTENT_CATEGORIES, NICHES, PLATFORMS, type Platform } from '@/features/creator/options';
+import { PLATFORMS, type Platform } from '@/features/creator/options';
+import { CAMPAIGN_TYPE_OPTIONS } from '@/features/campaigns/copy';
 import { track } from '@/lib/analytics';
 
 const SORTS: { value: Sort; label: string }[] = [
@@ -25,6 +27,7 @@ const MIN_CPM = [{ value: '0', label: 'Semua' }, { value: '2000', label: '≥ Rp
 const ENDING = [{ value: '0', label: 'Semua' }, { value: '3', label: '3 hari' }, { value: '7', label: '7 hari' }, { value: '14', label: '14 hari' }];
 
 export default function Campaigns() {
+  const focused = useIsFocused();   // transparent screens: an unfocused tab must not paint under the active one
   const [sort, setSort] = useState<Sort>('recommended');
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [items, setItems] = useState<FeedItem[] | null>(null);
@@ -60,7 +63,7 @@ export default function Campaigns() {
   const open = (id: string) => router.push({ pathname: '/campaign/[id]', params: { id } });
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={[styles.safe, !focused && { display: 'none' }]} edges={['top']}>
       <View style={[styles.head, column, isWide && { paddingTop: space.xxxl }]}>
         <Text style={styles.title} accessibilityRole="header">Campaign</Text>
         <Pressable onPress={() => setSheet(true)} hitSlop={8} accessibilityRole="button"
@@ -123,11 +126,8 @@ function FilterSheet({ visible, initial, onClose, onApply }: { visible: boolean;
           <Field label="Platform">
             <Chips multiple options={PLATFORMS} value={f.platforms} onChange={(v) => setF({ ...f, platforms: v as Platform[] })} />
           </Field>
-          <Field label="Kategori">
-            <Chips multiple options={NICHES} value={f.categories} onChange={(categories) => setF({ ...f, categories })} />
-          </Field>
-          <Field label="Jenis konten">
-            <Chips multiple options={CONTENT_CATEGORIES} value={f.contentTypes} onChange={(contentTypes) => setF({ ...f, contentTypes })} />
+          <Field label="Jenis campaign">
+            <Chips multiple options={CAMPAIGN_TYPE_OPTIONS} value={f.categories} onChange={(categories) => setF({ ...f, categories })} />
           </Field>
           <Field label="Reward (CPM)">
             <Chips options={MIN_CPM} value={[String(f.minCpm ?? 0)]} onChange={([v]) => setF({ ...f, minCpm: Number(v) || null })} />

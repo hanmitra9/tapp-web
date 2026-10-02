@@ -220,17 +220,41 @@ export type CampaignFull = {
   id: string; brand_id: string; title: string; objective: string | null; description: string | null; category: string; content_type: string;
   status: CampaignStatus; cpm: number; budget: number; max_earning_per_submission: number | null; min_views_to_qualify: number;
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null; guidelines_do: string[]; guidelines_dont: string[]; terms: string | null;
-  platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[];
+  platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[]; banner_url: string | null;
   assets: { id: string; kind: string; title: string; url: string | null; storage_path: string | null; sort: number }[];
 };
 export async function getCampaignFull(id: string): Promise<CampaignFull> {
   const { data, error } = await supabase.from('campaigns')
-    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, budget, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
+    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, budget, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
     .eq('id', id).single();
   if (error) throw error;
   const c = data as unknown as CampaignFull;
   return { ...c, cpm: Number(c.cpm), budget: Number(c.budget), rules: [...c.rules].sort((a, b) => a.sort - b.sort), assets: [...c.assets].sort((a, b) => a.sort - b.sort) };
 }
+// ── Campaign banner (0036): same shape as the TAPP Campaign card header ──
+export const BANNER_RULES = 'Rasio 2:1 (mis. 1200 × 600 px), minimal 1200 × 600 px, JPG / PNG / WebP, maks 2 MB.';
+export async function checkBanner(file: File): Promise<string | null> {
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) return 'Format harus JPG, PNG, atau WebP.';
+  if (file.size > 2 * 1024 * 1024) return 'Ukuran file maksimal 2 MB.';
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await new Promise<HTMLImageElement>((ok, bad) => { const i = new Image(); i.onload = () => ok(i); i.onerror = bad; i.src = url; });
+    if (img.naturalWidth < 1200 || img.naturalHeight < 600) return `Gambar terlalu kecil (${img.naturalWidth} × ${img.naturalHeight}). Minimal 1200 × 600 px.`;
+    const r = img.naturalWidth / img.naturalHeight;
+    if (r < 1.9 || r > 2.1) return `Rasio harus 2:1 (lebar 2× tinggi). Gambar ini ${img.naturalWidth} × ${img.naturalHeight}.`;
+    return null;
+  } catch { return 'Gambar tidak bisa dibaca.'; } finally { URL.revokeObjectURL(url); }
+}
+export async function uploadBanner(campaignId: string, file: File): Promise<string> {
+  const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+  const path = `${campaignId}/${Date.now()}.${ext}`;
+  const up = await supabase.storage.from('campaign-banners').upload(path, file, { contentType: file.type, upsert: false });
+  if (up.error) throw up.error;
+  const url = supabase.storage.from('campaign-banners').getPublicUrl(path).data.publicUrl;
+  await rpc('admin_set_campaign_banner', { p_campaign_id: campaignId, p_url: url });
+  return url;
+}
+export const removeBanner = (campaignId: string) => rpc('admin_set_campaign_banner', { p_campaign_id: campaignId, p_url: null });
 export const upsertCampaignDraft = (id: string | null, p: Record<string, unknown>) => rpc<{ id: string }>('upsert_campaign_draft', { p_id: id, p });
 export const updateCampaignCopy = (id: string, p: Record<string, unknown>) => rpc('admin_update_campaign_copy', { p_id: id, p });
 export const submitForApproval = (id: string) => rpc('submit_campaign_for_approval', { p_campaign_id: id });

@@ -3,7 +3,7 @@ import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native'
 import { EmptyState } from '@/components/EmptyState';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
-import { CardSkeleton, SkeletonBlock } from '@/components/Skeleton';
+import { CardSkeleton } from '@/components/Skeleton';
 import Feather from '@expo/vector-icons/Feather';
 import { deadlineLabel, greeting, idr } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
@@ -47,9 +47,7 @@ export default function Home() {
       <View style={styles.top}>
         <View style={{ flex: 1 }}>
           <Text style={styles.hello}>{greeting()}{first ? `, ${first}` : ''}</Text>
-          <Text style={styles.totalLabel}>Total dibayar</Text>
-          {d ? <Text style={styles.total} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit>{idr(d.paid)}</Text>
-            : <SkeletonBlock width="60%" height={34} />}
+          <Text style={styles.name} accessibilityRole="header" numberOfLines={1}>{account?.fullName ?? 'Creator'}</Text>
         </View>
         <View style={styles.topIcons}>
           <Pressable onPress={() => router.push('/notifications')} hitSlop={8} accessibilityRole="button"
@@ -64,8 +62,8 @@ export default function Home() {
       </View>
 
       <View style={styles.cardWrap}>
-        <BalanceCard label="Klip diterima, menunggu dibayar" amount={d ? `${d.accepted} klip` : null}
-          footLeft={<Text style={cardFootText}>{d ? `${d.reviewing} klip sedang direview` : ' '}</Text>}
+        <BalanceCard label="Total payout diterima" amount={d ? idr(d.paid) : null}
+          footLeft={<Text style={cardFootText}>{d ? (d.accepted ? `${d.accepted} klip menunggu transfer` : `${d.reviewing} klip sedang direview`) : ' '}</Text>}
           footRight={<Text style={cardFootText}>TAPP Creators</Text>} />
       </View>
 
@@ -133,8 +131,7 @@ function SectionHead({ title, action }: { title: string; action?: { label: strin
 const styles = StyleSheet.create({
   top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginTop: space.md, gap: space.md },
   hello: { ...type.caption, color: color.textMuted, marginBottom: space.md },
-  totalLabel: { ...type.label, color: color.textSecondary },
-  total: { ...type.display, color: color.text, fontVariant: ['tabular-nums'], marginTop: 2 },
+  name: { ...type.title, color: color.text },
   topIcons: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   iconBtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center' },
   badge: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: color.blue, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },

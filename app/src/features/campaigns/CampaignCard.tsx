@@ -1,5 +1,5 @@
 import { memo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { cpmLabel, deadlineLabel, idrCompact, isUrgent } from '@/lib/format';
 import { color, radius, space, type } from '@/theme/tokens';
 import type { FeedItem } from './api';
@@ -13,6 +13,7 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress, showReas
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${item.title}, ${item.brand_name}`}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+      {item.banner_url ? <Image source={{ uri: item.banner_url }} style={styles.banner} resizeMode="cover" accessibilityIgnoresInvertColors /> : null}
       <View style={styles.top}>
         <View style={styles.mono}><Text style={styles.monoText}>{initials}</Text></View>
         <View style={{ flex: 1 }}>
@@ -35,7 +36,8 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress, showReas
 });
 
 const styles = StyleSheet.create({
-  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md, overflow: 'hidden' },
+  banner: { marginTop: -space.lg, marginHorizontal: -space.lg, aspectRatio: 2, backgroundColor: color.surfaceRaised },
   pressed: { backgroundColor: color.surfaceRaised },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   mono: { width: 40, height: 40, borderRadius: 20, backgroundColor: color.surfaceRaised, alignItems: 'center', justifyContent: 'center' },

@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-  addAssetLink, adjustBudget, deleteAsset, ensureBrand, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
+  addAssetLink, adjustBudget, BANNER_RULES, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
 } from '../lib/api';
 import { adminError } from '../lib/errors';
@@ -110,6 +110,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
         </div>
       ) : null}
 
+      <BannerCard f={f} onDone={refresh} />
       <StatusActions f={f} onDone={refresh} />
       {f.status !== 'draft' && c ? <BudgetCard c={c} onDone={refresh} /> : null}
 
@@ -265,6 +266,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
     do: (initial?.guidelines_do ?? []).join('\n'), dont: (initial?.guidelines_dont ?? []).join('\n'),
     requirement: byKind('requirement'), submission: byKind('submission'), performance: byKind('performance'), terms: initial?.terms ?? '',
   });
+  const [banner, setBanner] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = (k: keyof typeof f) => (e: { target: { value: string } }) => setF({ ...f, [k]: e.target.value });
@@ -286,6 +288,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
         starts_at: iso(f.starts_at), submission_deadline: iso(f.submission_deadline), ends_at: iso(f.ends_at), platforms: f.platforms,
         guidelines_do: lines(f.do), guidelines_dont: lines(f.dont), terms: f.terms, rules,
       });
+      if (banner) await uploadBanner(r.id, banner);
       await onSaved(r.id);
     } catch (err) { setError(adminError(err)); } finally { setBusy(false); }
   }
@@ -302,6 +305,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
           {CAMPAIGN_TYPES.some(([k]) => k === f.category) ? null : <option value={f.category}>{campaignTypeLabel(f.category)}</option>}
           {CAMPAIGN_TYPES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
       </div>
+      {id ? null : <BannerPicker file={banner} onPick={setBanner} onError={setError} />}
       <label className="field">Tujuan<input value={f.objective} onChange={set('objective')} /></label>
       <label className="field">Deskripsi / brief<textarea value={f.description} onChange={set('description')} rows={4} /></label>
       <div className="grid2">
@@ -366,5 +370,59 @@ function CopyEditor({ f, onDone, onCancel }: { f: CampaignFull; onDone: () => Pr
       {error ? <div className="notice error">{error}</div> : null}
       <div className="actions"><button className="btn" disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan'}</button><button type="button" className="btn secondary" onClick={onCancel}>Batal</button></div>
     </form>
+  );
+}
+
+// Banner preview at the card's 2:1 shape; the file is checked against BANNER_RULES before it's accepted.
+function BannerPicker({ file, current, onPick, onError }: { file: File | null; current?: string | null; onPick: (f: File | null) => void; onError: (e: string | null) => void }) {
+  const [preview, setPreview] = useState<string | null>(null);
+  useEffect(() => {
+    if (!file) { setPreview(null); return; }
+    const u = URL.createObjectURL(file); setPreview(u);
+    return () => URL.revokeObjectURL(u);
+  }, [file]);
+  const src = preview ?? current ?? null;
+  return (
+    <div className="field">Foto banner
+      <div style={{ aspectRatio: '2 / 1', borderRadius: 14, overflow: 'hidden', background: src ? undefined : 'radial-gradient(70% 90% at 80% 30%, #7DA2FF, transparent 60%), linear-gradient(135deg, #0E1A6B, #4548F5)',
+        border: '1px solid var(--border, rgba(255,255,255,0.1))', maxWidth: 480 }}>
+        {src ? <img src={src} alt="Banner campaign" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : null}
+      </div>
+      <input type="file" accept="image/jpeg,image/png,image/webp" onChange={async (e) => {
+        const f = e.target.files?.[0] ?? null; e.target.value = '';
+        if (!f) return;
+        const bad = await checkBanner(f);
+        if (bad) { onError(bad); return; }
+        onError(null); onPick(f);
+      }} />
+      <span className="sub" style={{ fontWeight: 400 }}>{BANNER_RULES} Tanpa banner, kartu memakai gradasi biru TAPP.</span>
+    </div>
+  );
+}
+
+function BannerCard({ f, onDone }: { f: CampaignFull; onDone: () => Promise<void> }) {
+  const [file, setFile] = useState<File | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function save() {
+    if (!file) return;
+    setBusy(true); setError(null);
+    try { await uploadBanner(f.id, file); setFile(null); await onDone(); } catch (e) { setError(adminError(e)); } finally { setBusy(false); }
+  }
+  async function remove() {
+    setBusy(true); setError(null);
+    try { await removeBanner(f.id); await onDone(); } catch (e) { setError(adminError(e)); } finally { setBusy(false); }
+  }
+  return (
+    <div className="section">
+      <h3>Banner</h3>
+      <BannerPicker file={file} current={f.banner_url} onPick={setFile} onError={setError} />
+      {error ? <div className="notice error">{error}</div> : null}
+      <div className="actions">
+        {file ? <button className="btn" onClick={save} disabled={busy}>{busy ? 'Mengunggah…' : 'Simpan banner'}</button> : null}
+        {file ? <button className="btn secondary" onClick={() => setFile(null)} disabled={busy}>Batal</button> : null}
+        {!file && f.banner_url ? <button className="btn secondary" onClick={remove} disabled={busy}>Hapus banner</button> : null}
+      </div>
+    </div>
   );
 }
