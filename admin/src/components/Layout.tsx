@@ -17,6 +17,7 @@ export function Layout() {
         <NavLink to="/submissions">Verifikasi <Count n={c ? c.pending_review + c.flagged : undefined} /></NavLink>
         <NavLink to="/performance">Performa <Count n={c ? c.awaiting_first_metrics + c.stale_metrics + (c.auto_held ?? 0) : undefined} /></NavLink>
         <NavLink to="/creators">Kreator <Count n={c?.creators_to_review} /></NavLink>
+        <NavLink to="/connections">Koneksi akun</NavLink>
         <NavLink to="/payouts">Pencairan <Count n={c?.payouts_open} /></NavLink>
         <NavLink to="/campaigns">Campaign <Count n={c?.campaigns_pending} /></NavLink>
         <NavLink to="/brands">Brand</NavLink>

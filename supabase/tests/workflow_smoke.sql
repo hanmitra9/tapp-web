@@ -505,3 +505,28 @@ do $$ begin
   if not exists (select 1 from due_for_tiktok_metrics() where video_id = '7412') then raise exception 'tiktok queue missed clip'; end if;
 end $$;
 select 'tiktok_connect_ok' as result;
+
+-- ── Admin connections (0032) ──
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select * from admin_platform_connections()$$, 'forbidden');
+select pg_temp.expect_error($$select admin_disconnect_platform(gen_random_uuid(), 'x')$$, 'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select platform, handle, status, verified as verified_expect_t, tracked >= 1 as tracked_expect_t
+  from admin_platform_connections(null, 'kingclips');
+select pg_temp.expect_error($$select admin_disconnect_platform((select id from admin_platform_connections(null,'kingclips') limit 1), '  ')$$, 'reason_required');
+select admin_disconnect_platform((select id from admin_platform_connections(null, 'kingclips') limit 1), 'Akun dipakai bersama', true);
+select pg_temp.expect_error($$select admin_disconnect_platform((select id from admin_platform_connections(null,'kingclips') limit 1), 'lagi')$$, 'already_disconnected');
+reset role;
+do $$ begin
+  if (select status from creator_platform_connections where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok') <> 'revoked'
+    then raise exception 'not revoked'; end if;
+  if exists (select 1 from creator_platforms where creator_id = '00000000-0000-0000-0000-0000000000c1' and platform = 'tiktok' and verified_at is not null)
+    then raise exception 'still verified'; end if;
+  if not exists (select 1 from notifications where user_id = '00000000-0000-0000-0000-0000000000c1' and type = 'platform_disconnected')
+    then raise exception 'creator not told'; end if;
+  if not exists (select 1 from audit_logs where action = 'admin.platform_disconnected') then raise exception 'no audit'; end if;
+  if exists (select 1 from due_for_tiktok_metrics() where video_id = '7412') then raise exception 'revoked still queued'; end if;
+end $$;
+select 'admin_connections_ok' as result;

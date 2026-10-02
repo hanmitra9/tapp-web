@@ -310,3 +310,17 @@ export async function fetchAutoQualify(): Promise<AutoQualify> {
   return { enabled: !!d.enabled, held: Number(d.held ?? 0), auto_24h: Number(d.auto_24h ?? 0), manual_24h: Number(d.manual_24h ?? 0) };
 }
 export const setAutoQualify = (enabled: boolean) => rpc('admin_set_auto_qualify', { p_enabled: enabled });
+
+// ── Platform connections (migration 032) ──
+export type ConnStatus = 'connected' | 'expired' | 'revoked' | 'error';
+export type Connection = {
+  id: string; creator_id: string; full_name: string | null; username: string | null; platform: string; handle: string | null;
+  status: ConnStatus; scopes: string[]; token_expires_at: string | null; last_synced_at: string | null; last_error: string | null;
+  connected_at: string; revoked_at: string | null; verified: boolean; tracked: number; last_api_metric_at: string | null;
+};
+export async function listConnections(status: ConnStatus | null, search: string): Promise<Connection[]> {
+  const rows = await rpc<Record<string, unknown>[]>('admin_platform_connections', { p_status: status, p_search: search.trim() || null });
+  return (rows ?? []).map((r) => ({ ...r, tracked: Number(r.tracked ?? 0) }) as unknown as Connection);
+}
+export const disconnectPlatform = (id: string, reason: string, unverify: boolean) =>
+  rpc('admin_disconnect_platform', { p_connection_id: id, p_reason: reason, p_unverify: unverify });
