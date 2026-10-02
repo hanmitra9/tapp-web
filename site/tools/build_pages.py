@@ -188,7 +188,7 @@ MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit deng
 .cal button{height:40px;border-radius:10px;border:1px solid transparent;background:transparent;color:#D4D4D8;font:inherit;font-size:14px;cursor:pointer}
 .cal button:hover:not(:disabled){background:#17171E}
 .cal button:disabled{color:#3F3F46;cursor:default}
-.cal button.on,.slots button.on{background:linear-gradient(180deg,#7A88FF,#4F57F5);border-color:rgba(198,214,255,0.4);color:#FFFFFF}
+.cal button.on,.slots button.on{background:linear-gradient(180deg,#5F93FF,#2F66F2);border-color:rgba(198,214,255,0.4);color:#FFFFFF}
 .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;min-height:40px}
 .slots button{height:38px;border-radius:10px;border:1px solid var(--line);background:#111116;color:#E4E4E7;font:inherit;font-size:14px;cursor:pointer;font-variant-numeric:tabular-nums}
 .slots button:disabled{text-decoration:line-through;color:#4A4A52;cursor:default}
@@ -196,7 +196,7 @@ MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit deng
 .fgrid label{display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--t2)}
 .fgrid .wide{grid-column:1/-1}
 .fgrid input,.fgrid select,.fgrid textarea{font:inherit;font-size:15px;color:#F4F4F5;background:#0B0B10;border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:11px 12px;outline:none}
-.fgrid input:focus,.fgrid select:focus,.fgrid textarea:focus{border-color:#7A88FF}
+.fgrid input:focus,.fgrid select:focus,.fgrid textarea:focus{border-color:#5F93FF}
 #msg:empty{display:none}
 #msg{padding:12px 14px;border-radius:12px;font-size:14px;line-height:21px}
 #msg.err{background:rgba(255,90,95,0.1);border:1px solid rgba(255,90,95,0.35);color:#FFB4B6}
