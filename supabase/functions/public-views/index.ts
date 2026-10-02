@@ -1,7 +1,7 @@
 // public-views — read a submitted post's public counters (no platform login), for the admin pay form.
 //   POST { submission_id } with an admin's session JWT → { views, likes, comments, shares, source } or { error }.
 // TikTok: video page JSON (stats.playCount …) · YouTube: watch page (videoDetails.viewCount) ·
-// Instagram: page JSON when it isn't behind the login wall (often it is → 'unreadable').
+// Instagram: page JSON, else the creator's public profile (latest posts) matched by shortcode; older posts → 'unreadable'.
 // Nothing is written: the admin confirms the number and admin_pay_submission records it.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
@@ -43,11 +43,24 @@ async function youtube(url: string): Promise<Counts | null> {
   const views = num(block, 'viewCount');
   return views == null ? null : { views, likes: null, comments: null, shares: null };
 }
-async function instagram(url: string): Promise<Counts | null> {
+async function instagram(url: string, handle: string | null): Promise<Counts | null> {
   const html = await page(url);
-  if (!html) return null;
-  const views = num(html, 'video_play_count', 'play_count', 'video_view_count', 'view_count');
-  return views == null ? null : { views, likes: num(html, 'like_count'), comments: num(html, 'comment_count'), shares: null };
+  const views = html ? num(html, 'video_play_count', 'play_count', 'video_view_count', 'view_count') : null;
+  if (views != null) return { views, likes: num(html!, 'like_count'), comments: num(html!, 'comment_count'), shares: null };
+  // Post page is behind the login wall: read the creator's public profile (latest posts carry their view counts).
+  const code = url.match(/instagram\.com\/(?:[^/]+\/)?(?:p|reel|reels|tv)\/([A-Za-z0-9_-]+)/)?.[1];
+  if (!code || !handle) return null;
+  try {
+    const r = await fetch(`https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(handle)}`,
+      { headers: { 'User-Agent': UA, 'x-ig-app-id': '936619743392459', 'Accept-Language': 'id,en;q=0.8' }, signal: AbortSignal.timeout(12_000) });
+    if (!r.ok) return null;
+    const u = (await r.json())?.data?.user;
+    const edges = [...(u?.edge_owner_to_timeline_media?.edges ?? []), ...(u?.edge_felix_video_timeline?.edges ?? [])];
+    const n = edges.map((e: { node: Record<string, any> }) => e.node).find((x: Record<string, any>) => x?.shortcode === code);
+    const v = n?.video_view_count ?? n?.video_play_count;
+    if (typeof v !== 'number') return null;
+    return { views: v, likes: n.edge_liked_by?.count ?? n.edge_media_preview_like?.count ?? null, comments: n.edge_media_to_comment?.count ?? null, shares: null };
+  } catch { return null; }
 }
 
 Deno.serve(async (req) => {
@@ -60,11 +73,16 @@ Deno.serve(async (req) => {
   if (me?.role !== 'admin') return json(403, { error: 'forbidden' });
   const { submission_id } = await req.json().catch(() => ({}));
   if (typeof submission_id !== 'string') return json(400, { error: 'submission_id_required' });
-  const { data: s } = await sb.from('submissions').select('platform, post_url').eq('id', submission_id).maybeSingle();
+  const { data: s } = await sb.from('submissions').select('platform, post_url, creator_id').eq('id', submission_id).maybeSingle();
   if (!s) return json(404, { error: 'submission_not_found' });
 
-  const read = s.platform === 'tiktok' ? tiktok : s.platform === 'youtube' ? youtube : s.platform === 'instagram' ? instagram : null;
-  const counts = read ? await read(s.post_url) : null;
+  let counts: Counts | null = null;
+  if (s.platform === 'tiktok') counts = await tiktok(s.post_url);
+  else if (s.platform === 'youtube') counts = await youtube(s.post_url);
+  else if (s.platform === 'instagram') {
+    const { data: acc } = await sb.from('creator_platforms').select('handle').eq('creator_id', s.creator_id).eq('platform', 'instagram').limit(1).maybeSingle();
+    counts = await instagram(s.post_url, acc?.handle ? String(acc.handle).replace(/^@/, '') : null);
+  }
   if (!counts) return json(200, { error: 'unreadable', platform: s.platform });
   return json(200, { ...counts, platform: s.platform, read_at: new Date().toISOString() });
 });
