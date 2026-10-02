@@ -226,7 +226,6 @@ a{{color:inherit;text-decoration:none}}
 .lp::after{{content:'';position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.045;mix-blend-mode:overlay;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}}
 .lp h1 span[style*="#7DA2FF"],.lp h2 span[style*="#7DA2FF"]{{background:linear-gradient(96deg,#C9D5FF 0%,#9AABFF 38%,#7280FF 72%,#575CF7 100%);-webkit-background-clip:text;background-clip:text;color:transparent !important;padding-bottom:.06em}}
 .lp .sec{{position:relative}}
-.lp .sec::before{{content:'';position:absolute;top:0;left:50%;width:min(760px,80%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(125,140,255,0.35),rgba(198,214,255,0.5),rgba(125,140,255,0.35),transparent)}}
 .lp .btn-p{{background:linear-gradient(180deg,#7A88FF 0%,#5059F8 48%,#3A3FD8 100%) !important;border:1px solid rgba(198,214,255,0.28) !important;box-shadow:0 10px 30px -14px rgba(84,96,255,0.95),inset 0 1px 0 rgba(255,255,255,0.28),inset 0 -1px 0 rgba(0,0,0,0.25) !important}}
 .lp .btn-s{{background:linear-gradient(180deg,#16161D,#0D0D12) !important;border:1px solid rgba(255,255,255,0.1) !important}}
 .lp .ccard,.lp .pdash,.lp .bsim > div{{position:relative}}
@@ -244,7 +243,6 @@ a{{color:inherit;text-decoration:none}}
   .lp .hero > div:not(.hv) > div{{justify-content:flex-start !important}}
   .lp .hero-h{{font-size:39px !important;line-height:44px !important;white-space:normal !important}}
   .lp .hero-h br{{display:none}}
-  .lp .hfacts{{display:flex;flex-direction:column;gap:2px}} .lp .hfacts i{{display:none}}
   .lp .fan{{height:460px !important;transform:scale(0.78);transform-origin:center top;margin-bottom:-60px}}
   .lp .fan .t1,.lp .fan:hover .t1{{transform:translate(-50%,-50%) translateX(-105px) translateY(20px) rotate(-10deg) !important}}
   .lp .fan .t3,.lp .fan:hover .t3{{transform:translate(-50%,-50%) translateX(105px) translateY(20px) rotate(10deg) !important}}

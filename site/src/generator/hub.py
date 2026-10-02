@@ -83,7 +83,6 @@ def hero_hub():
     <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Dibayar Untuk Setiap<br> <span style="color: #7DA2FF">View Yang Nyata</span></h1>
     <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Ambil brief dari brand, posting dari akunmu sendiri, dan terima bayaran untuk setiap 1.000 views yang lolos verifikasi.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Sekarang", "#app:/register")}{_btn("Jelajahi Campaign", "campaigns.html", False)}</div>
-    <p class="hfacts" style="margin-top: 4px; font-size: 13px; line-height: 20px; color: #71717A; font-weight: 400; letter-spacing: 0.01em"><span>Tanpa syarat follower</span> <i style="font-style: normal; color: #3F3F46">/</i> <span>Dibayar per 1.000 views</span> <i style="font-style: normal; color: #3F3F46">/</i> <span>Cair ke rekening &amp; e-wallet</span></p>
     <div class="hm" style="display: none; width: 100%; max-width: 420px; flex-direction: column; align-items: center; gap: 12px; margin-top: 8px; text-align: left">{_payout_card()}{_campaign_card()}</div>
   </div>
 </div>'''
