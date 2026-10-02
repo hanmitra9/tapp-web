@@ -74,7 +74,7 @@ export default function RequestPayout() {
         <Notice tone="error" message={error} />
         <View style={styles.summary}>
           <Line label="Saldo ditarik" value={idr(available)} />
-          <Line label={`Fee penarikan (${TIER_LABEL[fee.tier] ?? fee.tier}, ${fee.pct}%)`} value={fee.pct ? `−${idr(feeAmount)}` : 'Gratis'} />
+          <Line label={`Fee penarikan (Level ${TIER_LABEL[fee.tier] ?? fee.tier})`} value={fee.pct ? `−${idr(feeAmount)}` : 'Gratis'} />
           <Line label="Kamu terima" value={idr(net)} strong />
           <Line label="Tujuan" value={method ? `${method.provider} ${maskAccount(method.account_number)}` : '—'} />
           <Line label="Atas nama" value={method?.account_name ?? '—'} />

@@ -147,4 +147,9 @@ textarea { min-height: 72px; resize: vertical; }
   .list { max-height: 42vh; }
   .detail { max-height: none; padding: 18px 16px; }
   .grid2, .grid3 { grid-template-columns: minmax(0, 1fr); }
+  /* Wide tables scroll inside their card instead of pushing the page sideways. */
+  table { display: block; max-width: 100%; overflow-x: auto; white-space: nowrap; }
+  /* Nothing picked yet: the list is enough, no empty detail card under it. */
+  .detail:has(> .empty:only-child) { display: none; }
+  html, body { overflow-x: hidden; }
 }

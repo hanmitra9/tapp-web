@@ -94,8 +94,6 @@ TIERS = [
     ('New', '0', '#8A8A93'), ('Rising', '50K', '#34D07A'), ('Verified', '250K', '#7DA2FF'),
     ('Proven', '1 juta', '#A78BFA'), ('Elite', '5 juta', '#F0B429'),
 ]
-# Withdrawal fee per level (app_settings.withdrawal_fee_pct, migration 034): higher level, lower fee.
-TIER_FEE = [5, 4, 3, 2, 0]
 TIER_BODY = [
     'Titik awal. Selesaikan campaign pertama dan kumpulkan clip yang lolos verifikasi.',
     'Clip-mu mulai konsisten lolos. Pola kerjamu sudah terbentuk dan terbaca.',
@@ -112,7 +110,6 @@ def _tier_card(i):
         <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: {color}; background: rgba(255,255,255,0.05); border: 1px solid {color}">Level {i + 1} dari 5</span>
         <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">{name}</b>
         <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{req}</span>
-        <span class="tabular" style="padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #34D07A; background: rgba(52,208,122,0.1); border: 1px solid rgba(52,208,122,0.3)">{f'Fee Penarikan {TIER_FEE[i]}%' if TIER_FEE[i] else 'Penarikan Gratis'}</span>
         <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{TIER_BODY[i]}</p>
         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
           <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>

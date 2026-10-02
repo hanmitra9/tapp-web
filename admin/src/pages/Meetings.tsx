@@ -35,7 +35,7 @@ export function Meetings() {
             </button>
           ))}
         </div>
-        <div className="detail">{m ? <Detail key={m.id + m.status} m={m} onDone={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih permintaan di kiri.</div>}</div>
+        <div className="detail">{m ? <Detail key={m.id + m.status} m={m} onDone={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih permintaan dari daftar.</div>}</div>
       </div>
     </>
   );

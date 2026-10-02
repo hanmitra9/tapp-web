@@ -35,7 +35,7 @@ export function Disputes() {
             </button>
           ))}
         </div>
-        <div className="detail">{d ? <Detail key={d.id + d.status} d={d} onDone={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih keberatan di kiri.</div>}</div>
+        <div className="detail">{d ? <Detail key={d.id + d.status} d={d} onDone={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih keberatan dari daftar.</div>}</div>
       </div>
     </>
   );

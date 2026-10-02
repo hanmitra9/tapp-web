@@ -32,7 +32,7 @@ export function Support() {
             </button>
           ))}
         </div>
-        <div className="detail">{t ? <Ticket key={t.id + t.status} t={t} onDone={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih tiket di kiri.</div>}</div>
+        <div className="detail">{t ? <Ticket key={t.id + t.status} t={t} onDone={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih tiket dari daftar.</div>}</div>
       </div>
     </>
   );

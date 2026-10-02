@@ -30,6 +30,23 @@
         if (t === 'Sign Up') { a.textContent = 'Dashboard'; a.setAttribute('href', home + '/dashboard'); }
       });
     }
+    // Signed in: "Ambil campaign" on a landing card opens that campaign in the app instead of the sign-up page.
+    if (signedIn() && c.APP_URL && c.SUPABASE_URL && c.SUPABASE_ANON_KEY) {
+      var cards = (root || document).querySelectorAll('a[data-campaign]');
+      if (cards.length) {
+        fetch(c.SUPABASE_URL + '/rest/v1/rpc/public_campaigns', { method: 'POST', headers: { apikey: c.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: '{}' })
+          .then(function (r) { return r.ok ? r.json() : []; })
+          .then(function (list) {
+            var byTitle = {};
+            (list || []).forEach(function (k) { byTitle[String(k.title).toLowerCase()] = k.id; });
+            cards.forEach(function (a) {
+              var id = byTitle[a.getAttribute('data-campaign').toLowerCase()];
+              a.setAttribute('href', c.APP_URL.replace(/\/$/, '') + (id ? '/campaign/' + encodeURIComponent(id) : '/dashboard/campaigns'));
+            });
+          })
+          .catch(function () { /* keep the default link */ });
+      }
+    }
     // Hide a group (e.g. the footer "Social" column) when none of its links are configured.
     (root || document).querySelectorAll('[data-hide-empty]').forEach(function (g) {
       var visible = Array.prototype.some.call(g.querySelectorAll('a'), function (a) { return a.style.display !== 'none'; });
