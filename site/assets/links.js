@@ -66,3 +66,19 @@
   window.TAPP_applyLinks = apply;
   document.addEventListener('DOMContentLoaded', function () { apply(document); });
 })();
+// Mobile header menu (hamburger). State lives on <html> so a re-render of the header keeps it.
+(function () {
+  var root = document.documentElement;
+  function set(open) {
+    root.classList.toggle('menu-open', open);
+    document.querySelectorAll('.hb').forEach(function (b) { b.setAttribute('aria-expanded', open); b.setAttribute('aria-label', open ? 'Tutup menu' : 'Buka menu'); });
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t.closest && t.closest('.hb')) { set(!root.classList.contains('menu-open')); return; }
+    if (!root.classList.contains('menu-open')) return;
+    if (!t.closest || !t.closest('.mmenu') || t.closest('a')) set(false);
+  });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') set(false); });
+  window.addEventListener('resize', function () { if (window.innerWidth > 900) set(false); });
+})();

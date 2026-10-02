@@ -125,6 +125,26 @@ a{color:inherit;text-decoration:none}
 .tf-copy{position:relative;z-index:1;max-width:1200px;margin:72px auto 0;font-size:13px;color:#8A8A93}
 @media (max-width: 900px){.tf{padding:48px 20px 28px}.tf-cols{gap:32px 40px}.tf-copy{margin-top:48px}.tf-tag{font-size:14px}}
 
+.hb{display:none;width:44px;height:44px;border-radius:12px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:0;margin-left:auto}
+.hb span{display:block;width:18px;height:1.6px;border-radius:1px;background:#E4EDFF;transition:transform .25s ease}
+.menu-open .hb span:first-child{transform:translateY(3.3px) rotate(45deg)}
+.menu-open .hb span:last-child{transform:translateY(-3.3px) rotate(-45deg)}
+.mmenu{display:none;position:absolute;left:0;right:0;top:calc(100% + 8px);padding:10px;border-radius:18px;background:rgba(10,10,14,0.98);-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);border:1px solid rgba(255,255,255,0.08);box-shadow:0 30px 60px -20px rgba(0,0,0,0.9)}
+.mm-links,header.top .mm-links{display:flex !important;flex-direction:column;margin:0;gap:0}
+.mm-links a{display:flex;align-items:center;justify-content:space-between;height:50px;padding:0 14px;border-radius:12px;font-size:16px;font-weight:500;color:#E4E4E7}
+.mm-links a::after{content:'';width:7px;height:7px;border-right:1.6px solid #6E7690;border-top:1.6px solid #6E7690;transform:rotate(45deg)}
+.mm-links a:active{background:rgba(255,255,255,0.05)}
+.mm-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 4px 4px;margin-top:6px;border-top:1px solid rgba(255,255,255,0.06)}
+.mm-btn{display:flex;align-items:center;justify-content:center;height:46px;border-radius:12px;font-size:15px;font-weight:500;color:#FFFFFF}
+.mm-btn.ghost{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1)}
+.mm-btn.pri{background:linear-gradient(180deg,#5F93FF 0%,#2F66F2 50%,#1D47C4 100%);border:1px solid rgba(198,214,255,0.28);box-shadow:inset 0 1px 0 rgba(255,255,255,0.25)}
+.mm-act a[style*="display: none"] + .mm-btn,.mm-act .mm-btn:only-child{grid-column:1/-1}
+@media (max-width: 900px){
+  .hb{display:inline-flex}
+  .menu-open .mmenu{display:block}
+  .navbar > .btn-p,header.top > .btn{display:none !important}
+}
+
 @media (prefers-reduced-motion: reduce){.lp *{transition:none !important;animation:none !important}}
 @media (max-width: 900px){
   .lp .bcontact{grid-template-columns:minmax(0,1fr) !important}
@@ -178,6 +198,8 @@ a{color:inherit;text-decoration:none}
   <div style="flex-grow: 1"></div>
   <nav class="nlinks" style="display: flex; gap: 26px; font-weight: 500; font-size: 15px"><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="#mail">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
   <a class="btn-p" href="#app:/register" style="display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0; height: 46px; padding: 0 22px; border-radius: 12px; font-weight: 500; font-size: 15px; background: linear-gradient(180deg, #5767FF, #3B44E4); border: 1px solid rgba(255,255,255,0.14); box-shadow: 0 8px 24px -14px rgba(47,102,242,0.9), inset 0 1px 0 rgba(255,255,255,0.2)">Sign Up</a>
+  <button type="button" class="hb" aria-label="Buka menu" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
+  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="#alur">Cara Kerja</a><a href="#mail">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
 </header></div>
 
 <main id="top">
