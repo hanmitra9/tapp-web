@@ -9,7 +9,7 @@ import { TextField } from '@/components/TextField';
 import { errorMessage } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import { useCooldown } from '@/lib/useCooldown';
-import { validateOtp, validatePassword } from '@/lib/validation';
+import { OTP_MAX, validateOtp, validatePassword } from '@/lib/validation';
 import { useAuth } from '@/providers/AuthProvider';
 import { space } from '@/theme/tokens';
 
@@ -78,7 +78,7 @@ export default function ResetPassword() {
         <Notice tone="error" message={error} />
         <Notice tone="info" message={info} />
         {!verified.current ? (
-          <TextField label="Kode reset" value={code} maxLength={6} keyboardType="number-pad"
+          <TextField label="Kode reset" value={code} maxLength={OTP_MAX} keyboardType="number-pad"
             autoComplete="one-time-code" textContentType="oneTimeCode" autoFocus returnKeyType="next"
             onChangeText={(v) => setCode(v.replace(/\D/g, ''))} onSubmitEditing={() => passwordRef.current?.focus()}
             error={touched ? errs.code : null} />

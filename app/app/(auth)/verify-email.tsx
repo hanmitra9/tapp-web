@@ -9,7 +9,7 @@ import { TextField } from '@/components/TextField';
 import { errorMessage } from '@/lib/errors';
 import { supabase } from '@/lib/supabase';
 import { useCooldown } from '@/lib/useCooldown';
-import { validateOtp } from '@/lib/validation';
+import { OTP_MAX, validateOtp } from '@/lib/validation';
 import { space } from '@/theme/tokens';
 import { track } from '@/lib/analytics';
 import { sendLoginCode } from '@/features/auth/signIn';
@@ -54,18 +54,18 @@ export default function VerifyEmail() {
     <Screen width="narrow"
       footer={
         <>
-          <Button label={isLogin ? 'Masuk' : 'Verifikasi email'} onPress={verify} loading={busy} disabled={code.length !== 6} />
+          <Button label={isLogin ? 'Masuk' : 'Verifikasi email'} onPress={verify} loading={busy} disabled={code.length < 6} />
           <Button variant="quiet" label={cooldown.left > 0 ? `Kirim ulang dalam ${cooldown.left} detik` : 'Kirim ulang kode'}
             disabled={cooldown.left > 0} onPress={resend} />
         </>
       }
     >
       <Header title={isLogin ? 'Verifikasi masuk' : 'Verifikasi email'}
-        subtitle={isLogin ? `Demi keamanan akunmu, masukkan kode 6 digit yang baru kami kirim ke ${email}.` : `Masukkan kode 6 digit yang dikirim ke ${email}.`} />
+        subtitle={isLogin ? `Demi keamanan akunmu, masukkan kode yang baru kami kirim ke ${email}.` : `Masukkan kode yang dikirim ke ${email}.`} />
       <View style={styles.form}>
         <Notice tone="error" message={error} />
         <Notice tone="info" message={info} />
-        <TextField label="Kode verifikasi" value={code} maxLength={6} keyboardType="number-pad"
+        <TextField label="Kode verifikasi" value={code} maxLength={OTP_MAX} keyboardType="number-pad"
           autoComplete="one-time-code" textContentType="oneTimeCode" autoFocus
           onChangeText={(v) => setCode(v.replace(/\D/g, ''))} onSubmitEditing={verify} />
       </View>
