@@ -388,6 +388,16 @@ export type Connection = {
   status: ConnStatus; scopes: string[]; token_expires_at: string | null; last_synced_at: string | null; last_error: string | null;
   connected_at: string; revoked_at: string | null; verified: boolean; tracked: number; last_api_metric_at: string | null;
 };
+// ── Bio code reviews (0039) ──
+export type BioReview = { id: string; platform: string; handle: string; profile_url: string | null; followers: number | null; bio_code: string;
+  bio_note: string | null; bio_checked_at: string | null; full_name: string | null; username: string | null };
+export async function listBioReviews(): Promise<BioReview[]> {
+  const { data, error } = await supabase.from('admin_bio_reviews').select('*').order('bio_checked_at', { ascending: true, nullsFirst: true });
+  if (error) throw error;
+  return (data ?? []) as BioReview[];
+}
+export const reviewBio = (id: string, ok: boolean, note: string | null) => rpc('admin_review_bio', { p_platform_id: id, p_ok: ok, p_note: note });
+
 export async function listConnections(status: ConnStatus | null, search: string): Promise<Connection[]> {
   const rows = await rpc<Record<string, unknown>[]>('admin_platform_connections', { p_status: status, p_search: search.trim() || null });
   return (rows ?? []).map((r) => ({ ...r, tracked: Number(r.tracked ?? 0) }) as unknown as Connection);

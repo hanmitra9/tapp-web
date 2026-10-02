@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { disconnectPlatform, listConnections, type Connection, type ConnStatus } from '../lib/api';
+import { disconnectPlatform, listBioReviews, listConnections, reviewBio, type BioReview, type Connection, type ConnStatus } from '../lib/api';
 import { adminError } from '../lib/errors';
 import { ago, dt, num } from '../lib/format';
 import { useLoad } from '../lib/useLoad';
@@ -26,6 +26,7 @@ export function Connections() {
         <div><h1>Koneksi akun</h1><p className="sub">Akun TikTok/Instagram yang dihubungkan kreator untuk views otomatis. Login = bukti kepemilikan, jadi akunnya otomatis terverifikasi.</p></div>
         <input type="search" placeholder="Cari nama, username, handle…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 280 }} />
       </div>
+      <BioQueue />
       <div className="tabs">{TABS.map((x) => <button key={x.label} className={`tab ${tab.s === x.s ? 'on' : ''}`} onClick={() => setTab(x)}>{x.label}</button>)}</div>
       <div className="split">
         <div className="list">
@@ -80,5 +81,38 @@ function Detail({ c, onDone }: { c: Connection; onDone: () => Promise<void> }) {
         </div>
       ) : null}
     </>
+  );
+}
+
+// Accounts whose bio code couldn't be read automatically (or the creator asked for a manual check).
+function BioQueue() {
+  const q = useLoad(listBioReviews, []);
+  const [busy, setBusy] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  if (!q.data?.length) return q.error ? <div className="notice error">{q.error}</div> : null;
+  async function decide(r: BioReview, ok: boolean) {
+    const note = ok ? null : prompt(`Kenapa @${r.handle} ditolak? (dikirim ke kreator)`, 'Kode tidak ada di bio');
+    if (!ok && !note) return;
+    setBusy(r.id); setError(null);
+    try { await reviewBio(r.id, ok, note); await q.reload(); } catch (e) { setError(adminError(e)); } finally { setBusy(null); }
+  }
+  const url = (r: BioReview) => r.profile_url ?? (r.platform === 'tiktok' ? `https://www.tiktok.com/@${r.handle}` : `https://www.instagram.com/${r.handle}`);
+  return (
+    <div className="section card" style={{ marginBottom: 16 }}>
+      <h2 style={{ margin: 0 }}>Cek kode bio · {q.data.length}</h2>
+      <p className="sub" style={{ margin: '4px 0 10px' }}>Buka profilnya, pastikan kode di bawah ada di bio, lalu verifikasi. Bio tidak bisa dibaca otomatis atau kreator minta cek manual.</p>
+      {error ? <div className="notice error">{error}</div> : null}
+      {q.data.map((r) => (
+        <div key={r.id} className="mrow" style={{ gap: 12, flexWrap: 'wrap' }}>
+          <span><b>{PLATFORM[r.platform] ?? r.platform} <a href={url(r)} target="_blank" rel="noopener">@{r.handle}</a></b><br />
+            <span className="sub">{r.full_name ?? '—'}{r.username ? ` · @${r.username}` : ''}{r.bio_note ? ` · ${r.bio_note}` : ''}</span></span>
+          <code style={{ fontSize: 15, fontWeight: 700, letterSpacing: 1 }}>{r.bio_code}</code>
+          <span className="actions" style={{ margin: 0 }}>
+            <button className="btn" disabled={busy === r.id} onClick={() => decide(r, true)}>Verifikasi</button>
+            <button className="btn secondary" disabled={busy === r.id} onClick={() => decide(r, false)}>Tolak</button>
+          </span>
+        </div>
+      ))}
+    </div>
   );
 }

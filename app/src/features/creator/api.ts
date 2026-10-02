@@ -2,7 +2,9 @@ import { ImageManipulator, SaveFormat } from 'expo-image-manipulator';
 import { supabase } from '@/lib/supabase';
 import type { Experience, Platform } from './options';
 
-export type LinkedPlatform = { id: string; platform: Platform; handle: string; profile_url: string | null; followers: number | null; verified_at: string | null };
+export type LinkedPlatform = { id: string; platform: Platform; handle: string; profile_url: string | null; followers: number | null; verified_at: string | null;
+  bio_code?: string | null; bio_status?: BioStatus | null; bio_note?: string | null };
+export type BioStatus = 'code_issued' | 'not_found' | 'review' | 'verified' | 'rejected';
 export type PayoutMethod = { id: string; kind: 'bank' | 'ewallet'; provider: string; account_name: string; account_number: string };
 export type Audience = { countries: string[]; age_ranges: string[]; languages: string[] };
 export type CreatorProfile = {
@@ -46,7 +48,7 @@ export async function fetchStats(uid: string): Promise<CreatorStats> {
 // ── Social accounts ──
 export async function fetchPlatforms(uid: string): Promise<LinkedPlatform[]> {
   const { data, error } = await supabase.from('creator_platforms')
-    .select('id, platform, handle, profile_url, followers, verified_at').eq('creator_id', uid).order('created_at');
+    .select('id, platform, handle, profile_url, followers, verified_at, bio_code, bio_status, bio_note').eq('creator_id', uid).order('created_at');
   if (error) throw error;
   return data as LinkedPlatform[];
 }
@@ -77,6 +79,27 @@ export async function startConnect(platform: ConnectPlatform): Promise<string> {
   const { data, error } = await supabase.functions.invoke<{ url?: string }>(`${platform}-oauth`, { method: 'POST' });
   if (error || !data?.url) throw new Error('Halaman login belum bisa dibuka. Coba lagi sebentar lagi.');
   return data.url;
+}
+
+// Bio code verification (migration 0039): code in the TikTok / Instagram bio proves the account is yours.
+export async function issueBioCode(platformId: string): Promise<{ code: string; status: BioStatus }> {
+  const { data, error } = await supabase.rpc('bio_code_issue', { p_platform_id: platformId });
+  if (error) throw error;
+  return data as { code: string; status: BioStatus };
+}
+export async function checkBio(platformId: string): Promise<BioStatus> {
+  const { data, error } = await supabase.functions.invoke<{ status?: BioStatus; error?: string }>('bio-check', { body: { platform_id: platformId } });
+  if (error) {
+    const ctx = (error as { context?: Response }).context;
+    const body = ctx ? await ctx.json().catch(() => null) : null;
+    if (body?.error === 'too_fast') throw new Error('Tunggu beberapa detik sebelum cek lagi.');
+    throw new Error('Bio belum bisa dicek. Coba lagi sebentar lagi.');
+  }
+  return data!.status!;
+}
+export async function requestBioReview(platformId: string) {
+  const { error } = await supabase.rpc('bio_code_request_review', { p_platform_id: platformId });
+  if (error) throw error;
 }
 
 export async function setMainPlatform(uid: string, platform: Platform | null) {

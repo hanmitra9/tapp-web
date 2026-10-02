@@ -585,3 +585,26 @@ do $$ begin
 end $$;
 select count(*) >= 0 as public_list_has_banner_column from public_campaigns() where banner_url is not null or banner_url is null;
 select 'campaign_banner_ok' as result;
+
+-- ── Bio code verification (0039) ──
+reset role;
+insert into creator_platforms (creator_id, platform, handle) values ('00000000-0000-0000-0000-0000000000c2', 'instagram', 'bio.test.ig');
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select (bio_code_issue((select id from creator_platforms where handle = 'bio.test.ig')))->>'code' ~ '^TAPP-[A-Z2-9]{6}$' as code_ok;
+select (bio_code_issue((select id from creator_platforms where handle = 'bio.test.ig')))->>'code' = (select bio_code from creator_platforms where handle = 'bio.test.ig') as reused;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select bio_code_issue((select id from creator_platforms where handle = 'bio.test.ig'))$$, 'platform_not_found');
+reset role;
+select bio_code_result((select id from creator_platforms where handle = 'bio.test.ig'), 'unreadable', 'blocked');
+select count(*) = 1 as queued from admin_bio_reviews where handle = 'bio.test.ig';
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error($$select admin_review_bio((select id from creator_platforms where handle = 'bio.test.ig'), false)$$, 'reason_required');
+select admin_review_bio((select id from creator_platforms where handle = 'bio.test.ig'), true);
+reset role;
+do $$ begin
+  if (select verified_at from creator_platforms where handle = 'bio.test.ig') is null then raise exception 'bio verify failed'; end if;
+  if (select bio_status from creator_platforms where handle = 'bio.test.ig') <> 'verified' then raise exception 'bio status'; end if;
+end $$;
+select 'bio_code_ok' as result;
