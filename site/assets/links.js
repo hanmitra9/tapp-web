@@ -1,9 +1,9 @@
-// Rewrites placeholder links (#app:/path, #mail, #discord, #instagram, #whatsapp) from config.js.
+// Rewrites placeholder links (#app:/path, #mail, #discord, #instagram, #whatsapp, #whatsapp-brand) from config.js.
 // Links whose target isn't configured are hidden instead of pointing nowhere.
 (function () {
   function apply(root) {
     var c = window.TAPP_CONFIG || {};
-    var map = { '#mail': c.SUPPORT_EMAIL ? 'mailto:' + c.SUPPORT_EMAIL : '', '#discord': c.DISCORD_URL, '#instagram': c.INSTAGRAM_URL, '#whatsapp': c.WHATSAPP_URL };
+    var map = { '#mail': c.SUPPORT_EMAIL ? 'mailto:' + c.SUPPORT_EMAIL : '', '#discord': c.DISCORD_URL, '#instagram': c.INSTAGRAM_URL, '#whatsapp': c.WHATSAPP_URL, '#whatsapp-brand': c.WHATSAPP_BRAND_URL };
     (root || document).querySelectorAll('a[href]').forEach(function (a) {
       var h = a.getAttribute('href');
       if (h.indexOf('#app:') === 0) {

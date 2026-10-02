@@ -11,7 +11,7 @@ Static pages of the TAPP website. `python3 site/tools/build_all.py https://yourd
 |---|---|
 | `APP_URL` | Where Sign Up / Log In go. `/` = the same site (default; the signed-in pages ship in the same build). |
 | `SUPPORT_EMAIL` | Every contact link. Now `tappcreators@gmail.com`; switch to `support@<domain>` once you have one. |
-| `DISCORD_URL`, `INSTAGRAM_URL`, `WHATSAPP_URL` | Leave empty to hide the link (the floating Discord button and empty footer columns hide too). |
+| `DISCORD_URL`, `INSTAGRAM_URL`, `WHATSAPP_URL` (creator), `WHATSAPP_BRAND_URL` (brand) | Leave empty to hide the link (the floating Discord button and empty footer columns hide too). |
 
 ## Deploy
 See `../DEPLOY.md` (cPanel/Apache `.htaccess` included, Nginx config in `../deploy/`).
