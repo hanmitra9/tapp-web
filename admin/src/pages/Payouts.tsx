@@ -48,7 +48,7 @@ export function Payouts() {
           {list.data && !list.data.length ? <div className="empty">Tidak ada pencairan di sini.</div> : null}
           {list.data?.map((p) => (
             <button key={p.id} className={`list-item ${selected === p.id ? 'on' : ''}`} onClick={() => setSelected(p.id)}>
-              <div className="row"><span className="title">{idr(p.amount)}</span><span className={`badge ${LABEL[p.status].tone}`}>{LABEL[p.status].t}</span></div>
+              <div className="row"><span className="title">{idr(p.net_amount)}</span><span className={`badge ${LABEL[p.status].tone}`}>{LABEL[p.status].t}</span></div>
               <div className="meta">@{p.creator_username} · {p.payout_method.provider} · {dt(p.created_at)}</div>
               {!p.ledger_matches || p.creator_flagged || p.creator_open_disputes || p.method_changed_recently ? <div className="meta" style={{ color: 'var(--warning)' }}>Perlu dicek</div> : null}
             </button>
@@ -86,7 +86,8 @@ function Detail({ p, onChanged }: { p: AdminPayout; onChanged: () => Promise<voi
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <div><h2>{idr(p.amount)}</h2><p className="sub">{p.creator_name} · @{p.creator_username} · status kreator {p.creator_status}</p></div>
+        <div><h2>Transfer {idr(p.net_amount)}</h2><p className="sub">{p.creator_name} · @{p.creator_username} · status kreator {p.creator_status}</p>
+          <p className="sub" style={{ margin: 0 }}>Saldo ditarik {idr(p.amount)} · fee penarikan {idr(p.fee)} ({p.fee_pct}%{p.fee_tier ? `, level ${p.fee_tier}` : ''})</p></div>
         <span className={`badge ${LABEL[p.status].tone}`}>{LABEL[p.status].t}</span>
       </div>
 

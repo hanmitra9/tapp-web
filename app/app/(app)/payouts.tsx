@@ -33,7 +33,7 @@ function PayoutRow({ p }: { p: Payout }) {
   return (
     <View style={styles.row}>
       <View style={styles.head}>
-        <Text style={styles.amount}>{idr(p.amount)}</Text>
+        <Text style={styles.amount}>{idr(p.net_amount ?? p.amount)}</Text>
         <StatusBadge label={st.label} tone={st.tone} />
       </View>
       <Text style={styles.meta}>
