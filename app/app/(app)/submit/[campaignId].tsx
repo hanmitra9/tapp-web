@@ -16,7 +16,7 @@ import { TextField } from '@/components/TextField';
 import { errorMessage } from '@/lib/errors';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { fetchCampaign } from '@/features/campaigns/api';
 import { fetchPlatforms } from '@/features/creator/api';
 import { PLATFORMS, platformLabel, type Platform } from '@/features/creator/options';
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   shot: { width: 72, height: 128, borderRadius: radius.sm, backgroundColor: color.surface },
   remove: { ...type.label, color: color.danger },
   multiline: { minHeight: 88, textAlignVertical: 'top' },
-  rules: { gap: space.xs, padding: space.lg, backgroundColor: color.surface, borderRadius: radius.md },
+  rules: { gap: space.xs, padding: space.lg, ...card, borderRadius: radius.md },
   rulesTitle: { ...type.label, color: color.text, marginBottom: space.xs },
   rule: { ...type.caption, color: color.textSecondary },
   done: { flex: 1, justifyContent: 'center', gap: space.md },

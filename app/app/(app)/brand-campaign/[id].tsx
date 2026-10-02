@@ -13,7 +13,7 @@ import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { CostCard, Freshness, ViewsBreakdown } from '@/features/brand/ReportParts';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { BRAND_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
 
@@ -148,7 +148,7 @@ const styles = StyleSheet.create({
   brand: { ...type.label, color: color.textSecondary },
   title: { ...type.title, color: color.text, marginTop: space.xs },
   meta: { ...type.caption, color: color.textMuted, marginTop: space.xs },
-  budgetCard: { marginTop: space.xl, backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  budgetCard: { marginTop: space.xl, ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md },
   budgetTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
   budgetValue: { ...type.metric, fontSize: 26, color: color.text },
   budgetSide: { ...type.heading, color: color.success, fontVariant: ['tabular-nums'] },
@@ -156,7 +156,7 @@ const styles = StyleSheet.create({
   fill: { height: 8, borderRadius: 4, backgroundColor: color.blue },
   cap: { ...type.caption, color: color.textMuted, fontVariant: ['tabular-nums'] },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.lg },
-  stat: { flexGrow: 1, flexBasis: '45%', padding: space.lg, gap: 4, backgroundColor: color.surface, borderRadius: radius.lg },
+  stat: { flexGrow: 1, flexBasis: '45%', padding: space.lg, gap: 4, ...card, borderRadius: radius.lg },
   statValue: { ...type.metric, fontSize: 20, lineHeight: 24, color: color.text },
   section: { marginTop: space.xxl, gap: space.md },
   sectionTitle: { ...type.heading, color: color.text },

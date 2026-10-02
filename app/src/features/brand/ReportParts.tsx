@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { ago, idr, num } from '@/lib/format';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 
 // "Views masuk 12 menit lalu · verifikasi 2 jam lalu · diperbarui otomatis" — so a brand knows how fresh the numbers are.
 export function Freshness({ metricsAt, qualifiedAt, refreshedAt }: { metricsAt: string | null; qualifiedAt: string | null; refreshedAt: number }) {
@@ -94,7 +94,7 @@ const styles = StyleSheet.create({
   fresh: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.md },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: color.success, boxShadow: '0 0 8px rgba(52,208,122,0.8)' },
   freshText: { ...type.caption, color: color.textMuted, flex: 1 },
-  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md, borderWidth: 1, borderColor: color.border },
+  card: { ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md },
   cardHead: { gap: 2 },
   big: { ...type.metric, fontSize: 26, color: color.text },
   cap: { ...type.caption, color: color.textMuted, fontVariant: ['tabular-nums'] },

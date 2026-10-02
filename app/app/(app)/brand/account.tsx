@@ -6,7 +6,7 @@ import { Screen } from '@/components/Screen';
 import { StatusBadge } from '@/components/StatusBadge';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { fetchMyBrands, setDailyReport } from '@/features/brand/api';
 import { errorMessage } from '@/lib/errors';
 
@@ -56,7 +56,7 @@ export default function BrandAccount() {
   );
 }
 const styles = StyleSheet.create({
-  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg, gap: 4 },
+  card: { ...card, borderRadius: radius.lg, padding: space.lg, gap: 4 },
   label: { ...type.caption, color: color.textMuted },
   value: { ...type.label, color: color.text },
   section: { ...type.heading, color: color.text, marginTop: space.xxl, marginBottom: space.sm },

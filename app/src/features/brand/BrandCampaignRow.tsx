@@ -2,7 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { StatusBadge } from '@/components/StatusBadge';
 import { compact, idr } from '@/lib/format';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { BRAND_STATUS, type BrandCampaign } from './api';
 
 // Campaign card with budget burn — the brand's primary question is "how far did my budget go?"
@@ -33,7 +33,7 @@ function Metric({ label, value }: { label: string; value: string }) {
   return <View style={{ flex: 1, gap: 2 }}><Text style={styles.value}>{value}</Text><Text style={styles.caption}>{label}</Text></View>;
 }
 const styles = StyleSheet.create({
-  card: { backgroundColor: color.surface, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  card: { ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md },
   top: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.md },
   title: { ...type.heading, color: color.text, flex: 1 },
   metrics: { flexDirection: 'row' },

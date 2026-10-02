@@ -8,7 +8,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { deadlineLabel, greeting, idr } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { EMPTY_FILTERS, fetchFeed, fetchHome, fetchMyCampaigns } from '@/features/campaigns/api';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
 import { fetchPayments, paidTotal } from '@/features/payouts/api';
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   cardWrap: { marginTop: space.xl },
   actions: { flexDirection: 'row', marginTop: space.xl },
   pills: { flexDirection: 'row', gap: space.sm, marginTop: space.xl },
-  pill: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6, backgroundColor: color.surface, borderRadius: radius.md, paddingVertical: space.md, paddingHorizontal: space.lg },
+  pill: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6, ...card, borderRadius: radius.md, paddingVertical: space.md, paddingHorizontal: space.lg },
   pillValue: { ...type.heading, color: color.text, fontVariant: ['tabular-nums'] },
   pillLabel: { ...type.caption, color: color.textMuted },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: space.xxl, marginBottom: space.md },

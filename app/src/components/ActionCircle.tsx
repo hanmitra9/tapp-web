@@ -11,7 +11,7 @@ export function ActionCircle({ icon, label, onPress }: Props) {
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={label} style={styles.wrap} hitSlop={4}>
       {({ pressed }) => (
         <>
-          <View style={[styles.circle, pressed && styles.pressed]}><Feather name={icon} size={20} color={color.text} /></View>
+          <View style={[styles.circle, pressed && styles.pressed]} {...({ dataSet: { tapp: 'action' } } as object)}><Feather name={icon} size={20} color="#C6D6FF" /></View>
           <Text style={styles.label} numberOfLines={1}>{label}</Text>
         </>
       )}

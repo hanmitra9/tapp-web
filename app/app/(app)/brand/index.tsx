@@ -12,7 +12,7 @@ import { compact, greeting, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { CostCard, Freshness, ViewsBreakdown } from '@/features/brand/ReportParts';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { fetchBrandCampaigns, fetchBrandDaily, fetchMyBrands, totals } from '@/features/brand/api';
 import { BrandCampaignRow } from '@/features/brand/BrandCampaignRow';
 
@@ -106,8 +106,8 @@ const styles = StyleSheet.create({
   title: { ...type.title, color: color.text, marginTop: 4 },
   cardWrap: { marginTop: space.xl },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.lg },
-  stat: { flexGrow: 1, flexBasis: '45%', padding: space.lg, gap: 4, backgroundColor: color.surface, borderRadius: radius.lg },
-  statValue: { ...type.metric, fontSize: 22, lineHeight: 26, color: color.text },
+  stat: { flexGrow: 1, flexBasis: '45%', padding: space.lg, gap: 4, ...card, borderRadius: radius.lg },
+  statValue: { ...type.metric, fontSize: 20, lineHeight: 26, letterSpacing: -0.5, color: color.text },
   statLabel: { ...type.caption, color: color.textMuted },
   section: { marginTop: space.xxl, gap: space.md },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline' },

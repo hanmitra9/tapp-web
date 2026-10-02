@@ -9,7 +9,7 @@ import { dateLabel, idr } from '@/lib/format';
 import { track } from '@/lib/analytics';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { fetchPayoutMethod } from '@/features/creator/api';
@@ -102,10 +102,10 @@ function PaymentRow({ p }: { p: Payment }) {
 
 const styles = StyleSheet.create({
   hero: { marginTop: -space.md },
-  method: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, backgroundColor: color.surface },
+  method: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
   methodLabel: { ...type.caption, color: color.textMuted },
   methodValue: { ...type.label, color: color.text },
-  explain: { marginTop: space.lg, padding: space.lg, gap: space.sm, backgroundColor: color.surface, borderRadius: radius.md },
+  explain: { marginTop: space.lg, padding: space.lg, gap: space.sm, ...card, borderRadius: radius.md },
   explainTitle: { ...type.label, color: color.text },
   explainBody: { ...type.caption, color: color.textSecondary, lineHeight: 20 },
   link: { ...type.label, color: color.link },
