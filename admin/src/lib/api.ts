@@ -109,6 +109,13 @@ export async function countPayable(): Promise<number> {
   if (error) throw error;
   return count ?? 0;
 }
+// Public counters read from the post page by the public-views Edge Function (no platform login).
+export type PublicViews = { views: number; likes: number | null; comments: number | null; shares: number | null; read_at: string } | { error: string };
+export async function readPublicViews(submissionId: string): Promise<PublicViews> {
+  const { data, error } = await supabase.functions.invoke<PublicViews>('public-views', { body: { submission_id: submissionId } });
+  if (error || !data) return { error: 'unreadable' };
+  return data;
+}
 export const paySubmission = (id: string, views: number, reference: string, note: string | null) =>
   rpc('admin_pay_submission', { p_submission_id: id, p_views: views, p_reference: reference, p_note: note });
 export const reviewSubmission = (id: string, decision: SubStatus, reason: string | null) =>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchBonusPct, fetchFeePct, fetchHistory, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, qualifyViews, recordMetrics, reviewSubmission,
+  fetchBonusPct, fetchFeePct, fetchHistory, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { previewEarnings, signals } from '../lib/engine';
@@ -225,6 +225,15 @@ function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews:
     return { to, pct, bonusPct, paid };
   }, [s.id]);
   const [views, setViews] = useState(String(Math.max(latestViews ?? 0, s.qualified_views) || ''));
+  // Read the post's public view count once and prefill it; the admin still checks it before paying.
+  const [auto, setAuto] = useState<PublicViews | 'loading' | null>(null);
+  const readAuto = async () => {
+    setAuto('loading');
+    const r = await readPublicViews(s.id);
+    setAuto(r);
+    if ('views' in r && r.views >= s.qualified_views) setViews(String(r.views));
+  };
+  useEffect(() => { void readAuto(); }, [s.id]);   // eslint-disable-line react-hooks/exhaustive-deps
   const [reference, setReference] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -262,7 +271,12 @@ function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews:
       {s.status === 'completed' ? <p className="sub" style={{ margin: 0 }}>Views naik lagi? Isi views terbaru untuk membayar selisihnya.</p> : null}
       <p className="sub" style={{ margin: 0 }}>Cek views di <a href={s.post_url} target="_blank" rel="noreferrer noopener">postingan ↗</a>. Tarif {idr(s.cpm)} per 1.000 views, minimal {num(s.min_views_to_qualify)} views{s.max_earning_per_submission ? `, maks ${idr(s.max_earning_per_submission)} per klip` : ''}.</p>
       <div className="grid2">
-        <label className="field">Views<input inputMode="numeric" value={views} onChange={(e) => setViews(e.target.value)} /></label>
+        <label className="field">Views<input inputMode="numeric" value={views} onChange={(e) => setViews(e.target.value)} />
+          <span className="sub" style={{ fontWeight: 400 }}>
+            {auto === 'loading' ? 'Membaca views dari postingan…'
+              : auto && 'views' in auto ? <>Terbaca otomatis: {num(auto.views)} views{auto.likes != null ? ` · ${num(auto.likes)} likes` : ''}. <a href="#" onClick={(e) => { e.preventDefault(); void readAuto(); }}>Baca ulang</a></>
+              : auto ? <>Views tidak terbaca otomatis, isi manual dari postingan. <a href="#" onClick={(e) => { e.preventDefault(); void readAuto(); }}>Coba lagi</a></> : null}
+          </span></label>
         <label className="field">Referensi transfer<input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="mis. BCA 0210-8823" /></label>
       </div>
       <div className="preview">
