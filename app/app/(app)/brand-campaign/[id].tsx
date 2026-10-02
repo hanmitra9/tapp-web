@@ -13,6 +13,7 @@ import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { CostCard, Freshness, ViewsBreakdown } from '@/features/brand/ReportParts';
+import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BRAND_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
@@ -64,7 +65,7 @@ export default function BrandCampaignReport() {
           <View><Text style={styles.cap}>Terpakai</Text><Text style={styles.budgetValue}>{idr(c.spent)}</Text></View>
           <View style={{ alignItems: 'flex-end' }}><Text style={styles.cap}>Sisa budget</Text><Text style={styles.budgetSide}>{idr(c.remaining)}</Text></View>
         </View>
-        <View style={styles.track}><View style={[styles.fill, { width: `${Math.max(used * 100, 1)}%` }, used >= 0.9 && { backgroundColor: color.warning }]} /></View>
+        <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${Math.max(used * 100, 1)}%` }]} {...web(used >= 0.9 ? 'seg-p' : 'seg-q')} /></View>
         <Text style={styles.cap}>{Math.round(used * 100)}% dari budget reward {idr(c.budget)} · fee platform {c.fee_pct}% ditagih terpisah</Text>
       </View>
 
@@ -90,7 +91,7 @@ export default function BrandCampaignReport() {
         {funnel.map((f, i) => (
           <View key={f.l} style={styles.funnelRow}>
             <Text style={styles.funnelLabel}>{f.l}</Text>
-            <View style={styles.funnelTrack}><View style={[styles.funnelFill, { width: `${Math.max((f.v / top) * 100, 2)}%` }]} /></View>
+            <View style={styles.funnelTrack} {...web('track')}><View style={[styles.funnelFill, { width: `${Math.max((f.v / top) * 100, 2)}%` }]} {...web('seg-q')} /></View>
             <Text style={styles.funnelValue}>{num(f.v)}</Text>
             <Text style={styles.funnelPct}>{i && funnel[i - 1]!.v ? `${Math.round((f.v / funnel[i - 1]!.v) * 100)}%` : ''}</Text>
           </View>

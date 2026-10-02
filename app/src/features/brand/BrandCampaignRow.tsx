@@ -2,6 +2,7 @@ import { router } from 'expo-router';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { StatusBadge } from '@/components/StatusBadge';
 import { compact, idr } from '@/lib/format';
+import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BRAND_STATUS, type BrandCampaign } from './api';
 
@@ -21,7 +22,7 @@ export function BrandCampaignRow({ c }: { c: BrandCampaign }) {
         <Metric label="Klip disetujui" value={String(c.approved)} />
         <Metric label="Kreator" value={String(c.creators_joined)} />
       </View>
-      <View style={styles.track}><View style={[styles.fill, { width: `${Math.max(used * 100, 1)}%` }, used >= 0.9 && { backgroundColor: color.warning }]} /></View>
+      <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${Math.max(used * 100, 1)}%` }]} {...web(used >= 0.9 ? 'seg-p' : 'seg-q')} /></View>
       <View style={styles.budget}>
         <Text style={styles.caption}>{idr(c.spent)} dari {idr(c.budget)}</Text>
         <Text style={styles.caption}>{Math.round(used * 100)}% terpakai</Text>

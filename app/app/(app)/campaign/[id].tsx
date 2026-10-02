@@ -12,6 +12,7 @@ import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
 import { cpmLabel, dateLabel, deadlineLabel, idr, idrCompact, num } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
+import { web } from '@/theme/web';
 import { color, radius, space, type } from '@/theme/tokens';
 import { assetLink, fetchAssets, fetchCampaign, joinCampaign, leaveCampaign, type Asset } from '@/features/campaigns/api';
 import { JoinedRow } from '@/features/campaigns/JoinedRow';
@@ -101,7 +102,7 @@ export default function CampaignDetailScreen() {
           <Text style={styles.budgetLabel}>Sisa budget</Text>
           <Text style={styles.budgetValue}>{idrCompact(c.remaining)} dari {idrCompact(c.budget)}</Text>
         </View>
-        <View style={styles.track}><View style={[styles.fill, { width: `${pct * 100}%` }]} /></View>
+        <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${pct * 100}%` }]} {...web('seg-q')} /></View>
       </View>
 
       {c.objective ? <Section title="Tujuan campaign"><Text style={styles.body}>{c.objective}</Text></Section> : null}
