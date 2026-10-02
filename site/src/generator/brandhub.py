@@ -46,8 +46,8 @@ def hero_brand():
   <div style="position: relative">{_sim()}</div>
   <div style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; margin-top: 48px">
     <h1 class="hero-h hero-hb" style="font-size: 56px; line-height: 62px; font-weight: 500">Ribuan Clip Organik, <br><span style="color: #7DA2FF">Bayar Yang Terbukti</span></h1>
-    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Creator TAPP mengubah materi brand-mu jadi clip pendek di TikTok, Instagram, dan YouTube. Kamu cuma bayar views yang lolos verifikasi. Bot dan lonjakan palsu tidak pernah masuk tagihan.</p>
-    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Jadwalkan Meeting", "meeting.html")}{_btn("Lihat Cara Kerja", "#alur", False)}</div>
+    <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 600px">Materi brand-mu diolah ratusan creator menjadi clip pendek yang tayang di TikTok, Instagram, dan YouTube. Kamu hanya membayar views yang terverifikasi, tanpa bot dan tanpa angka semu.</p>
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Campaign", "#kontak")}</div>
   </div>
 </div>'''
 
