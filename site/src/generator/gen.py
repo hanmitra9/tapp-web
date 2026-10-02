@@ -34,7 +34,7 @@ col = lambda *xs: '<span style="display: flex; flex-direction: column; gap: 2px"
 HERO_C = f'''<div class="hero pad" style="position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr); gap: 32px; align-items: center; max-width: 1280px; margin: 0 auto; padding: 56px 64px 40px">
   {hero_creator_visual()}
   <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-end; text-align: right">
-    <h1 class="hero-h" style="font-size: 76px; line-height: 78px; font-weight: 600; letter-spacing: -2.6px; white-space: nowrap">Clip Kamu,<br><span style="color: #7DA2FF">Bayaran Nyata</span></h1>
+    <h1 class="hero-h" style="font-size: 76px; line-height: 78px; font-weight: 600; letter-spacing: -2.6px; white-space: nowrap">Clip kamu,<br><span style="color: #7DA2FF">bayaran nyata.</span></h1>
     <p style="font-size: 20px; line-height: 30px; color: #A1A1AA; font-weight: 400; max-width: 420px">Dibayar dari views yang lolos verifikasi.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end">{pill_btn("Daftar Gratis", "#app:/register", True, True)}{pill_btn("Lihat Campaign", "campaigns.html", False, True)}</div>
   </div>
@@ -42,7 +42,7 @@ HERO_C = f'''<div class="hero pad" style="position: relative; display: grid; gri
 
 HERO_B = f'''<div class="hero pad" style="position: relative; display: grid; grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr); gap: 32px; align-items: center; max-width: 1280px; margin: 0 auto; padding: 56px 64px 40px">
   <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-start">
-    <h1 class="hero-h" style="font-size: 76px; line-height: 78px; font-weight: 600; letter-spacing: -2.6px; white-space: nowrap">Satu Brief,<br><span style="color: #7DA2FF">Ribuan Creator</span></h1>
+    <h1 class="hero-h" style="font-size: 76px; line-height: 78px; font-weight: 600; letter-spacing: -2.6px; white-space: nowrap">Satu brief,<br><span style="color: #7DA2FF">ribuan creator.</span></h1>
     <p style="font-size: 20px; line-height: 30px; color: #A1A1AA; font-weight: 400; max-width: 420px">Bayar hanya untuk views yang lolos verifikasi.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap">{pill_btn("Hubungi Tim TAPP", "#mail", True, True)}{pill_btn("Cara Kerja", "#alur", False, True)}</div>
   </div>
@@ -127,7 +127,7 @@ def faq_block(pill, l1, l2, btn, href, listname):
     return f'''<section id="faq" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 72px 64px 96px">
   <div class="faq2" style="display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 48px; align-items: start">
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: flex-start">
-      <span style="display: inline-flex; padding: 7px 14px; border-radius: 999px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); font-size: 13px; font-weight: 500; color: #D4D4D8">{pill}</span>
+      <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">{pill}</span>
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">{l1}<br><span style="color: #7DA2FF">{l2}</span></h2>
       {pill_btn(btn, href)}
     </div>
@@ -232,6 +232,8 @@ a{{color:inherit;text-decoration:none}}
   .lp .hero > div:not(.hv){{align-items:flex-start !important;text-align:left !important;order:-1}}
   .lp .hero > div:not(.hv) > div{{justify-content:flex-start !important}}
   .lp .hero-h{{font-size:39px !important;line-height:44px !important;white-space:normal !important}}
+  .lp .hero-h br{{display:none}}
+  .lp .hfacts{{display:flex;flex-direction:column;gap:2px}} .lp .hfacts i{{display:none}}
   .lp .fan{{height:460px !important;transform:scale(0.78);transform-origin:center top;margin-bottom:-60px}}
   .lp .fan .t1,.lp .fan:hover .t1{{transform:translate(-50%,-50%) translateX(-105px) translateY(20px) rotate(-10deg) !important}}
   .lp .fan .t3,.lp .fan:hover .t3{{transform:translate(-50%,-50%) translateX(105px) translateY(20px) rotate(10deg) !important}}
@@ -283,7 +285,7 @@ a{{color:inherit;text-decoration:none}}
   {hero_hub()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
-    {head("Open Campaigns", "Brief Sudah Menunggu,", "Tinggal Kamu Eksekusi", "Tarif, batas views, dan aturan konten terlihat sejak awal. Kamu tahu nilai sebuah clip sebelum mulai mengedit.")}
+    {head("Campaign terbuka", "Brief sudah menunggu,", "tinggal kamu eksekusi.", "Tarif, batas views, dan aturan konten terlihat sejak awal. Kamu tahu nilai sebuah clip sebelum mulai mengedit.")}
     <div class="g3" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px">
       {campaign_card(CAMPAIGNS[0])}
       {soon_card("Campaign brand berikutnya", "Slot ini disiapkan untuk brand yang bergabung selanjutnya.")}
@@ -291,12 +293,12 @@ a{{color:inherit;text-decoration:none}}
     </div>
     <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 40px">
       {pill_btn("Jelajahi Semua Campaign", "campaigns.html")}
-      <span style="display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: #8A8A93; font-weight: 500"><span style="display: inline-flex">{AV_STACK}</span>Gratis untuk creator. Tanpa syarat follower.</span>
+      <span style="display: inline-flex; align-items: center; gap: 10px; font-size: 14px; color: #8A8A93; font-weight: 500">Gratis untuk creator. Tanpa syarat follower.</span>
     </div>
   </section>
 
   <section id="alur" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
-    {head("How It Works", "Empat Langkah,", "Setiap Status Terlihat", "Dari pendaftaran sampai pencairan, posisi clip dan uangmu selalu jelas: direview, lolos, atau perlu revisi.")}
+    {head("Cara kerja", "Empat langkah,", "setiap status terlihat.", "Dari pendaftaran sampai pencairan, posisi clip dan uangmu selalu jelas: direview, lolos, atau perlu revisi.")}
     <div class="g2" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px">{''.join(step_card(i, t) for i, t in enumerate(STEPS_C))}</div>
   </section>
 
@@ -308,7 +310,7 @@ a{{color:inherit;text-decoration:none}}
 {WALL}
     <p style="font-size: 12px; color: #6E6E78; font-weight: 400; text-align: center; margin-top: 18px">Ilustrasi. Nama creator di atas adalah contoh.</p>
     <div class="pad" style="max-width: 760px; margin: 56px auto 0; padding: 0 64px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Rekam Jejakmu Dimulai<br><span style="color: #7DA2FF">dari Clip Pertama</span></h2>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Rekam jejakmu dimulai<br><span style="color: #7DA2FF">dari clip pertama.</span></h2>
       <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 600px">Satu brief hari ini, satu clip yang lolos, lalu campaign yang lebih besar. Setiap langkah tercatat dan ikut menaikkan levelmu.</p>
       <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{pill_btn("Mulai Sekarang", "#app:/register")}{pill_btn("Jelajahi Campaign", "campaigns.html", False)}</div>
     </div>
@@ -321,7 +323,7 @@ a{{color:inherit;text-decoration:none}}
   {hero_brand()}
 
   <section id="campaign" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 96px 64px">
-    {head("Why TAPP", "Kendali Penuh,", "dari Brief hingga Laporan", "Satu tim yang mendampingi, satu sistem yang menyaring views, dan satu dashboard yang membaca hasilnya.", True, 860)}
+    {head("Kenapa TAPP", "Kendali penuh,", "dari brief hingga laporan.", "Satu tim yang mendampingi, satu sistem yang menyaring views, dan satu dashboard yang membaca hasilnya.", True, 860)}
 {FX3}
   </section>
 
@@ -329,7 +331,7 @@ a{{color:inherit;text-decoration:none}}
 
   <section id="kontak" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 88px 64px 40px; text-align: center">
     <div style="display: flex; flex-direction: column; align-items: center; gap: 18px; margin-bottom: 24px">
-      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Biarkan Brand-mu<br><span style="color: #7DA2FF">Dibicarakan di Mana-mana</span></h2>
+      <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Biarkan brand-mu<br><span style="color: #7DA2FF">dibicarakan di mana-mana.</span></h2>
       <p style="font-size: 17px; line-height: 27px; font-weight: 400; color: #9A9AA5; max-width: 560px">Ceritakan target campaign-mu. Kami siapkan creator yang tepat untuk menyebarkannya dari berbagai kota.</p>
       <a class="btn-p" href="meeting.html" style="display: inline-flex; align-items: center; height: 48px; padding: 0 26px; border-radius: 999px; font-weight: 600; font-size: 16px; background: linear-gradient(180deg, #4D63FF, #2F45D6); box-shadow: 0 10px 28px -14px rgba(69,72,245,0.75), inset 0 1px 0 rgba(255,255,255,0.22)">Jadwalkan Meeting</a>
     </div>
