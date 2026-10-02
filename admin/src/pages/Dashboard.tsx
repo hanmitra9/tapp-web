@@ -1,14 +1,12 @@
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { fetchAutoQualify, fetchCounts, fetchFunnel, fetchWeekly, setAutoQualify, type Funnel } from '../lib/api';
-import { adminError } from '../lib/errors';
+import { countPayable, fetchCounts, fetchFunnel, fetchWeekly, type Funnel } from '../lib/api';
 import { num } from '../lib/format';
 import { useLoad } from '../lib/useLoad';
 
 const STEPS: { k: keyof Funnel; l: string }[] = [
   { k: 'signed_up', l: 'Daftar' }, { k: 'onboarded', l: 'Selesai onboarding' }, { k: 'approved', l: 'Disetujui' },
   { k: 'joined_campaign', l: 'Gabung campaign' }, { k: 'submitted', l: 'Submit konten' }, { k: 'approved_submission', l: 'Submission disetujui' },
-  { k: 'earned', l: 'Punya penghasilan' }, { k: 'paid_out', l: 'Sudah dicairkan' },
+  { k: 'paid_out', l: 'Sudah dibayar' },
 ];
 const KEY_EVENTS = ['signup_completed', 'onboarding_completed', 'campaign_joined', 'submission_submitted', 'submission_approved', 'payout_completed'];
 
@@ -16,23 +14,13 @@ export function Dashboard() {
   const counts = useLoad(fetchCounts, []);
   const funnel = useLoad(fetchFunnel, []);
   const weekly = useLoad(fetchWeekly, []);
-  const auto = useLoad(fetchAutoQualify, []);
-  const [autoBusy, setAutoBusy] = useState(false);
-  const [autoErr, setAutoErr] = useState<string | null>(null);
-  async function toggleAuto() {
-    if (!auto.data) return;
-    setAutoBusy(true); setAutoErr(null);
-    try { await setAutoQualify(!auto.data.enabled); await auto.reload(); } catch (e) { setAutoErr(adminError(e)); } finally { setAutoBusy(false); }
-  }
+  const payable = useLoad(countPayable, []);
   const d = counts.data;
   const items = d ? [
     { v: d.pending_review, l: 'Submission menunggu review', to: '/submissions?q=review' },
     { v: d.flagged, l: 'Submission ditandai', to: '/submissions?q=flagged' },
-    { v: d.awaiting_first_metrics, l: 'Disetujui, belum ada metrik', to: '/performance?q=metrics' },
-    { v: d.auto_held, l: 'Ditahan penyaringan otomatis', to: '/performance?q=held' },
-    { v: d.stale_metrics, l: 'Metrik lebih dari 24 jam', to: '/performance?q=tracking' },
+    { v: payable.data ?? 0, l: 'Diterima, belum dibayar', to: '/submissions?q=payable' },
     { v: d.creators_to_review, l: 'Kreator menunggu persetujuan', to: '/creators' },
-    { v: d.payouts_open, l: 'Pencairan belum selesai', to: '/payouts' },
     { v: d.campaigns_pending, l: 'Campaign menunggu persetujuan', to: '/campaigns' },
     { v: d.disputes_open, l: 'Keberatan terbuka', to: '/disputes' },
     { v: d.tickets_open, l: 'Tiket support terbuka', to: '/support' },
@@ -46,16 +34,6 @@ export function Dashboard() {
     <>
       <div className="page-head"><div><h1>Ringkasan</h1><p className="sub">Pekerjaan operasional yang menunggu tindakan, dan kesehatan funnel kreator.</p></div></div>
       {counts.error ? <div className="notice error">{counts.error}</div> : null}
-      {auto.data ? (
-        <div className="card section" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap' }}>
-          <div>
-            <h2 style={{ margin: 0 }}>Penyaringan views otomatis · {auto.data.enabled ? 'Aktif' : 'Nonaktif'}</h2>
-            <p className="sub" style={{ margin: '4px 0 0' }}>Tiap 30 menit, klip dengan views baru disaring otomatis bila tidak ada tanda mencurigakan. 24 jam terakhir: {num(auto.data.auto_24h)} otomatis, {num(auto.data.manual_24h)} manual, {num(auto.data.held)} ditahan menunggu admin.</p>
-            {autoErr ? <div className="notice error" style={{ marginTop: 8 }}>{autoErr}</div> : null}
-          </div>
-          <button className={`btn ${auto.data.enabled ? 'secondary' : ''}`} disabled={autoBusy} onClick={toggleAuto}>{auto.data.enabled ? 'Matikan' : 'Aktifkan'}</button>
-        </div>
-      ) : null}
       <div className="stats">
         {items.map((i) => <Link key={i.l} to={i.to} className="stat"><span className="v">{i.v}</span><span className="l">{i.l}</span></Link>)}
       </div>

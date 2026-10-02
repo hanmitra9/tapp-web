@@ -38,12 +38,12 @@ export default function Payout() {
     finally { setBusy(false); }
   }
 
-  if (current === undefined) return <Screen scroll={false}><Header title="Metode pencairan" /><LoadState error={loadError} onRetry={load} /></Screen>;
+  if (current === undefined) return <Screen scroll={false}><Header title="Rekening pembayaran" /><LoadState error={loadError} onRetry={load} /></Screen>;
   return (
     <Screen footer={<Button label="Simpan" onPress={save} loading={busy} />}>
-      <Header title="Metode pencairan" />
+      <Header title="Rekening pembayaran" />
       <View style={styles.body}>
-        <Notice tone="info" message="Perubahan berlaku untuk pencairan berikutnya. Pencairan yang sedang diproses tetap dikirim ke tujuan lama." />
+        <Notice tone="info" message="Tim TAPP mentransfer bayaran klipmu ke rekening atau e-wallet ini." />
         <Notice tone="error" message={error} />
         <PayoutForm values={form} onChange={setForm} showErrors={touched} />
       </View>

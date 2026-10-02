@@ -44,3 +44,22 @@ test('approve is one click; reject still asks for a reason', async ({ page }) =>
   await page.getByRole('button', { name: 'Setujui', exact: true }).click();
   await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_decision: 'approved', p_reason: null }]);
 });
+
+test('accepted clip is paid from "Siap dibayar": views + transfer reference, amount after the level fee', async ({ page }) => {
+  const sub = { ...SUB, status: 'approved', views: 20000, latest_metric_id: null };
+  await signedInCreator(page, {
+    profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [sub],
+    creator_payout_methods: [{ kind: 'bank', provider: 'BCA', account_name: 'Rani Putri', account_number: '1234567890' }],
+    app_settings: [{ value: { new: 5 } }], payout_requests: [],
+  }, { aal: 'aal2' });
+  const sent: Record<string, unknown>[] = [];
+  await page.route('**/rest/v1/rpc/admin_pay_submission', async (r) => { sent.push(r.request().postDataJSON()); await r.fulfill({ json: { id: 'p1', status: 'paid' } }); });
+  await page.goto('/admin/submissions?q=payable');
+  await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
+  await page.getByLabel('Views').fill('20.000');
+  await expect(page.getByText('Ke BCA 1234567890 a.n. Rani Putri')).toBeVisible();
+  // 20.000 views × Rp3.000 / 1.000 = Rp60.000, minus the New-level fee (5% = Rp3.000) → Rp57.000 transferred
+  await page.getByLabel('Referensi transfer').fill('BCA 0210');
+  await page.getByRole('button', { name: /Tandai sudah ditransfer Rp57\.000/ }).click();
+  await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_views: 20000, p_reference: 'BCA 0210', p_note: null }]);
+});

@@ -16,11 +16,11 @@ export default function Payouts() {
   const q = useQuery(fetchPayouts, []);
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Riwayat pencairan" subtitle="Pencairan diproses manual oleh tim TAPP, biasanya 1–3 hari kerja." />
+      <Header title="Riwayat pembayaran" subtitle="Bayaran klip yang sudah ditransfer tim TAPP." />
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {q.data && !q.data.length ? (
-        <EmptyState title="Belum ada pencairan" body="Ajukan pencairan dari tab Penghasilan setelah saldo tersedia mencapai minimum."
-          action={{ label: 'Ke Penghasilan', onPress: () => router.navigate('/dashboard/earnings') }} />
+        <EmptyState title="Belum ada pembayaran" body="Bayaran muncul setelah klipmu diterima dan ditransfer tim TAPP."
+          action={{ label: 'Ke Pembayaran', onPress: () => router.navigate('/dashboard/earnings') }} />
       ) : null}
       {q.data?.map((p) => <PayoutRow key={p.id} p={p} />)}
     </Screen>
@@ -47,7 +47,7 @@ function PayoutRow({ p }: { p: Payout }) {
       {p.status === 'paid' ? <Text style={styles.ok}>Dikirim {p.paid_at ? dateLabel(p.paid_at) : ''} · Ref. {p.processed_reference}</Text> : null}
       {p.status === 'rejected' ? (
         <>
-          <Text style={styles.bad}>Ditolak: {p.review_reason}. Saldo sudah kembali ke Tersedia.</Text>
+          <Text style={styles.bad}>Ditolak: {p.review_reason}. </Text>
           <Text style={styles.link} onPress={() => router.push({ pathname: '/dispute', params: { payout: p.id, reason: p.review_reason ?? '' } })}>Ajukan keberatan</Text>
         </>
       ) : null}

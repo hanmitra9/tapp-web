@@ -112,12 +112,12 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
   }
   if (type === "payout_paid") {
     return {
-      subject: `Pencairan ${idr(Number(d.amount))} sudah dikirim`,   // amount = net (after the withdrawal fee)
+      subject: `Bayaran ${idr(Number(d.amount))} sudah ditransfer`,   // amount = net (after the withdrawal fee)
       block: {
-        title: "Pencairan kamu sudah dikirim",
-        intro: "Dana pencairanmu sudah ditransfer. Biasanya langsung masuk, tapi beberapa bank bisa butuh waktu sampai 1 hari kerja.",
-        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.fee) > 0 ? ([["Fee penarikan", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
-        button: APP() ? { label: "Lihat riwayat pencairan", url: `${APP()}/payouts` } : undefined,
+        title: "Bayaran clip-mu sudah ditransfer",
+        intro: "Clip-mu sudah diterima dan bayarannya sudah ditransfer. Biasanya langsung masuk, tapi beberapa bank bisa butuh waktu sampai 1 hari kerja.",
+        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.fee) > 0 ? ([["Fee level", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
+        button: APP() ? { label: "Lihat riwayat pembayaran", url: `${APP()}/dashboard/earnings` } : undefined,
       },
     };
   }

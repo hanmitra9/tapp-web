@@ -5,13 +5,14 @@ import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { CardSkeleton, SkeletonBlock } from '@/components/Skeleton';
 import Feather from '@expo/vector-icons/Feather';
-import { compact, deadlineLabel, greeting, idr } from '@/lib/format';
+import { deadlineLabel, greeting, idr } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type } from '@/theme/tokens';
 import { EMPTY_FILTERS, fetchFeed, fetchHome, fetchMyCampaigns } from '@/features/campaigns/api';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
-import { fetchAvailable } from '@/features/campaigns/earnings';
+import { fetchPayments, paidTotal } from '@/features/payouts/api';
+import { fetchMySubmissions } from '@/features/submissions/api';
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
@@ -28,10 +29,12 @@ const STATUS_NOTE: Record<string, string> = {
 export default function Home() {
   const { account, session } = useAuth();
   const q = useQuery(async () => {
-    const [home, recs, mine, unread, available] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
-      unreadCount().catch(() => 0), fetchAvailable().catch(() => 0)]);
+    const [home, recs, mine, unread, payments, subs] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
+      unreadCount().catch(() => 0), fetchPayments().catch(() => []), fetchMySubmissions(undefined, 200).catch(() => [])]);
     return {
-      home, unread, available,
+      home, unread, paid: paidTotal(payments),
+      accepted: subs.filter((s) => s.status === 'approved' || s.status === 'tracking').length,
+      reviewing: subs.filter((s) => s.status === 'pending_review').length,
       recs: recs.filter((r) => !r.joined).slice(0, 3),
       active: mine.filter((m) => m.status === 'joined' && m.campaign && ['active', 'paused', 'ending'].includes(m.campaign.status)).slice(0, 3),
     };
@@ -44,8 +47,8 @@ export default function Home() {
       <View style={styles.top}>
         <View style={{ flex: 1 }}>
           <Text style={styles.hello}>{greeting()}{first ? `, ${first}` : ''}</Text>
-          <Text style={styles.totalLabel}>Total penghasilan</Text>
-          {d ? <Text style={styles.total} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit>{idr(d.home.total_earned)}</Text>
+          <Text style={styles.totalLabel}>Total dibayar</Text>
+          {d ? <Text style={styles.total} accessibilityRole="header" numberOfLines={1} adjustsFontSizeToFit>{idr(d.paid)}</Text>
             : <SkeletonBlock width="60%" height={34} />}
         </View>
         <View style={styles.topIcons}>
@@ -61,15 +64,15 @@ export default function Home() {
       </View>
 
       <View style={styles.cardWrap}>
-        <BalanceCard label="Tersedia untuk dicairkan" amount={d ? idr(d.available) : null}
-          footLeft={<Text style={cardFootText}>{d ? `${compact(d.home.qualified_views)} qualified views` : ' '}</Text>}
+        <BalanceCard label="Klip diterima, menunggu dibayar" amount={d ? `${d.accepted} klip` : null}
+          footLeft={<Text style={cardFootText}>{d ? `${d.reviewing} klip sedang direview` : ' '}</Text>}
           footRight={<Text style={cardFootText}>TAPP Creators</Text>} />
       </View>
 
       <View style={styles.actions}>
         <ActionCircle icon="compass" label="Campaign" onPress={() => router.navigate('/dashboard/campaigns')} />
         <ActionCircle icon="bar-chart-2" label="Performa" onPress={() => router.push('/performance')} />
-        <ActionCircle icon="download" label="Cairkan" onPress={() => router.push('/payout/request')} />
+        <ActionCircle icon="credit-card" label="Pembayaran" onPress={() => router.navigate('/dashboard/earnings')} />
         <ActionCircle icon="grid" label="Lainnya" onPress={() => router.push('/help')} />
       </View>
 

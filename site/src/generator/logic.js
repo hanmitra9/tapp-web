@@ -25,7 +25,7 @@ class Component extends DCLogic {
     const faqC = faqList([
       ['TAPP itu sebenarnya apa?', 'Tempat brand menaruh campaign dan creator mengerjakannya. Kamu bikin clip pendek dari konten sumber, posting di akunmu sendiri, dan dibayar dari views yang lolos verifikasi.'],
       ['Bagaimana hitungan bayarannya?', 'Qualified views dikali tarif per 1.000 views. Qualified artinya views yang lolos saringan bot dan aktivitas janggal, jadi angka mentah di TikTok bisa berbeda dengan yang dibayar. Rinciannya terlihat per clip.'],
-      ['Kapan uangnya bisa ditarik?', 'Penghasilan tertunda 7 hari untuk pengecekan, lalu pindah ke saldo tersedia dan bisa ditarik dengan minimal Rp50.000.'],
+      ['Kapan aku dibayar?', 'Setelah clip-mu diterima tim TAPP, bayarannya ditransfer langsung ke rekening atau e-wallet di profilmu. Tidak perlu mengajukan penarikan.'],
       ['Ditarik ke mana?', 'E-wallet (GoPay, OVO, DANA, ShopeePay, LinkAja) atau rekening bank (BCA, BRI, BNI, Mandiri, dan lainnya). Tim TAPP memproses dalam 1 sampai 3 hari kerja.'],
       ['Berapa views minimal supaya dibayar?', 'Tiap campaign punya aturannya sendiri. Di TAPP Campaign, clip mulai dihitung setelah mencapai 5.000 views dan dibayar sampai 100K views per clip, jadi maksimal Rp300.000 per clip.'],
       ['Follower saya masih sedikit, boleh?', 'Boleh. Tidak ada minimum follower. Level naik dari clip yang lolos dan approval rate-mu, jadi creator baru punya jalur yang sama.'],
