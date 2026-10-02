@@ -31,7 +31,7 @@ const AuthContext = createContext<AuthState | null>(null);
 async function loadAccount(userId: string): Promise<Account> {
   const [p, c] = await Promise.all([
     supabase.from('profiles').select('id, full_name, username, role').eq('id', userId).single(),
-    supabase.from('creator_profiles').select('status, status_reason, onboarding_completed_at').eq('user_id', userId).single(),
+    supabase.from('creator_profiles').select('status, status_reason, onboarding_completed_at').eq('user_id', userId).maybeSingle(),
   ]);
   if (p.error) throw p.error;
   if (c.error) throw c.error;
@@ -40,9 +40,10 @@ async function loadAccount(userId: string): Promise<Account> {
     fullName: p.data.full_name,
     username: p.data.username,
     role: p.data.role,
-    status: c.data.status,
-    statusReason: c.data.status_reason,
-    onboarded: c.data.onboarding_completed_at != null,
+    // No creator profile (e.g. an account made admin by hand): treat it as a fresh creator, never a load error.
+    status: c.data?.status ?? 'pending',
+    statusReason: c.data?.status_reason ?? null,
+    onboarded: c.data?.onboarding_completed_at != null,
   };
 }
 

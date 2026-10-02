@@ -95,7 +95,7 @@
   function empty(title, body) {
     return '<div style="grid-column: 1 / -1; padding: 56px 24px; border-radius: 18px; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(60% 80% at 50% 0%, rgba(69,72,245,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">'
       + '<img src="assets/tapp-mark.svg" alt="" style="width: 44px; height: 44px; opacity: 0.85"><h2 style="font-size: 22px; font-weight: 600">' + title + '</h2><p style="font-size: 15px; line-height: 24px; color: #9A9AA5; max-width: 440px">' + body + '</p>'
-      + '<a class="btn" href="' + (app ? app + '/register' : '#') + '" style="margin-top: 6px">Daftar gratis</a></div>';
+      + '<a class="btn" href="' + (c.APP_URL ? app + '/register' : '#') + '" style="margin-top: 6px">Daftar gratis</a></div>';
   }
   function draw() {
     var shown = all.filter(function (k) { return active === 'all' || (k.platforms || []).indexOf(active) >= 0; });

@@ -74,7 +74,7 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
           ))}
         </div>
         <div className="detail">
-          {selected ? <Detail key={selected} id={selected} mode={mode} onChanged={after} /> : <div className="empty">Pilih submission di kiri.</div>}
+          {selected ? <Detail key={selected} id={selected} mode={mode} onChanged={after} /> : <div className="empty">Pilih submission dari daftar.</div>}
         </div>
       </div>
     </>

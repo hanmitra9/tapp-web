@@ -56,7 +56,7 @@ export function Payouts() {
         </div>
         <div className="detail">
           {current ? <Detail key={current.id + current.status} p={current} onChanged={async () => { await list.reload(); refreshCounts(); }} />
-            : <div className="empty">Pilih pencairan di kiri.</div>}
+            : <div className="empty">Pilih pencairan dari daftar.</div>}
         </div>
       </div>
     </>
@@ -87,7 +87,7 @@ function Detail({ p, onChanged }: { p: AdminPayout; onChanged: () => Promise<voi
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div><h2>Transfer {idr(p.net_amount)}</h2><p className="sub">{p.creator_name} · @{p.creator_username} · status kreator {p.creator_status}</p>
-          <p className="sub" style={{ margin: 0 }}>Saldo ditarik {idr(p.amount)} · fee penarikan {idr(p.fee)} ({p.fee_pct}%{p.fee_tier ? `, level ${p.fee_tier}` : ''})</p></div>
+          <p className="sub" style={{ margin: 0 }}>Saldo ditarik {idr(p.amount)} · fee penarikan {idr(p.fee)} {p.fee_tier ? `(level ${p.fee_tier})` : ''}</p></div>
         <span className={`badge ${LABEL[p.status].tone}`}>{LABEL[p.status].t}</span>
       </div>
 

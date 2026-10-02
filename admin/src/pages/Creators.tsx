@@ -48,7 +48,7 @@ export function Creators() {
           ))}
         </div>
         <div className="detail">
-          {current ? <CreatorDetail c={current} onChanged={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih kreator di kiri.</div>}
+          {current ? <CreatorDetail c={current} onChanged={async () => { await list.reload(); refreshCounts(); }} /> : <div className="empty">Pilih kreator dari daftar.</div>}
         </div>
       </div>
     </>
