@@ -57,18 +57,17 @@ def art(kind, c1, c2):
 
 CAMPAIGNS = [
   # the real first campaign: Rp3.000 / 1K views, claim from 5.000 views, paid up to 100K views per clip
-  ('tapp', '#0E1A6B', '#4548F5', 'TAPP<br>Campaign', 'Campaign resmi', 'TAPP', '#4548F5', 'Clipping', 'Kenalkan TAPP lewat clip pendekmu', 'Rp3.000', ['tt', 'ig', 'yt'], 'SEMUA NICHE', None, None),
+  ('tapp', '#0E1A6B', '#4548F5', 'TAPP MEGA<br>CAMPAIGN', '', 'TAPP', '#4548F5', 'Clipping', 'Kenalkan TAPP lewat clip pendekmu', 'Rp3.000', ['tt', 'ig', 'yt'], 'SEMUA NICHE', None, None),
 ]
 
 def campaign_card(c):
     kind, c1, c2, htitle, tag, brand, bcol, typ, title, rate, plats, cat, n, pct = c
     ini = ''.join(w[0] for w in brand.split()[:2]).upper()
     icons = ''.join(f'<span style="color: #D4D4D8; display: inline-flex">{ICON[p]}</span>' for p in plats)
-    return f'''<article class="ccard" style="border-radius: 18px; overflow: hidden; {CARD}; display: flex; flex-direction: column">
+    return f'''<article class="ccard cglow" style="border-radius: 18px; overflow: hidden; {CARD}; display: flex; flex-direction: column">
       <div style="position: relative; height: 190px; overflow: hidden">
         {art(kind, c1, c2)}
         <div style="position: absolute; inset: 0; background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55))"></div>
-        <span style="position: absolute; right: 14px; top: 14px; padding: 5px 11px; border-radius: 999px; background: rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.18); font-size: 12px; font-weight: 600; backdrop-filter: blur(6px)">{tag}</span>
         <span style="position: absolute; left: 20px; bottom: 16px; font-size: 34px; line-height: 34px; font-weight: 600; letter-spacing: -0.8px; text-shadow: 0 4px 20px rgba(0,0,0,0.4)">{htitle}</span>
       </div>
       <div style="padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 12px">
@@ -93,7 +92,7 @@ def campaign_card(c):
 
 
 def soon_card(title, body):
-    return f'''<article style="border-radius: 18px; overflow: hidden; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(80% 60% at 50% 0%, rgba(69,72,245,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; text-align: center; min-height: 420px">
+    return f'''<article class="cglow" style="border-radius: 18px; overflow: hidden; border: 1px dashed rgba(125,162,255,0.3); background: radial-gradient(80% 60% at 50% 0%, rgba(69,72,245,0.12), transparent 70%), #0B0B0F; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 32px; text-align: center; min-height: 420px">
       <span style="width: 56px; height: 56px; border-radius: 18px; background: rgba(69,72,245,0.14); border: 1px solid rgba(125,162,255,0.3); display: inline-flex; align-items: center; justify-content: center"><img src="{BLOB_MARK}" alt="" style="width: 28px; height: 28px; opacity: 0.8"></span>
       <span style="padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,0.05); font-size: 12px; font-weight: 600; color: #C6D6FF">Segera hadir</span>
       <h3 style="font-size: 18px; font-weight: 600">{title}</h3>
