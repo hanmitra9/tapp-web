@@ -105,51 +105,83 @@ TIER_BODY = [
 TIER_BONUS = [0, 2, 5, 10, 15]
 
 # Picking a level is plain HTML/CSS (radio + label), so it also works where scripts are blocked.
+# Layout: a staircase of five steps (taller = higher level) next to a detail card for the picked level.
+STEP_H = [64, 104, 144, 188, 236]
+
+def _rgba(hex_, a):
+    h = hex_.lstrip('#')
+    return f'rgba({int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)},{a})'
+
 def _tier_card(i):
     name, thr, color = TIERS[i]
     req = 'Mulai dari 0 qualified views' if i == 0 else f'Mulai dari {thr} qualified views'
-    return f'''<div class="tcard tc{i}" style="position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); width: 440px; max-width: 100%; flex-direction: column; align-items: center; gap: 12px; text-align: center">
-        <span style="padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; color: {color}; background: rgba(255,255,255,0.05); border: 1px solid {color}">Level {i + 1} dari 5</span>
-        <b style="font-size: 40px; line-height: 44px; letter-spacing: -1px">{name}</b>
+    bonus = (f'<span class="tabular" style="padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #34D07A; background: rgba(52,208,122,0.1); border: 1px solid rgba(52,208,122,0.3)">Bonus Tarif +{TIER_BONUS[i]}%</span>'
+             if TIER_BONUS[i] else '<span style="padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #9A9AA5; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)">Tarif standar</span>')
+    return f'''<div class="tcard tc{i}" style="flex-direction: column; gap: 14px; padding: 28px; border-radius: 22px; background: linear-gradient(160deg, {_rgba(color, 0.16)}, rgba(15,15,20,0.9) 55%); border: 1px solid {_rgba(color, 0.35)}">
+        <div style="display: flex; align-items: center; gap: 14px">
+          {_badge(color, 56)}
+          <div style="display: flex; flex-direction: column; gap: 2px">
+            <span style="font-size: 12px; font-weight: 600; color: {color}; letter-spacing: 0.04em">LEVEL {i + 1} DARI 5</span>
+            <b style="font-size: 32px; line-height: 36px; letter-spacing: -0.8px">{name}</b>
+          </div>
+        </div>
         <span class="tabular" style="font-size: 15px; font-weight: 500; color: #C6D6FF">{req}</span>
-        {f'<span class="tabular" style="padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; color: #34D07A; background: rgba(52,208,122,0.1); border: 1px solid rgba(52,208,122,0.3)">Bonus Tarif +{TIER_BONUS[i]}%</span>' if TIER_BONUS[i] else ''}
-        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400; max-width: 380px">{TIER_BODY[i]}</p>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: center">
+        <div>{bonus}</div>
+        <p style="font-size: 15px; line-height: 23px; color: #9A9AA5; font-weight: 400">{TIER_BODY[i]}</p>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap">
           <span class="tchip">Naik otomatis</span><span class="tchip">Notifikasi saat naik</span><span class="tchip">Tampil di profil</span>
         </div>
       </div>'''
 
-def _arc():
-    cx, cy, R, r = 500, 500, 480, 290
-    pt = lambda rad, a: (cx + rad * math.cos(math.radians(a)), cy + rad * math.sin(math.radians(a)))
-    out, labels = [], []
+def _stairs():
+    steps = []
     for i, (name, thr, color) in enumerate(TIERS):
-        a0, a1 = 180 + 36 * i, 180 + 36 * (i + 1)
-        (x0, y0), (x1, y1) = pt(R, a0), pt(R, a1)
-        (x2, y2), (x3, y3) = pt(r, a1), pt(r, a0)
-        d = f'M{x0:.1f} {y0:.1f} A{R} {R} 0 0 1 {x1:.1f} {y1:.1f} L{x2:.1f} {y2:.1f} A{r} {r} 0 0 0 {x3:.1f} {y3:.1f} Z'
-        mx, my = pt((R + r) / 2, (a0 + a1) / 2)
-        out.append(f'''<g aria-hidden="true">
-        <path class="tp tp{i}" d="{d}" fill="#0F0F14" stroke="rgba(255,255,255,0.08)" stroke-width="1.5"></path>
-        <text class="tt tt{i}" x="{mx:.1f}" y="{my-46:.1f}" text-anchor="middle" font-size="19" font-weight="600" fill="#8A8A93">{name}</text>
-        <g class="tb tb{i}" transform="translate({mx-26:.1f} {my-24:.1f})" opacity="0.55">{_badge(color, 52)}</g>
-      </g>''')
-        # Transparent tap target over the segment (badge + name), in % of the 1000×510 viewBox.
-        labels.append(f'<label for="tr{i}" class="tlab" aria-label="Level {name}" style="left: {(mx-80)/10:.2f}%; top: {(my-90)/5.1:.2f}%; width: 16%; height: {150/5.1:.2f}%"></label>')
-    return ('<div class="tsvg" style="position: relative"><svg viewBox="0 0 1000 510" width="100%" role="group" aria-label="Level creator TAPP" style="display: block; overflow: visible">'
-            '<defs><radialGradient id="arcOn" cx="50%" cy="100%" r="100%"><stop offset="0.3" stop-color="#4548F5" stop-opacity="0.55"></stop><stop offset="1" stop-color="#4548F5" stop-opacity="0.08"></stop></radialGradient></defs>'
-            + ''.join(out) + '</svg>' + ''.join(labels) + '</div>')
+        steps.append(f'''<label for="tr{i}" class="tstep ts{i}" aria-label="Level {name}">
+          <span class="tbadge">{_badge(color, 34)}</span>
+          <span class="tname">{name}</span>
+          <span class="tbar" style="height: {STEP_H[i]}px"><span class="tabular">{thr}</span></span>
+        </label>''')
+    return '<div class="tstairs" role="group" aria-label="Level creator TAPP">' + ''.join(steps) + '</div>'
+
+# Selected step: lit in its color; steps below it: softly tinted (the climb so far).
+TIER_CSS = (
+    '.lp .tradio{position:absolute;opacity:0;pointer-events:none}'
+    '.lp .tlad{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:40px;align-items:end}'
+    '.lp .tstairs{display:flex;align-items:flex-end;gap:10px;min-height:330px}'
+    '.lp .tstep{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}'
+    '.lp .tbadge{opacity:.45;transition:opacity .25s ease,transform .25s ease}'
+    '.lp .tname{font-size:15px;font-weight:600;color:#8A8A93;transition:color .25s ease}'
+    '.lp .tbar{width:100%;display:flex;justify-content:center;padding-top:12px;border-radius:14px 14px 6px 6px;background:#101016;border:1px solid rgba(255,255,255,0.07);font-size:13px;font-weight:600;color:#5E5E68;transition:background .25s ease,border-color .25s ease,color .25s ease}'
+    '.lp .tstep:hover .tbadge{opacity:.8}'
+    '.lp .tcard{display:none}'
+    '.lp .tradio:focus-visible ~ .tlad .tstairs{outline:2px solid #7DA2FF;outline-offset:8px;border-radius:14px}'
+    + ''.join(
+        f'.lp #tr{k}:checked ~ .tlad .tc{k}{{display:flex}}'
+        f'.lp #tr{k}:checked ~ .tlad .ts{k} .tbar{{background:linear-gradient(180deg,{_rgba(TIERS[k][2], 0.55)},{_rgba(TIERS[k][2], 0.12)});border-color:{TIERS[k][2]};color:#FFFFFF}}'
+        f'.lp #tr{k}:checked ~ .tlad .ts{k} .tbadge{{opacity:1;transform:translateY(-4px)}}'
+        f'.lp #tr{k}:checked ~ .tlad .ts{k} .tname{{color:#FFFFFF}}'
+        + ''.join(f'.lp #tr{k}:checked ~ .tlad .ts{j} .tbar{{background:{_rgba(TIERS[j][2], 0.1)};color:#9A9AA5}}' for j in range(k))
+        for k in range(len(TIERS)))
+    + '@media (max-width: 900px){'
+      '.lp .tlad{grid-template-columns:minmax(0,1fr);gap:24px}'
+      '.lp .tstairs{min-height:250px;gap:6px}'
+      '.lp .tname{font-size:12px}'
+      '.lp .tbar{font-size:11px;padding-top:8px}'
+      + ''.join(f'.lp .ts{i} .tbar{{height:{round(STEP_H[i] * 0.72)}px !important}}' for i in range(len(TIERS)))
+      + '.lp .tcard{padding:22px}'
+      '}'
+)
 
 LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 72px 64px">
-    <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 40px">
+    <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 48px">
       <span style="display: inline-flex; font-size: 13px; font-weight: 500; color: #7DA2FF; letter-spacing: 0.02em">Level Creator</span>
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Reputasi Yang Dihitung, <br><span style="color: #7DA2FF">Bukan Diklaim</span></h2>
       <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views. Jumlah follower tidak ikut dihitung. Makin tinggi level, makin besar bonus tarifmu. Pilih level untuk melihat syaratnya.</p>
     </div>
     {''.join(f'<input type="radio" name="tier" id="tr{i}" class="tradio"{" checked" if i == 2 else ""}>' for i in range(len(TIERS)))}
-    <div class="tarc" style="position: relative; max-width: 1000px; margin: 0 auto">
-      {_arc()}
-      {''.join(_tier_card(i) for i in range(len(TIERS)))}
+    <div class="tlad">
+      {_stairs()}
+      <div class="tdetail">{''.join(_tier_card(i) for i in range(len(TIERS)))}</div>
     </div>
   </section>'''
 
