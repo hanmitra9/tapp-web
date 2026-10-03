@@ -49,7 +49,7 @@ export default function BrandAccount() {
       <View style={styles.help}>
         <Text style={styles.helpTitle}>Mau campaign baru atau ubah budget?</Text>
         <Text style={styles.helpBody}>Untuk saat ini campaign disiapkan oleh tim TAPP. Hubungi account manager-mu dan kami akan mengaturnya.</Text>
-        <Text style={styles.link} onPress={() => Linking.openURL('mailto:brand@tapp.id?subject=Campaign%20baru').catch(() => {})}>brand@tapp.id</Text>
+        <Text style={styles.link} onPress={() => Linking.openURL('mailto:tappcreators@gmail.com?subject=Campaign%20baru').catch(() => {})}>tappcreators@gmail.com</Text>
       </View>
       <View style={{ marginTop: space.xxl }}><Button variant="secondary" label="Keluar" onPress={signOut} /></View>
     </Screen>

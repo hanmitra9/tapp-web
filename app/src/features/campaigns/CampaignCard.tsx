@@ -5,6 +5,7 @@ import { color, radius, space, type, card } from '@/theme/tokens';
 import type { FeedItem } from './api';
 import { categoryLabel, platformsLabel } from './copy';
 import { JoinedRow } from './JoinedRow';
+import { web } from '@/theme/web';
 
 // Dark card: brand monogram + reward on the right, like a transaction row grown into a card.
 export const CampaignCard = memo(function CampaignCard({ item, onPress, showReason = true }: { item: FeedItem; onPress: () => void; showReason?: boolean }) {
@@ -14,7 +15,8 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress, showReas
   return (
     <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${item.title}, ${item.brand_name}`}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
-      {item.banner_url ? <Image source={{ uri: item.banner_url }} style={styles.banner} resizeMode="cover" accessibilityIgnoresInvertColors /> : null}
+      {item.banner_url ? <Image source={{ uri: item.banner_url }} style={styles.banner} resizeMode="cover" accessibilityIgnoresInvertColors />
+        : <View style={styles.banner} {...web('art')}><Image source={require('../../../assets/tapp-mark-white.png')} style={styles.artMark} accessibilityIgnoresInvertColors /><Text style={styles.artTitle} numberOfLines={2}>{item.title}</Text></View>}
       <View style={styles.top}>
         <View style={styles.mono}><Text style={styles.monoText}>{initials}</Text></View>
         <View style={{ flex: 1 }}>
@@ -40,7 +42,9 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress, showReas
 const styles = StyleSheet.create({
   card: { ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md, overflow: 'hidden' },
   banner: { marginTop: -space.lg, marginHorizontal: -space.lg, aspectRatio: 2, backgroundColor: color.surfaceRaised },
-  pressed: { backgroundColor: color.surfaceRaised },
+  pressed: { opacity: 0.85 },
+  artMark: { position: 'absolute', right: '14%', top: '50%', width: 56, height: 56, marginTop: -28, opacity: 0.95 },
+  artTitle: { position: 'absolute', left: space.lg, bottom: space.md, right: '40%', ...type.heading, fontSize: 20, lineHeight: 24, color: '#FFFFFF' },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   mono: { width: 40, height: 40, borderRadius: 20, backgroundColor: color.surfaceRaised, alignItems: 'center', justifyContent: 'center' },
   monoText: { ...type.label, color: color.text },

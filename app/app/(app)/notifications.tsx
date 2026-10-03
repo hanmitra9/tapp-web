@@ -6,7 +6,7 @@ import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { useQuery } from '@/lib/useQuery';
-import { color, space, type } from '@/theme/tokens';
+import { color, space, type, card, radius } from '@/theme/tokens';
 import { fetchNotifications, markAllRead, type AppNotification } from '@/features/notifications/api';
 import { openNotification } from '@/features/notifications/route';
 
@@ -37,7 +37,7 @@ export default function Notifications() {
 function Row({ n }: { n: AppNotification }) {
   return (
     <Pressable onPress={() => openNotification({ ...n.data, type: n.type })} accessibilityRole="button"
-      style={({ pressed }) => [styles.row, pressed && { backgroundColor: color.surface }]}>
+      style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
       <View style={styles.head}>
         {!n.read_at ? <View style={styles.dot} accessibilityLabel="Belum dibaca" /> : null}
         <Text style={[styles.title, !n.read_at && styles.unread]} numberOfLines={1}>{n.title}</Text>
@@ -49,7 +49,7 @@ function Row({ n }: { n: AppNotification }) {
 }
 
 const styles = StyleSheet.create({
-  row: { paddingVertical: space.lg, gap: 4, borderBottomWidth: 1, borderBottomColor: color.border },
+  row: { ...card, padding: space.lg, gap: 4, borderRadius: radius.md, marginBottom: space.sm },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: color.blue },
   title: { ...type.label, color: color.text, flex: 1 },
