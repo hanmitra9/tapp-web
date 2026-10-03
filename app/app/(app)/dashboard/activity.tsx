@@ -7,7 +7,7 @@ import { Screen } from '@/components/Screen';
 import { CardSkeleton } from '@/components/Skeleton';
 import { cpmLabel, dateLabel, deadlineLabel } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
-import { color, radius, space, type } from '@/theme/tokens';
+import { color, radius, space, type, card } from '@/theme/tokens';
 import { fetchMyCampaigns, type MyCampaign } from '@/features/campaigns/api';
 import { fetchMySubmissions } from '@/features/submissions/api';
 import { SubmissionRow } from '@/features/submissions/SubmissionRow';
@@ -73,7 +73,7 @@ function Row({ m }: { m: MyCampaign }) {
 
 const styles = StyleSheet.create({
   section: { ...type.label, color: color.textMuted, marginTop: space.xl, marginBottom: space.xs },
-  row: { paddingVertical: space.lg, gap: 4, borderBottomWidth: 1, borderBottomColor: color.border },
+  row: { ...card, padding: space.lg, gap: 4, borderRadius: radius.md, marginBottom: space.sm },
   rowTop: { flexDirection: 'row', justifyContent: 'space-between' },
   brand: { ...type.caption, color: color.textSecondary },
   badge: { ...type.caption, color: color.textSecondary, backgroundColor: color.surface, paddingHorizontal: 8, paddingVertical: 2, borderRadius: radius.sm, overflow: 'hidden' },

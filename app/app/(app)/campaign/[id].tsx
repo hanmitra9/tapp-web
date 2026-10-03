@@ -79,7 +79,8 @@ export default function CampaignDetailScreen() {
   return (
     <Screen footer={footer} refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
       <Header title="" />
-      {c.banner_url ? <Image source={{ uri: c.banner_url }} style={styles.banner} resizeMode="cover" accessibilityIgnoresInvertColors /> : null}
+      {c.banner_url ? <Image source={{ uri: c.banner_url }} style={styles.banner} resizeMode="cover" accessibilityIgnoresInvertColors />
+        : <View style={styles.banner} {...web('art')}><Image source={require('../../../assets/tapp-mark-white.png')} style={styles.artMark} accessibilityIgnoresInvertColors /></View>}
       <Text style={styles.brand}>{c.brand.name}</Text>
       <Text style={styles.title} accessibilityRole="header">{c.title}</Text>
       <Text style={styles.meta}>
@@ -173,8 +174,9 @@ function AssetRow({ a }: { a: Asset }) {
 }
 
 const styles = StyleSheet.create({
-  banner: { width: '100%', aspectRatio: 2, borderRadius: radius.lg, marginBottom: space.lg, backgroundColor: color.surface },
-  brand: { ...type.label, color: color.textSecondary, marginTop: -space.xl },
+  banner: { width: '100%', aspectRatio: 2.4, borderRadius: radius.lg, marginBottom: space.lg, backgroundColor: color.surface, overflow: 'hidden' },
+  artMark: { position: 'absolute', right: '14%', top: '50%', width: 64, height: 64, marginTop: -32 },
+  brand: { ...type.label, color: color.textSecondary, marginTop: space.xs },
   title: { ...type.title, color: color.text, marginTop: space.xs },
   meta: { ...type.caption, color: color.textMuted, marginTop: space.xs },
   gap: { marginTop: space.lg },
