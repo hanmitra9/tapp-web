@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { ago, idr, num } from '@/lib/format';
+import { ago, dateLabel, idr, num } from '@/lib/format';
 import { web } from '@/theme/web';
+import type { HashtagStat } from './api';
 import { color, radius, space, type, card } from '@/theme/tokens';
 
 // "Views masuk 12 menit lalu · verifikasi 2 jam lalu · diperbarui otomatis" — so a brand knows how fresh the numbers are.
@@ -111,3 +112,25 @@ const styles = StyleSheet.create({
   cpmBox: { flex: 1, padding: space.md, borderRadius: radius.md, backgroundColor: color.bg, gap: 2 },
   cpmValue: { ...type.metric, fontSize: 20, lineHeight: 26, color: color.text },
 });
+
+// Hashtag reach: TikTok's own totals for the campaign hashtag (all videos using it), and growth since the first reading.
+export function HashtagReach({ stats }: { stats: HashtagStat[] }) {
+  const first = stats[0], last = stats.at(-1);
+  if (!first || !last) return null;
+  const grow = (a: number, b: number) => (b > a ? `+${num(b - a)}` : null);
+  return (
+    <View style={styles.card}>
+      <View style={styles.cardHead}>
+        <Text style={styles.cap}>#{last.hashtag} di TikTok</Text>
+        <Text style={styles.big}>{num(last.view_count)} views</Text>
+      </View>
+      <View style={styles.legendRow}>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Text style={styles.legendTitle}>{num(last.video_count)} video memakai hashtag ini</Text>
+          <Text style={styles.cap}>{grow(first.video_count, last.video_count) ? `${grow(first.video_count, last.video_count)} video` : 'Belum ada tambahan video'}{grow(first.view_count, last.view_count) ? ` · ${grow(first.view_count, last.view_count)} views` : ''} sejak dicatat {dateLabel(first.captured_at)}</Text>
+        </View>
+      </View>
+      <Text style={styles.cap}>Angka dari TikTok untuk semua video yang memakai hashtag ini, termasuk di luar TAPP. Diperbarui tiap 6 jam, terakhir {dateLabel(last.captured_at)}.</Text>
+    </View>
+  );
+}

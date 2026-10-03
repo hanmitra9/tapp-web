@@ -651,3 +651,20 @@ select count(*) = 0 as other_sees_no_log from submission_check_log;
 reset role;
 select count(*) >= 0 as due_list_runs from due_submission_checks(5);
 select 'check_log_ok' as result;
+
+-- ── Campaign hashtag reach (0043) ──
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select hashtag = 'TAPPKopiSenja' as hashtag_saved from admin_set_campaign_hashtag('20000000-0000-0000-0000-000000000001', ' #TAPPKopiSenja ');
+select pg_temp.expect_error($$select admin_set_campaign_hashtag('20000000-0000-0000-0000-000000000001', 'bad-tag!')$$, 'invalid_hashtag');
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select admin_set_campaign_hashtag('20000000-0000-0000-0000-000000000001', 'x1')$$, '');
+reset role;
+insert into campaign_hashtag_stats (campaign_id, hashtag, video_count, view_count) values ('20000000-0000-0000-0000-000000000001', 'TAPPKopiSenja', 12, 34000);
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select count(*) = 1 as brand_sees_hashtag from campaign_hashtag_stats;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) = 0 as creator_sees_no_hashtag from campaign_hashtag_stats;
+reset role;
+select 'hashtag_ok' as result;

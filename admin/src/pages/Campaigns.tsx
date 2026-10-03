@@ -3,9 +3,10 @@ import { useOutletContext } from 'react-router-dom';
 import {
   addAssetLink, adjustBudget, BANNER_RULES, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
+  fetchHashtagStats, refreshHashtag, setCampaignHashtag,
 } from '../lib/api';
 import { adminError } from '../lib/errors';
-import { dt, idr, num, toLocalInput } from '../lib/format';
+import { ago, dt, idr, num, toLocalInput } from '../lib/format';
 import { CAMPAIGN_TYPES, campaignTypeLabel, label, PLATFORMS } from '../lib/options';
 import { useLoad } from '../lib/useLoad';
 
@@ -111,6 +112,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
       ) : null}
 
       <BannerCard f={f} onDone={refresh} />
+      <HashtagCard f={f} onDone={refresh} />
       <StatusActions f={f} onDone={refresh} />
       {f.status !== 'draft' && c ? <BudgetCard c={c} onDone={refresh} /> : null}
 
@@ -423,6 +425,37 @@ function BannerCard({ f, onDone }: { f: CampaignFull; onDone: () => Promise<void
         {file ? <button className="btn secondary" onClick={() => setFile(null)} disabled={busy}>Batal</button> : null}
         {!file && f.banner_url ? <button className="btn secondary" onClick={remove} disabled={busy}>Hapus banner</button> : null}
       </div>
+    </div>
+  );
+}
+
+// Campaign hashtag: TikTok's public totals for it go into the brand report every 6 hours.
+function HashtagCard({ f, onDone }: { f: CampaignFull; onDone: () => Promise<void> }) {
+  const [tag, setTag] = useState(f.hashtag ?? '');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const stats = useLoad(() => fetchHashtagStats(f.id), [f.id]);
+  const last = stats.data?.at(-1);
+  async function save() {
+    setBusy(true); setError(null);
+    try { await setCampaignHashtag(f.id, tag.trim() || null); await onDone(); } catch (e) { setError(adminError(e)); } finally { setBusy(false); }
+  }
+  async function refreshNow() {
+    setBusy(true); setError(null);
+    try { await refreshHashtag(f.id); await stats.reload(); } catch (e) { setError(adminError(e)); } finally { setBusy(false); }
+  }
+  return (
+    <div className="section">
+      <h3>Hashtag campaign</h3>
+      <p className="sub" style={{ margin: '0 0 8px' }}>Pakai hashtag unik untuk campaign ini (mis. TAPPKopiSenja). Jumlah video &amp; total views hashtag di TikTok dicatat otomatis tiap 6 jam dan masuk ke laporan brand. Angkanya dari TikTok untuk semua video yang memakai hashtag itu.</p>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        <input value={tag} onChange={(e) => setTag(e.target.value.replace(/[#\s]/g, ''))} placeholder="TAPPNamaBrand" style={{ maxWidth: 260 }} />
+        <button className="btn" onClick={save} disabled={busy || tag === (f.hashtag ?? '')}>Simpan</button>
+        {f.hashtag ? <button className="btn secondary" onClick={refreshNow} disabled={busy}>{busy ? 'Membaca…' : 'Perbarui sekarang'}</button> : null}
+      </div>
+      {error ? <div className="notice error" style={{ marginTop: 8 }}>{error}</div> : null}
+      {last ? <p style={{ margin: '10px 0 0' }}>#{last.hashtag} di TikTok: <b>{num(last.video_count)}</b> video · <b>{num(last.view_count)}</b> views <span className="sub">· dicatat {ago(last.captured_at)}</span></p>
+        : f.hashtag ? <p className="sub" style={{ margin: '10px 0 0' }}>Belum ada catatan. Tekan Perbarui sekarang atau tunggu jadwal otomatis.</p> : null}
     </div>
   );
 }

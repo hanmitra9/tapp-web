@@ -257,16 +257,27 @@ export type CampaignFull = {
   id: string; brand_id: string; title: string; objective: string | null; description: string | null; category: string; content_type: string;
   status: CampaignStatus; cpm: number; budget: number; max_earning_per_submission: number | null; min_views_to_qualify: number;
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null; guidelines_do: string[]; guidelines_dont: string[]; terms: string | null;
-  platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[]; banner_url: string | null;
+  platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[]; banner_url: string | null; hashtag: string | null;
   assets: { id: string; kind: string; title: string; url: string | null; storage_path: string | null; sort: number }[];
 };
 export async function getCampaignFull(id: string): Promise<CampaignFull> {
   const { data, error } = await supabase.from('campaigns')
-    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, budget, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
+    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, budget, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, hashtag, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
     .eq('id', id).single();
   if (error) throw error;
   const c = data as unknown as CampaignFull;
   return { ...c, cpm: Number(c.cpm), budget: Number(c.budget), rules: [...c.rules].sort((a, b) => a.sort - b.sort), assets: [...c.assets].sort((a, b) => a.sort - b.sort) };
+}
+// ── Campaign hashtag reach (0043) ──
+export type HashtagStat = { hashtag: string; platform: string; video_count: number; view_count: number; captured_at: string };
+export const setCampaignHashtag = (campaignId: string, tag: string | null) => rpc('admin_set_campaign_hashtag', { p_campaign_id: campaignId, p_hashtag: tag });
+export async function fetchHashtagStats(campaignId: string): Promise<HashtagStat[]> {
+  const { data } = await supabase.from('campaign_hashtag_stats').select('hashtag, platform, video_count, view_count, captured_at').eq('campaign_id', campaignId).order('captured_at');
+  return ((data ?? []) as HashtagStat[]).map((r) => ({ ...r, video_count: Number(r.video_count), view_count: Number(r.view_count) }));
+}
+export async function refreshHashtag(campaignId: string) {
+  const { error } = await supabase.functions.invoke('hashtag-stats', { body: { campaign_id: campaignId } });
+  if (error) throw error;
 }
 // ── Campaign banner (0036): same shape as the TAPP Campaign card header ──
 export const BANNER_RULES = 'Rasio 2:1 (mis. 1200 × 600 px), minimal 1200 × 600 px, JPG / PNG / WebP, maks 2 MB.';

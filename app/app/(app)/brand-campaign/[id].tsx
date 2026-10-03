@@ -12,10 +12,10 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
-import { CostCard, Freshness, ViewsBreakdown } from '@/features/brand/ReportParts';
+import { CostCard, Freshness, HashtagReach, ViewsBreakdown } from '@/features/brand/ReportParts';
 import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
-import { BRAND_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
+import { BRAND_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchHashtagStats, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
 
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
@@ -26,17 +26,17 @@ export default function BrandCampaignReport() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const [range, setRange] = useState('30');
   const q = useQuery(async () => {
-    const [all, platforms, clips] = await Promise.all([fetchBrandCampaigns(), fetchPlatformBreakdown(id), fetchTopClips(id)]);
+    const [all, platforms, clips, tags] = await Promise.all([fetchBrandCampaigns(), fetchPlatformBreakdown(id), fetchTopClips(id), fetchHashtagStats(id)]);
     const c = all.find((x) => x.id === id);
     if (!c) throw { code: 'campaign_not_found' };
-    return { c, platforms, clips };
+    return { c, platforms, clips, tags };
   }, [id]);
   const daily = useQuery(() => fetchBrandDaily(id, Number(range)), [id, range]);
   const reloadAll = useCallback(async () => { await Promise.all([q.reload(), daily.reload()]); }, [q.reload, daily.reload]);
   const refreshedAt = useAutoRefresh(reloadAll);
 
   if (!q.data) return <Screen scroll={false}><Header title="Laporan campaign" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
-  const { c, platforms, clips } = q.data;
+  const { c, platforms, clips, tags } = q.data;
   const used = c.budget ? Math.min(1, c.spent / c.budget) : 0;
   const qualRate = c.raw_views ? c.qualified_views / c.raw_views : null;
   const funnel = [
@@ -80,6 +80,13 @@ export default function BrandCampaignReport() {
         <Text style={styles.sectionTitle}>Ke mana views mentah pergi</Text>
         <ViewsBreakdown raw={c.raw_views} qualified={c.qualified_views} pending={c.pending_views} excluded={c.excluded_views} />
       </View>
+
+      {tags.length ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Jangkauan hashtag</Text>
+          <HashtagReach stats={tags} />
+        </View>
+      ) : null}
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Biaya &amp; CPM</Text>
