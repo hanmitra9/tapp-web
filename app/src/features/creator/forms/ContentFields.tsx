@@ -3,17 +3,15 @@ import { Chips } from '@/components/Chips';
 import { Field } from '@/components/Field';
 import { TextField } from '@/components/TextField';
 import { space } from '@/theme/tokens';
-import { CONTENT_CATEGORIES, EXPERIENCE, MAX_CATEGORIES, MAX_NICHES, NICHES, type Experience } from '../options';
+import { CONTENT_CATEGORIES, EXPERIENCE, MAX_CATEGORIES, type Experience } from '../options';
 
+// niches: kept in the data shape for older profiles, no longer asked (0044).
 export type ContentValues = { niches: string[]; categories: string[]; experience: Experience | null; contentStyle: string };
 type Props = { values: ContentValues; onChange: (p: Partial<ContentValues>) => void; errors: Partial<Record<keyof ContentValues, string | null>> };
 
 export function ContentFields({ values, onChange, errors }: Props) {
   return (
     <View style={styles.form}>
-      <Field label="Niche" hint={`Topik yang paling sering kamu buat. Pilih maksimal ${MAX_NICHES}.`} error={errors.niches}>
-        <Chips multiple max={MAX_NICHES} options={NICHES} value={values.niches} onChange={(niches) => onChange({ niches })} />
-      </Field>
       <Field label="Jenis konten" hint={`Format yang biasa kamu kerjakan. Pilih maksimal ${MAX_CATEGORIES}.`} error={errors.categories}>
         <Chips multiple max={MAX_CATEGORIES} options={CONTENT_CATEGORIES} value={values.categories}
           onChange={(categories) => onChange({ categories })} />

@@ -47,7 +47,7 @@ export default function EditProfile() {
 
   const errs = {
     fullName: validateName(f.fullName), username: validateUsername(f.username), country: f.country ? null : 'Pilih negara.',
-    niches: f.niches.length ? null : 'Pilih minimal satu niche.', categories: f.categories.length ? null : 'Pilih minimal satu jenis konten.',
+    categories: f.categories.length ? null : 'Pilih minimal satu jenis konten.',
     experience: f.experience ? null : 'Pilih pengalamanmu.', audience: f.audience.countries.length ? null : 'Pilih minimal satu negara.',
   };
   const invalid = Object.values(errs).some(Boolean) || usernameStatus === 'taken';
