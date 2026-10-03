@@ -64,3 +64,13 @@ export async function withdrawSubmission(id: string) {
   const { error } = await supabase.rpc('withdraw_submission', { p_submission_id: id });
   if (error) throw error;
 }
+
+// Automatic check of a submitted link (submission-check Edge Function, migration 0041).
+export type SubmissionCheck = {
+  submission_id: string; status: 'ok' | 'not_owner' | 'not_found' | 'unreadable'; author: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; note: string | null; checked_at: string;
+};
+export async function checkSubmission(id: string): Promise<SubmissionCheck | null> {
+  const { data, error } = await supabase.functions.invoke<SubmissionCheck>('submission-check', { body: { submission_id: id } });
+  return error || !data?.status ? null : data;
+}

@@ -78,3 +78,19 @@ test('pay form prefills the views read from the public post', async ({ page }) =
   await expect(page.getByLabel('Views')).toHaveValue('31000');
   await expect(page.getByText(/Terbaca otomatis: 31\.000 views/)).toBeVisible();
 });
+
+test('review shows the automatic link check made at submit, and can re-check', async ({ page }) => {
+  const sub = { ...SUB, status: 'pending_review' };
+  const check = { submission_id: 's1', status: 'not_owner', author: 'orang.lain', views: 48200, likes: 3100, comments: null, shares: null,
+    note: 'Diposting oleh @orang.lain, bukan @rani', checked_at: '2026-10-01T01:00:00Z' };
+  await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [sub], submission_checks: [check] }, { aal: 'aal2' });
+  let rechecked = 0;
+  await page.route('**/functions/v1/submission-check', async (r) => { rechecked++; await r.fulfill({ json: { ...check, status: 'ok', author: 'rani', note: null } }); });
+  await page.goto('/admin/submissions');
+  await expect(page.getByText('Bukan akun kreator').first()).toBeVisible();          // badge in the queue
+  await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
+  await expect(page.getByText('Diposting oleh @orang.lain, bukan @rani')).toBeVisible();
+  await page.getByRole('button', { name: 'Cek ulang' }).click();
+  await expect(page.getByText('Akun cocok')).toBeVisible();
+  expect(rechecked).toBe(1);
+});
