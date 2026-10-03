@@ -98,6 +98,10 @@ async function check(sb: Sb, s: Sub) {
     await sb.from('submission_check_log').insert({ submission_id: s.id, status: row.status, views: row.views, likes: row.likes,
       comments: row.comments, shares: row.shares, checked_at: row.checked_at });
   }
+  // A clean reading also counts as the clip's raw views in the brand report (0044); qualified views stay admin-paid.
+  if (row.status === 'ok' && row.views != null) {
+    await sb.rpc('record_check_metrics', { p_submission_id: s.id, p_views: row.views, p_likes: row.likes, p_comments: row.comments, p_shares: row.shares });
+  }
   return row;
 }
 

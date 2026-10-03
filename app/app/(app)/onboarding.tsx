@@ -20,7 +20,7 @@ import { PlatformManager } from '@/features/creator/forms/PlatformManager';
 import { ProfileFields } from '@/features/creator/forms/ProfileFields';
 import { useUsernameCheck } from '@/features/creator/forms/useUsernameCheck';
 import { maskAccount } from '@/features/creator/handles';
-import { COUNTRIES, EXPERIENCE, labelOf, NICHES, platformLabel } from '@/features/creator/options';
+import { COUNTRIES, EXPERIENCE, labelOf, platformLabel } from '@/features/creator/options';
 import { useOnboardingDraft } from '@/features/creator/useOnboardingDraft';
 import { track } from '@/lib/analytics';
 
@@ -78,7 +78,6 @@ export default function Onboarding() {
     country: draft.country ? null : 'Pilih negara.',
   };
   const contentErrs = {
-    niches: draft.niches.length ? null : 'Pilih minimal satu niche.',
     categories: draft.categories.length ? null : 'Pilih minimal satu jenis konten.',
     experience: draft.experience ? null : 'Pilih pengalamanmu.',
   };
@@ -101,7 +100,7 @@ export default function Onboarding() {
         return goTo(1);
       }
       case 1: return platformErr ? undefined : goTo(2);
-      case 2: return contentErrs.niches || contentErrs.categories || contentErrs.experience ? undefined : goTo(3);
+      case 2: return contentErrs.categories || contentErrs.experience ? undefined : goTo(3);
       case 3: return audienceErr ? undefined : goTo(4);
       case 4: {
         if (Object.keys(validatePayout(payoutForm)).length) return;
@@ -174,7 +173,6 @@ export default function Onboarding() {
             <ReviewRow label="Negara" value={labelOf(COUNTRIES, draft.country)} onEdit={() => goTo(0)} />
             <ReviewRow label="Akun sosial" onEdit={() => goTo(1)}
               value={platforms.map((p) => `${platformLabel(p.platform)} @${p.handle}${p.platform === draft.mainPlatform ? ' (utama)' : ''}`).join('\n')} />
-            <ReviewRow label="Niche" value={draft.niches.map((n) => labelOf(NICHES, n)).join(', ')} onEdit={() => goTo(2)} />
             <ReviewRow label="Pengalaman" value={labelOf(EXPERIENCE, draft.experience ?? '')} onEdit={() => goTo(2)} />
             <ReviewRow label="Pembayaran" onEdit={() => goTo(4)}
               value={payout ? `${payout.provider} ${maskAccount(payout.account_number)} · ${payout.account_name}` : '—'} />

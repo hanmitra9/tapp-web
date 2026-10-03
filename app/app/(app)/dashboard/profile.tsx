@@ -15,7 +15,7 @@ import {
   type CreatorProfile, type CreatorStats, type LinkedPlatform, type PayoutMethod,
 } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
-import { AGE_RANGES, CONTENT_CATEGORIES, COUNTRIES, EXPERIENCE, LANGUAGES, labelOf, NICHES, platformLabel } from '@/features/creator/options';
+import { AGE_RANGES, CONTENT_CATEGORIES, COUNTRIES, EXPERIENCE, LANGUAGES, labelOf, platformLabel } from '@/features/creator/options';
 
 const STATUS: Record<CreatorProfile['status'], { label: string; tone: 'neutral' | 'blue' | 'danger' }> = {
   pending: { label: 'Profil belum lengkap', tone: 'neutral' },
@@ -96,7 +96,6 @@ export default function Profile() {
       </Section>
 
       <Section title="Konten" action={locked ? undefined : { label: 'Ubah', onPress: () => router.push('/profile/edit') }}>
-        <Row label="Niche" value={p.niches.map((n) => labelOf(NICHES, n)).join(', ')} />
         <Row label="Jenis konten" value={p.categories.map((c) => labelOf(CONTENT_CATEGORIES, c)).join(', ')} />
         <Row label="Gaya konten" value={p.contentStyle ?? ''} />
         <Row label="Pengalaman" value={p.experience ? labelOf(EXPERIENCE, p.experience) : ''} />

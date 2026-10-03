@@ -668,3 +668,20 @@ select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select count(*) = 0 as creator_sees_no_hashtag from campaign_hashtag_stats;
 reset role;
 select 'hashtag_ok' as result;
+
+-- ── Raw views from automatic checks (0044) ──
+reset role;
+do $$ declare v_sub uuid; v_before bigint; v_after bigint; v_status public.submission_status; begin
+  select id, status into v_sub, v_status from submissions where status not in ('rejected', 'needs_changes') order by created_at limit 1;
+  select count(*) into v_before from content_metrics where submission_id = v_sub;
+  perform record_check_metrics(v_sub, 77777, 900, 40, 10);
+  select count(*) into v_after from content_metrics where submission_id = v_sub;
+  if v_after <> v_before + 1 then raise exception 'check metric not stored'; end if;
+  if not exists (select 1 from content_metrics where submission_id = v_sub and views = 77777 and source = 'api') then raise exception 'wrong views'; end if;
+  if (select status from submissions where id = v_sub) <> v_status then raise exception 'status changed'; end if;
+end $$;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select record_check_metrics(gen_random_uuid(), 1, 0, 0, 0)$$, 'permission denied');
+reset role;
+select 'raw_from_checks_ok' as result;
