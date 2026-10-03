@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import type { Metric } from './engine';
 
 export type SubStatus = 'pending_review' | 'needs_changes' | 'approved' | 'rejected' | 'flagged' | 'tracking' | 'completed';
-export type AdminSubmission = {
+export type AdminSubmission = { check?: SubmissionCheck | null;
   id: string; campaign_id: string; creator_id: string; platform: string; post_url: string; published_at: string;
   caption: string | null; screenshot_path: string | null; status: SubStatus; review_reason: string | null; reviewed_at: string | null;
   content_state: string; qualified_views: number; earned: number; last_metrics_at: string | null; created_at: string;
@@ -37,7 +37,21 @@ export async function listSubmissions(queue: Queue, search: string): Promise<Adm
   if (s) q = q.or(`campaign_title.ilike.%${s}%,creator_username.ilike.%${s}%,post_url.ilike.%${s}%`);
   const { data, error } = await q;
   if (error) throw error;
-  return (data ?? []).map(norm);
+  const rows = (data ?? []).map(norm);
+  const checks = await fetchChecks(rows.map((r) => r.id));
+  return rows.map((r) => ({ ...r, check: checks[r.id] ?? null }));
+}
+// Automatic link check made when the creator submitted (migration 0041 / submission-check function).
+export type SubmissionCheck = { submission_id: string; status: 'ok' | 'not_owner' | 'not_found' | 'unreadable'; author: string | null;
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; note: string | null; checked_at: string };
+export async function fetchChecks(ids: string[]): Promise<Record<string, SubmissionCheck>> {
+  if (!ids.length) return {};
+  const { data } = await supabase.from('submission_checks').select('*').in('submission_id', ids);
+  return Object.fromEntries(((data ?? []) as SubmissionCheck[]).map((c) => [c.submission_id, c]));
+}
+export async function runCheck(id: string): Promise<SubmissionCheck | null> {
+  const { data, error } = await supabase.functions.invoke<SubmissionCheck>('submission-check', { body: { submission_id: id } });
+  return error || !data?.status ? null : data;
 }
 export async function getSubmission(id: string) {
   const { data, error } = await supabase.from('admin_submissions').select('*').eq('id', id).single();

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchBonusPct, fetchFeePct, fetchHistory, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
+  fetchBonusPct, fetchChecks, fetchFeePct, fetchHistory, runCheck, type SubmissionCheck, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { previewEarnings, signals } from '../lib/engine';
@@ -68,6 +68,7 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
             <button key={s.id} className={`list-item ${selected === s.id ? 'on' : ''}`} onClick={() => setSelected(s.id)}>
               <div className="row"><span className="title">{s.campaign_title}</span><span className={`badge ${STATUS[s.status].tone}`}>{STATUS[s.status].label}</span></div>
               <div className="meta">@{s.creator_username ?? '—'} · {s.platform} · masuk {ago(s.created_at)}</div>
+              {mode === 'review' && s.check ? <CheckLine c={s.check} /> : null}
               {s.status === 'completed' ? <div className="meta">Dibayar {idr(s.earned)} · {num(s.qualified_views)} views</div> : null}
               {mode === 'performance' ? <div className="meta">Raw {num(s.views)} · Qualified {num(s.qualified_views)} · metrik {ago(s.last_metrics_at)}</div> : null}
               {mode === 'performance' && s.auto_hold_reason ? <div className="meta" style={{ color: 'var(--warning)' }}>Ditahan: {s.auto_hold_reason}</div> : null}
@@ -84,8 +85,8 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
 
 function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'performance'; onChanged: () => Promise<void> }) {
   const d = useLoad(async () => {
-    const [s, h] = await Promise.all([getSubmission(id), fetchHistory(id)]);
-    return { s, h };
+    const [s, h, checks] = await Promise.all([getSubmission(id), fetchHistory(id), fetchChecks([id])]);
+    return { s, h, check: checks[id] ?? null };
   }, [id]);
   const [shot, setShot] = useState<string | null>(null);
   useEffect(() => {
@@ -121,6 +122,7 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
         <KV k="Disubmit" v={dt(s.created_at)} />
         <KV k="Deadline campaign" v={dt(s.submission_deadline)} />
       </dl>
+      {mode === 'review' ? <CheckPanel id={s.id} initial={d.data.check} /> : null}
       {s.caption ? <div className="section"><h3>Caption</h3><p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{s.caption}</p></div> : null}
       {shot ? <div className="section"><h3>Screenshot</h3><a href={shot} target="_blank" rel="noreferrer noopener"><img src={shot} alt="Screenshot bukti" className="shot" /></a></div> : null}
 
@@ -163,6 +165,38 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
 }
 
 function KV({ k, v }: { k: string; v: ReactNode }) { return <div><dt>{k}</dt><dd>{v}</dd></div>; }
+
+const CHECK: Record<SubmissionCheck['status'], { label: string; tone: string }> = {
+  ok: { label: 'Akun cocok', tone: 'success' }, not_owner: { label: 'Bukan akun kreator', tone: 'danger' },
+  not_found: { label: 'Postingan tidak ditemukan', tone: 'danger' }, unreadable: { label: 'Cek manual', tone: 'warning' },
+};
+function CheckLine({ c }: { c: SubmissionCheck }) {
+  return <div className="meta"><span className={`badge ${CHECK[c.status].tone}`}>{CHECK[c.status].label}</span>{c.views != null ? ` · ${num(c.views)} views` : ''}</div>;
+}
+// Result of the automatic check made when the creator submitted the link, with a re-check.
+function CheckPanel({ id, initial }: { id: string; initial: SubmissionCheck | null }) {
+  const [c, setC] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const again = async () => { setBusy(true); const r = await runCheck(id); if (r) setC(r); setBusy(false); };
+  return (
+    <div className="section">
+      <h3>Cek otomatis link</h3>
+      {c ? (
+        <>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+            <span className={`badge ${CHECK[c.status].tone}`}>{CHECK[c.status].label}</span>
+            {c.author ? <span>@{c.author}</span> : null}
+            {c.views != null ? <span>· {num(c.views)} views</span> : null}
+            {c.likes != null ? <span>· {num(c.likes)} likes</span> : null}
+            <span className="sub">· dicek {ago(c.checked_at)}</span>
+          </div>
+          {c.note ? <p className="sub" style={{ margin: '6px 0 0' }}>{c.note}</p> : null}
+        </>
+      ) : <p className="sub" style={{ margin: 0 }}>Belum dicek.</p>}
+      <button className="btn secondary" style={{ marginTop: 10 }} onClick={again} disabled={busy}>{busy ? 'Mengecek…' : c ? 'Cek ulang' : 'Cek sekarang'}</button>
+    </div>
+  );
+}
 
 function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<void> }) {
   const options: { d: SubStatus; label: string; cls: string }[] = s.status === 'approved' || s.status === 'tracking'

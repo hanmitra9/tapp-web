@@ -622,3 +622,18 @@ select count(*) >= 0 as anon_public_list from public_campaigns() where creators_
 reset role;
 select private.initials('Rani Putri', 'rani') = 'RP' and private.initials(null, 'budi.s') = 'BU' as initials_ok;
 select 'participation_ok' as result;
+
+-- ── Automatic submission check (0041) ──
+reset role;
+insert into submission_checks (submission_id, status, author, views)
+select id, 'ok', 'rani', 12345 from submissions where creator_id = '00000000-0000-0000-0000-0000000000c1' order by created_at limit 1;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) = 1 as owner_sees_check from submission_checks;
+select pg_temp.expect_error($$insert into submission_checks (submission_id, status) select id, 'ok' from submissions limit 1$$, 'permission denied');
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select count(*) = 0 as other_creator_sees_nothing from submission_checks;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select count(*) = 1 as admin_sees_check from submission_checks;
+reset role;
+select 'submission_check_ok' as result;

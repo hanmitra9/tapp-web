@@ -20,7 +20,8 @@ import { color, radius, space, type, card } from '@/theme/tokens';
 import { fetchCampaign } from '@/features/campaigns/api';
 import { fetchPlatforms } from '@/features/creator/api';
 import { PLATFORMS, platformLabel, type Platform } from '@/features/creator/options';
-import { fetchSubmission, resubmitContent, submitContent, uploadProof } from '@/features/submissions/api';
+import { checkSubmission, fetchSubmission, resubmitContent, submitContent, uploadProof, type SubmissionCheck } from '@/features/submissions/api';
+import { CheckResult } from '@/features/submissions/CheckResult';
 import { detectPlatform, publishDays } from '@/features/submissions/postUrl';
 import { track } from '@/lib/analytics';
 
@@ -48,6 +49,7 @@ export default function Submit() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
+  const [check, setCheck] = useState<SubmissionCheck | null | 'checking'>(null);
 
   const d = q.data;
   const eligible = useMemo(() => {
@@ -77,6 +79,7 @@ export default function Submit() {
             Tim TAPP akan memeriksa postinganmu. Kamu akan mendapat notifikasi saat disetujui atau kalau ada yang perlu diperbaiki.
             Jangan hapus atau privat postingan selama campaign berjalan.
           </Text>
+          <CheckResult check={check} />
         </View>
       </Screen>
     );
@@ -130,9 +133,12 @@ export default function Submit() {
       let path = shotPath;
       if (shotUri && !path) { path = await uploadProof(uid, shotUri); setShotPath(path); }
       const input = { platform, postUrl: url, publishedAt: day.iso(), caption, screenshotPath: path };
-      if (resubmit) await resubmitContent(resubmit, input); else await submitContent(campaignId, input);
+      const saved = resubmit ? await resubmitContent(resubmit, input) : await submitContent(campaignId, input);
       track('submission_submitted', { campaign_id: campaignId, platform, resubmit: !!resubmit, has_screenshot: !!path });
       setDone(true);
+      // Right after submitting, TAPP opens the post: is it there, is it from your account, how many views.
+      setCheck('checking');
+      checkSubmission(saved.id).then(setCheck).catch(() => setCheck(null));
     } catch (e) { setError(errorMessage(e)); }
     finally { setBusy(false); }
   }
