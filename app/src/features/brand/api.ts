@@ -74,3 +74,10 @@ export const BRAND_STATUS: Record<BrandCampaign['status'], { label: string; tone
   completed: { label: 'Selesai', tone: 'blue' }, archived: { label: 'Diarsipkan', tone: 'neutral' }, cancelled: { label: 'Dibatalkan', tone: 'danger' },
 };
 export const cpvLabel = (v: number | null) => (v == null ? '—' : `Rp${v.toLocaleString('id-ID', { maximumFractionDigits: 2 })}`);
+
+// Campaign hashtag reach on TikTok (migration 0043): one row per reading, oldest first.
+export type HashtagStat = { hashtag: string; platform: string; video_count: number; view_count: number; captured_at: string };
+export async function fetchHashtagStats(campaignId: string): Promise<HashtagStat[]> {
+  const { data } = await supabase.from('campaign_hashtag_stats').select('hashtag, platform, video_count, view_count, captured_at').eq('campaign_id', campaignId).order('captured_at');
+  return ((data ?? []) as HashtagStat[]).map((r) => ({ ...r, video_count: Number(r.video_count), view_count: Number(r.view_count) }));
+}
