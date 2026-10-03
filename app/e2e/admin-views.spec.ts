@@ -94,3 +94,17 @@ test('review shows the automatic link check made at submit, and can re-check', a
   await expect(page.getByText('Akun cocok')).toBeVisible();
   expect(rechecked).toBe(1);
 });
+
+test('review shows the fairness score from the views history (bot-like spike flagged)', async ({ page }) => {
+  const sub = { ...SUB, status: 'pending_review', account_followers: 1200 };
+  const check = { submission_id: 's1', status: 'ok', author: 'rani', views: 40000, likes: 90, comments: 3, shares: 1, note: null, checked_at: '2026-10-01T06:00:00Z' };
+  const log = [
+    { submission_id: 's1', checked_at: '2026-10-01T00:00:00Z', status: 'ok', views: 2000, likes: 60, comments: 3, shares: 1 },
+    { submission_id: 's1', checked_at: '2026-10-01T06:00:00Z', status: 'ok', views: 40000, likes: 90, comments: 3, shares: 1 },
+  ];
+  await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [sub], submission_checks: [check], submission_check_log: log, submissions: [] }, { aal: 'aal2' });
+  await page.goto('/admin/submissions');
+  await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
+  await expect(page.getByText(/Skor kewajaran: \d+\/100 · Mencurigakan/)).toBeVisible();
+  await expect(page.getByText(/Lonjakan 20× dalam 6 jam/)).toBeVisible();
+});

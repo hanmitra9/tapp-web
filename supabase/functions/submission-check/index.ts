@@ -1,6 +1,7 @@
 // submission-check — open a submitted post right after the creator submits and record what is publicly visible:
 // the post exists, it was posted by the creator's linked account, and its counters (views/likes/comments/shares).
 //   POST { submission_id } with the session JWT of that submission's creator (or an admin).
+//   POST { sweep: true } with x-dispatch-secret (cron every 20 min): re-checks open clips every 6 hours for 30 days.
 //   → { status: 'ok' | 'not_owner' | 'not_found' | 'unreadable', views, author, … } and a row in submission_checks.
 // Nothing is approved or rejected here: the admin sees the result in review and decides.
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -77,13 +78,55 @@ async function instagram(url: string, handle: string | null): Promise<Result> {
   } catch { return { status: 'unreadable', note: 'Instagram tidak bisa dibaca otomatis' }; }
 }
 
+// deno-lint-ignore no-explicit-any
+type Sb = any;
+type Sub = { id: string; creator_id: string; platform: string; post_url: string };
+
+// Check one submission, save the latest result and append the counters to the views history (0042).
+async function check(sb: Sb, s: Sub) {
+  const { data: acc } = await sb.from('creator_platforms').select('handle').eq('creator_id', s.creator_id).eq('platform', s.platform).limit(1).maybeSingle();
+  const handle = acc?.handle ? String(acc.handle).replace(/^@/, '') : null;
+  const r: Result = s.platform === 'tiktok' ? await tiktok(s.post_url, handle)
+    : s.platform === 'youtube' ? await youtube(s.post_url, handle)
+    : s.platform === 'instagram' ? await instagram(s.post_url, handle)
+    : { status: 'unreadable', note: 'Platform ini dicek manual' };
+  const row = { submission_id: s.id, status: r.status, author: r.author ?? null, views: r.views ?? null, likes: r.likes ?? null,
+    comments: r.comments ?? null, shares: r.shares ?? null, note: r.note ?? null, checked_at: new Date().toISOString() };
+  const { error } = await sb.from('submission_checks').upsert(row);
+  if (error) return null;
+  if (row.views != null || row.status === 'not_found') {
+    await sb.from('submission_check_log').insert({ submission_id: s.id, status: row.status, views: row.views, likes: row.likes,
+      comments: row.comments, shares: row.shares, checked_at: row.checked_at });
+  }
+  return row;
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: cors });
   if (req.method !== 'POST') return json(405, { error: 'method_not_allowed' });
   const sb = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!, { auth: { persistSession: false } });
+  const body = await req.json().catch(() => ({}));
+
+  // Scheduled sweep (cron, every 20 minutes, 8 per run): re-check open clips whose last check is 6+ hours old.
+  const secret = req.headers.get('x-dispatch-secret');
+  if (secret) {
+    const { data: ok } = await sb.rpc('verify_fetch_metrics_secret', { p_secret: secret });
+    if (ok !== true) return json(401, { error: 'unauthorized' });
+    const { data: ids } = await sb.rpc('due_submission_checks', { p_limit: 8 });
+    const list = ((ids ?? []) as (string | { due_submission_checks: string })[]).map((x) => typeof x === 'string' ? x : x.due_submission_checks);
+    let done = 0;
+    for (const id of list) {
+      const { data: s } = await sb.from('submissions').select('id, creator_id, platform, post_url').eq('id', id).maybeSingle();
+      if (s && await check(sb, s)) done++;
+      await new Promise((r) => setTimeout(r, 800));   // be gentle with the platforms
+    }
+    return json(200, { swept: done, due: list.length });
+  }
+
+  // Creator (own submission) or admin.
   const { data: u } = await sb.auth.getUser((req.headers.get('authorization') ?? '').replace(/^Bearer\s+/i, ''));
   if (!u?.user) return json(401, { error: 'unauthorized' });
-  const { submission_id } = await req.json().catch(() => ({}));
+  const { submission_id } = body as { submission_id?: unknown };
   if (typeof submission_id !== 'string') return json(400, { error: 'submission_id_required' });
   const { data: s } = await sb.from('submissions').select('id, creator_id, platform, post_url').eq('id', submission_id).maybeSingle();
   if (!s) return json(404, { error: 'submission_not_found' });
@@ -94,17 +137,6 @@ Deno.serve(async (req) => {
   // One check per 30 seconds per submission.
   const { data: prev } = await sb.from('submission_checks').select('*').eq('submission_id', s.id).maybeSingle();
   if (prev && Date.now() - new Date(prev.checked_at).getTime() < 30_000) return json(200, prev);
-
-  const { data: acc } = await sb.from('creator_platforms').select('handle').eq('creator_id', s.creator_id).eq('platform', s.platform).limit(1).maybeSingle();
-  const handle = acc?.handle ? String(acc.handle).replace(/^@/, '') : null;
-  const r: Result = s.platform === 'tiktok' ? await tiktok(s.post_url, handle)
-    : s.platform === 'youtube' ? await youtube(s.post_url, handle)
-    : s.platform === 'instagram' ? await instagram(s.post_url, handle)
-    : { status: 'unreadable', note: 'Platform ini dicek manual' };
-
-  const row = { submission_id: s.id, status: r.status, author: r.author ?? null, views: r.views ?? null, likes: r.likes ?? null,
-    comments: r.comments ?? null, shares: r.shares ?? null, note: r.note ?? null, checked_at: new Date().toISOString() };
-  const { error } = await sb.from('submission_checks').upsert(row);
-  if (error) return json(500, { error: 'save_failed' });
-  return json(200, row);
+  const row = await check(sb, s);
+  return row ? json(200, row) : json(500, { error: 'save_failed' });
 });

@@ -637,3 +637,17 @@ select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select count(*) = 1 as admin_sees_check from submission_checks;
 reset role;
 select 'submission_check_ok' as result;
+
+-- ── Views history + sweep selection (0042) ──
+reset role;
+insert into submission_check_log (submission_id, status, views, likes)
+select submission_id, 'ok', 12345, 400 from submission_checks limit 1;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) = 1 as owner_sees_log from submission_check_log;
+select pg_temp.expect_error($$select due_submission_checks(5)$$, 'permission denied');
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select count(*) = 0 as other_sees_no_log from submission_check_log;
+reset role;
+select count(*) >= 0 as due_list_runs from due_submission_checks(5);
+select 'check_log_ok' as result;
