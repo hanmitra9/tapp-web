@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import type { Metric } from './engine';
+import type { CheckPoint, Metric } from './engine';
 
 export type SubStatus = 'pending_review' | 'needs_changes' | 'approved' | 'rejected' | 'flagged' | 'tracking' | 'completed';
 export type AdminSubmission = { check?: SubmissionCheck | null;
@@ -48,6 +48,20 @@ export async function fetchChecks(ids: string[]): Promise<Record<string, Submiss
   if (!ids.length) return {};
   const { data } = await supabase.from('submission_checks').select('*').in('submission_id', ids);
   return Object.fromEntries(((data ?? []) as SubmissionCheck[]).map((c) => [c.submission_id, c]));
+}
+// Views history of one clip, and of the same creator's other clips (for their usual engagement).
+export async function fetchCheckLog(id: string): Promise<CheckPoint[]> {
+  const { data } = await supabase.from('submission_check_log').select('checked_at, status, views, likes, comments, shares').eq('submission_id', id).order('checked_at');
+  return (data ?? []) as CheckPoint[];
+}
+export async function fetchCreatorLogs(creatorId: string, exceptId: string): Promise<CheckPoint[][]> {
+  const { data: subs } = await supabase.from('submissions').select('id').eq('creator_id', creatorId).neq('id', exceptId).order('created_at', { ascending: false }).limit(20);
+  const ids = (subs ?? []).map((x) => x.id as string);
+  if (!ids.length) return [];
+  const { data } = await supabase.from('submission_check_log').select('submission_id, checked_at, status, views, likes, comments, shares').in('submission_id', ids).order('checked_at');
+  const by: Record<string, CheckPoint[]> = {};
+  for (const r of (data ?? []) as (CheckPoint & { submission_id: string })[]) (by[r.submission_id] ??= []).push(r);
+  return Object.values(by);
 }
 export async function runCheck(id: string): Promise<SubmissionCheck | null> {
   const { data, error } = await supabase.functions.invoke<SubmissionCheck>('submission-check', { body: { submission_id: id } });

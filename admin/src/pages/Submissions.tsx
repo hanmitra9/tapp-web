@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchBonusPct, fetchChecks, fetchFeePct, fetchHistory, runCheck, type SubmissionCheck, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
+  fetchBonusPct, fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchFeePct, fetchHistory, runCheck, type SubmissionCheck, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
-import { previewEarnings, signals } from '../lib/engine';
+import { fairness, previewEarnings, signals, typicalEngagement, type CheckPoint, type Fairness } from '../lib/engine';
 import { adminError } from '../lib/errors';
 import { ago, dt, idr, num, pct, toLocalInput } from '../lib/format';
 import { useLoad } from '../lib/useLoad';
@@ -85,8 +85,9 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
 
 function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'performance'; onChanged: () => Promise<void> }) {
   const d = useLoad(async () => {
-    const [s, h, checks] = await Promise.all([getSubmission(id), fetchHistory(id), fetchChecks([id])]);
-    return { s, h, check: checks[id] ?? null };
+    const [s, h, checks, log] = await Promise.all([getSubmission(id), fetchHistory(id), fetchChecks([id]), fetchCheckLog(id)]);
+    const others = await fetchCreatorLogs(s.creator_id, id);
+    return { s, h, check: checks[id] ?? null, log, fair: fairness(log, s.account_followers, typicalEngagement(others)) };
   }, [id]);
   const [shot, setShot] = useState<string | null>(null);
   useEffect(() => {
@@ -122,11 +123,11 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
         <KV k="Disubmit" v={dt(s.created_at)} />
         <KV k="Deadline campaign" v={dt(s.submission_deadline)} />
       </dl>
-      {mode === 'review' ? <CheckPanel id={s.id} initial={d.data.check} /> : null}
+      {mode === 'review' ? <CheckPanel id={s.id} initial={d.data.check} log={d.data.log} fair={d.data.fair} onRechecked={d.reload} /> : null}
       {s.caption ? <div className="section"><h3>Caption</h3><p style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{s.caption}</p></div> : null}
       {shot ? <div className="section"><h3>Screenshot</h3><a href={shot} target="_blank" rel="noreferrer noopener"><img src={shot} alt="Screenshot bukti" className="shot" /></a></div> : null}
 
-      {mode === 'review' && ['approved', 'tracking', 'completed'].includes(s.status) ? <PayPanel s={s} latestViews={h.metrics[0]?.views ?? null} onDone={refresh} /> : null}
+      {mode === 'review' && ['approved', 'tracking', 'completed'].includes(s.status) ? <PayPanel s={s} latestViews={h.metrics[0]?.views ?? null} fair={d.data.fair} onDone={refresh} /> : null}
       {mode === 'review' && reviewable ? <ReviewPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && trackable ? <MetricsPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && s.status === 'tracking' && s.auto_hold_reason ? <div className="notice warn" style={{ marginTop: 16 }}>Ditahan penyaringan otomatis: {s.auto_hold_reason}. Cek klipnya, lalu tetapkan qualified views secara manual di bawah.</div> : null}
@@ -173,14 +174,16 @@ const CHECK: Record<SubmissionCheck['status'], { label: string; tone: string }> 
 function CheckLine({ c }: { c: SubmissionCheck }) {
   return <div className="meta"><span className={`badge ${CHECK[c.status].tone}`}>{CHECK[c.status].label}</span>{c.views != null ? ` · ${num(c.views)} views` : ''}</div>;
 }
-// Result of the automatic check made when the creator submitted the link, with a re-check.
-function CheckPanel({ id, initial }: { id: string; initial: SubmissionCheck | null }) {
+// Result of the automatic check made when the creator submitted the link, the views history the checks
+// recorded since (every 6 hours), and the fairness score built from it. A re-check adds a point now.
+function CheckPanel({ id, initial, log, fair, onRechecked }: { id: string; initial: SubmissionCheck | null; log: CheckPoint[]; fair: Fairness; onRechecked: () => Promise<void> }) {
   const [c, setC] = useState(initial);
   const [busy, setBusy] = useState(false);
-  const again = async () => { setBusy(true); const r = await runCheck(id); if (r) setC(r); setBusy(false); };
+  const again = async () => { setBusy(true); const r = await runCheck(id); if (r) { setC(r); await onRechecked(); } setBusy(false); };
+  const pts = log.filter((p) => p.views != null);
   return (
     <div className="section">
-      <h3>Cek otomatis link</h3>
+      <h3>Cek otomatis &amp; kewajaran views</h3>
       {c ? (
         <>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -193,7 +196,26 @@ function CheckPanel({ id, initial }: { id: string; initial: SubmissionCheck | nu
           {c.note ? <p className="sub" style={{ margin: '6px 0 0' }}>{c.note}</p> : null}
         </>
       ) : <p className="sub" style={{ margin: 0 }}>Belum dicek.</p>}
+      <FairBox fair={fair} />
+      {pts.length > 1 ? (
+        <table style={{ marginTop: 10 }}>
+          <thead><tr><th>Dicek</th><th className="n">Views</th><th className="n">Likes</th><th className="n">Komentar</th><th className="n">Engagement</th></tr></thead>
+          <tbody>{pts.slice().reverse().slice(0, 12).map((p, i) => (
+            <tr key={i}><td>{dt(p.checked_at)}</td><td className="n">{num(p.views!)}</td><td className="n">{p.likes != null ? num(p.likes) : '—'}</td>
+              <td className="n">{p.comments != null ? num(p.comments) : '—'}</td><td className="n">{p.views && p.likes != null ? pct(((p.likes ?? 0) + (p.comments ?? 0) + (p.shares ?? 0)) / p.views) : '—'}</td></tr>
+          ))}</tbody>
+        </table>
+      ) : null}
       <button className="btn secondary" style={{ marginTop: 10 }} onClick={again} disabled={busy}>{busy ? 'Mengecek…' : c ? 'Cek ulang' : 'Cek sekarang'}</button>
+    </div>
+  );
+}
+
+function FairBox({ fair }: { fair: Fairness }) {
+  return (
+    <div className={`notice ${fair.tone === 'danger' ? 'error' : fair.tone === 'warning' ? 'warn' : 'info'}`} style={{ marginTop: 10 }}>
+      <b>Skor kewajaran: {fair.label === 'Belum cukup data' ? fair.label : `${fair.score}/100 · ${fair.label}`}</b>
+      <ul style={{ margin: '6px 0 0', paddingLeft: 18 }}>{fair.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
     </div>
   );
 }
@@ -253,7 +275,7 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
 }
 
 // Accepted clip → pay it: views in, amount computed (CPM, minimum, cap, budget), level fee off, transferred by hand.
-function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews: number | null; onDone: () => Promise<void> }) {
+function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latestViews: number | null; fair: Fairness; onDone: () => Promise<void> }) {
   const info = useLoad(async () => {
     const [to, pct, bonusPct, paid] = await Promise.all([fetchPayTo(s.creator_id), fetchFeePct(s.creator_tier), fetchBonusPct(s.creator_tier), fetchPaid(s.id)]);
     return { to, pct, bonusPct, paid };
@@ -298,6 +320,7 @@ function PayPanel({ s, latestViews, onDone }: { s: AdminSubmission; latestViews:
   return (
     <div className="section card">
       <h2>{s.status === 'completed' ? 'Sudah dibayar' : 'Bayar klip ini'}</h2>
+      {fair.tone === 'danger' || fair.tone === 'warning' ? <FairBox fair={fair} /> : null}
       {info.data?.paid.length ? (
         <table><thead><tr><th>Dibayar</th><th className="n">Transfer</th><th>Referensi</th></tr></thead>
           <tbody>{info.data.paid.map((r) => <tr key={r.id}><td>{dt(r.paid_at)}</td><td className="n">{idr(r.net_amount)}</td><td>{r.processed_reference}</td></tr>)}</tbody></table>
