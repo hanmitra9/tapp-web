@@ -488,7 +488,8 @@ NOTFOUND = head('Halaman tidak ditemukan | TAPP', 'Halaman ini tidak ada di TAPP
 
 # ───────────────────────────── robots + sitemap ─────────────────────────────
 (ROOT / 'robots.txt').write_text(f"User-agent: *\nAllow: /\nDisallow: /src/\nDisallow: /tools/\n\nSitemap: {SITE_URL}/sitemap.xml\n")
-urls = ['', 'campaigns', 'privacy', 'terms', 'meeting']
+from blog_posts import POSTS as _BP
+urls = ['', 'campaigns', 'privacy', 'terms', 'meeting', 'contact', 'blog'] + [f"blog-{b['slug']}" for b in _BP]
 (ROOT / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
   + ''.join(f'  <url><loc>{SITE_URL}/{u}</loc><changefreq>{"daily" if u == "campaigns" else "weekly"}</changefreq></url>\n' for u in urls) + '</urlset>\n')
 print('pages built for', SITE_URL)
