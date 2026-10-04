@@ -22,6 +22,7 @@ import { SubmissionRow } from '@/features/submissions/SubmissionRow';
 import { fetchLeaderboard, type LeaderRow } from '@/features/campaigns/leaderboard';
 import { LeaderList, MyStanding, Podium } from '@/components/Leaderboard';
 import { ShareCardSheet } from '@/components/ShareCardSheet';
+import { GuideCard, GuideSheet, guideSteps } from '@/features/campaigns/GuideSheet';
 import { track } from '@/lib/analytics';
 import { renderViewsCard, shareRenderedCard, type RenderedCard } from '@/lib/shareCard';
 
@@ -49,6 +50,10 @@ export default function Workspace() {
   }, [id]);
   const [error, setError] = useState<string | null>(null);
   const [card, setCard] = useState<RenderedCard | null>(null);
+  // The guide opens by itself on the first visit to a campaign's workspace.
+  const seenKey = `tapp:guide:${id}`;
+  const [guide, setGuide] = useState(() => { try { return !globalThis.localStorage?.getItem(seenKey); } catch { return false; } });
+  const closeGuide = () => { setGuide(false); try { globalThis.localStorage?.setItem(seenKey, '1'); } catch { /* storage off */ } };
   const [making, setMaking] = useState(false);
 
   if (!q.data) return <Screen scroll={false}><Header title="Workspace" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
@@ -116,23 +121,12 @@ export default function Workspace() {
         </Section>
       ) : null}
 
-      <Section title="Cara kerja">
-        {['Buat klip dari konten sumber.', 'Posting di akunmu.', 'Tekan Submit Klip.', 'Disetujui → saldo masuk.'].map((t, i) => (
-          <View key={t} style={styles.step}><Text style={styles.stepNum}>{i + 1}</Text><Text style={styles.stepText}>{t}</Text></View>
-        ))}
-      </Section>
+      <View style={styles.section}><GuideCard count={guideSteps(c, assets.length).length} onPress={() => setGuide(true)} /></View>
+      <GuideSheet c={c} assetCount={assets.length} visible={guide} onClose={closeGuide}
+        onMore={() => { closeGuide(); router.push({ pathname: '/campaign/[id]', params: { id: c.id } }); }} />
 
       <Section title="Konten sumber">
         {assets.length ? assets.map((a) => <AssetRow key={a.id} a={a} />) : <Text style={styles.muted}>Brand belum menambahkan konten sumber.</Text>}
-      </Section>
-
-      <Section title="Brief & aturan" action={{ label: 'Lihat lengkap', onPress: () => router.push({ pathname: '/campaign/[id]', params: { id: c.id } }) }}>
-        {c.rules.filter((r) => r.kind !== 'performance').slice(0, 4).map((r, i) => (
-          <View key={i} style={styles.step}><Text style={styles.bullet}>•</Text><Text style={styles.stepText}>{r.body}</Text></View>
-        ))}
-        {c.guidelines_dont.slice(0, 3).map((t, i) => (
-          <View key={`d${i}`} style={styles.step}><Text style={[styles.bullet, { color: color.danger }]}>−</Text><Text style={styles.stepText}>{t}</Text></View>
-        ))}
       </Section>
 
       <Section title="Submission kamu">

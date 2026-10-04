@@ -17,6 +17,7 @@ import { web } from '@/theme/web';
 import { card, color, radius, space, type } from '@/theme/tokens';
 import { assetLink, fetchAssets, fetchCampaign, leaveCampaign, type Asset } from '@/features/campaigns/api';
 import { JoinedRow } from '@/features/campaigns/JoinedRow';
+import { GuideCard, GuideSheet, guideSteps } from '@/features/campaigns/GuideSheet';
 import { CAMPAIGN_STATUS, categoryLabel, joinBlockCopy, platformsLabel } from '@/features/campaigns/copy';
 import { track } from '@/lib/analytics';
 
@@ -32,6 +33,7 @@ export default function CampaignDetailScreen() {
   }, [id]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [guide, setGuide] = useState<false | 'view' | 'take'>(false);
 
   if (!q.data) return <Screen scroll={false}><Header title="" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
   const { c, assets } = q.data;
@@ -53,6 +55,8 @@ export default function CampaignDetailScreen() {
   }
 
   const take = () => router.push({ pathname: '/take/[id]', params: { id: c.id } });
+  // Taking a campaign shows the video guide first; "Oke, Saya Paham" continues.
+  const startTake = () => setGuide('take');
   const footer = joined ? (
     <>
       <View style={styles.footRow}>
@@ -64,7 +68,7 @@ export default function CampaignDetailScreen() {
   ) : block?.action === 'socials' ? (
     <>
       <Text style={styles.blockNote}>Hubungkan akun {platformsLabel(c.platforms)} di langkah pertama.</Text>
-      <Button label="Ambil Campaign" onPress={take} />
+      <Button label="Ambil Campaign" onPress={startTake} />
     </>
   ) : block ? (
     <>
@@ -75,7 +79,7 @@ export default function CampaignDetailScreen() {
   ) : (
     <>
       <Text style={styles.blockNote}>{cpmLabel(c.cpm)} · {c.max_earning_per_submission ? `maks ${idrCompact(c.max_earning_per_submission)} per klip` : 'tanpa batas per klip'}</Text>
-      <Button label="Ambil Campaign" onPress={take} loading={busy} />
+      <Button label="Ambil Campaign" onPress={startTake} loading={busy} />
     </>
   );
 
@@ -124,22 +128,17 @@ export default function CampaignDetailScreen() {
           </View>
         </Section>
       ) : null}
-      {c.objective ? <Section title="Tujuan campaign"><Text style={styles.body}>{c.objective}</Text></Section> : null}
-      {c.description ? <Section title="Brief"><Text style={styles.body}>{c.description}</Text></Section> : null}
+      <View style={styles.section}>
+        <GuideCard count={guideSteps(c, assets.length).length} onPress={() => setGuide('view')} />
+      </View>
+      <GuideSheet c={c} assetCount={assets.length} visible={!!guide} onClose={() => setGuide(false)}
+        onAck={guide === 'take' ? () => { setGuide(false); try { globalThis.localStorage?.setItem(`tapp:guide:${c.id}`, '1'); } catch { /* storage off */ } take(); } : undefined} />
 
       <Section title="Konten sumber">
         {joined ? (assets.length ? assets.map((a) => <AssetRow key={a.id} a={a} />)
           : <Text style={styles.muted}>Brand belum menambahkan konten sumber.</Text>)
           : <Text style={styles.muted}>Terbuka setelah kamu bergabung.</Text>}
       </Section>
-
-      {rulesBy('requirement').length ? <Section title={RULE_TITLES.requirement}><Bullets items={rulesBy('requirement').map((r) => r.body)} /></Section> : null}
-      {c.guidelines_do.length || c.guidelines_dont.length ? (
-        <Section title="Panduan kreatif">
-          {c.guidelines_do.length ? <><Text style={styles.subhead}>Lakukan</Text><Bullets items={c.guidelines_do} mark="+" /></> : null}
-          {c.guidelines_dont.length ? <><Text style={[styles.subhead, { marginTop: space.md }]}>Hindari</Text><Bullets items={c.guidelines_dont} mark="−" danger /></> : null}
-        </Section>
-      ) : null}
 
       <Section title="Bayaran">
         <Bullets items={[
