@@ -399,16 +399,18 @@ def contact_card(icon, label, href, text, cfg=''):
 GLOBE_SVG = (ROOT / 'src' / 'generator' / 'globe.svg.frag').read_text().replace('/_blob/2d5aebeddb5d0a63b818258d6ea37530', 'assets/tapp-mark-white.svg?v=2')
 CONTACT = head('Hubungi TAPP', 'Hubungi tim TAPP lewat WhatsApp atau email, untuk creator maupun brand.', 'contact') + header('contact') + f"""
 <main class="ct">
+ <div class="ct-left">
   <section class="ct-hero">
     <h1>Ngobrol Langsung <br><span>Dengan Tim TAPP</span></h1>
     <p>Creator yang mau mulai, atau brand yang siap bikin campaign. Kami balas secepatnya.</p>
   </section>
-  <div class="ct-globe" aria-hidden="true">{GLOBE_SVG}</div>
   <section class="ct-grid">
     {contact_card(WA_ICON, 'WhatsApp untuk Creator', '#whatsapp', 'Chat tim creator TAPP')}
     {contact_card(WA_ICON, 'WhatsApp untuk Brand', '#whatsapp-brand', 'Chat tim brand TAPP')}
     {contact_card(MAIL_ICON, 'Hubungi kami di Email', '#mail', 'tappcreators@gmail.com', ' data-config-text="SUPPORT_EMAIL"')}
   </section>
+ </div>
+  <div class="ct-globe" aria-hidden="true">{GLOBE_SVG}</div>
 </main>
 """ + FOOT + '\n</body>\n</html>\n'
 (ROOT / 'contact.html').write_text(CONTACT.replace('__SITE_URL__', SITE_URL))
