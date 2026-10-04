@@ -321,7 +321,7 @@ function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latest
       <div className="preview">
         <span>Masuk ke saldo kreator</span>
         <strong>{idr(amount)}</strong>
-        <span className="sub">Bonus level dan biaya tarik dihitung saat kreator menarik saldo.</span>
+        <span className="sub">Bonus level, fee platform, dan biaya transfer dihitung saat kreator menarik saldo.</span>
         {p.belowMin ? <span style={{ color: 'var(--warning)' }}>Di bawah minimum {num(s.min_views_to_qualify)} views, jadi bayarannya 0.</span> : null}
         {p.capped ? <span style={{ color: 'var(--warning)' }}>Dibatasi sisa budget campaign.</span> : null}
       </div>

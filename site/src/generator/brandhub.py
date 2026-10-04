@@ -81,7 +81,7 @@ def _budget():
   <b class="tabular" style="font-size: 38px; letter-spacing: -1px"><span style="color: #6E6E78">Rp</span>24.500.000</b>
   <span style="font-size: 12px; color: #8A8A93; margin-top: -8px">budget views terverifikasi</span>
   <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: 30px">{ticks}<i style="position: absolute; left: 44%; bottom: -6px; width: 14px; height: 14px; border-radius: 7px; background: #75B2F4; box-shadow: 0 0 14px #75B2F4"></i></div>
-  <div style="text-align: left; margin-top: 6px">{row('Fee kerjasama (18%, maks.)', 'Rp4.410.000')}{row('Total maksimal', 'Rp28.910.000')}{row('Status', '<span style="color: #34D07A">Terkunci saat disetujui</span>')}</div>
+  <div style="text-align: left; margin-top: 6px">{row('Harga', 'All-in per 1.000 views')}{row('Termasuk', 'Creator, verifikasi &amp; anti-bot')}{row('Status', '<span style="color: #34D07A">Terkunci saat disetujui</span>')}</div>
 </div>'''
 
 def _posting():

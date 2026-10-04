@@ -87,7 +87,7 @@ function Detail({ p, onChanged }: { p: AdminPayout; onChanged: () => Promise<voi
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div><h2>Transfer {idr(p.net_amount)}</h2><p className="sub">{p.creator_name} · @{p.creator_username} · status kreator {p.creator_status}</p>
-          <p className="sub" style={{ margin: 0 }}>Saldo ditarik {idr(p.amount)}{Number(p.bonus) ? ` + bonus level ${p.fee_tier ?? ''} ${idr(Number(p.bonus))}` : ''} − biaya tarik {idr(p.fee)}</p></div>
+          <p className="sub" style={{ margin: 0 }}>Saldo ditarik {idr(p.amount)}{Number(p.bonus) ? ` + bonus level ${p.fee_tier ?? ''} ${idr(Number(p.bonus))}` : ''} − fee {idr(p.fee)} (platform {num(p.fee_pct)}% + transfer)</p></div>
         <span className={`badge ${LABEL[p.status].tone}`}>{LABEL[p.status].t}</span>
       </div>
 

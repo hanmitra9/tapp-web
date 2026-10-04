@@ -25,7 +25,7 @@ class Component extends DCLogic {
     const faqC = faqList([
       ['TAPP itu sebenarnya apa?', 'Tempat brand menaruh campaign dan creator mengerjakannya. Kamu bikin clip pendek dari konten sumber, posting di akunmu sendiri, dan dibayar dari views yang lolos verifikasi.'],
       ['Bagaimana hitungan bayarannya?', 'Qualified views dikali tarif per 1.000 views. Qualified artinya views yang lolos saringan bot dan aktivitas janggal, jadi angka mentah di TikTok bisa berbeda dengan yang dibayar. Rinciannya terlihat per clip.'],
-      ['Kapan aku dibayar?', 'Setelah clip-mu diterima tim TAPP, bayarannya masuk ke saldomu. Tarik kapan saja setelah saldo mencapai Rp100.000, dengan biaya tarik Rp10.000 per pencairan. Bonus level ditambahkan saat kamu menarik.'],
+      ['Kapan aku dibayar?', 'Setelah clip-mu diterima tim TAPP, bayarannya masuk ke saldomu. Tarik kapan saja setelah saldo mencapai Rp100.000. Setiap pencairan dipotong fee platform 18% dan biaya transfer Rp10.000, lalu bonus level ditambahkan.'],
       ['Dibayar ke mana?', 'E-wallet (GoPay, OVO, DANA, ShopeePay, LinkAja) atau rekening bank (BCA, BRI, BNI, Mandiri, dan lainnya) yang kamu isi di profil. Tim TAPP mentransfer setelah kamu menarik saldo.'],
       ['Berapa views minimal supaya dibayar?', 'Tiap campaign punya aturannya sendiri. Di TAPP Mega Campaign, clip mulai dihitung setelah mencapai 5.000 views dan dibayar sampai 100K views per clip, jadi maksimal Rp300.000 per clip.'],
       ['Follower saya masih sedikit, boleh?', 'Boleh. Tidak ada minimum follower. Level naik dari clip yang lolos dan approval rate-mu, jadi creator baru punya jalur yang sama.'],
@@ -37,7 +37,7 @@ class Component extends DCLogic {
       ['Bisakah saya memilih creator?', 'Campaign ditawarkan ke creator yang cocok dari platform dan rekam jejak, bukan dari jumlah follower. Account manager-mu bisa membantu mengarahkan profil creator yang dicari.'],
       ['Kalau budget habis di tengah campaign?', 'Campaign otomatis masuk fase segera berakhir dan views berikutnya tidak dibayar, jadi pengeluaranmu tidak pernah melewati budget.'],
       ['Laporan apa yang saya dapat?', 'Views mentah dan qualified, total biaya, CPV, serta performa per platform dan per creator.'],
-      ['Berapa biayanya?', 'Kamu hanya membayar views yang lolos verifikasi. Rincian biaya dibahas langsung bersama tim TAPP saat meeting, sesuai brief dan target campaign-mu.'],
+      ['Berapa biayanya?', 'Satu harga all-in per 1.000 qualified views, tanpa fee tambahan. Kamu hanya membayar views yang lolos verifikasi. Rincian biaya dibahas langsung bersama tim TAPP saat meeting, sesuai brief dan target campaign-mu.'],
     ], 'openB');
 
     // live chart (brand card 3), values from the reference demo

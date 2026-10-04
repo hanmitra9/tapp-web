@@ -54,7 +54,7 @@ test('accepted clip is credited to the creator balance from "Siap dibayar": view
   await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
   await page.getByLabel('Views').fill('20.000');
   // 20.000 views × Rp3.000 / 1.000 = Rp60.000 into the balance; bonus and withdrawal fee apply when the creator withdraws.
-  await expect(page.getByText('Bonus level dan biaya tarik dihitung saat kreator menarik saldo.')).toBeVisible();
+  await expect(page.getByText('Bonus level, fee platform, dan biaya transfer dihitung saat kreator menarik saldo.')).toBeVisible();
   await page.getByRole('button', { name: /Masukkan Rp60\.000 ke saldo/ }).click();
   await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_views: 20000, p_note: null }]);
 });
