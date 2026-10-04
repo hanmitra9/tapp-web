@@ -3,7 +3,7 @@ import { color, font, type } from '@/theme/tokens';
 
 // "N creator ikut" with a small stack of initials (latest joiners), shown on every campaign card.
 export function JoinedRow({ count, initials = [] }: { count: number; initials?: string[] }) {
-  if (!count) return <Text style={styles.text}>Jadi creator pertama yang ikut</Text>;
+  if (!count) return null;
   const shown = initials.slice(0, 4);
   const more = count - shown.length;
   return (
