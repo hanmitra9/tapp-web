@@ -12,6 +12,7 @@ import { errorMessage } from '@/lib/errors';
 import { track } from '@/lib/analytics';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
+import { savePayoutCard } from '@/lib/shareCard';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -23,7 +24,7 @@ import { fetchPayouts, fetchWithdrawTerms, OPEN, PAYOUT_STATUS, requestPayout, T
 // Wallet (0045/0046): accepted clips add to the balance; the creator withdraws it. Platform fee + transfer fee, level bonus on top.
 export default function Payments() {
   useEffect(() => { track('earnings_viewed'); }, []);
-  const { session } = useAuth();
+  const { session, account } = useAuth();
   const uid = session!.user.id;
   const q = useQuery(async () => {
     const [earn, payouts, method, terms] = await Promise.all([fetchEarnings(uid), fetchPayouts(), fetchPayoutMethod(uid), fetchWithdrawTerms(uid)]);
@@ -39,6 +40,19 @@ export default function Payments() {
   const bonus = d ? Math.round(available * d.terms.bonusPct / 100) : 0;
   const platformFee = d ? Math.round(available * d.terms.feePct / 100) : 0;
   const net = d ? available + bonus - platformFee - d.terms.fee : 0;
+  const paid = d?.payouts.filter((p) => p.status === 'paid') ?? [];
+  const totalPaid = paid.reduce((a, p) => a + p.amount + Number(p.bonus ?? 0) - Number(p.fee ?? 0), 0);
+  const firstPaid = paid.map((p) => p.paid_at ?? p.created_at).sort()[0] ?? null;
+  const [saving, setSaving] = useState(false);
+  async function saveCard() {
+    setSaving(true);
+    try {
+      await savePayoutCard({ amount: idr(totalPaid), name: account?.fullName ?? 'Creator TAPP', handle: account?.username ?? null,
+        payouts: paid.length, since: firstPaid ? new Date(firstPaid).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : null });
+      track('payout_card_saved', { total: totalPaid });
+    } catch (e) { setError(errorMessage(e)); }
+    finally { setSaving(false); }
+  }
   const canWithdraw = !!d && !!d.method && !open && available >= d.terms.min;
 
   function confirm() {
@@ -80,6 +94,17 @@ export default function Payments() {
             </>
           )}
           <Notice tone="error" message={error} />
+        </View>
+      ) : null}
+
+      {totalPaid > 0 ? (
+        <View style={styles.total}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={styles.methodLabel}>Total payout selama ini</Text>
+            <Text style={styles.totalValue}>{idr(totalPaid)}</Text>
+            <Text style={styles.rowMeta}>{paid.length}x pencairan{firstPaid ? ` · sejak ${dateLabel(firstPaid)}` : ''}</Text>
+          </View>
+          <Button label="Simpan kartu" variant="secondary" onPress={saveCard} loading={saving} />
         </View>
       ) : null}
 
@@ -136,6 +161,8 @@ const styles = StyleSheet.create({
   method: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
   methodLabel: { ...type.caption, color: color.textMuted },
   methodValue: { ...type.label, color: color.text },
+  total: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
+  totalValue: { ...type.title, color: color.text, fontVariant: ['tabular-nums'] },
   explain: { marginTop: space.lg, padding: space.lg, gap: space.sm, ...card, borderRadius: radius.md },
   explainTitle: { ...type.label, color: color.text },
   explainBody: { ...type.caption, color: color.textSecondary, lineHeight: 20 },

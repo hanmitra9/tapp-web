@@ -42,6 +42,26 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = { mode: null, openC: 0, openB: 0, met: 'Views', budget: 25000000, bstep: 0 };
+    // Budget bar: drive the hidden range input from pointer position anywhere on the bar. Native range inputs on
+    // iOS only drag from their thumb, which sits a few px off the drawn marker, so a second drag often missed it.
+    if (!window.__tappBsl) {
+      window.__tappBsl = true;
+      const set = (el, x) => {
+        const inp = el.querySelector('.bslider'), r = el.getBoundingClientRect();
+        const v = Math.round(5 + Math.min(1, Math.max(0, (x - r.left) / r.width)) * 195);
+        if (inp && String(v) !== inp.value) { inp.value = String(v); inp.dispatchEvent(new Event('input', { bubbles: true })); }
+      };
+      document.addEventListener('pointerdown', (e) => {
+        const el = e.target && e.target.closest ? e.target.closest('.bsl') : null;
+        if (!el) return;
+        e.preventDefault();
+        try { el.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+        set(el, e.clientX);
+        const move = (ev) => set(el, ev.clientX);
+        const up = () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+        el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+      });
+    }
   }
   renderVals() {
     const s = this.state;
