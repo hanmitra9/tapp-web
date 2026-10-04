@@ -57,7 +57,7 @@ export async function fetchWithdrawTerms(uid: string): Promise<WithdrawTerms> {
   const tier = (c.data?.tier as string | undefined) ?? 'new';
   const v = (k: string) => s.data?.find((x) => x.key === k)?.value;
   const bonus = (v('tier_bonus_pct') ?? {}) as Record<string, number>;
-  return { tier, bonusPct: Number(bonus[tier] ?? 0), feePct: Number(v('creator_fee_pct') ?? 18), fee: Number(v('withdrawal_fee_idr') ?? 10000), min: Number(v('min_payout_idr') ?? 100000) };
+  return { tier, bonusPct: Number(bonus[tier] ?? 0), feePct: Number(v('creator_fee_pct') ?? 0), fee: Number(v('withdrawal_fee_idr') ?? 10000), min: Number(v('min_payout_idr') ?? 100000) };
 }
 
 export async function requestPayout(idempotencyKey: string): Promise<Payout> {

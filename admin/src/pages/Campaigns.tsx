@@ -121,6 +121,9 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
         <dl className="kv">
           <div><dt>CPM brand</dt><dd>{idr(f.pricing?.brand_cpm ?? f.cpm)} / 1.000</dd></div>
           <div><dt>Tarif kreator</dt><dd>{idr(f.cpm)} / 1.000 ({num(f.pricing?.creator_share_pct ?? 100)}%)</dd></div>
+          <div><dt>Budget brand</dt><dd>{idr(f.pricing?.brand_budget ?? f.budget)}</dd></div>
+          <div><dt>Fee platform</dt><dd>{num(f.pricing?.budget_fee_pct ?? 0)}% dari budget</dd></div>
+          <div><dt>Budget kreator</dt><dd>{idr(f.budget)}</dd></div>
           <div><dt>Minimum views</dt><dd>{num(f.min_views_to_qualify)}</dd></div>
           <div><dt>Maks per klip</dt><dd>{f.max_earning_per_submission ? idr(Number(f.max_earning_per_submission)) : '—'}</dd></div>
           <div><dt>Mulai</dt><dd>{dt(f.starts_at)}</dd></div>
@@ -315,7 +318,8 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
       <div className="grid2">
         <label className="field">CPM brand (Rp per 1.000 qualified views)<input inputMode="numeric" value={f.cpm} onChange={set('cpm')} required />
           <span className="sub" style={{ fontWeight: 400 }}>Kreator dapat {idr(Math.floor(Number(n(f.cpm) || 0) * Number(n(f.share) || 0) / 100))} / 1.000 · margin TAPP {idr(Number(n(f.cpm) || 0) - Math.floor(Number(n(f.cpm) || 0) * Number(n(f.share) || 0) / 100))}</span></label>
-        <label className="field">Budget brand (Rp, untuk views)<input inputMode="numeric" value={f.budget} onChange={set('budget')} required /></label>
+        <label className="field">Budget brand (Rp)<input inputMode="numeric" value={f.budget} onChange={set('budget')} required />
+          <span className="sub" style={{ fontWeight: 400 }}>Budget kreator {idr(Math.floor(Number(n(f.budget) || 0) * (100 - (initial?.pricing?.budget_fee_pct ?? 18)) / 100 * Number(n(f.share) || 0) / 100))} (setelah fee platform {initial?.pricing?.budget_fee_pct ?? 18}% dan bagian kreator)</span></label>
         <label className="field">Bagian kreator (%)<input inputMode="numeric" value={f.share} onChange={set('share')} required />
           <span className="sub" style={{ fontWeight: 400 }}>Standar 70%. Isi 100 untuk campaign milik TAPP sendiri.</span></label>
         <label className="field">Minimum views sebelum dibayar<input inputMode="numeric" value={f.min_views_to_qualify} onChange={set('min_views_to_qualify')} /></label>

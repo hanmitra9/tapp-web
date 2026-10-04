@@ -75,10 +75,10 @@ POSTS = [
 </tbody></table>
 <h2>Cara bonus dihitung</h2>
 <p>Bayaran clip masuk ke saldomu. Saat kamu menarik saldo, TAPP menambahkan bonus tarif <b>di atas</b> jumlah yang ditarik, sesuai level kamu saat itu. Bonus ini dibayar TAPP, jadi tidak mengurangi budget brand.</p>
-<p>Setiap pencairan dipotong fee platform 18% dan biaya transfer Rp10.000, dengan minimal saldo Rp100.000. Bonus level menutup sebagian fee ini, makin tinggi levelmu makin besar.</p>
+<p>Setiap pencairan hanya dipotong biaya transfer Rp10.000, dengan minimal saldo Rp100.000. Tidak ada potongan persen dari saldomu.</p>
 <ul>
-<li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, fee platform Rp54.000, biaya transfer Rp10.000, diterima <b>Rp251.000</b>.</li>
-<li>Tarik saldo yang sama di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, diterima <b>Rp281.000</b>.</li>
+<li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, biaya transfer Rp10.000, diterima <b>Rp305.000</b>.</li>
+<li>Tarik saldo yang sama di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, diterima <b>Rp335.000</b>.</li>
 </ul>
 <p>Rincian bonus dan biaya tercantum di riwayat pencairan dan di email bukti transfer.</p>
 <h2>Selain bonus</h2>
@@ -110,11 +110,10 @@ POSTS = [
 <h2>Ketentuan penarikan</h2>
 <table class="bl-table"><tbody>
 <tr><td>Minimal saldo</td><td>Rp100.000</td></tr>
-<tr><td>Fee platform</td><td>18% dari saldo yang ditarik</td></tr>
 <tr><td>Biaya transfer</td><td>Rp10.000 per pencairan</td></tr>
 <tr><td>Bonus level</td><td>+2% sampai +15% dari jumlah yang ditarik</td></tr>
 </tbody></table>
-<p>Fee platform membiayai konten sumber yang siap edit, pelacakan views otomatis, dan jaminan pembayaran. Tips: tarik saldo sekaligus dalam jumlah lebih besar supaya biaya transfer terasa lebih kecil. Kalau levelmu naik, bonus saat menarik juga ikut naik.</p>
+<p>Tidak ada potongan persen dari saldomu. Tips: tarik saldo sekaligus dalam jumlah lebih besar supaya biaya transfer terasa lebih kecil. Kalau levelmu naik, bonus saat menarik juga ikut naik.</p>
 <h2>Metode pembayaran</h2>
 <p>E-wallet seperti GoPay, OVO, DANA, ShopeePay, dan LinkAja, atau rekening bank seperti BCA, BRI, BNI, Mandiri, dan lainnya. Atur di <b>Profil → Pembayaran</b>.</p>
 <h2>Kalau transfer gagal</h2>
@@ -170,7 +169,7 @@ POSTS = [
 <li><b>Tarif</b>: Rp3.000 per 1.000 qualified views.</li>
 <li><b>Minimal views</b>: clip mulai dihitung setelah 5.000 views.</li>
 <li><b>Batas per clip</b>: dibayar sampai 100K views, jadi maksimal Rp300.000 per clip.</li>
-<li><b>Pencairan</b>: bayaran masuk saldo; saat menarik ada fee platform 18% dan biaya transfer Rp10.000, plus bonus level.</li>
+<li><b>Pencairan</b>: bayaran masuk saldo; saat menarik hanya ada biaya transfer Rp10.000, plus bonus level.</li>
 <li><b>Platform</b>: TikTok, Instagram, dan YouTube.</li>
 </ul>
 <h2>Cara ikut</h2>
