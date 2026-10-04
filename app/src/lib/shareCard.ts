@@ -9,12 +9,12 @@ const W = 960, H = 1344, R = 84;
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
 const month = (iso: string) => { const d = new Date(iso); return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
 
-// 494000 → "494RB", 1250000 → "1,25JT", 12400000 → "12,4JT"
+// 494000 → "494K", 1250000 → "1,25M", 12400000 → "12,4M" (Threads-style K/M/B)
 export function compactIdr(n: number): string {
   const f = (v: number, unit: string) => `${v.toLocaleString('id-ID', { maximumFractionDigits: v < 10 ? 2 : v < 100 ? 1 : 0 })}${unit}`;
-  if (n >= 1e9) return f(n / 1e9, 'M');
-  if (n >= 1e6) return f(n / 1e6, 'JT');
-  if (n >= 1e3) return f(n / 1e3, 'RB');
+  if (n >= 1e9) return f(n / 1e9, 'B');
+  if (n >= 1e6) return f(n / 1e6, 'M');
+  if (n >= 1e3) return f(n / 1e3, 'K');
   return String(Math.round(n));
 }
 
