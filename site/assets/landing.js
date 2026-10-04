@@ -165,8 +165,9 @@ class Component extends DCLogic {
       simBudget: rp(budget), simViews: compact(views), simRate: rp(1000), simBudgetJt: budget / 1e6, simPct: simPct, simBars: simBars, onBudget: onBudget,
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       creatorTab: tab(creator), brandTab: tab(!creator),
-      setCreator: () => this.setState({ mode: 'creator' }),
-      setBrand: () => this.setState({ mode: 'brand' }),
+      // Switching audience shows a different page: start it from the top.
+      setCreator: () => { this.setState({ mode: 'creator' }); window.scrollTo({ top: 0, behavior: 'instant' }); },
+      setBrand: () => { this.setState({ mode: 'brand' }); window.scrollTo({ top: 0, behavior: 'instant' }); },
       faqC: faqC, faqB: faqB,
       metrics: metrics, lcLine: line, lcArea: line + 'L' + px(6) + ',' + (H - pb) + 'L0,' + (H - pb) + 'Z', lcLabel: 'Grafik ' + met + ' 7 hari',
       wall1: wall(0), wall2: wall(1), wall3: wall(2),
