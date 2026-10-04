@@ -10,10 +10,11 @@ import { LoadState } from '@/components/LoadState';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
-import { compact, cpmLabel, deadlineLabel, idr } from '@/lib/format';
+import { compact, cpmLabel, deadlineLabel, idr, idrCompact } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type, card } from '@/theme/tokens';
+import { web } from '@/theme/web';
 import { assetLink, fetchAssets, fetchCampaign, type Asset, type CampaignDetail } from '@/features/campaigns/api';
 import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { fetchMySubmissions, withdrawSubmission } from '@/features/submissions/api';
@@ -82,16 +83,18 @@ export default function Workspace() {
       footer={block ? <Text style={styles.block}>{block}</Text> : <Button label="Submit Klip" onPress={() => router.push({ pathname: '/take/[id]', params: { id: c.id } })} />}
     >
       <Header title="" />
-      <Text style={styles.brand}>{c.brand.name} · Workspace</Text>
-      <Text style={styles.title} accessibilityRole="header">{c.title}</Text>
-      <Text style={styles.meta}>{CAMPAIGN_STATUS[c.status]} · {cpmLabel(c.cpm)}{dl ? ` · ${dl}` : ''}</Text>
+      <View style={styles.wHero} {...web('art')}>
+        <Text style={styles.wBrand}>{c.brand.name} · {CAMPAIGN_STATUS[c.status]}</Text>
+        <Text style={styles.wTitle} accessibilityRole="header" numberOfLines={2}>{c.title}</Text>
+        <Text style={styles.wMeta}>{cpmLabel(c.cpm)}{dl ? ` · ${dl}` : ''}</Text>
+        <View style={styles.wStats}>
+          <Stat label="Klip" value={String(subs.length)} />
+          <Stat label="Qualified views" value={compact(totals.q)} />
+          <Stat label="Penghasilan" value={idrCompact(totals.e)} />
+        </View>
+      </View>
       {error ? <View style={styles.gap}><Notice tone="error" message={error} /></View> : null}
 
-      <View style={styles.stats}>
-        <Stat label="Klip disubmit" value={String(subs.length)} />
-        <Stat label="Qualified views" value={compact(totals.q)} />
-        <Stat label="Penghasilan" value={idr(totals.e)} />
-      </View>
       {totals.q > 0 ? (
         <Pressable onPress={openCard} disabled={making} style={({ pressed }) => [styles.shareRow, pressed && { opacity: 0.7 }]} accessibilityRole="button">
           <Feather name="share" size={16} color={color.link} />
@@ -148,7 +151,7 @@ export default function Workspace() {
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
-  return <View style={styles.stat}><Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text><Text style={styles.statLabel}>{label}</Text></View>;
+  return <View style={styles.wStat}><Text style={styles.wStatValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text><Text style={styles.wStatLabel}>{label}</Text></View>;
 }
 function Section({ title, action, children }: { title: string; action?: { label: string; onPress: () => void }; children: React.ReactNode }) {
   return (
@@ -182,6 +185,14 @@ function AssetRow({ a }: { a: Asset }) {
 }
 
 const styles = StyleSheet.create({
+  wHero: { borderRadius: radius.xl, padding: space.xl, gap: 4, overflow: 'hidden', backgroundColor: color.blueDeep },
+  wBrand: { ...type.caption, color: 'rgba(255,255,255,0.78)' },
+  wTitle: { ...type.title, color: '#FFFFFF', maxWidth: '85%' },
+  wMeta: { ...type.caption, color: 'rgba(255,255,255,0.78)' },
+  wStats: { flexDirection: 'row', gap: space.sm, marginTop: space.lg },
+  wStat: { flex: 1, padding: space.md, gap: 2, borderRadius: radius.md, backgroundColor: 'rgba(5,10,20,0.45)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
+  wStatValue: { ...type.label, fontSize: 15, color: '#FFFFFF', fontVariant: ['tabular-nums'] },
+  wStatLabel: { ...type.caption, fontSize: 11, color: 'rgba(255,255,255,0.7)' },
   lbRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm + 2, paddingHorizontal: space.md, borderRadius: radius.sm },
   lbMe: { backgroundColor: color.accentSoft },
   lbRank: { ...type.label, color: color.textMuted, width: 22, fontVariant: ['tabular-nums'] },

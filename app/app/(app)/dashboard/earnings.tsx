@@ -1,9 +1,9 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { showAlert } from '@/lib/alert';
-import { Button } from '@/components/Button';
 import { Header } from '@/components/Header';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
@@ -17,8 +17,7 @@ import { fetchTierProgress } from '@/features/creator/tier';
 import { fetchReferral } from '@/features/referral/api';
 import { renderPayoutCard, shareRenderedCard, type RenderedCard } from '@/lib/shareCard';
 import { ShareCardSheet } from '@/components/ShareCardSheet';
-import { color, radius, space, type, card } from '@/theme/tokens';
-import { BalanceCard, cardFootText } from '@/components/BalanceCard';
+import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 import { fetchAvatarUrl, fetchPayoutMethod } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
 import { fetchEarnings } from '@/features/campaigns/earnings';
@@ -84,86 +83,111 @@ export default function Payments() {
       <Header title="Saldo" back={false} />
       {q.error && !d ? <Notice tone="error" message={q.error} /> : null}
 
-      <View style={styles.hero}>
-        <BalanceCard label="Saldo bisa ditarik" amount={d ? idr(available) : null}
-          footLeft={d ? <Text style={cardFootText}>{d.summary.pending > 0 ? `${idr(d.summary.pending)} sedang diproses` : `Level ${TIER_LABEL[d.terms.tier] ?? d.terms.tier}`}</Text> : null}
-          footRight={<Text style={cardFootText}>TAPP Creators</Text>} />
-      </View>
-
-      {d ? (
-        <View style={styles.withdraw}>
-          {open ? (
-            <Notice tone="info" message={`Pencairan ${idr(open.amount + Number(open.bonus ?? 0) - (open.fee ?? 0))} sedang ${PAYOUT_STATUS[open.status].label.toLowerCase()}. Biasanya selesai dalam 1x24 jam kerja.`} />
-          ) : (
-            <>
-              <Button label={available >= d.terms.min ? `Tarik ${idr(Math.max(net, 0))}` : 'Tarik saldo'} onPress={confirm} loading={busy} disabled={!canWithdraw} />
-              <Text style={styles.terms}>
-                {available < d.terms.min ? `Min. ${idr(d.terms.min)} · ` : ''}{d.terms.feePct ? `Fee ${d.terms.feePct}% + ` : 'Biaya transfer '}{idr(d.terms.fee)}{d.terms.bonusPct ? ` · Bonus +${d.terms.bonusPct}%` : ''}
-              </Text>
-            </>
-          )}
-          <Notice tone="error" message={error} />
+      <LinearGradient colors={gradient.card} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.hero} {...({ dataSet: { tapp: 'balance' } } as object)}>
+        <View style={styles.heroTop}>
+          <Text style={styles.heroLabel}>Saldo bisa ditarik</Text>
+          <Image source={require('../../../assets/tapp-mark-white.png')} style={styles.heroMark} accessibilityIgnoresInvertColors />
         </View>
-      ) : null}
+        {d ? <Text style={styles.heroAmount} numberOfLines={1} adjustsFontSizeToFit>{idr(available)}</Text> : <View style={styles.heroSkeleton} />}
+        {d ? (
+          <View style={styles.chips}>
+            {d.summary.pending > 0 ? <Text style={styles.chip}>{idr(d.summary.pending)} diproses</Text> : null}
+            <Text style={styles.chip}>Level {TIER_LABEL[d.terms.tier] ?? d.terms.tier}{d.terms.bonusPct ? ` · +${d.terms.bonusPct}%` : ''}</Text>
+            {refBonus ? <Text style={styles.chip}>+{idr(refBonus)} referral</Text> : null}
+          </View>
+        ) : null}
+        {d ? (open ? (
+          <View style={styles.openBox}>
+            <Feather name="loader" size={16} color="#FFFFFF" />
+            <Text style={styles.openText}>Pencairan {idr(open.amount + Number(open.bonus ?? 0) - (open.fee ?? 0))} sedang {PAYOUT_STATUS[open.status].label.toLowerCase()} · maks 1x24 jam kerja</Text>
+          </View>
+        ) : (
+          <>
+            <Pressable onPress={confirm} disabled={!canWithdraw || busy} accessibilityRole="button"
+              style={({ pressed }) => [styles.withdrawBtn, (!canWithdraw || busy) && { opacity: 0.55 }, pressed && { opacity: 0.85 }]}>
+              <Feather name="arrow-down-left" size={17} color="#0A2A4D" />
+              <Text style={styles.withdrawText}>{busy ? 'Memproses…' : available >= d.terms.min ? `Tarik ${idr(Math.max(net, 0))}` : 'Tarik saldo'}</Text>
+            </Pressable>
+            <Text style={styles.terms}>
+              {available < d.terms.min ? `Min. ${idr(d.terms.min)} · ` : ''}{d.terms.feePct ? `Fee ${d.terms.feePct}% + ` : 'Biaya transfer '}{idr(d.terms.fee)}
+            </Text>
+          </>
+        )) : null}
+      </LinearGradient>
+      {error ? <View style={{ marginTop: space.md }}><Notice tone="error" message={error} /></View> : null}
+      {d && !d.method ? <View style={{ marginTop: space.md }}><Notice tone="info" message="Isi rekening dulu supaya saldo bisa ditarik." /></View> : null}
 
       {d?.level ? <View style={{ marginTop: space.lg }}><LevelProgress p={d.level} /></View> : null}
 
-      <Pressable style={styles.method} onPress={() => router.push('/referral')} accessibilityRole="button">
-        <View style={{ flex: 1 }}>
-          <Text style={styles.methodValue}>Ajak teman, dapat {idr(d?.referral?.bonus ?? 20000)}</Text>
-          <Text style={styles.methodLabel}>{d?.referral?.invited ? `${d.referral.invited} teman bergabung` : 'Per teman yang cair pertama kali'}</Text>
-        </View>
-        <Feather name="chevron-right" size={18} color={color.textMuted} />
-      </Pressable>
-
       {totalPaid > 0 ? (
-        <View style={styles.total}>
+        <Pressable onPress={openCard} disabled={saving} accessibilityRole="button" style={({ pressed }) => [styles.total, pressed && { opacity: 0.9 }]}>
+          <LinearGradient colors={['#17130A', '#0E0D0B']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
           <View style={{ flex: 1, gap: 2 }}>
-            <Text style={styles.methodLabel}>Total payout selama ini</Text>
+            <Text style={styles.totalLabel}>Total payout selama ini</Text>
             <Text style={styles.totalValue}>{idr(totalPaid)}</Text>
-            {firstPaid ? <Text style={styles.rowMeta}>Sejak {dateLabel(firstPaid)}</Text> : null}
+            {firstPaid ? <Text style={styles.totalSub}>Sejak {dateLabel(firstPaid)}</Text> : null}
           </View>
-          <Button label="Lihat kartu" variant="secondary" onPress={openCard} loading={saving} />
-        </View>
+          <View style={styles.cardBtn}><Feather name="share-2" size={15} color="#F5C451" /><Text style={styles.cardBtnText}>{saving ? '…' : 'Kartu'}</Text></View>
+        </Pressable>
       ) : null}
 
       <ShareCardSheet card={shareCard} onClose={closeCard} onShare={share} title="Total payout"
         body="Semua yang sudah kamu cairkan. Simpan atau bagikan ke story." />
 
-      {d ? (
-        <Pressable style={styles.method} onPress={() => router.push('/profile/payout')} accessibilityRole="button">
-          <View style={{ flex: 1 }}>
-            <Text style={styles.methodLabel}>Ditransfer ke</Text>
-            <Text style={styles.methodValue}>{d.method ? `${d.method.provider} ${maskAccount(d.method.account_number)} · ${d.method.account_name}` : 'Belum diisi'}</Text>
-          </View>
-          <Text style={styles.link}>{d.method ? 'Ubah' : 'Isi sekarang'}</Text>
-        </Pressable>
-      ) : null}
-      {d && !d.method ? <View style={{ marginTop: space.md }}><Notice tone="info" message="Isi rekening atau e-wallet dulu supaya saldomu bisa ditarik." /></View> : null}
-
-
-      <Pressable style={styles.method} onPress={() => router.push('/payouts')} accessibilityRole="button">
-        <Feather name="clock" size={18} color={color.link} />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.methodValue}>Riwayat pencairan</Text>
-          {d ? <Text style={styles.methodLabel}>{d.payouts.length ? `${d.payouts.length} pencairan` : 'Belum ada'}</Text> : null}
-        </View>
-        <Feather name="chevron-right" size={18} color={color.textMuted} />
-      </Pressable>
+      <View style={styles.list}>
+        <ListRow icon="credit-card" title={d?.method ? `${d.method.provider} ${maskAccount(d.method.account_number)}` : 'Rekening'}
+          sub={d?.method ? d.method.account_name : 'Belum diisi'} onPress={() => router.push('/profile/payout')} action={d?.method ? 'Ubah' : 'Isi'} />
+        <ListRow icon="clock" title="Riwayat pencairan" sub={d ? (d.payouts.length ? `${d.payouts.length} pencairan` : 'Belum ada') : ' '} onPress={() => router.push('/payouts')} line />
+        <ListRow icon="gift" title={`Ajak teman, dapat ${idr(d?.referral?.bonus ?? 20000)}`} sub={d?.referral?.invited ? `${d.referral.invited} teman bergabung` : 'Per teman yang cair pertama kali'}
+          onPress={() => router.push('/referral')} line />
+      </View>
     </Screen>
   );
 }
 
 
+function ListRow({ icon, title, sub, onPress, action, line }: { icon: 'credit-card' | 'clock' | 'gift'; title: string; sub: string; onPress: () => void; action?: string; line?: boolean }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.lrow, line && styles.lline, pressed && { opacity: 0.6 }]}>
+      <View style={styles.licon}><Feather name={icon} size={17} color={color.link} /></View>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.methodValue} numberOfLines={1}>{title}</Text>
+        <Text style={styles.methodLabel} numberOfLines={1}>{sub}</Text>
+      </View>
+      {action ? <Text style={styles.link}>{action}</Text> : <Feather name="chevron-right" size={18} color={color.textMuted} />}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
-  hero: { marginTop: -space.md },
+  hero: { borderRadius: radius.xl, padding: space.xl, gap: space.md, overflow: 'hidden' },
+  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  heroLabel: { ...type.caption, color: 'rgba(255,255,255,0.82)' },
+  heroMark: { width: 26, height: 26 },
+  heroAmount: { ...type.display, fontSize: 40, lineHeight: 46, color: '#FFFFFF', fontVariant: ['tabular-nums'] },
+  heroSkeleton: { height: 46, width: '60%', borderRadius: radius.sm, backgroundColor: 'rgba(255,255,255,0.12)' },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  chip: { ...type.caption, color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.16)',
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, overflow: 'hidden' },
+  withdrawBtn: { height: 50, borderRadius: radius.pill, backgroundColor: '#FFFFFF', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: space.xs },
+  withdrawText: { ...type.label, fontSize: 16, color: '#0A2A4D', fontVariant: ['tabular-nums'] },
+  openBox: { flexDirection: 'row', alignItems: 'center', gap: space.sm, padding: space.md, borderRadius: radius.md, backgroundColor: 'rgba(255,255,255,0.12)' },
+  openText: { ...type.caption, color: '#FFFFFF', flex: 1 },
+  totalLabel: { ...type.caption, color: 'rgba(255,236,190,0.7)' },
+  totalSub: { ...type.caption, fontSize: 12, color: 'rgba(255,236,190,0.55)' },
+  cardBtn: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 14, height: 38, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(245,196,81,0.45)' },
+  cardBtnText: { ...type.label, fontSize: 14, color: '#F5C451' },
+  list: { marginTop: space.lg, ...card, borderRadius: radius.lg, paddingHorizontal: space.lg },
+  lrow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.lg },
+  lline: { borderTopWidth: 1, borderTopColor: color.border },
+  licon: { width: 36, height: 36, borderRadius: 18, backgroundColor: color.accentSoft, alignItems: 'center', justifyContent: 'center' },
   withdraw: { marginTop: space.lg, gap: space.sm },
-  terms: { ...type.caption, color: color.textMuted, textAlign: 'center', lineHeight: 19 },
+  terms: { ...type.caption, fontSize: 12, color: 'rgba(255,255,255,0.7)', textAlign: 'center' },
   method: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
   methodLabel: { ...type.caption, color: color.textMuted },
   methodValue: { ...type.label, color: color.text },
-  total: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
-  totalValue: { ...type.title, color: color.text, fontVariant: ['tabular-nums'] },
+  total: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.lg, overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(245,196,81,0.25)' },
+  totalValue: { ...type.title, color: '#FFF4D6', fontVariant: ['tabular-nums'] },
   explain: { marginTop: space.lg, padding: space.lg, gap: space.sm, ...card, borderRadius: radius.md },
   explainTitle: { ...type.label, color: color.text },
   explainBody: { ...type.caption, color: color.textSecondary, lineHeight: 20 },

@@ -19,6 +19,8 @@ if (typeof document !== 'undefined' && !document.getElementById('tapp-web-styles
     face('BebasNeue', 'BebasNeue-Regular.woff2'),
     `@font-face{font-family:'InterTight';src:url('${base}/fonts/InterTight-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}`,
     // Premium surfaces, opted in with dataSet={{ tapp: '…' }} (RN styles can't express layered backgrounds / masks / blur).
+    `[data-tapp~="lift"]{transition:transform .22s ease,box-shadow .22s ease,border-color .22s ease}`,
+    `[data-tapp~="lift"]:hover{transform:translateY(-3px);border-color:rgba(117,178,244,0.35)!important;box-shadow:0 24px 48px -24px rgba(12,101,196,0.55)!important}`,
     `[data-tapp~="spotlight"]{background:radial-gradient(closest-side,rgba(117,178,244,0.38),rgba(47,134,232,0.12) 55%,transparent);filter:blur(8px)}`,
     `[data-tapp~="stage"]{box-shadow:inset 0 1px 0 rgba(255,255,255,0.18),0 -12px 34px -14px rgba(47,134,232,0.65)}`,
     `[data-tapp~="balance"]{background:radial-gradient(70% 120% at 88% -10%,rgba(117,178,244,0.55),transparent 55%),radial-gradient(60% 90% at 0% 110%,rgba(16,79,146,0.7),transparent 60%),linear-gradient(135deg,#051629 0%,#092D52 48%,#104F92 100%)!important;box-shadow:0 30px 70px -30px rgba(12,101,196,0.75),inset 0 1px 0 rgba(255,255,255,0.18)!important;position:relative}`,

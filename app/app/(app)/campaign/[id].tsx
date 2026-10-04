@@ -1,6 +1,7 @@
 import type React from 'react';
 import { showAlert } from '@/lib/alert';
 import Feather from '@expo/vector-icons/Feather';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
@@ -81,13 +82,16 @@ export default function CampaignDetailScreen() {
   return (
     <Screen footer={footer} refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
       <Header title="" />
-      {c.banner_url ? <Image source={{ uri: c.banner_url }} style={styles.banner} resizeMode="cover" accessibilityIgnoresInvertColors />
-        : <View style={styles.banner} {...web('art')}><Image source={require('../../../assets/tapp-mark-white.png')} style={styles.artMark} accessibilityIgnoresInvertColors /></View>}
-      <Text style={styles.brand}>{c.brand.name}</Text>
-      <Text style={styles.title} accessibilityRole="header">{c.title}</Text>
-      <Text style={styles.meta}>
-        {categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}
-      </Text>
+      <View style={styles.hero} {...(c.banner_url ? {} : web('art'))}>
+        {c.banner_url ? <Image source={{ uri: c.banner_url }} style={StyleSheet.absoluteFill} resizeMode="cover" accessibilityIgnoresInvertColors />
+          : <Image source={require('../../../assets/tapp-mark-white.png')} style={styles.artMark} accessibilityIgnoresInvertColors />}
+        <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(4,7,12,0.85)']} start={{ x: 0, y: 0.45 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
+        <View style={styles.heroRate}><Text style={styles.heroRateValue}>{idr(c.cpm)}</Text><Text style={styles.heroRateUnit}>/1K views</Text></View>
+        <View style={styles.heroText}>
+          <Text style={styles.heroBrand}>{c.brand.name} · {categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}</Text>
+          <Text style={styles.heroTitle} accessibilityRole="header" numberOfLines={3}>{c.title}</Text>
+        </View>
+      </View>
       <View style={styles.gap}><JoinedRow count={c.creators_joined} initials={c.joined_initials} /></View>
 
       {error ? <View style={styles.gap}><Notice tone="error" message={error} /></View> : null}
@@ -193,7 +197,14 @@ function AssetRow({ a }: { a: Asset }) {
 }
 
 const styles = StyleSheet.create({
-  banner: { width: '100%', aspectRatio: 2.4, borderRadius: radius.lg, marginBottom: space.lg, backgroundColor: color.surface, overflow: 'hidden' },
+  hero: { width: '100%', aspectRatio: 1.45, borderRadius: radius.xl, backgroundColor: color.surface, overflow: 'hidden', justifyContent: 'space-between', padding: space.lg },
+  heroRate: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'baseline', gap: 3, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill,
+    backgroundColor: 'rgba(5,10,20,0.62)', borderWidth: 1, borderColor: 'rgba(52,208,122,0.45)' },
+  heroRateValue: { ...type.heading, color: color.success, fontVariant: ['tabular-nums'] },
+  heroRateUnit: { ...type.caption, color: 'rgba(255,255,255,0.75)' },
+  heroText: { gap: 4 },
+  heroBrand: { ...type.caption, color: 'rgba(255,255,255,0.78)' },
+  heroTitle: { ...type.title, color: '#FFFFFF' },
   artMark: { position: 'absolute', right: '14%', top: '50%', width: 64, height: 64, marginTop: -32 },
   brand: { ...type.label, color: color.textSecondary, marginTop: space.xs },
   title: { ...type.title, color: color.text, marginTop: space.xs },
