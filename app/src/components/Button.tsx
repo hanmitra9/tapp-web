@@ -33,7 +33,7 @@ export function Button({ label, variant = 'primary', loading = false, disabled, 
 
 const styles = StyleSheet.create({
   base: { minHeight: 52, borderRadius: 12, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 22, overflow: 'hidden' },
-  primary: { backgroundColor: color.blue, borderWidth: 1, borderColor: 'rgba(198,214,255,0.28)', boxShadow: '0 10px 30px -14px rgba(84,96,255,0.95), inset 0 1px 0 rgba(255,255,255,0.28)' },
+  primary: { backgroundColor: color.blue, borderWidth: 1, borderColor: 'rgba(194,221,250,0.28)', boxShadow: '0 10px 30px -14px rgba(73,154,240,0.95), inset 0 1px 0 rgba(255,255,255,0.28)' },
   secondary: { backgroundColor: color.surface, borderWidth: 1, borderColor: color.border },
   quiet: { minHeight: 40, paddingHorizontal: 0, alignSelf: 'center' },
   inactive: { opacity: 0.4 },

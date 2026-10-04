@@ -3,7 +3,7 @@ import { color, font } from '@/theme/tokens';
 
 // Phone tab bar: a floating glass pill (blur + hairline), same look as the website's navbar.
 export const tabChrome = {
-  tabBarActiveTintColor: '#7DA2FF',
+  tabBarActiveTintColor: '#75B2F4',
   tabBarInactiveTintColor: color.textMuted,
   tabBarStyle: {
     position: 'absolute' as const, left: 12, right: 12, bottom: 12, height: 70, paddingTop: 8, paddingBottom: 10,

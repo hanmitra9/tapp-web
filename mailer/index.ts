@@ -35,10 +35,10 @@ const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',Helvetica,Aria
 function layout(preheader: string, b: Block) {
   const site = APP() || "https://tappcreators.com";
   const code = b.code
-    ? `<tr><td style="padding:4px 0 26px"><table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="padding:18px 28px;border-radius:16px;background-color:#0B1230;background-image:linear-gradient(180deg,#13205A,#0A0F28);border:1px solid #2F4FB0;box-shadow:0 0 32px rgba(47,102,242,0.35);font:700 34px/1 'SFMono-Regular',Menlo,Consolas,monospace;letter-spacing:12px;color:#FFFFFF">${esc(b.code)}</td></tr></table></td></tr>`
+    ? `<tr><td style="padding:4px 0 26px"><table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="padding:18px 28px;border-radius:16px;background-color:#041526;background-image:linear-gradient(180deg,#082647,#041220);border:1px solid #104E91;box-shadow:0 0 32px rgba(12,101,196,0.35);font:700 34px/1 'SFMono-Regular',Menlo,Consolas,monospace;letter-spacing:12px;color:#FFFFFF">${esc(b.code)}</td></tr></table></td></tr>`
     : "";
   const btn = b.button
-    ? `<tr><td style="padding:4px 0 26px"><a href="${esc(b.button.url)}" style="display:inline-block;padding:15px 28px;border-radius:12px;background-color:#2F66F2;background-image:linear-gradient(180deg,#5F93FF 0%,#2F66F2 50%,#1D47C4 100%);border:1px solid #6E9BFF;color:#FFFFFF;font:600 15px/1 ${FONT};text-decoration:none">${esc(b.button.label)} &rarr;</a></td></tr>`
+    ? `<tr><td style="padding:4px 0 26px"><a href="${esc(b.button.url)}" style="display:inline-block;padding:15px 28px;border-radius:12px;background-color:#0C65C4;background-image:linear-gradient(180deg,#55A0F1 0%,#0C65C4 50%,#104F92 100%);border:1px solid #65A9F2;color:#FFFFFF;font:600 15px/1 ${FONT};text-decoration:none">${esc(b.button.label)} &rarr;</a></td></tr>`
     : "";
   const rows = b.rows?.length
     ? `<tr><td style="padding:0 0 24px"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;border-radius:14px;background-color:#0D0D13;border:1px solid #23232E">${b.rows
@@ -53,9 +53,9 @@ function layout(preheader: string, b: Block) {
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:540px">
 <tr><td style="border-radius:24px;overflow:hidden;background-color:#0E0E14;border:1px solid #23232E">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
-<tr><td style="padding:26px 30px 24px;background-color:#0B1440;background-image:radial-gradient(120% 140% at 100% 0%,#3C6EFF 0%,rgba(47,102,242,0.35) 35%,rgba(11,20,64,0) 70%),linear-gradient(135deg,#0A1236 0%,#0F2170 60%,#1D47C4 100%)">
+<tr><td style="padding:26px 30px 24px;background-color:#051A31;background-image:radial-gradient(120% 140% at 100% 0%,#096EDA 0%,rgba(12,101,196,0.35) 35%,rgba(5,26,49,0) 70%),linear-gradient(135deg,#051629 0%,#092D52 60%,#104F92 100%)">
 <table role="presentation" cellspacing="0" cellpadding="0"><tr><td style="padding-right:10px">${logo}</td><td style="font:700 20px/1 ${FONT};letter-spacing:-0.3px;color:#FFFFFF">TAPP</td></tr></table>
-${b.eyebrow ? `<div style="padding-top:22px;font:600 11px/1 ${FONT};letter-spacing:2px;text-transform:uppercase;color:#A9C4FF">${esc(b.eyebrow)}</div>` : ""}
+${b.eyebrow ? `<div style="padding-top:22px;font:600 11px/1 ${FONT};letter-spacing:2px;text-transform:uppercase;color:#A4CCF8">${esc(b.eyebrow)}</div>` : ""}
 </td></tr>
 <tr><td style="padding:30px 30px 8px">
 <table role="presentation" width="100%" cellspacing="0" cellpadding="0">
@@ -65,9 +65,9 @@ ${code}${btn}${rows}
 ${b.outro ? `<tr><td style="padding:0 0 22px;font:400 13px/21px ${FONT};color:#8A8A95">${b.outro}</td></tr>` : ""}
 </table></td></tr></table></td></tr>
 <tr><td style="padding:24px 8px 0;font:400 12px/19px ${FONT};color:#6E6E7A">
-<b style="color:#C6D6FF;font-weight:600">TAPP</b> &middot; Clip Jadi Penghasilan<br>
-Email ini dikirim otomatis. Butuh bantuan? Balas email ini atau tulis ke <a href="mailto:${esc(SUPPORT())}" style="color:#7DA2FF;text-decoration:none">${esc(SUPPORT())}</a>.<br>
-<a href="${esc(site)}" style="color:#7DA2FF;text-decoration:none">tappcreators.com</a> &middot; <a href="https://www.instagram.com/tappcreators" style="color:#7DA2FF;text-decoration:none">Instagram</a> &middot; <a href="https://discord.gg/P29n8gWVu5" style="color:#7DA2FF;text-decoration:none">Discord</a>
+<b style="color:#C2DDFA;font-weight:600">TAPP</b> &middot; Clip Jadi Penghasilan<br>
+Email ini dikirim otomatis. Butuh bantuan? Balas email ini atau tulis ke <a href="mailto:${esc(SUPPORT())}" style="color:#75B2F4;text-decoration:none">${esc(SUPPORT())}</a>.<br>
+<a href="${esc(site)}" style="color:#75B2F4;text-decoration:none">tappcreators.com</a> &middot; <a href="https://www.instagram.com/tappcreators" style="color:#75B2F4;text-decoration:none">Instagram</a> &middot; <a href="https://discord.gg/P29n8gWVu5" style="color:#75B2F4;text-decoration:none">Discord</a>
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
