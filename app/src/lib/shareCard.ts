@@ -2,12 +2,20 @@ import { Image as RNImage, Platform } from 'react-native';
 
 // Shareable "total payout" card in the style of Threads' views card: a black portrait card with the creator's
 // photo cropped into the corner, a big condensed number and mono labels. Drawn on a canvas (web only).
-export type PayoutCard = { total: number; payouts: number; from: string | null; to: string; name: string; avatarUrl: string | null };
+export type PayoutCard = { total: number; from: string | null; to: string; name: string; avatarUrl: string | null };
 export type RenderedCard = { blob: Blob; url: string };
 
 const W = 960, H = 1344, R = 84;
 const MONTHS = ['JAN', 'FEB', 'MAR', 'APR', 'MEI', 'JUN', 'JUL', 'AGU', 'SEP', 'OKT', 'NOV', 'DES'];
-const month = (iso: string) => { const d = new Date(iso); return `${MONTHS[d.getMonth()]} ${d.getFullYear()}`; };
+const DAY = 86_400_000;
+const startOfDay = (d: Date) => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+// "28 SEP — 4 OKT 2026", or with both years when they differ; a single day when from = to.
+function dateRange(fromIso: string, toIso: string): string {
+  const a = new Date(fromIso), b = new Date(toIso);
+  const day = (d: Date) => `${d.getDate()} ${MONTHS[d.getMonth()]}`;
+  if (startOfDay(a) === startOfDay(b)) return `${day(b)} ${b.getFullYear()}`;
+  return a.getFullYear() === b.getFullYear() ? `${day(a)} — ${day(b)} ${b.getFullYear()}` : `${day(a)} ${a.getFullYear()} — ${day(b)} ${b.getFullYear()}`;
+}
 
 // 494000 → "494K", 1250000 → "1,25M", 12400000 → "12,4M" (Threads-style K/M/B)
 export function compactIdr(n: number): string {
@@ -88,9 +96,12 @@ async function draw(c: PayoutCard): Promise<HTMLCanvasElement> {
 
   // Footer.
   g.font = '44px RobotoMono, monospace';
-  g.fillText(`${c.payouts}X PENCAIRAN`, 96, H - 190);
+  // Since the first paid payout, counted up to the day the card is made.
+  const from = c.from ?? c.to;
+  const days = Math.round((startOfDay(new Date(c.to)) - startOfDay(new Date(from))) / DAY) + 1;
+  g.fillText(`${days.toLocaleString('id-ID')} HARI`, 96, H - 190);
   g.fillStyle = 'rgba(255,255,255,0.92)';
-  g.fillText(c.from && month(c.from) !== month(c.to) ? `${month(c.from)} — ${month(c.to)}` : month(c.to), 96, H - 118);
+  g.fillText(dateRange(from, c.to), 96, H - 118);
   g.restore();
 
   // Hairline edge.

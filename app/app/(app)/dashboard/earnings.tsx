@@ -49,7 +49,7 @@ export default function Payments() {
   async function openCard() {
     setSaving(true);
     try {
-      setShareCard(await renderPayoutCard({ total: totalPaid, payouts: paid.length, from: firstPaid, to: new Date().toISOString(),
+      setShareCard(await renderPayoutCard({ total: totalPaid, from: firstPaid, to: new Date().toISOString(),
         name: account?.fullName ?? account?.username ?? 'TAPP', avatarUrl: d?.avatarUrl ?? null }));
     } catch (e) { setError(errorMessage(e)); }
     finally { setSaving(false); }
@@ -109,7 +109,7 @@ export default function Payments() {
           <View style={{ flex: 1, gap: 2 }}>
             <Text style={styles.methodLabel}>Total payout selama ini</Text>
             <Text style={styles.totalValue}>{idr(totalPaid)}</Text>
-            <Text style={styles.rowMeta}>{paid.length}x pencairan{firstPaid ? ` · sejak ${dateLabel(firstPaid)}` : ''}</Text>
+            {firstPaid ? <Text style={styles.rowMeta}>Sejak {dateLabel(firstPaid)}</Text> : null}
           </View>
           <Button label="Lihat kartu" variant="secondary" onPress={openCard} loading={saving} />
         </View>
