@@ -12,12 +12,12 @@ export const color = {
   text: '#F4F4F5',
   textSecondary: '#A1A1AA',
   textMuted: '#6B6B73',
-  blue: '#2F66F2',             // TAPP Blue
-  bluePressed: '#1F52D6',
-  link: '#8FB0FF',             // blue text (links, actions) — readable on near-black
-  blueLight: '#7DA2FF',        // gradient end (replaces the reference's lavender)
-  blueDeep: '#1D47C4',         // gradient start
-  accentSoft: 'rgba(47,102,242,0.18)',
+  blue: '#0C65C4',             // TAPP Blue
+  bluePressed: '#12569F',
+  link: '#88BDF5',             // blue text (links, actions) — readable on near-black
+  blueLight: '#75B2F4',        // gradient end (replaces the reference's lavender)
+  blueDeep: '#104F92',         // gradient start
+  accentSoft: 'rgba(12,101,196,0.18)',
   onAccent: '#FFFFFF',
   success: '#34D07A',          // income green
   successSoft: 'rgba(52,208,122,0.14)',
@@ -29,7 +29,7 @@ export const color = {
 
 export const gradient = {
   card: [color.blueDeep, color.blue, color.blueLight] as const,   // balance card
-  button: ['#5F93FF', '#2F66F2', '#1D47C4'] as const,              // primary button, same as the website
+  button: ['#55A0F1', '#0C65C4', '#104F92'] as const,              // primary button, same as the website
 } as const;
 
 // Geist, self-hosted (public/fonts). Like the website, weights sit one step lighter: "bold" renders SemiBold.

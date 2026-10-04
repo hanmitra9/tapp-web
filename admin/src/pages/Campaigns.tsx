@@ -386,7 +386,7 @@ function BannerPicker({ file, current, onPick, onError }: { file: File | null; c
   const src = preview ?? current ?? null;
   return (
     <div className="field">Foto banner
-      <div style={{ aspectRatio: '2 / 1', borderRadius: 14, overflow: 'hidden', background: src ? undefined : 'radial-gradient(70% 90% at 80% 30%, #7DA2FF, transparent 60%), linear-gradient(135deg, #0E1A6B, #2F66F2)',
+      <div style={{ aspectRatio: '2 / 1', borderRadius: 14, overflow: 'hidden', background: src ? undefined : 'radial-gradient(70% 90% at 80% 30%, #75B2F4, transparent 60%), linear-gradient(135deg, #092A4E, #0C65C4)',
         border: '1px solid var(--border, rgba(255,255,255,0.1))', maxWidth: 480 }}>
         {src ? <img src={src} alt="Banner campaign" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} /> : null}
       </div>

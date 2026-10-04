@@ -34,6 +34,7 @@ export default function AppLayout() {
         <Stack.Screen name="help" />
         <Stack.Screen name="dispute" options={{ presentation: 'modal' }} />
         <Stack.Screen name="submit/[campaignId]" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="take/[id]" />
         <Stack.Screen name="profile/edit" />
         <Stack.Screen name="profile/socials" />
         <Stack.Screen name="profile/payout" />

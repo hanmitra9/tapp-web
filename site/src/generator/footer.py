@@ -27,7 +27,7 @@ def footer(mark_src, home='#top', prefix=''):
 
 CSS = '''
 .tf{position:relative;overflow:hidden;margin-top:24px;padding:64px 64px 32px;background:#030304;border-top:1px solid rgba(255,255,255,0.05)}
-.tf::after{content:'';position:absolute;right:-180px;bottom:-260px;width:720px;height:520px;border-radius:50%;background:radial-gradient(closest-side,rgba(47,102,242,0.32),rgba(29,71,196,0.12) 55%,transparent);pointer-events:none}
+.tf::after{content:'';position:absolute;right:-180px;bottom:-260px;width:720px;height:520px;border-radius:50%;background:radial-gradient(closest-side,rgba(12,101,196,0.32),rgba(16,79,146,0.12) 55%,transparent);pointer-events:none}
 .tf-in{position:relative;z-index:1;max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;gap:48px;flex-wrap:wrap}
 .tf-brand{display:flex;flex-direction:column;gap:20px;max-width:380px}
 .tf-logo{display:flex;align-items:center;gap:10px}
@@ -40,7 +40,7 @@ CSS = '''
 .tf-col{display:flex;flex-direction:column;gap:16px;font-size:14px;font-weight:400}
 .tf-col b{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#FFFFFF;margin-bottom:2px}
 .tf .fl{display:inline-flex;align-items:center;gap:9px;color:#C9CAD3;transition:color .15s}
-.tf .fl svg{color:#7DA2FF;flex-shrink:0}
+.tf .fl svg{color:#75B2F4;flex-shrink:0}
 .tf .fl:hover{color:#FFFFFF}
 .tf-copy{position:relative;z-index:1;max-width:1200px;margin:72px auto 0;font-size:13px;color:#8A8A93}
 @media (max-width: 900px){.tf{padding:48px 20px 28px}.tf-cols{gap:32px 40px}.tf-copy{margin-top:48px}.tf-tag{font-size:14px}}

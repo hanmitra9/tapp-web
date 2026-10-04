@@ -20,10 +20,10 @@ export function JoinedRow({ count, initials = [] }: { count: number; initials?: 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   stack: { flexDirection: 'row' },
-  av: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#14193A',
+  av: { width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center', backgroundColor: '#061B33',
     borderWidth: 1.5, borderColor: color.surface },
   overlap: { marginLeft: -8 },
-  avText: { fontFamily: font.semibold, fontSize: 10, color: '#E4EDFF' },
+  avText: { fontFamily: font.semibold, fontSize: 10, color: '#E2EFFD' },
   more: { backgroundColor: color.surfaceRaised },
   moreText: { color: color.blueLight, fontSize: 9 },
   text: { ...type.caption, color: color.textSecondary },

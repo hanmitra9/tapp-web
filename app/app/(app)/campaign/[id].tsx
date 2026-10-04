@@ -13,8 +13,8 @@ import { errorMessage } from '@/lib/errors';
 import { cpmLabel, dateLabel, deadlineLabel, idr, idrCompact, num } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { web } from '@/theme/web';
-import { color, radius, space, type } from '@/theme/tokens';
-import { assetLink, fetchAssets, fetchCampaign, joinCampaign, leaveCampaign, type Asset } from '@/features/campaigns/api';
+import { card, color, radius, space, type } from '@/theme/tokens';
+import { assetLink, fetchAssets, fetchCampaign, leaveCampaign, type Asset } from '@/features/campaigns/api';
 import { JoinedRow } from '@/features/campaigns/JoinedRow';
 import { CAMPAIGN_STATUS, categoryLabel, joinBlockCopy, platformsLabel } from '@/features/campaigns/copy';
 import { track } from '@/lib/analytics';
@@ -31,7 +31,6 @@ export default function CampaignDetailScreen() {
   }, [id]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [justJoined, setJustJoined] = useState(false);
 
   if (!q.data) return <Screen scroll={false}><Header title="" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
   const { c, assets } = q.data;
@@ -42,31 +41,29 @@ export default function CampaignDetailScreen() {
   const deadline = c.submission_deadline ?? c.ends_at;
   const rulesBy = (k: keyof typeof RULE_TITLES) => c.rules.filter((r) => r.kind === k);
 
-  function confirmJoin() {
-    showAlert('Gabung ke campaign ini?',
-      'Dengan bergabung, kamu setuju mengikuti brief, aturan, dan ketentuan campaign. Konten sumber akan terbuka setelah bergabung.',
-      [{ text: 'Batal', style: 'cancel' }, { text: 'Gabung', onPress: join }]);
-  }
-  async function join() {
-    setBusy(true); setError(null);
-    try { await joinCampaign(c.id); track('campaign_joined', { campaign_id: c.id, category: c.category }); setJustJoined(true); await q.reload(); }
-    catch (e) { setError(errorMessage(e)); await q.reload(); }       // refresh join_block so the CTA reflects why
-    finally { setBusy(false); }
-  }
   function confirmLeave() {
     showAlert('Keluar dari campaign?',
       'Kamu tidak bisa submit konten baru. Klip yang sudah disubmit tetap dilacak dan penghasilannya tetap milikmu.',
       [{ text: 'Batal', style: 'cancel' }, { text: 'Keluar', style: 'destructive', onPress: async () => {
         setBusy(true); setError(null);
-        try { await leaveCampaign(c.id); track('campaign_left', { campaign_id: c.id }); setJustJoined(false); await q.reload(); } catch (e) { setError(errorMessage(e)); }
+        try { await leaveCampaign(c.id); track('campaign_left', { campaign_id: c.id }); await q.reload(); } catch (e) { setError(errorMessage(e)); }
         finally { setBusy(false); }
       } }]);
   }
 
+  const take = () => router.push({ pathname: '/take/[id]', params: { id: c.id } });
   const footer = joined ? (
     <>
-      <Button label="Buka workspace" onPress={() => router.push({ pathname: '/workspace/[id]', params: { id: c.id } })} />
+      <View style={styles.footRow}>
+        <View style={{ flex: 1 }}><Button variant="secondary" label="Workspace" onPress={() => router.push({ pathname: '/workspace/[id]', params: { id: c.id } })} /></View>
+        <View style={{ flex: 1.4 }}><Button label="Submit Klip" onPress={take} disabled={c.status !== 'active'} /></View>
+      </View>
       <Button variant="quiet" label="Keluar dari campaign" onPress={confirmLeave} disabled={busy} />
+    </>
+  ) : block?.action === 'socials' ? (
+    <>
+      <Text style={styles.blockNote}>Hubungkan akun {platformsLabel(c.platforms)} di langkah pertama.</Text>
+      <Button label="Ambil Campaign" onPress={take} />
     </>
   ) : block ? (
     <>
@@ -74,7 +71,12 @@ export default function CampaignDetailScreen() {
       <Button label={block.label} disabled={block.action !== 'socials'} variant={block.action ? 'primary' : 'secondary'}
         onPress={() => block.action === 'socials' && router.push('/profile/socials')} />
     </>
-  ) : <Button label="Gabung campaign" onPress={confirmJoin} loading={busy} />;
+  ) : (
+    <>
+      <Text style={styles.blockNote}>{cpmLabel(c.cpm)} · {c.max_earning_per_submission ? `maks ${idrCompact(c.max_earning_per_submission)} per klip` : 'tanpa batas per klip'}</Text>
+      <Button label="Ambil Campaign" onPress={take} loading={busy} />
+    </>
+  );
 
   return (
     <Screen footer={footer} refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
@@ -88,14 +90,13 @@ export default function CampaignDetailScreen() {
       </Text>
       <View style={styles.gap}><JoinedRow count={c.creators_joined} initials={c.joined_initials} /></View>
 
-      {justJoined ? <View style={styles.gap}><Notice tone="info" message="Kamu sudah bergabung. Konten sumber sekarang terbuka di bawah." /></View> : null}
       {error ? <View style={styles.gap}><Notice tone="error" message={error} /></View> : null}
 
       <View style={styles.facts}>
-        <Fact label="Reward" value={cpmLabel(c.cpm)} />
-        <Fact label="Platform" value={platformsLabel(c.platforms)} />
-        <Fact label="Deadline submission" value={deadline ? `${dateLabel(deadline)}\n${deadlineLabel(deadline)}` : 'Tidak ada'} />
-        <Fact label="Kreator bergabung" value={num(c.creators_joined)} />
+        <Fact icon="trending-up" label="Per 1.000 views" value={idr(c.cpm)} strong />
+        <Fact icon="clock" label="Deadline" value={deadline ? deadlineLabel(deadline) ?? dateLabel(deadline) : 'Tidak ada'} />
+        <Fact icon="smartphone" label="Platform" value={platformsLabel(c.platforms)} />
+        <Fact icon="users" label="Kreator" value={num(c.creators_joined)} />
       </View>
 
       <View style={styles.budget} accessible accessibilityLabel={`Budget terpakai ${Math.round(pct * 100)} persen`}>
@@ -106,6 +107,19 @@ export default function CampaignDetailScreen() {
         <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${pct * 100}%` }]} {...web('seg-q')} /></View>
       </View>
 
+      {!joined ? (
+        <Section title="Cara Ambil Campaign">
+          <View style={styles.how}>
+            {[['user-check', 'Pilih akun', 'Akun yang dipakai posting'], ['shield', 'Verifikasi', 'Kode unik di bio'], ['film', 'Pilih video', 'Langsung dari akunmu']].map(([ic, t, d], i) => (
+              <View key={t} style={styles.howItem}>
+                <View style={styles.howIcon}><Feather name={ic as 'film'} size={16} color={color.link} /><Text style={styles.howNum}>{i + 1}</Text></View>
+                <Text style={styles.howTitle}>{t}</Text>
+                <Text style={styles.howDesc}>{d}</Text>
+              </View>
+            ))}
+          </View>
+        </Section>
+      ) : null}
       {c.objective ? <Section title="Tujuan campaign"><Text style={styles.body}>{c.objective}</Text></Section> : null}
       {c.description ? <Section title="Brief"><Text style={styles.body}>{c.description}</Text></Section> : null}
 
@@ -139,8 +153,13 @@ export default function CampaignDetailScreen() {
   );
 }
 
-function Fact({ label, value }: { label: string; value: string }) {
-  return <View style={styles.fact}><Text style={styles.factLabel}>{label}</Text><Text style={styles.factValue}>{value}</Text></View>;
+function Fact({ icon, label, value, strong }: { icon: React.ComponentProps<typeof Feather>['name']; label: string; value: string; strong?: boolean }) {
+  return (
+    <View style={styles.fact}>
+      <View style={styles.factHead}><Feather name={icon} size={13} color={strong ? color.link : color.textMuted} /><Text style={styles.factLabel}>{label}</Text></View>
+      <Text style={[styles.factValue, strong && styles.factStrong]} numberOfLines={2}>{value}</Text>
+    </View>
+  );
 }
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return <View style={styles.section}><Text style={styles.sectionTitle} accessibilityRole="header">{title}</Text>{children}</View>;
@@ -180,10 +199,19 @@ const styles = StyleSheet.create({
   title: { ...type.title, color: color.text, marginTop: space.xs },
   meta: { ...type.caption, color: color.textMuted, marginTop: space.xs },
   gap: { marginTop: space.lg },
-  facts: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.xl, borderTopWidth: 1, borderColor: color.border },
-  fact: { width: '50%', paddingVertical: space.md, paddingRight: space.md, gap: 2, borderBottomWidth: 1, borderColor: color.border },
+  facts: { flexDirection: 'row', flexWrap: 'wrap', marginTop: space.xl, gap: space.sm },
+  fact: { width: '48%', flexGrow: 1, padding: space.md, gap: 6, ...card, borderRadius: radius.md },
+  factHead: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   factLabel: { ...type.caption, color: color.textMuted },
   factValue: { ...type.label, color: color.text, fontVariant: ['tabular-nums'] },
+  factStrong: { ...type.heading, color: color.text },
+  footRow: { flexDirection: 'row', gap: space.sm },
+  how: { flexDirection: 'row', gap: space.sm },
+  howItem: { flex: 1, padding: space.md, gap: 4, ...card, borderRadius: radius.md },
+  howIcon: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: space.xs },
+  howNum: { ...type.caption, color: color.textMuted, fontVariant: ['tabular-nums'] },
+  howTitle: { ...type.label, color: color.text },
+  howDesc: { ...type.caption, fontSize: 12, color: color.textMuted },
   budget: { marginTop: space.lg, gap: space.sm },
   budgetHead: { flexDirection: 'row', justifyContent: 'space-between' },
   budgetLabel: { ...type.caption, color: color.textMuted },

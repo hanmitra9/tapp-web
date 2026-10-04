@@ -48,17 +48,17 @@ class Component extends DCLogic {
     const mode = s.mode ?? this.props.startMode ?? 'creator';
     const creator = mode === 'creator';
     const tab = (on) => 'height: 32px; padding: 0 14px; border-radius: 9px; font-weight: 500; font-size: 14px; '
-      + (on ? 'color: #FFFFFF; background: linear-gradient(180deg, #4D86FF, #2456E0); border: 1px solid rgba(198,214,255,0.3); box-shadow: 0 6px 18px -8px rgba(47,102,242,0.9), inset 0 1px 0 rgba(255,255,255,0.25)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent');
+      + (on ? 'color: #FFFFFF; background: linear-gradient(180deg, #4296F0, #135BA8); border: 1px solid rgba(194,221,250,0.3); box-shadow: 0 6px 18px -8px rgba(12,101,196,0.9), inset 0 1px 0 rgba(255,255,255,0.25)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent');
 
     const faqList = (raw, key) => raw.map((f, i) => {
       const open = s[key] === i;
       return {
         q: f[0], a: f[1], open: open, signText: open ? '×' : '+',
         box: 'border-radius: 16px; ' + (open
-          ? 'background: radial-gradient(80% 160% at 0% 0%, rgba(47,102,242,0.18), transparent 60%), linear-gradient(180deg, #12131A, #0C0C11); border: 1px solid rgba(110,150,255,0.38); box-shadow: 0 24px 60px -30px rgba(47,102,242,0.8), inset 0 1px 0 rgba(255,255,255,0.05)'
+          ? 'background: radial-gradient(80% 160% at 0% 0%, rgba(12,101,196,0.18), transparent 60%), linear-gradient(180deg, #12131A, #0C0C11); border: 1px solid rgba(101,169,242,0.38); box-shadow: 0 24px 60px -30px rgba(12,101,196,0.8), inset 0 1px 0 rgba(255,255,255,0.05)'
           : 'background: linear-gradient(180deg, #101015, #0B0B0F); border: 1px solid rgba(255,255,255,0.07)'),
         sign: 'width: 28px; height: 28px; flex-shrink: 0; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 400; transition: transform .25s ease; '
-          + (open ? 'color: #FFFFFF; background: linear-gradient(180deg, #4D86FF, #2456E0); transform: rotate(0deg)' : 'color: #A9C4FF; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08)'),
+          + (open ? 'color: #FFFFFF; background: linear-gradient(180deg, #4296F0, #135BA8); transform: rotate(0deg)' : 'color: #A4CCF8; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08)'),
         toggle: () => this.setState({ [key]: open ? -1 : i }),
       };
     });
@@ -74,7 +74,7 @@ class Component extends DCLogic {
     const faqB = faqList([
       ['Bagaimana brand bergabung?', 'Akses brand dibuka lewat tim TAPP. Setelah brief siap, kami kirim undangan ke email timmu untuk masuk ke dashboard brand.'],
       ['Views mana yang saya bayar?', 'Hanya qualified views: views yang lolos saringan bot dan aktivitas janggal, lalu direview tim TAPP. Views mentah tetap terlihat di laporan sebagai pembanding.'],
-      ['Bisakah saya memilih creator?', 'Campaign ditawarkan ke creator yang cocok dari niche, platform, dan rekam jejak, bukan dari jumlah follower. Account manager-mu bisa membantu mengarahkan profil creator yang dicari.'],
+      ['Bisakah saya memilih creator?', 'Campaign ditawarkan ke creator yang cocok dari platform dan rekam jejak, bukan dari jumlah follower. Account manager-mu bisa membantu mengarahkan profil creator yang dicari.'],
       ['Kalau budget habis di tengah campaign?', 'Campaign otomatis masuk fase segera berakhir dan views berikutnya tidak dibayar, jadi pengeluaranmu tidak pernah melewati budget.'],
       ['Laporan apa yang saya dapat?', 'Views mentah dan qualified, total biaya, CPV, serta performa per platform dan per creator.'],
       ['Berapa biayanya?', 'Kamu hanya membayar views yang lolos verifikasi. Rincian biaya dibahas langsung bersama tim TAPP saat meeting, sesuai brief dan target campaign-mu.'],
@@ -100,11 +100,11 @@ class Component extends DCLogic {
     const metrics = Object.keys(MET).map((k) => ({
       label: k === 'Engagement' ? 'Eng. rate' : k, value: MET[k].v, on: met === k, pick: () => this.setState({ met: k }),
       style: 'padding: 8px 6px; border-radius: 10px; text-align: left; '
-        + (met === k ? 'background: rgba(47,102,242,0.25); border: 1px solid #5B7CFA; color: #C6D6FF' : 'background: rgba(255,255,255,0.04); border: 1px solid #26262C; color: #8A8A93'),
+        + (met === k ? 'background: rgba(12,101,196,0.25); border: 1px solid #4B9BF0; color: #C2DDFA' : 'background: rgba(255,255,255,0.04); border: 1px solid #26262C; color: #8A8A93'),
     }));
 
     // creator wall (reference): demo names and payouts from the reference artifact
-    const GLOW = ['#34D07A', '#F2692B', '#2F8CE6', '#3B82F6', '#E2445C', '#F0B429'];
+    const GLOW = ['#34D07A', '#F2692B', '#1461B3', '#0A6AD2', '#E2445C', '#F0B429'];
     // three rows, three different sets of creators (demo names and payouts)
     const rows = [
       [['Rani Putri', 'Rp4.250.000'], ['Dimas Pratama', 'Rp1.870.000'], ['Nadia Kusuma', 'Rp3.120.000'], ['Bagus Santoso', 'Rp960.000'],
@@ -134,7 +134,7 @@ class Component extends DCLogic {
     const rp = (n) => 'Rp' + Math.round(n).toLocaleString('id-ID');
     const compact = (n) => n >= 1e6 ? (n / 1e6).toFixed(1).replace('.', ',').replace(',0', '') + ' jt' : Math.round(n / 1e3) + 'K';
     const chipStyle = (on) => 'height: 34px; padding: 0 13px; border-radius: 10px; font-size: 13px; font-weight: 600; '
-      + (on ? 'color: #FFFFFF; background: rgba(47,102,242,0.3); border: 1px solid #7DA2FF' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
+      + (on ? 'color: #FFFFFF; background: rgba(12,101,196,0.3); border: 1px solid #75B2F4' : 'color: #A1A1AA; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1)');
     const budget = s.budget || 25000000, cpm = 1000;   // simulator assumes Rp1.000 per 1.000 views
     const views = budget / cpm * 1000;
     const BARS = 36, simPct = (budget / 1e6 - 5) / 195 * 100;
@@ -156,7 +156,7 @@ class Component extends DCLogic {
     const bsteps = [0, 1, 2, 3].map((i) => ({
       on: i === bstep, pick: () => this.setState({ bstep: i }),
       tab: 'height: 48px; border-radius: 14px; font-size: 14px; font-weight: 600; white-space: nowrap; '
-        + (i === bstep ? 'color: #FFFFFF; background: rgba(47,102,242,0.22); border: 1px solid rgba(125,162,255,0.5)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent'),
+        + (i === bstep ? 'color: #FFFFFF; background: rgba(12,101,196,0.22); border: 1px solid rgba(117,178,244,0.5)' : 'color: #8A8A93; background: transparent; border: 1px solid transparent'),
       panel: (i === bstep ? 'display: grid' : 'display: none') + '; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 32px; padding: 18px',
     }));
 
@@ -165,8 +165,9 @@ class Component extends DCLogic {
       simBudget: rp(budget), simViews: compact(views), simRate: rp(1000), simBudgetJt: budget / 1e6, simPct: simPct, simBars: simBars, onBudget: onBudget,
       simClips: Math.ceil(views / 100000).toLocaleString('id-ID'), bsteps: bsteps,
       creatorTab: tab(creator), brandTab: tab(!creator),
-      setCreator: () => this.setState({ mode: 'creator' }),
-      setBrand: () => this.setState({ mode: 'brand' }),
+      // Switching audience shows a different page: start it from the top.
+      setCreator: () => { this.setState({ mode: 'creator' }); window.scrollTo({ top: 0, behavior: 'instant' }); },
+      setBrand: () => { this.setState({ mode: 'brand' }); window.scrollTo({ top: 0, behavior: 'instant' }); },
       faqC: faqC, faqB: faqB,
       metrics: metrics, lcLine: line, lcArea: line + 'L' + px(6) + ',' + (H - pb) + 'L0,' + (H - pb) + 'Z', lcLabel: 'Grafik ' + met + ' 7 hari',
       wall1: wall(0), wall2: wall(1), wall3: wall(2),
