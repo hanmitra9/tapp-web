@@ -230,6 +230,7 @@ a{{color:inherit;text-decoration:none}}
 .lp .gb::before,.lp .ccard::before,.lp .pdash::before,.lp .hc > div::before,.lp .hm > div::before,.lp .bsim > div::before{{content:'';position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(160deg,rgba(194,221,250,0.35),rgba(101,169,242,0.08) 35%,rgba(255,255,255,0.02) 60%,rgba(101,169,242,0.2));-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}}
 .lp .hstage-m{{display:none}}
 .lp .orbm{{transform-origin:180px 300px;animation:spin 18s linear infinite}}
+@media (max-width: 600px){{ .lp .hero2{{display:flex;flex-direction:column}} .lp .hero2 > .hcopy{{order:-1;margin:8px 0 28px !important}} .lp .hero2 .bwbg{{top:0 !important}} }}
 @media (max-width: 600px){{ .lp .hero2 .hstage-wrap{{display:none !important}} .lp .hero2 .hstage-m{{display:block;overflow:hidden;padding:4px 0 8px}} .lp .hero2 .hm{{display:none !important}} }}
 @media (max-width: 370px){{ .lp .hstage-m-in{{transform:scale(0.88);transform-origin:top center;margin-bottom:-72px !important}} }}
 .lp .cglow,.lp .ccard.cglow{{box-shadow:0 0 0 1px rgba(85,160,241,0.22),0 0 36px -4px rgba(12,101,196,0.45),0 30px 80px -28px rgba(12,101,196,0.65) !important}}

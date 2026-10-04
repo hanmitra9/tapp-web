@@ -9,7 +9,7 @@ import re, sys, os, pathlib
 SITE_URL = os.environ.get('SITE_URL', 'https://tappcreators.com').rstrip('/')
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 src = (ROOT / 'src' / 'landing.dc.html').read_text()
-src = src.replace('/_blob/58aec98a357608dc6fa8a4a440fc9214', 'assets/tapp-mark.svg').replace('/_blob/2d5aebeddb5d0a63b818258d6ea37530', 'assets/tapp-mark-white.svg')
+src = src.replace('/_blob/58aec98a357608dc6fa8a4a440fc9214', 'assets/tapp-mark.svg?v=2').replace('/_blob/2d5aebeddb5d0a63b818258d6ea37530', 'assets/tapp-mark-white.svg?v=2')
 helmet = re.search(r'<helmet>(.*?)</helmet>', src, re.S).group(1)
 tpl = re.search(r'</helmet>(.*)</x-dc>', src, re.S).group(1)
 logic = re.search(r'<script type="text/x-dc" data-dc-script[^>]*>(.*?)</script>', src, re.S).group(1)

@@ -199,7 +199,7 @@ def hero_hub():
     </div>
   </div>
   {hero_hub_mobile()}
-  <div class="pad" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 0 24px">
+  <div class="pad hcopy" style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; padding: 0 24px">
     <h1 class="hero-h" style="font-size: 62px; line-height: 66px; font-weight: 500">Ubah Clip Jadi <br><span style="color: #75B2F4">Penghasilan Nyata</span></h1>
     <p style="font-size: 19px; line-height: 29px; color: #A1A1AA; font-weight: 400; max-width: 560px">Ambil campaign dari brand, posting dari akunmu sendiri, dan dibayar dari setiap views yang lolos verifikasi. Tanpa minimal follower.</p>
     <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center">{_btn("Mulai Sekarang", "#app:/register")}{_btn("Jelajahi Campaign", "campaigns.html", False)}</div>
