@@ -8,7 +8,7 @@ export type EventName =
   | 'app_opened' | 'signup_started' | 'signup_submitted' | 'signup_completed' | 'onboarding_step' | 'onboarding_completed'
   | 'campaign_viewed' | 'take_campaign_started' | 'campaign_joined' | 'campaign_left' | 'marketplace_filtered'
   | 'submission_started' | 'submission_submitted' | 'performance_viewed' | 'earnings_viewed'
-  | 'payout_started' | 'payout_requested' | 'payout_card_saved' | 'notification_opened' | 'dispute_submitted' | 'support_ticket_created';
+  | 'payout_started' | 'payout_requested' | 'payout_card_saved' | 'views_card_shared' | 'referral_shared' | 'notification_opened' | 'dispute_submitted' | 'support_ticket_created';
 
 type Props = Record<string, string | number | boolean | null | undefined>;
 const key = process.env.EXPO_PUBLIC_POSTHOG_KEY;

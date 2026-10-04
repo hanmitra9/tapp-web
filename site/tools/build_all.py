@@ -44,6 +44,11 @@ for f in app.rglob('*'):
     dest.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy2(f, dest)
 shutil.copytree(repo / 'admin' / 'dist', out / 'admin')
+# The signed-in app installs to the home screen on its own manifest (start_url /dashboard); iOS needs that for Web Push.
+_app = out / 'app.html'
+_app.write_text(_app.read_text().replace('</head>', '<link rel="manifest" href="/app.webmanifest"><meta name="apple-mobile-web-app-capable" content="yes">'
+  '<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"><meta name="apple-mobile-web-app-title" content="TAPP">'
+  '<link rel="apple-touch-icon" href="/assets/icons/apple-touch-icon.png"></head>', 1))
 if '--skip-landing' in sys.argv:   # committed landing was built for another URL: point canonical/og at this one
     idx = out / 'index.html'
     html = idx.read_text()

@@ -8,6 +8,9 @@ import Feather from '@expo/vector-icons/Feather';
 import { deadlineLabel, greeting, idr } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
+import { LevelProgress } from '@/components/LevelProgress';
+import { PushToggle } from '@/components/PushToggle';
+import { fetchTierProgress } from '@/features/creator/tier';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { EMPTY_FILTERS, fetchFeed, fetchHome, fetchMyCampaigns } from '@/features/campaigns/api';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
@@ -29,10 +32,10 @@ const STATUS_NOTE: Record<string, string> = {
 export default function Home() {
   const { account, session } = useAuth();
   const q = useQuery(async () => {
-    const [home, recs, mine, unread, balance, subs] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
-      unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => [])]);
+    const [home, recs, mine, unread, balance, subs, level] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
+      unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []), fetchTierProgress().catch(() => null)]);
     return {
-      home, unread, balance,
+      home, unread, balance, level,
       accepted: subs.filter((s) => s.status === 'approved' || s.status === 'tracking').length,
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
       recs: recs.filter((r) => !r.joined).slice(0, 3),
@@ -57,7 +60,7 @@ export default function Home() {
             {d?.unread ? <View style={styles.badge}><Text style={styles.badgeText}>{d.unread > 9 ? '9+' : d.unread}</Text></View> : null}
           </Pressable>
           <Pressable onPress={() => router.navigate('/dashboard/profile')} accessibilityRole="button" accessibilityLabel="Profil">
-            <Avatar uri={null} name={account?.fullName ?? null} size={44} />
+            <Avatar uri={account?.avatarUrl ?? null} name={account?.fullName ?? null} size={44} />
           </Pressable>
         </View>
       </View>
@@ -88,6 +91,8 @@ export default function Home() {
           </Pressable>
         </View>
       ) : null}
+      {d?.level ? <Pressable style={styles.level} onPress={() => router.navigate('/dashboard/earnings')} accessibilityRole="button"><LevelProgress p={d.level} /></Pressable> : null}
+      {d ? <View style={styles.level}><PushToggle compact /></View> : null}
 
       <SectionHead title="Rekomendasi untukmu" action={{ label: 'Lihat semua', onPress: () => router.navigate('/dashboard/campaigns') }} />
       {!d ? <><CardSkeleton /><CardSkeleton /></> : d.recs.length ? d.recs.map((c) => (
@@ -145,6 +150,7 @@ const styles = StyleSheet.create({
   notice: { marginTop: space.lg },
   cardWrap: { marginTop: space.xl },
   actions: { flexDirection: 'row', marginTop: space.xl },
+  level: { marginTop: space.sm },
   pills: { flexDirection: 'row', gap: space.sm, marginTop: space.xl },
   pill: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 6, ...card, borderRadius: radius.md, paddingVertical: space.md, paddingHorizontal: space.lg },
   pillValue: { ...type.heading, color: color.text, fontVariant: ['tabular-nums'] },

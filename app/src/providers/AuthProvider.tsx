@@ -9,6 +9,7 @@ export type Account = {
   id: string;
   fullName: string | null;
   username: string | null;
+  avatarUrl: string | null;
   role: 'creator' | 'brand' | 'admin';
   status: CreatorStatus;
   statusReason: string | null;
@@ -30,7 +31,7 @@ const AuthContext = createContext<AuthState | null>(null);
 
 async function loadAccount(userId: string): Promise<Account> {
   const [p, c] = await Promise.all([
-    supabase.from('profiles').select('id, full_name, username, role').eq('id', userId).single(),
+    supabase.from('profiles').select('id, full_name, username, role, avatar_url').eq('id', userId).single(),
     supabase.from('creator_profiles').select('status, status_reason, onboarding_completed_at').eq('user_id', userId).maybeSingle(),
   ]);
   if (p.error) throw p.error;
@@ -39,6 +40,7 @@ async function loadAccount(userId: string): Promise<Account> {
     id: p.data.id,
     fullName: p.data.full_name,
     username: p.data.username,
+    avatarUrl: p.data.avatar_url ?? null,
     role: p.data.role,
     // No creator profile (e.g. an account made admin by hand): treat it as a fresh creator, never a load error.
     status: c.data?.status ?? 'pending',

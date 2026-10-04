@@ -132,6 +132,12 @@ export default function Profile() {
       <Pressable onPress={() => router.navigate('/dashboard/earnings')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
         <Text style={styles.action}>Riwayat pembayaran</Text>
       </Pressable>
+      <Pressable onPress={() => router.push('/referral')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
+        <Text style={styles.action}>Ajak teman</Text>
+      </Pressable>
+      <Pressable onPress={() => router.push('/notifications')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
+        <Text style={styles.action}>Notifikasi</Text>
+      </Pressable>
       <Pressable onPress={() => router.push('/help')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
         <Text style={styles.action}>Bantuan & keberatan</Text>
       </Pressable>

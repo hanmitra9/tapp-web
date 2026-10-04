@@ -1,4 +1,6 @@
 import { Stack } from 'expo-router';
+import { useEffect } from 'react';
+import { claimPendingReferral } from '@/features/referral/api';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
 import { useAuth } from '@/providers/AuthProvider';
@@ -6,6 +8,8 @@ import { color } from '@/theme/tokens';
 
 export default function AppLayout() {
   const { account, accountError, refreshAccount } = useAuth();
+  const role = account?.role;
+  useEffect(() => { if (role === 'creator') claimPendingReferral().catch(() => {}); }, [role]);
   if (!account) {
     return <Screen scroll={false}>
       <LoadState error={accountError ? 'Gagal memuat akun. Periksa koneksi internet.' : null} onRetry={refreshAccount} />
@@ -20,6 +24,7 @@ export default function AppLayout() {
       <Stack.Protected guard={isBrand}>
         <Stack.Screen name="brand" />
         <Stack.Screen name="brand-campaign/[id]" />
+        <Stack.Screen name="brand-clips/[id]" />
       </Stack.Protected>
       <Stack.Protected guard={needsOnboarding}>
         <Stack.Screen name="onboarding" options={{ gestureEnabled: false }} />
@@ -32,6 +37,7 @@ export default function AppLayout() {
         <Stack.Screen name="notifications" />
         <Stack.Screen name="payouts" />
         <Stack.Screen name="help" />
+        <Stack.Screen name="referral" />
         <Stack.Screen name="dispute" options={{ presentation: 'modal' }} />
         <Stack.Screen name="submit/[campaignId]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="take/[id]" />

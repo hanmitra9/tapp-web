@@ -1,7 +1,7 @@
+import Feather from '@expo/vector-icons/Feather';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Image, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { showAlert } from '@/lib/alert';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
@@ -13,7 +13,11 @@ import { errorMessage } from '@/lib/errors';
 import { track } from '@/lib/analytics';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
-import { renderPayoutCard, sharePayoutCard, type RenderedCard } from '@/lib/shareCard';
+import { LevelProgress } from '@/components/LevelProgress';
+import { fetchTierProgress } from '@/features/creator/tier';
+import { fetchReferral } from '@/features/referral/api';
+import { renderPayoutCard, shareRenderedCard, type RenderedCard } from '@/lib/shareCard';
+import { ShareCardSheet } from '@/components/ShareCardSheet';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
 import { StatusBadge } from '@/components/StatusBadge';
@@ -28,8 +32,8 @@ export default function Payments() {
   const { session, account } = useAuth();
   const uid = session!.user.id;
   const q = useQuery(async () => {
-    const [earn, payouts, method, terms, avatarUrl] = await Promise.all([fetchEarnings(uid), fetchPayouts(), fetchPayoutMethod(uid), fetchWithdrawTerms(uid), fetchAvatarUrl(uid)]);
-    return { ...earn, payouts, method, terms, avatarUrl };
+    const [earn, payouts, method, terms, avatarUrl, level, referral] = await Promise.all([fetchEarnings(uid), fetchPayouts(), fetchPayoutMethod(uid), fetchWithdrawTerms(uid), fetchAvatarUrl(uid), fetchTierProgress().catch(() => null), fetchReferral().catch(() => null)]);
+    return { ...earn, payouts, method, terms, avatarUrl, level, referral };
   }, [uid]);
   const d = q.data;
   const [busy, setBusy] = useState(false);
@@ -38,7 +42,8 @@ export default function Payments() {
 
   const available = Math.max(d?.summary.available ?? 0, 0);
   const open = d?.payouts.find((p) => OPEN.includes(p.status)) ?? null;
-  const bonus = d ? Math.round(available * d.terms.bonusPct / 100) : 0;
+  const refBonus = d?.referral?.available ?? 0;
+  const bonus = d ? Math.round(available * d.terms.bonusPct / 100) + refBonus : 0;
   const platformFee = d ? Math.round(available * d.terms.feePct / 100) : 0;
   const net = d ? available + bonus - platformFee - d.terms.fee : 0;
   const paid = d?.payouts.filter((p) => p.status === 'paid') ?? [];
@@ -57,14 +62,14 @@ export default function Payments() {
   function closeCard() { if (shareCard) URL.revokeObjectURL(shareCard.url); setShareCard(null); }
   async function share() {
     if (!shareCard) return;
-    try { await sharePayoutCard(shareCard); track('payout_card_saved', { total: totalPaid }); }
+    try { await shareRenderedCard(shareCard); track('payout_card_saved', { total: totalPaid }); }
     catch (e) { setError(errorMessage(e)); }
   }
   const canWithdraw = !!d && !!d.method && !open && available >= d.terms.min;
 
   function confirm() {
     if (!d) return;
-    showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus ? ` + bonus level ${idr(bonus)}` : ''} − fee platform ${d.terms.feePct}% ${idr(platformFee)} − biaya transfer ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method?.provider ?? ''}.`, [
+    showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus - refBonus ? ` + bonus level ${idr(bonus - refBonus)}` : ''}${refBonus ? ` + bonus referral ${idr(refBonus)}` : ''} − fee platform ${d.terms.feePct}% ${idr(platformFee)} − biaya transfer ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method?.provider ?? ''}.`, [
       { text: 'Batal', style: 'cancel' },
       { text: 'Tarik', onPress: withdraw },
     ]);
@@ -104,6 +109,16 @@ export default function Payments() {
         </View>
       ) : null}
 
+      {d?.level ? <View style={{ marginTop: space.lg }}><LevelProgress p={d.level} /></View> : null}
+
+      <Pressable style={styles.method} onPress={() => router.push('/referral')} accessibilityRole="button">
+        <View style={{ flex: 1 }}>
+          <Text style={styles.methodValue}>Ajak teman, dapat {idr(d?.referral?.bonus ?? 20000)}</Text>
+          <Text style={styles.methodLabel}>{d?.referral?.invited ? `${d.referral.invited} teman bergabung lewat link-mu` : 'Untuk setiap teman yang pencairan pertamanya dibayar'}</Text>
+        </View>
+        <Feather name="chevron-right" size={18} color={color.textMuted} />
+      </Pressable>
+
       {totalPaid > 0 ? (
         <View style={styles.total}>
           <View style={{ flex: 1, gap: 2 }}>
@@ -115,23 +130,8 @@ export default function Payments() {
         </View>
       ) : null}
 
-      <Modal visible={!!shareCard} animationType="slide" presentationStyle="pageSheet" transparent={false} onRequestClose={closeCard}>
-        <SafeAreaView style={styles.sheet}>
-          <Pressable onPress={closeCard} hitSlop={12} accessibilityRole="button" accessibilityLabel="Tutup" style={styles.close}>
-            <Text style={styles.closeX}>✕</Text>
-          </Pressable>
-          <View style={styles.sheetBody}>
-            {shareCard ? <Image source={{ uri: shareCard.url }} style={styles.cardImg} resizeMode="contain" accessibilityLabel="Kartu total payout" /> : null}
-            <View style={{ gap: space.sm }}>
-              <Text style={styles.sheetTitle}>Total payout</Text>
-              <Text style={styles.sheetText}>Semua yang sudah kamu cairkan dari TAPP, setelah bonus level dan fee. Simpan atau bagikan ke story-mu.</Text>
-            </View>
-          </View>
-          <Pressable onPress={share} style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]} accessibilityRole="button">
-            <Text style={styles.shareText}>Bagikan</Text>
-          </Pressable>
-        </SafeAreaView>
-      </Modal>
+      <ShareCardSheet card={shareCard} onClose={closeCard} onShare={share} title="Total payout"
+        body="Semua yang sudah kamu cairkan dari TAPP, setelah bonus level dan fee. Simpan atau bagikan ke story-mu." />
 
       {d ? (
         <Pressable style={styles.method} onPress={() => router.push('/profile/payout')} accessibilityRole="button">
@@ -188,15 +188,6 @@ const styles = StyleSheet.create({
   methodValue: { ...type.label, color: color.text },
   total: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
   totalValue: { ...type.title, color: color.text, fontVariant: ['tabular-nums'] },
-  sheet: { flex: 1, backgroundColor: '#1C1C1E', paddingHorizontal: space.xl, paddingBottom: space.xl },
-  close: { alignSelf: 'flex-start', paddingVertical: space.lg },
-  closeX: { color: '#FFFFFF', fontSize: 26, lineHeight: 28 },
-  sheetBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.xxl },
-  cardImg: { width: 260, height: 364, transform: [{ perspective: 900 }, { rotateY: '-10deg' }, { rotateX: '3deg' }] },
-  sheetTitle: { ...type.title, color: '#FFFFFF', textAlign: 'center' },
-  sheetText: { ...type.body, color: 'rgba(235,235,245,0.6)', textAlign: 'center', maxWidth: 360 },
-  shareBtn: { height: 56, borderRadius: 18, backgroundColor: '#F2F4F7', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: 480, alignSelf: 'center' },
-  shareText: { ...type.label, fontSize: 17, color: '#0B0B0C' },
   explain: { marginTop: space.lg, padding: space.lg, gap: space.sm, ...card, borderRadius: radius.md },
   explainTitle: { ...type.label, color: color.text },
   explainBody: { ...type.caption, color: color.textSecondary, lineHeight: 20 },
