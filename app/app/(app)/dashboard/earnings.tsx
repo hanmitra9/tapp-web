@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Image, Modal, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { showAlert } from '@/lib/alert';
 import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
@@ -12,11 +13,11 @@ import { errorMessage } from '@/lib/errors';
 import { track } from '@/lib/analytics';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
-import { savePayoutCard } from '@/lib/shareCard';
+import { renderPayoutCard, sharePayoutCard, type RenderedCard } from '@/lib/shareCard';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
 import { StatusBadge } from '@/components/StatusBadge';
-import { fetchPayoutMethod } from '@/features/creator/api';
+import { fetchAvatarUrl, fetchPayoutMethod } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
 import { fetchEarnings } from '@/features/campaigns/earnings';
 import { fetchPayouts, fetchWithdrawTerms, OPEN, PAYOUT_STATUS, requestPayout, TIER_LABEL, uuid, type Payout } from '@/features/payouts/api';
@@ -27,8 +28,8 @@ export default function Payments() {
   const { session, account } = useAuth();
   const uid = session!.user.id;
   const q = useQuery(async () => {
-    const [earn, payouts, method, terms] = await Promise.all([fetchEarnings(uid), fetchPayouts(), fetchPayoutMethod(uid), fetchWithdrawTerms(uid)]);
-    return { ...earn, payouts, method, terms };
+    const [earn, payouts, method, terms, avatarUrl] = await Promise.all([fetchEarnings(uid), fetchPayouts(), fetchPayoutMethod(uid), fetchWithdrawTerms(uid), fetchAvatarUrl(uid)]);
+    return { ...earn, payouts, method, terms, avatarUrl };
   }, [uid]);
   const d = q.data;
   const [busy, setBusy] = useState(false);
@@ -44,14 +45,20 @@ export default function Payments() {
   const totalPaid = paid.reduce((a, p) => a + p.amount + Number(p.bonus ?? 0) - Number(p.fee ?? 0), 0);
   const firstPaid = paid.map((p) => p.paid_at ?? p.created_at).sort()[0] ?? null;
   const [saving, setSaving] = useState(false);
-  async function saveCard() {
+  const [shareCard, setShareCard] = useState<RenderedCard | null>(null);
+  async function openCard() {
     setSaving(true);
     try {
-      await savePayoutCard({ amount: idr(totalPaid), name: account?.fullName ?? 'Creator TAPP', handle: account?.username ?? null,
-        payouts: paid.length, since: firstPaid ? new Date(firstPaid).toLocaleDateString('id-ID', { month: 'long', year: 'numeric' }) : null });
-      track('payout_card_saved', { total: totalPaid });
+      setShareCard(await renderPayoutCard({ total: totalPaid, payouts: paid.length, from: firstPaid, to: new Date().toISOString(),
+        name: account?.fullName ?? account?.username ?? 'TAPP', avatarUrl: d?.avatarUrl ?? null }));
     } catch (e) { setError(errorMessage(e)); }
     finally { setSaving(false); }
+  }
+  function closeCard() { if (shareCard) URL.revokeObjectURL(shareCard.url); setShareCard(null); }
+  async function share() {
+    if (!shareCard) return;
+    try { await sharePayoutCard(shareCard); track('payout_card_saved', { total: totalPaid }); }
+    catch (e) { setError(errorMessage(e)); }
   }
   const canWithdraw = !!d && !!d.method && !open && available >= d.terms.min;
 
@@ -104,9 +111,27 @@ export default function Payments() {
             <Text style={styles.totalValue}>{idr(totalPaid)}</Text>
             <Text style={styles.rowMeta}>{paid.length}x pencairan{firstPaid ? ` · sejak ${dateLabel(firstPaid)}` : ''}</Text>
           </View>
-          <Button label="Simpan kartu" variant="secondary" onPress={saveCard} loading={saving} />
+          <Button label="Lihat kartu" variant="secondary" onPress={openCard} loading={saving} />
         </View>
       ) : null}
+
+      <Modal visible={!!shareCard} animationType="slide" presentationStyle="pageSheet" transparent={false} onRequestClose={closeCard}>
+        <SafeAreaView style={styles.sheet}>
+          <Pressable onPress={closeCard} hitSlop={12} accessibilityRole="button" accessibilityLabel="Tutup" style={styles.close}>
+            <Text style={styles.closeX}>✕</Text>
+          </Pressable>
+          <View style={styles.sheetBody}>
+            {shareCard ? <Image source={{ uri: shareCard.url }} style={styles.cardImg} resizeMode="contain" accessibilityLabel="Kartu total payout" /> : null}
+            <View style={{ gap: space.sm }}>
+              <Text style={styles.sheetTitle}>Total payout</Text>
+              <Text style={styles.sheetText}>Semua yang sudah kamu cairkan dari TAPP, setelah bonus level dan fee. Simpan atau bagikan ke story-mu.</Text>
+            </View>
+          </View>
+          <Pressable onPress={share} style={({ pressed }) => [styles.shareBtn, pressed && { opacity: 0.85 }]} accessibilityRole="button">
+            <Text style={styles.shareText}>Bagikan</Text>
+          </Pressable>
+        </SafeAreaView>
+      </Modal>
 
       {d ? (
         <Pressable style={styles.method} onPress={() => router.push('/profile/payout')} accessibilityRole="button">
@@ -163,6 +188,15 @@ const styles = StyleSheet.create({
   methodValue: { ...type.label, color: color.text },
   total: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
   totalValue: { ...type.title, color: color.text, fontVariant: ['tabular-nums'] },
+  sheet: { flex: 1, backgroundColor: '#1C1C1E', paddingHorizontal: space.xl, paddingBottom: space.xl },
+  close: { alignSelf: 'flex-start', paddingVertical: space.lg },
+  closeX: { color: '#FFFFFF', fontSize: 26, lineHeight: 28 },
+  sheetBody: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.xxl },
+  cardImg: { width: 260, height: 364, transform: [{ perspective: 900 }, { rotateY: '-10deg' }, { rotateX: '3deg' }] },
+  sheetTitle: { ...type.title, color: '#FFFFFF', textAlign: 'center' },
+  sheetText: { ...type.body, color: 'rgba(235,235,245,0.6)', textAlign: 'center', maxWidth: 360 },
+  shareBtn: { height: 56, borderRadius: 18, backgroundColor: '#F2F4F7', alignItems: 'center', justifyContent: 'center', width: '100%', maxWidth: 480, alignSelf: 'center' },
+  shareText: { ...type.label, fontSize: 17, color: '#0B0B0C' },
   explain: { marginTop: space.lg, padding: space.lg, gap: space.sm, ...card, borderRadius: radius.md },
   explainTitle: { ...type.label, color: color.text },
   explainBody: { ...type.caption, color: color.textSecondary, lineHeight: 20 },

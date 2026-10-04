@@ -19,6 +19,11 @@ const toAudience = (a: Partial<Audience> | null | undefined): Audience => ({
   countries: a?.countries ?? [], age_ranges: a?.age_ranges ?? [], languages: a?.languages ?? [],
 });
 
+export async function fetchAvatarUrl(uid: string): Promise<string | null> {
+  const { data } = await supabase.from('profiles').select('avatar_url').eq('id', uid).maybeSingle();
+  return data?.avatar_url ?? null;
+}
+
 export async function fetchCreatorProfile(uid: string): Promise<CreatorProfile> {
   const [p, c] = await Promise.all([
     supabase.from('profiles').select('full_name, username, avatar_url, country').eq('id', uid).single(),
