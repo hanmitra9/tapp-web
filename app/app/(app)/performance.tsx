@@ -17,7 +17,7 @@ import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { fetchCampaignPerf, fetchDaily, totals, trendLabel, type CampaignPerf } from '@/features/performance/api';
 
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
-const pct = (x: number | null) => (x == null ? '—' : `${(x * 100).toFixed(x < 0.1 ? 1 : 0)}%`);
+const pct = (x: number | null) => (x == null ? '—' : `${(x * 100).toLocaleString('id-ID', { maximumFractionDigits: x < 0.1 ? 1 : 0 })}%`);
 const dayLabel = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
 
 export default function Performance() {
@@ -101,7 +101,7 @@ function CampaignRow({ c }: { c: CampaignPerf }) {
       <View style={styles.rowHead}>
         <View style={{ flex: 1 }}>
           <Text style={styles.rowTitle} numberOfLines={1}>{c.title}</Text>
-          <Text style={styles.rowMeta}>{c.brand_name} · {CAMPAIGN_STATUS[c.campaign_status as keyof typeof CAMPAIGN_STATUS] ?? c.campaign_status}</Text>
+          <Text style={styles.rowMeta}>{[c.brand_name, CAMPAIGN_STATUS[c.campaign_status as keyof typeof CAMPAIGN_STATUS] ?? c.campaign_status].filter(Boolean).join(' · ')}</Text>
         </View>
         <Feather name="chevron-right" size={18} color={color.borderStrong} />
       </View>

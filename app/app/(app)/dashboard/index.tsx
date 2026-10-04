@@ -36,6 +36,7 @@ export default function Home() {
       accepted: subs.filter((s) => s.status === 'approved' || s.status === 'tracking').length,
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
       recs: recs.filter((r) => !r.joined).slice(0, 3),
+      joinedAll: recs.length > 0 && recs.every((r) => r.joined),
       active: mine.filter((m) => m.status === 'joined' && m.campaign && ['active', 'paused', 'ending'].includes(m.campaign.status)).slice(0, 3),
     };
   }, []);
@@ -70,7 +71,7 @@ export default function Home() {
       <View style={styles.actions}>
         <ActionCircle icon="compass" label="Campaign" onPress={() => router.navigate('/dashboard/campaigns')} />
         <ActionCircle icon="bar-chart-2" label="Performa" onPress={() => router.push('/performance')} />
-        <ActionCircle icon="credit-card" label="Pembayaran" onPress={() => router.navigate('/dashboard/earnings')} />
+        <ActionCircle icon="credit-card" label="Saldo" onPress={() => router.navigate('/dashboard/earnings')} />
         <ActionCircle icon="grid" label="Lainnya" onPress={() => router.push('/help')} />
       </View>
 
@@ -92,8 +93,13 @@ export default function Home() {
       {!d ? <><CardSkeleton /><CardSkeleton /></> : d.recs.length ? d.recs.map((c) => (
         <View key={c.id} style={{ marginBottom: space.md }}><CampaignCard item={c} onPress={() => router.push({ pathname: '/campaign/[id]', params: { id: c.id } })} /></View>
       )) : (
+d.joinedAll ? (
+        <EmptyState title="Kamu sudah ikut semua campaign yang cocok" body="Campaign baru akan muncul di sini. Sementara itu, lanjutkan klip di campaign yang sedang kamu kerjakan."
+          action={{ label: 'Lihat aktivitas', onPress: () => router.navigate('/dashboard/activity') }} />
+      ) : (
         <EmptyState title="Belum ada campaign yang cocok" body="Campaign hanya muncul untuk platform yang sudah kamu hubungkan. Tambah akun lain untuk melihat lebih banyak."
           action={{ label: 'Kelola akun sosial', onPress: () => router.push('/profile/socials') }} />
+      )
       )}
 
       {d && d.active.length ? (

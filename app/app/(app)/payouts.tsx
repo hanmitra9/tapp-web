@@ -16,7 +16,7 @@ export default function Payouts() {
   const q = useQuery(fetchPayouts, []);
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Riwayat pembayaran" subtitle="Bayaran klip yang sudah ditransfer tim TAPP." />
+      <Header title="Riwayat pembayaran" subtitle="Penarikan saldo ke rekening atau e-wallet-mu." />
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {q.data && !q.data.length ? (
         <EmptyState title="Belum ada pembayaran" body="Bayaran muncul setelah klipmu diterima dan ditransfer tim TAPP."
