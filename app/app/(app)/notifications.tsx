@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '@/components/EmptyState';
 import { Header } from '@/components/Header';
+import { PushToggle } from '@/components/PushToggle';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { SkeletonBlock } from '@/components/Skeleton';
@@ -26,6 +27,7 @@ export default function Notifications() {
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
       <Header title="Notifikasi" />
+      <View style={{ marginBottom: space.lg }}><PushToggle /></View>
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {!q.data && !q.error ? [0, 1, 2].map((i) => <View key={i} style={styles.row}><SkeletonBlock width="60%" height={16} /><SkeletonBlock width="90%" height={14} /></View>) : null}
       {q.data && !q.data.length ? <EmptyState title="Belum ada notifikasi" body="Kabar soal submission dan pembayaran akan muncul di sini." /> : null}

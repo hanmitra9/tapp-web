@@ -40,6 +40,15 @@ const ready = (a: LinkedPlatform) => !needsBio(a) || a.bio_status === 'review';
 const postKey = (url: string) => url.match(/(?:video\/|\/(?:p|reel|reels|tv)\/|shorts\/|[?&]v=|youtu\.be\/)([A-Za-z0-9_-]+)/)?.[1] ?? url;
 
 type Pick = Video & { day?: string | null };
+
+// Picked-but-not-sent videos survive leaving the screen (per campaign + account), until they are submitted.
+const draftKey = (campaignId: string, accountId: string) => `tapp:draft:${campaignId}:${accountId}`;
+function readDraft(key: string): Pick[] {
+  try { const v = JSON.parse(globalThis.localStorage?.getItem(key) ?? '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+}
+function writeDraft(key: string, picks: Pick[]) {
+  try { if (picks.length) globalThis.localStorage?.setItem(key, JSON.stringify(picks)); else globalThis.localStorage?.removeItem(key); } catch { /* storage off */ }
+}
 type Done = { kind: 'joined' } | { kind: 'submitted'; checks: (SubmissionCheck | null | 'checking')[] };
 
 // "Ambil Campaign": one guided flow from choosing the account to submitting the clip.
@@ -220,7 +229,10 @@ function VideoStep({ c, account, submitted, onBack, onLater, onDone }: {
   const minTime = new Date(joinedAt).getTime() - GRACE_MS;
   const [list, setList] = useState<VideoList | null>(null);
   const [loading, setLoading] = useState(true);
-  const [picks, setPicks] = useState<Pick[]>([]);
+  const dKey = draftKey(c.id, account.id);
+  const [picks, setPicks] = useState<Pick[]>(() => readDraft(dKey).filter((p) => !submitted.has(postKey(p.url))).slice(0, MAX_PICK));
+  const [restored] = useState(() => picks.length > 0);
+  useEffect(() => { writeDraft(dKey, picks); }, [dKey, picks]);
   const [link, setLink] = useState('');
   const [linkBusy, setLinkBusy] = useState(false);
   const [linkErr, setLinkErr] = useState<string | null>(null);
@@ -290,6 +302,7 @@ function VideoStep({ c, account, submitted, onBack, onLater, onDone }: {
     const ok = ids.filter(Boolean) as string[];
     track('submission_submitted', { campaign_id: c.id, platform: account.platform, count: ok.length, via: 'take' });
     if (!ok.length) return setError(errs[0] ?? 'Submit gagal. Coba lagi.');
+    writeDraft(dKey, []);
     const checks: (SubmissionCheck | null | 'checking')[] = ok.map(() => 'checking');
     onDone(checks);
     // Right after submitting, TAPP opens each post: is it there, is it from your account, how many views.
@@ -306,6 +319,7 @@ function VideoStep({ c, account, submitted, onBack, onLater, onDone }: {
         </Pressable> : null}
       </View>
       <Text style={styles.sub}>Dari @{account.handle}. Hanya video yang diposting setelah kamu bergabung yang dihitung.</Text>
+      {restored && picks.length ? <Text style={[styles.sub, { color: color.link }]}>Pilihanmu sebelumnya masih tersimpan ({picks.length} video). Lanjutkan submit.</Text> : null}
 
       {loading ? (
         <View style={styles.loading}><ActivityIndicator color={color.blueLight} /><Text style={styles.pMeta}>Membaca video di akunmu…</Text></View>

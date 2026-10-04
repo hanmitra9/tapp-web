@@ -1,5 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
-import { useLocalSearchParams } from 'expo-router';
+import { router, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { BarChart } from '@/components/BarChart';
@@ -128,9 +128,14 @@ export default function BrandCampaignReport() {
       ) : null}
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Klip terbaik</Text>
+        <View style={styles.sectionHead}>
+          <Text style={styles.sectionTitle}>Klip terbaik</Text>
+          {clips.length ? <Pressable onPress={() => router.push({ pathname: '/brand-clips/[id]', params: { id } })} hitSlop={8} accessibilityRole="link">
+            <Text style={styles.more}>Pakai untuk iklan</Text>
+          </Pressable> : null}
+        </View>
         {!clips.length ? <Text style={styles.muted}>Belum ada klip yang disetujui.</Text> : null}
-        {clips.map((k, i) => (
+        {clips.slice(0, 5).map((k, i) => (
           <Pressable key={k.submission_id} onPress={() => Linking.openURL(k.post_url).catch(() => {})} accessibilityRole="link"
             style={({ pressed }) => [styles.clip, pressed && { opacity: 0.6 }]}>
             <Text style={styles.rank}>{i + 1}</Text>
@@ -168,6 +173,8 @@ const styles = StyleSheet.create({
   statValue: { ...type.metric, fontSize: 20, lineHeight: 24, color: color.text },
   section: { marginTop: space.xxl, gap: space.md },
   sectionTitle: { ...type.heading, color: color.text },
+  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  more: { ...type.label, color: color.link, fontSize: 14 },
   funnelRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
   funnelLabel: { ...type.caption, color: color.textSecondary, width: 120 },
   funnelTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: color.surface, overflow: 'hidden' },

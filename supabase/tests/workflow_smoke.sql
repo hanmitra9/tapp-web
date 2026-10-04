@@ -718,3 +718,49 @@ select count(*) > 0 as brand_reads_own_pricing from campaign_pricing;
 reset role;
 select private.brand_amount(1050, 70) as brand_money_expect_1500;
 select 'brand_pricing_ok' as result;
+
+-- ── Growth (0048): referral, leaderboard, deadline reminders, push subscriptions ──
+reset role;
+insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
+ ('00000000-0000-0000-0000-0000000000c3','c3@x.id', now(), '{"full_name":"Creator Three"}');
+insert into creator_profiles (user_id, status) values ('00000000-0000-0000-0000-0000000000c3', 'active') on conflict (user_id) do update set status = 'active';
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select my_referral() ->> 'code' as ref_code \gset
+do $$ begin if (select my_referral() ->> 'code') !~ '^[A-Z0-9]{7}$' then raise exception 'referral code format'; end if; end $$;
+select claim_referral(:'ref_code') as self_claim_expect_f;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c3');
+select claim_referral('NOPE123') as bad_code_expect_f;
+select claim_referral(:'ref_code') as claim_expect_t;
+select claim_referral(:'ref_code') as second_claim_expect_f;
+do $$ begin if (select count(*) from referrals) <> 1 then raise exception 'claim should work'; end if; end $$;
+reset role;
+insert into payout_requests (id, creator_id, amount, fee, idempotency_key, payout_method)
+values ('30000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000c3', 150000, 37000, gen_random_uuid(),
+        '{"kind":"ewallet","provider":"GoPay","account_name":"C3","account_number":"0812"}');
+update payout_requests set status = 'paid', processed_reference = 'T-1', paid_at = now() where id = '30000000-0000-0000-0000-0000000000c3';
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+do $$ declare r jsonb := my_referral(); begin
+  if (r->>'invited')::int <> 1 or (r->>'available')::bigint <> 20000 then raise exception 'referral reward missing: %', r; end if;
+end $$;
+select count(*) as c3_rows_visible_expect_1 from referral_rewards;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c3');
+do $$ begin if (select count(*) from referral_rewards) <> 0 then raise exception 'referee must not see rewards'; end if; end $$;
+
+-- leaderboard: members only, masked names, own row says Kamu
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select rank, name, views, is_me from campaign_leaderboard('20000000-0000-0000-0000-000000000001');
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select pg_temp.expect_error($$select * from campaign_leaderboard('20000000-0000-0000-0000-000000000001')$$,'forbidden');
+select pg_temp.expect_error($$select send_deadline_reminders()$$,'permission denied');
+
+-- push subscriptions: own rows only
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select save_push_subscription('https://push.example/abc', 'p', 'a', 'test');
+select count(*) as own_subs_expect_1 from push_subscriptions;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c3');
+do $$ begin if (select count(*) from push_subscriptions) <> 0 then raise exception 'push subs leak'; end if; end $$;
+reset role;
+select send_deadline_reminders() >= 0 as reminders_ok;
+select 'growth_ok' as result;

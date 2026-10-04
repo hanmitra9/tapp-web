@@ -10,6 +10,9 @@ import { AuthProvider, useAuth } from '@/providers/AuthProvider';
 import { NetworkProvider } from '@/providers/NetworkProvider';
 import { color } from '@/theme/tokens';
 import { trackAppOpened } from '@/lib/analytics';
+import { captureReferral } from '@/features/referral/api';
+
+captureReferral();
 
 // Navigation containers stay transparent so the page background (src/lib/webStyles.ts) shows through.
 const NAV_THEME = { ...DarkTheme, colors: { ...DarkTheme.colors, background: 'transparent', card: 'transparent', primary: color.blue } };

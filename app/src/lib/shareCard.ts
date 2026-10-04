@@ -1,8 +1,11 @@
 import { Image as RNImage, Platform } from 'react-native';
 
-// Shareable "total payout" card in the style of Threads' views card: a black portrait card with the creator's
-// photo cropped into the corner, a big condensed number and mono labels. Drawn on a canvas (web only).
+// Shareable stat cards in the style of Threads' views card: a black portrait card with the creator's photo cropped
+// into the corner, a big condensed number and mono labels. Drawn on a canvas (web only).
+//   total payout (Saldo)  ·  qualified views per campaign (Workspace)
 export type PayoutCard = { total: number; from: string | null; to: string; name: string; avatarUrl: string | null };
+export type ViewsCard = { views: number; campaign: string; from: string | null; to: string; name: string; avatarUrl: string | null };
+type Spec = { label: string; prefix: string | null; value: string; line1: string; line2: string; name: string; avatarUrl: string | null };
 export type RenderedCard = { blob: Blob; url: string };
 
 const W = 960, H = 1344, R = 84;
@@ -16,6 +19,9 @@ function dateRange(fromIso: string, toIso: string): string {
   if (startOfDay(a) === startOfDay(b)) return `${day(b)} ${b.getFullYear()}`;
   return a.getFullYear() === b.getFullYear() ? `${day(a)} — ${day(b)} ${b.getFullYear()}` : `${day(a)} ${a.getFullYear()} — ${day(b)} ${b.getFullYear()}`;
 }
+
+const daysBetween = (from: string, to: string) => Math.round((startOfDay(new Date(to)) - startOfDay(new Date(from))) / DAY) + 1;
+const fit = (t: string, n: number) => (t.length > n ? `${t.slice(0, n - 1).trimEnd()}…` : t);
 
 // 494000 → "494K", 1250000 → "1,25M", 12400000 → "12,4M" (Threads-style K/M/B)
 export function compactIdr(n: number): string {
@@ -41,7 +47,7 @@ function logoSrc(): string | undefined {
   return typeof mod === 'string' ? mod : mod?.uri ?? mod?.default?.uri ?? mod?.default ?? RNImage.resolveAssetSource?.(mod)?.uri;
 }
 
-async function draw(c: PayoutCard): Promise<HTMLCanvasElement> {
+async function draw(c: Spec): Promise<HTMLCanvasElement> {
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d')!;
@@ -84,24 +90,21 @@ async function draw(c: PayoutCard): Promise<HTMLCanvasElement> {
   // Label + number.
   g.fillStyle = '#FFFFFF'; g.textBaseline = 'alphabetic';
   g.font = '44px RobotoMono, monospace';
-  g.fillText('TOTAL PAYOUT', 96, H * 0.5);
-  const num = compactIdr(c.total);
+  g.fillText(c.label, 96, H * 0.5);
+  const pre = c.prefix ? `${c.prefix}` : '';
   let size = 360;
-  const fit = () => { g.font = `${size}px BebasNeue, sans-serif`; const a = g.measureText(num).width; g.font = `${size * 0.42}px BebasNeue, sans-serif`; return a + g.measureText('RP').width + 16; };
-  while (fit() > W - 180 && size > 120) size -= 10;
+  const width = () => { g.font = `${size}px BebasNeue, sans-serif`; const a = g.measureText(c.value).width; if (!pre) return a; g.font = `${size * 0.42}px BebasNeue, sans-serif`; return a + g.measureText(pre).width + 16; };
+  while (width() > W - 180 && size > 120) size -= 10;
   const base = H * 0.5 + 40 + size * 0.86;
-  g.font = `${size * 0.42}px BebasNeue, sans-serif`; g.fillText('RP', 92, base);
-  const rpW = g.measureText('RP').width + 14;
-  g.font = `${size}px BebasNeue, sans-serif`; g.fillText(num, 92 + rpW, base);
+  let x = 92;
+  if (pre) { g.font = `${size * 0.42}px BebasNeue, sans-serif`; g.fillText(pre, x, base); x += g.measureText(pre).width + 14; }
+  g.font = `${size}px BebasNeue, sans-serif`; g.fillText(c.value, x, base);
 
   // Footer.
   g.font = '44px RobotoMono, monospace';
-  // Since the first paid payout, counted up to the day the card is made.
-  const from = c.from ?? c.to;
-  const days = Math.round((startOfDay(new Date(c.to)) - startOfDay(new Date(from))) / DAY) + 1;
-  g.fillText(`${days.toLocaleString('id-ID')} HARI`, 96, H - 190);
+  g.fillText(c.line1, 96, H - 190);
   g.fillStyle = 'rgba(255,255,255,0.92)';
-  g.fillText(dateRange(from, c.to), 96, H - 118);
+  g.fillText(c.line2, 96, H - 118);
   g.restore();
 
   // Hairline edge.
@@ -109,20 +112,34 @@ async function draw(c: PayoutCard): Promise<HTMLCanvasElement> {
   return cv;
 }
 
-export async function renderPayoutCard(c: PayoutCard): Promise<RenderedCard> {
+async function render(spec: Spec): Promise<RenderedCard> {
   if (Platform.OS !== 'web') throw new Error('Kartu tersedia di versi web.');
-  const cv = await draw(c);
+  const cv = await draw(spec);
   const blob: Blob = await new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error('Gagal membuat gambar.'))), 'image/png'));
   return { blob, url: URL.createObjectURL(blob) };
 }
 
+// Since the first paid payout, counted up to the day the card is made.
+export function renderPayoutCard(c: PayoutCard): Promise<RenderedCard> {
+  const from = c.from ?? c.to;
+  return render({ label: 'TOTAL PAYOUT', prefix: 'RP', value: compactIdr(c.total), name: c.name, avatarUrl: c.avatarUrl,
+    line1: `${daysBetween(from, c.to).toLocaleString('id-ID')} HARI`, line2: dateRange(from, c.to) });
+}
+
+// Qualified views in one campaign, since the creator joined it.
+export function renderViewsCard(c: ViewsCard): Promise<RenderedCard> {
+  const from = c.from ?? c.to;
+  return render({ label: 'QUALIFIED VIEWS', prefix: null, value: compactIdr(c.views), name: c.name, avatarUrl: c.avatarUrl,
+    line1: fit(c.campaign.toUpperCase(), 30), line2: dateRange(from, c.to) });
+}
+
 // Share sheet on phones (Save Image / Instagram / WhatsApp), download elsewhere.
-export async function sharePayoutCard(card: RenderedCard): Promise<void> {
-  const file = new File([card.blob], 'tapp-total-payout.png', { type: 'image/png' });
+export async function shareRenderedCard(card: RenderedCard): Promise<void> {
+  const file = new File([card.blob], 'tapp-card.png', { type: 'image/png' });
   const nav = navigator as Navigator & { canShare?: (d: ShareData) => boolean };
   if (nav.canShare?.({ files: [file] })) {
-    try { await nav.share({ files: [file], title: 'Total payout TAPP' }); return; }
+    try { await nav.share({ files: [file], title: 'TAPP' }); return; }
     catch (e) { if ((e as Error).name === 'AbortError') return; }
   }
-  const a = document.createElement('a'); a.href = card.url; a.download = 'tapp-total-payout.png'; a.click();
+  const a = document.createElement('a'); a.href = card.url; a.download = 'tapp-card.png'; a.click();
 }
