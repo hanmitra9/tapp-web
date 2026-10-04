@@ -19,6 +19,7 @@ import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { fetchMySubmissions, withdrawSubmission } from '@/features/submissions/api';
 import { SubmissionRow } from '@/features/submissions/SubmissionRow';
 import { fetchLeaderboard, type LeaderRow } from '@/features/campaigns/leaderboard';
+import { LeaderList, MyStanding, Podium } from '@/components/Leaderboard';
 import { ShareCardSheet } from '@/components/ShareCardSheet';
 import { track } from '@/lib/analytics';
 import { renderViewsCard, shareRenderedCard, type RenderedCard } from '@/lib/shareCard';
@@ -101,14 +102,14 @@ export default function Workspace() {
         body={`Views yang sudah diverifikasi TAPP dari klipmu di ${c.title}. Simpan atau bagikan ke story-mu.`} />
 
       {c.membership?.status === 'joined' ? (
-        <Section title="Top minggu ini">
-          {board.length ? board.map((r) => (
-            <View key={`${r.rank}-${r.name}`} style={[styles.lbRow, r.is_me && styles.lbMe]}>
-              <Text style={[styles.lbRank, r.rank <= 3 && { color: color.link }]}>{r.rank}</Text>
-              <Text style={[styles.lbName, r.is_me && { color: color.text }]} numberOfLines={1}>{r.name}</Text>
-              <Text style={styles.lbViews}>{compact(r.views)} views</Text>
-            </View>
-          )) : <Text style={styles.muted}>Belum ada views yang masuk minggu ini. Klip pertama yang lolos langsung ada di puncak.</Text>}
+        <Section title="Panggung minggu ini" action={{ label: 'Peringkat TAPP', onPress: () => router.push('/leaderboard') }}>
+          {board.length ? (
+            <>
+              <Podium entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} />
+              <MyStanding entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} empty="Klip pertamamu yang diterima langsung masuk papan ini." />
+              <LeaderList entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} />
+            </>
+          ) : <Text style={styles.muted}>Belum ada views yang masuk minggu ini. Klip pertama yang lolos langsung ada di puncak.</Text>}
         </Section>
       ) : null}
 

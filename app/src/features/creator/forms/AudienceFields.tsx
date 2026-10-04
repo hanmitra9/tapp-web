@@ -3,7 +3,7 @@ import { Chips } from '@/components/Chips';
 import { Field } from '@/components/Field';
 import { space } from '@/theme/tokens';
 import type { Audience } from '../api';
-import { AGE_RANGES, COUNTRIES, LANGUAGES } from '../options';
+import { AGE_RANGES, CITIES, LANGUAGES } from '../options';
 
 type Props = { value: Audience; onChange: (a: Audience) => void; error?: string | null };
 
@@ -11,8 +11,8 @@ type Props = { value: Audience; onChange: (a: Audience) => void; error?: string 
 export function AudienceFields({ value, onChange, error }: Props) {
   return (
     <View style={styles.form}>
-      <Field label="Negara penonton terbanyak" hint="Pilih maksimal 3." error={error}>
-        <Chips multiple max={3} options={COUNTRIES} value={value.countries} onChange={(countries) => onChange({ ...value, countries })} />
+      <Field label="Kota penonton terbanyak" hint="Pilih maksimal 3." error={error}>
+        <Chips multiple max={3} options={CITIES} value={value.cities} onChange={(cities) => onChange({ ...value, cities })} />
       </Field>
       <Field label="Usia penonton" hint="Pilih semua yang dominan.">
         <Chips multiple options={AGE_RANGES} value={value.age_ranges} onChange={(age_ranges) => onChange({ ...value, age_ranges })} />

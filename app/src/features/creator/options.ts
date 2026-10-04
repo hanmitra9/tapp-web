@@ -39,6 +39,10 @@ export const EXPERIENCE: Option<Experience>[] = [
   { value: 'advanced', label: 'Lebih dari 2 tahun' },
 ];
 
+// Indonesian cities creators pick from (value = display name, stored in profiles.city / audience.cities).
+export const CITIES: Option[] = ['Jakarta', 'Surabaya', 'Bandung', 'Medan', 'Semarang', 'Yogyakarta', 'Makassar', 'Denpasar', 'Malang',
+  'Palembang', 'Tangerang', 'Bekasi', 'Depok', 'Bogor', 'Batam', 'Balikpapan', 'Pekanbaru', 'Manado'].map((c) => ({ value: c, label: c }));
+
 export const COUNTRIES: Option[] = [
   { value: 'ID', label: 'Indonesia' }, { value: 'MY', label: 'Malaysia' }, { value: 'SG', label: 'Singapura' },
   { value: 'PH', label: 'Filipina' }, { value: 'TH', label: 'Thailand' }, { value: 'VN', label: 'Vietnam' },

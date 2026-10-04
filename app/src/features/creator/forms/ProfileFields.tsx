@@ -9,10 +9,10 @@ import { TextField } from '@/components/TextField';
 import { errorMessage } from '@/lib/errors';
 import { color, space, type } from '@/theme/tokens';
 import { uploadAvatar } from '../api';
-import { COUNTRIES } from '../options';
+import { CityPicker } from '@/components/CityPicker';
 import type { UsernameStatus } from './useUsernameCheck';
 
-export type ProfileValues = { fullName: string; username: string; country: string };
+export type ProfileValues = { fullName: string; username: string; city: string };
 type Props = {
   uid: string;
   values: ProfileValues;
@@ -63,8 +63,8 @@ export function ProfileFields({ uid, values, onChange, avatarUrl, onAvatar, user
         onChangeText={(v) => onChange({ username: v.toLowerCase().replace(/\s/g, '') })}
         hint={USERNAME_HINT[usernameStatus] ?? 'Huruf kecil, angka, titik, atau garis bawah. 3–24 karakter.'}
         error={usernameError} />
-      <Field label="Negara tempat tinggal" error={errors.country}>
-        <Chips options={COUNTRIES} value={values.country ? [values.country] : []} onChange={([c]) => onChange({ country: c ?? '' })} />
+      <Field label="Kota tempat tinggal" hint="Dipakai untuk peringkat kota dan campaign lokal." error={errors.city}>
+        <CityPicker value={values.city} onChange={(city) => onChange({ city })} />
       </Field>
     </View>
   );

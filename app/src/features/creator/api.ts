@@ -6,9 +6,9 @@ export type LinkedPlatform = { id: string; platform: Platform; handle: string; p
   bio_code?: string | null; bio_status?: BioStatus | null; bio_note?: string | null };
 export type BioStatus = 'code_issued' | 'not_found' | 'review' | 'verified' | 'rejected';
 export type PayoutMethod = { id: string; kind: 'bank' | 'ewallet'; provider: string; account_name: string; account_number: string };
-export type Audience = { countries: string[]; age_ranges: string[]; languages: string[] };
+export type Audience = { countries: string[]; cities: string[]; age_ranges: string[]; languages: string[] };
 export type CreatorProfile = {
-  userId: string; fullName: string | null; username: string | null; avatarUrl: string | null; country: string | null;
+  userId: string; fullName: string | null; username: string | null; avatarUrl: string | null; country: string | null; city: string | null;
   status: 'pending' | 'verified' | 'active' | 'suspended' | 'banned'; tier: 'new' | 'rising' | 'verified' | 'proven' | 'elite';
   mainPlatform: Platform | null; niches: string[]; categories: string[]; contentStyle: string | null;
   audience: Audience; experience: Experience | null; reliability: number;
@@ -16,7 +16,7 @@ export type CreatorProfile = {
 export type CreatorStats = { campaigns_joined: number; submissions: number; approved: number; rejected: number; qualified_views: number; total_earned: number };
 
 const toAudience = (a: Partial<Audience> | null | undefined): Audience => ({
-  countries: a?.countries ?? [], age_ranges: a?.age_ranges ?? [], languages: a?.languages ?? [],
+  countries: a?.countries ?? [], cities: a?.cities ?? [], age_ranges: a?.age_ranges ?? [], languages: a?.languages ?? [],
 });
 
 export async function fetchAvatarUrl(uid: string): Promise<string | null> {
@@ -26,7 +26,7 @@ export async function fetchAvatarUrl(uid: string): Promise<string | null> {
 
 export async function fetchCreatorProfile(uid: string): Promise<CreatorProfile> {
   const [p, c] = await Promise.all([
-    supabase.from('profiles').select('full_name, username, avatar_url, country').eq('id', uid).single(),
+    supabase.from('profiles').select('full_name, username, avatar_url, country, city').eq('id', uid).single(),
     supabase.from('creator_profiles')
       .select('status, tier, main_platform, niches, content_categories, content_style, audience, experience_level, reliability_score')
       .eq('user_id', uid).single(),
@@ -34,7 +34,7 @@ export async function fetchCreatorProfile(uid: string): Promise<CreatorProfile> 
   if (p.error) throw p.error;
   if (c.error) throw c.error;
   return {
-    userId: uid, fullName: p.data.full_name, username: p.data.username, avatarUrl: p.data.avatar_url, country: p.data.country,
+    userId: uid, fullName: p.data.full_name, username: p.data.username, avatarUrl: p.data.avatar_url, country: p.data.country, city: p.data.city ?? null,
     status: c.data.status, tier: c.data.tier, mainPlatform: c.data.main_platform, niches: c.data.niches ?? [],
     categories: c.data.content_categories ?? [], contentStyle: c.data.content_style, audience: toAudience(c.data.audience),
     experience: c.data.experience_level, reliability: Number(c.data.reliability_score ?? 0),
@@ -150,22 +150,24 @@ export async function uploadAvatar(uid: string, localUri: string): Promise<strin
 }
 
 export type ProfileInput = {
-  fullName: string; username: string; country: string; mainPlatform: Platform; niches: string[]; categories: string[];
+  fullName: string; username: string; city: string; mainPlatform: Platform; niches: string[]; categories: string[];
   contentStyle: string; audience: Audience; experience: Experience;
 };
 
 export async function completeOnboarding(i: ProfileInput) {
   const { error } = await supabase.rpc('complete_creator_onboarding', {
-    p_full_name: i.fullName.trim(), p_username: i.username.trim().toLowerCase(), p_country: i.country,
+    p_full_name: i.fullName.trim(), p_username: i.username.trim().toLowerCase(), p_country: 'ID',
     p_main_platform: i.mainPlatform, p_niches: i.niches, p_content_categories: i.categories,
     p_content_style: i.contentStyle.trim() || null, p_audience: i.audience, p_experience_level: i.experience,
   });
   if (error) throw error;
+  const { data: u } = await supabase.auth.getUser();
+  if (u.user) await supabase.from('profiles').update({ city: i.city.trim() }).eq('id', u.user.id);
 }
 
 export async function updateProfile(uid: string, i: ProfileInput) {
   const p = await supabase.from('profiles').update({
-    full_name: i.fullName.trim(), username: i.username.trim().toLowerCase(), country: i.country,
+    full_name: i.fullName.trim(), username: i.username.trim().toLowerCase(), country: 'ID', city: i.city.trim(),
   }).eq('id', uid);
   if (p.error) throw p.error;
   const c = await supabase.from('creator_profiles').update({
