@@ -8,7 +8,7 @@ _I = {
 }
 
 def footer(mark_src, home='#top', prefix=''):
-    nav = [('Home', home), ('Campaigns', f'{prefix}campaigns.html'), ('Contact', f'{prefix}contact.html'), ('Kebijakan Privasi', f'{prefix}privacy.html'), ('Syarat Layanan', f'{prefix}terms.html')]
+    nav = [('Home', home), ('Campaigns', f'{prefix}campaigns.html'), ('Blog', f'{prefix}blog.html'), ('Contact', f'{prefix}contact.html'), ('Kebijakan Privasi', f'{prefix}privacy.html'), ('Syarat Layanan', f'{prefix}terms.html')]
     li = lambda href, label, icon='', attr='': f'<a class="nl fl" href="{href}">{_I[icon] if icon else ""}<span{attr}>{label}</span></a>'
     return f'''<footer class="tf">
   <div class="tf-in">
