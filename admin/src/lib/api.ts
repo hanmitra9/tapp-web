@@ -147,6 +147,8 @@ export async function readPublicViews(submissionId: string): Promise<PublicViews
 // Accepted views go to the creator's balance (0045); the creator withdraws it from the app.
 export const creditSubmission = (id: string, views: number, note: string | null) =>
   rpc('admin_credit_submission', { p_submission_id: id, p_views: views, p_note: note });
+export const approveSubmission = (id: string, views: number, note: string | null) =>
+  rpc('admin_approve_submission', { p_submission_id: id, p_views: views, p_note: note });
 export const reviewSubmission = (id: string, decision: SubStatus, reason: string | null) =>
   rpc('admin_review_submission', { p_submission_id: id, p_decision: decision, p_reason: reason });
 export const recordMetrics = (id: string, m: { views: number; likes: number; comments: number; shares: number; saves: number; capturedAt: string; state: string }) =>

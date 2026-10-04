@@ -764,3 +764,23 @@ do $$ begin if (select count(*) from push_subscriptions) <> 0 then raise excepti
 reset role;
 select send_deadline_reminders() >= 0 as reminders_ok;
 select 'growth_ok' as result;
+
+-- ── 0049: approving credits immediately → campaign budget cut at approval ──
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select id as appr_sub, campaign_id as appr_camp, status as appr_status from submissions where status in ('pending_review','flagged') order by created_at limit 1 \gset
+select earned as earned_before from campaigns where id = :'appr_camp' \gset
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error(format($$select admin_approve_submission(%L, 50000)$$, :'appr_sub'),'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error(format($$select admin_approve_submission(%L, -1)$$, :'appr_sub'),'invalid_views');
+select status as approved_status from admin_approve_submission(:'appr_sub', 50000);
+select s.earned as clip_earned, c.earned - :earned_before as campaign_delta, a.remaining = greatest(c.budget - c.earned, 0) as remaining_ok
+from submissions s join campaigns c on c.id = s.campaign_id join admin_campaigns a on a.id = c.id where s.id = :'appr_sub';
+do $$ begin
+  if exists (select 1 from submissions s join campaigns c on c.id = s.campaign_id
+             where s.id = (select id from submissions where status = 'completed' order by updated_at desc limit 1)
+               and s.earned > 0 and c.earned < s.earned) then raise exception 'campaign earned not updated'; end if;
+end $$;
+reset role;
+select 'approve_credit_ok' as result;
