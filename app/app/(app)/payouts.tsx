@@ -16,11 +16,11 @@ export default function Payouts() {
   const q = useQuery(fetchPayouts, []);
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Riwayat pembayaran" subtitle="Penarikan saldo ke rekening atau e-wallet-mu." />
+      <Header title="Riwayat pencairan" />
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {q.data && !q.data.length ? (
-        <EmptyState title="Belum ada pembayaran" body="Bayaran muncul setelah klipmu diterima dan ditransfer tim TAPP."
-          action={{ label: 'Ke Pembayaran', onPress: () => router.navigate('/dashboard/earnings') }} />
+        <EmptyState title="Belum ada pencairan" body="Tarik saldo dari menu Saldo."
+          action={{ label: 'Ke Saldo', onPress: () => router.navigate('/dashboard/earnings') }} />
       ) : null}
       {q.data?.map((p) => <PayoutRow key={p.id} p={p} />)}
     </Screen>
@@ -37,8 +37,9 @@ function PayoutRow({ p }: { p: Payout }) {
         <StatusBadge label={st.label} tone={st.tone} />
       </View>
       <Text style={styles.meta}>
-        {p.payout_method.provider} {maskAccount(p.payout_method.account_number)} · diajukan {dateLabel(p.created_at)}
+        {p.payout_method.provider} {maskAccount(p.payout_method.account_number)} · {dateLabel(p.created_at)}
       </Text>
+      <Text style={styles.meta}>Saldo {idr(p.amount)}{Number(p.bonus ?? 0) ? ` · bonus +${idr(Number(p.bonus))}` : ''}{Number(p.fee ?? 0) ? ` · fee ${idr(Number(p.fee))}` : ''}</Text>
       {p.status !== 'rejected' ? (
         <View style={styles.track} accessible accessibilityLabel={`Tahap ${idx + 1} dari ${STEPS.length}: ${st.label}`}>
           {STEPS.map((s, i) => <View key={s} style={[styles.seg, i <= idx && styles.segOn]} />)}
