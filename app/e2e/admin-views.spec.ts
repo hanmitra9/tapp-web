@@ -30,11 +30,12 @@ test('admin fills views once and they go straight into the brand report', async 
   expect(calls[1]!.body).toMatchObject({ p_submission_id: 's1', p_metric_id: 'm1', p_qualified_views: 12500, p_allow_decrease: false });
 });
 
-test('approve is one click; reject still asks for a reason', async ({ page }) => {
+test('approve credits the views in the same step (budget cut at approval); reject still asks for a reason', async ({ page }) => {
   const sub = { ...SUB, status: 'pending_review' };
   await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [sub] }, { aal: 'aal2' });
   const sent: Record<string, unknown>[] = [];
   await page.route('**/rest/v1/rpc/admin_review_submission', async (r) => { sent.push(r.request().postDataJSON()); await r.fulfill({ json: {} }); });
+  await page.route('**/rest/v1/rpc/admin_approve_submission', async (r) => { sent.push(r.request().postDataJSON()); await r.fulfill({ json: { id: 's1', status: 'completed' } }); });
   await page.goto('/admin/submissions');
   await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
   await page.getByRole('button', { name: 'Tolak', exact: true }).click();
@@ -42,7 +43,9 @@ test('approve is one click; reject still asks for a reason', async ({ page }) =>
   await expect(page.getByText('Alasan wajib diisi')).toBeVisible();
   expect(sent).toHaveLength(0);
   await page.getByRole('button', { name: 'Setujui', exact: true }).click();
-  await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_decision: 'approved', p_reason: null }]);
+  await page.getByLabel('Views').fill('20.000');
+  await page.getByRole('button', { name: /Setujui & masukkan Rp60\.000/ }).click();
+  await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_views: 20000, p_note: null }]);
 });
 
 test('accepted clip is credited to the creator balance from "Siap dibayar": views only, no transfer', async ({ page }) => {

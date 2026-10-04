@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
+  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, approveSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { fairness, previewEarnings, signals, typicalEngagement, type CheckPoint, type Fairness } from '../lib/engine';
@@ -128,7 +128,7 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
       {shot ? <div className="section"><h3>Screenshot</h3><a href={shot} target="_blank" rel="noreferrer noopener"><img src={shot} alt="Screenshot bukti" className="shot" /></a></div> : null}
 
       {mode === 'review' && ['approved', 'tracking', 'completed'].includes(s.status) ? <PayPanel s={s} latestViews={h.metrics[0]?.views ?? null} fair={d.data.fair} onDone={refresh} /> : null}
-      {mode === 'review' && reviewable ? <ReviewPanel s={s} onDone={refresh} /> : null}
+      {mode === 'review' && reviewable ? <ReviewPanel s={s} latestViews={h.metrics[0]?.views ?? null} fair={d.data.fair} onDone={refresh} /> : null}
       {mode === 'performance' && trackable ? <MetricsPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && s.status === 'tracking' && s.auto_hold_reason ? <div className="notice warn" style={{ marginTop: 16 }}>Ditahan penyaringan otomatis: {s.auto_hold_reason}. Cek klipnya, lalu tetapkan qualified views secara manual di bawah.</div> : null}
       {mode === 'performance' && s.status === 'tracking' ? <QualifyPanel s={s} metrics={h.metrics} onDone={refresh} /> : null}
@@ -220,7 +220,7 @@ function FairBox({ fair }: { fair: Fairness }) {
   );
 }
 
-function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<void> }) {
+function ReviewPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latestViews: number | null; fair: Fairness; onDone: () => Promise<void> }) {
   const options: { d: SubStatus; label: string; cls: string }[] = s.status === 'approved' || s.status === 'tracking'
     ? [{ d: 'flagged', label: 'Tandai', cls: 'warn' }, { d: 'rejected', label: 'Tolak', cls: 'danger' }]
     : [
@@ -233,13 +233,8 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
   const [error, setError] = useState<string | null>(null);
   const needsReason = decision && decision !== 'approved';
 
-  // Approving needs no reason: one click. Other decisions are explained to the creator, so they ask for one.
-  async function approveNow() {
-    setBusy(true); setError(null);
-    try { await reviewSubmission(s.id, 'approved', null); setDecision(null); setReason(''); await onDone(); }
-    catch (e) { setError(adminError(e)); }
-    finally { setBusy(false); }
-  }
+  // Approving credits the views in the same step (0049), so the campaign budget is cut right away.
+  // Other decisions are explained to the creator, so they ask for a reason.
 
   async function confirm() {
     if (!decision) return;
@@ -256,7 +251,7 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
       <div className="actions">
         {options.map((o) => (
           <button key={o.d} className={`btn ${o.cls}`} aria-pressed={decision === o.d} style={decision === o.d ? { outline: '2px solid var(--blue)' } : undefined}
-            onClick={() => (o.d === 'approved' ? approveNow() : (setDecision(o.d), setError(null)))} disabled={busy}>{o.label}</button>
+            onClick={() => { setDecision(o.d); setError(null); }} disabled={busy}>{o.label}</button>
         ))}
       </div>
       {decision && PRESETS[decision] ? (
@@ -264,7 +259,8 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
       ) : null}
       {needsReason ? <label className="field">Alasan (dilihat kreator)<textarea value={reason} onChange={(e) => setReason(e.target.value)} /></label> : null}
       {error ? <div className="notice error">{error}</div> : null}
-      {decision ? (
+      {decision === 'approved' ? <PayPanel s={s} latestViews={latestViews} fair={fair} onDone={onDone} approve onCancel={() => setDecision(null)} /> : null}
+      {decision && decision !== 'approved' ? (
         <div className="actions">
           <button className="btn" onClick={confirm} disabled={busy}>{busy ? 'Menyimpan…' : `Konfirmasi: ${STATUS[decision].label}`}</button>
           <button className="btn secondary" onClick={() => setDecision(null)}>Batal</button>
@@ -275,7 +271,7 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
 }
 
 // Accepted clip → pay it: views in, amount computed (CPM, minimum, cap, budget), level fee off, transferred by hand.
-function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latestViews: number | null; fair: Fairness; onDone: () => Promise<void> }) {
+function PayPanel({ s, latestViews, fair, onDone, approve = false, onCancel }: { s: AdminSubmission; latestViews: number | null; fair: Fairness; onDone: () => Promise<void>; approve?: boolean; onCancel?: () => void }) {
   const [views, setViews] = useState(String(Math.max(latestViews ?? 0, s.qualified_views) || ''));
   // Read the post's public view count once and prefill it; the admin still checks it before crediting.
   const [auto, setAuto] = useState<PublicViews | 'loading' | null>(null);
@@ -302,13 +298,16 @@ function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latest
     if (!valid) return setError('Isi angka views.');
     if (v < s.qualified_views) return setError(`Views tidak boleh lebih kecil dari yang sudah dihitung (${num(s.qualified_views)}).`);
     setBusy(true);
-    try { await creditSubmission(s.id, v, null); setOk(`${idr(amount)} masuk ke saldo kreator. Kreator bisa menariknya dari app.`); await onDone(); }
+    try {
+      if (approve) await approveSubmission(s.id, v, null); else await creditSubmission(s.id, v, null);
+      setOk(`${approve ? 'Disetujui. ' : ''}${idr(amount)} masuk ke saldo kreator dan langsung terpotong dari budget campaign.`); await onDone();
+    }
     catch (e) { setError(adminError(e)); }
     finally { setBusy(false); }
   }
   return (
     <div className="section card">
-      <h2>{s.status === 'completed' ? 'Sudah masuk saldo' : 'Masukkan ke saldo kreator'}</h2>
+      <h2>{approve ? 'Setujui & masukkan ke saldo' : s.status === 'completed' ? 'Sudah masuk saldo' : 'Masukkan ke saldo kreator'}</h2>
       {fair.tone === 'danger' || fair.tone === 'warning' ? <FairBox fair={fair} /> : null}
       {s.status === 'completed' ? <p className="sub" style={{ margin: 0 }}>Sudah dihitung {num(s.qualified_views)} views ({idr(s.earned)}). Views naik lagi? Isi views terbaru untuk menambah selisihnya.</p> : null}
       <p className="sub" style={{ margin: 0 }}>Cek views di <a href={s.post_url} target="_blank" rel="noreferrer noopener">postingan ↗</a>. Tarif kreator {idr(s.cpm)} per 1.000 views, minimal {num(s.min_views_to_qualify)} views{s.max_earning_per_submission ? `, maks ${idr(s.max_earning_per_submission)} per klip` : ''}.</p>
@@ -324,10 +323,15 @@ function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latest
         <span className="sub">Bonus level, fee platform, dan biaya transfer dihitung saat kreator menarik saldo.</span>
         {p.belowMin ? <span style={{ color: 'var(--warning)' }}>Di bawah minimum {num(s.min_views_to_qualify)} views, jadi bayarannya 0.</span> : null}
         {p.capped ? <span style={{ color: 'var(--warning)' }}>Dibatasi sisa budget campaign.</span> : null}
+        <span className="sub">Sisa budget campaign: {idr(Math.max(s.budget - s.campaign_earned, 0))} → {idr(Math.max(s.budget - s.campaign_earned - amount, 0))}</span>
       </div>
       {error ? <div className="notice error">{error}</div> : null}
       {ok ? <div className="notice ok">{ok}</div> : null}
-      <div className="actions"><button className="btn" onClick={credit} disabled={busy || !valid || amount <= 0}>{busy ? 'Menyimpan…' : `Masukkan ${idr(amount)} ke saldo`}</button></div>
+      <div className="actions">
+        <button className="btn" onClick={credit} disabled={busy || !valid || (!approve && amount <= 0)}>
+          {busy ? 'Menyimpan…' : approve ? `Setujui & masukkan ${idr(amount)}` : `Masukkan ${idr(amount)} ke saldo`}</button>
+        {onCancel ? <button className="btn secondary" onClick={onCancel} disabled={busy}>Batal</button> : null}
+      </div>
     </div>
   );
 }
