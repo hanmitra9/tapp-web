@@ -15,8 +15,8 @@ if (typeof document !== 'undefined' && !document.getElementById('tapp-web-styles
     face('Geist-Regular', 'Geist-Regular.woff2'),
     face('Geist-Medium', 'Geist-Medium.woff2'),
     face('Geist-SemiBold', 'Geist-SemiBold.woff2'),
-    face('GeistMono', 'GeistMono-Regular.woff2'),          // payout share card
-    face('BigShoulders', 'BigShoulders-Bold.woff2'),
+    face('RobotoMono', 'RobotoMono-Medium.woff2'),          // payout share card
+    face('BebasNeue', 'BebasNeue-Regular.woff2'),
     `@font-face{font-family:'InterTight';src:url('${base}/fonts/InterTight-Variable.woff2') format('woff2');font-weight:100 900;font-display:swap}`,
     // Premium surfaces, opted in with dataSet={{ tapp: '…' }} (RN styles can't express layered backgrounds / masks / blur).
     `[data-tapp~="balance"]{background:radial-gradient(70% 120% at 88% -10%,rgba(117,178,244,0.55),transparent 55%),radial-gradient(60% 90% at 0% 110%,rgba(16,79,146,0.7),transparent 60%),linear-gradient(135deg,#051629 0%,#092D52 48%,#104F92 100%)!important;box-shadow:0 30px 70px -30px rgba(12,101,196,0.75),inset 0 1px 0 rgba(255,255,255,0.18)!important;position:relative}`,

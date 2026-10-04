@@ -1,17 +1,19 @@
 import type React from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
 import { Header } from '@/components/Header';
+import { Notice } from '@/components/Notice';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import {
-  fetchCreatorProfile, fetchPayoutMethod, fetchPlatforms, fetchStats,
+  fetchCreatorProfile, fetchPayoutMethod, fetchPlatforms, fetchStats, uploadAvatar,
   type CreatorProfile, type CreatorStats, type LinkedPlatform, type PayoutMethod,
 } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
@@ -47,6 +49,19 @@ export default function Profile() {
     } catch (e) { setError(errorMessage(e)); }
   }, [uid]);
   useFocusEffect(useCallback(() => { void load(); }, [load]));   // reflects edits made on sub-screens
+  const [uploading, setUploading] = useState(false);
+  const [photoError, setPhotoError] = useState<string | null>(null);
+
+  // Photo shows on the profile and on the shareable payout card.
+  async function changePhoto() {
+    setPhotoError(null);
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsEditing: true, aspect: [1, 1], quality: 1 });
+    if (res.canceled || !res.assets[0]) return;
+    setUploading(true);
+    try { await uploadAvatar(uid, res.assets[0].uri); await load(); }
+    catch (e) { setPhotoError(errorMessage((e as { code?: string })?.code ? e : { code: 'upload_failed' })); }
+    finally { setUploading(false); }
+  }
 
   if (!data) return <Screen inTabs scroll={false}><Header title="Profil" back={false} /><LoadState error={error} onRetry={load} /></Screen>;
   const { profile: p, stats: s, platforms, payout } = data;
@@ -60,7 +75,10 @@ export default function Profile() {
       onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
       <Header title="Profil" back={false} />
       <View style={styles.identity}>
-        <Avatar uri={p.avatarUrl} name={p.fullName} size={64} />
+        <Pressable onPress={changePhoto} disabled={uploading} accessibilityRole="button" accessibilityLabel={p.avatarUrl ? 'Ganti foto profil' : 'Tambah foto profil'}>
+          <Avatar uri={p.avatarUrl} name={p.fullName} size={64} />
+          <View style={styles.photoBadge}>{uploading ? <ActivityIndicator size="small" color={color.text} /> : <Text style={styles.photoBadgeText}>{p.avatarUrl ? '✎' : '+'}</Text>}</View>
+        </Pressable>
         <View style={styles.identityText}>
           <Text style={styles.name}>{p.fullName ?? '—'}</Text>
           <Text style={styles.username}>@{p.username ?? '—'}</Text>
@@ -70,6 +88,8 @@ export default function Profile() {
           </View>
         </View>
       </View>
+
+      {photoError ? <View style={{ marginTop: space.md }}><Notice tone="error" message={photoError} /></View> : null}
 
       <View style={styles.stats}>
         <Stat label="Campaign diikuti" value={String(s.campaigns_joined)} />
@@ -150,6 +170,8 @@ function Row({ label, value }: { label: string; value: string }) {
 
 const styles = StyleSheet.create({
   identity: { flexDirection: 'row', gap: space.lg, alignItems: 'center' },
+  photoBadge: { position: 'absolute', right: -2, bottom: -2, width: 24, height: 24, borderRadius: 12, backgroundColor: color.blue, borderWidth: 2, borderColor: color.canvas, alignItems: 'center', justifyContent: 'center' },
+  photoBadgeText: { color: '#FFFFFF', fontSize: 13, lineHeight: 15, fontWeight: '700' },
   identityText: { flex: 1, gap: 2 },
   name: { ...type.title, color: color.text },
   username: { ...type.body, color: color.textSecondary },

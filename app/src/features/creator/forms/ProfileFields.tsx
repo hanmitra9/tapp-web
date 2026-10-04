@@ -47,11 +47,14 @@ export function ProfileFields({ uid, values, onChange, avatarUrl, onAvatar, user
     <View style={styles.form}>
       <View style={styles.avatarRow}>
         <Avatar uri={avatarUrl} name={values.fullName} size={72} />
-        <Pressable onPress={pick} disabled={uploading} hitSlop={8} accessibilityRole="button">
-          {uploading ? <ActivityIndicator color={color.blue} /> : (
-            <Text style={styles.link}>{avatarUrl ? 'Ganti foto' : 'Tambah foto'}</Text>
-          )}
-        </Pressable>
+        <View style={{ flex: 1, gap: 2 }}>
+          <Pressable onPress={pick} disabled={uploading} hitSlop={8} accessibilityRole="button">
+            {uploading ? <ActivityIndicator color={color.blue} style={{ alignSelf: 'flex-start' }} /> : (
+              <Text style={styles.link}>{avatarUrl ? 'Ganti foto' : 'Tambah foto profil'}</Text>
+            )}
+          </Pressable>
+          <Text style={styles.hint}>Tampil di profil dan kartu total payout-mu.</Text>
+        </View>
       </View>
       <Notice tone="error" message={uploadError} />
       <TextField label="Nama lengkap" value={values.fullName} onChangeText={(v) => onChange({ fullName: v })}
@@ -71,4 +74,5 @@ const styles = StyleSheet.create({
   form: { gap: space.xl },
   avatarRow: { flexDirection: 'row', alignItems: 'center', gap: space.lg },
   link: { ...type.label, color: color.link },
+  hint: { ...type.caption, color: color.textMuted },
 });
