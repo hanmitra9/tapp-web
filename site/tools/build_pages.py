@@ -495,7 +495,6 @@ print('pages built for', SITE_URL)
 
 # ───────────────────────────── Blog ─────────────────────────────
 from blog_posts import POSTS
-from blog_covers import cover
 MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
 def tgl(iso):
     y, m, d = iso.split('-')
@@ -503,7 +502,7 @@ def tgl(iso):
 POSTS = sorted(POSTS, key=lambda p: p['date'], reverse=True)
 url = lambda p: f"blog-{p['slug']}.html"
 meta = lambda p: f'<span class="bl-meta"><b>{p["cat"]}</b> · {tgl(p["date"])}</span>'
-art = lambda p, i: '<div class="bl-art">' + cover(p['cover'], p['slug'][:6] + str(i)) + '</div>'
+art = lambda p, i: f'<div class="bl-art"><img src="assets/blog/{p["cover"]}.webp" alt="" loading="{"eager" if str(i)[0] in "fc" else "lazy"}" width="1600" height="900"></div>'
 
 def card(p, i, cls='bl-card'):
     return (f'<a class="{cls}" href="{url(p)}" data-cat="{p["cat"]}" data-q="{(p["title"] + " " + p["excerpt"]).lower()}">'
