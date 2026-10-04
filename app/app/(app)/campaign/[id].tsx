@@ -137,13 +137,13 @@ export default function CampaignDetailScreen() {
         </Section>
       ) : null}
 
-      <Section title="Model reward">
+      <Section title="Bayaran">
         <Bullets items={[
-          `Dibayar ${cpmLabel(c.cpm)} berdasarkan qualified views, bukan total views.`,
-          `Contoh: 100.000 qualified views = ${idr(c.cpm * 100)}${c.max_earning_per_submission && c.cpm * 100 > c.max_earning_per_submission ? ` (dibatasi ${idr(c.max_earning_per_submission)})` : ''}.`,
-          c.min_views_to_qualify > 0 ? `Penghasilan mulai dihitung setelah ${num(c.min_views_to_qualify)} qualified views per klip.` : 'Tidak ada minimum views.',
-          c.max_earning_per_submission ? `Maksimal ${idr(c.max_earning_per_submission)} per klip.` : 'Tidak ada batas penghasilan per klip.',
-          'Views dari promosi berbayar, bot, atau akun repost tidak dihitung.',
+          `${cpmLabel(c.cpm)} (qualified views).`,
+          `100rb views = ${idr(c.cpm * 100)}${c.max_earning_per_submission && c.cpm * 100 > c.max_earning_per_submission ? ` (dibatasi ${idr(c.max_earning_per_submission)})` : ''}.`,
+          c.min_views_to_qualify > 0 ? `Min. ${num(c.min_views_to_qualify)} views per klip.` : 'Tanpa minimum views.',
+          c.max_earning_per_submission ? `Maks. ${idr(c.max_earning_per_submission)} per klip.` : 'Tanpa batas per klip.',
+          'Views iklan, bot & repost tidak dihitung.',
         ]} />
       </Section>
       {rulesBy('submission').length ? <Section title={RULE_TITLES.submission}><Bullets items={rulesBy('submission').map((r) => r.body)} /></Section> : null}

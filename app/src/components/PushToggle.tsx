@@ -6,10 +6,10 @@ import { disablePush, enablePush, pushState, type PushState } from '@/lib/webPus
 import { color, radius, space, type, card } from '@/theme/tokens';
 
 const COPY: Record<PushState, { title: string; body: string; action: string | null }> = {
-  off: { title: 'Notifikasi di HP', body: 'Dapat kabar saat saldo masuk, dana terkirim, dan campaign mau ditutup.', action: 'Aktifkan' },
-  on: { title: 'Notifikasi aktif', body: 'Kamu akan dapat kabar saldo masuk, dana terkirim, dan pengingat deadline.', action: 'Matikan' },
-  denied: { title: 'Notifikasi diblokir', body: 'Izinkan notifikasi untuk tappcreators.com di pengaturan browser, lalu buka halaman ini lagi.', action: null },
-  ios_install: { title: 'Notifikasi di iPhone', body: 'Tekan tombol Share di Safari → "Add to Home Screen", lalu buka TAPP dari Home Screen untuk mengaktifkan notifikasi.', action: null },
+  off: { title: 'Notifikasi di HP', body: 'Kabar saldo masuk & deadline.', action: 'Aktifkan' },
+  on: { title: 'Notifikasi aktif', body: 'Kabar saldo masuk & deadline.', action: 'Matikan' },
+  denied: { title: 'Notifikasi diblokir', body: 'Izinkan di pengaturan browser.', action: null },
+  ios_install: { title: 'Notifikasi di iPhone', body: 'Safari → Share → Add to Home Screen, lalu buka dari sana.', action: null },
   unsupported: { title: 'Notifikasi', body: 'Browser ini belum mendukung notifikasi.', action: null },
 };
 

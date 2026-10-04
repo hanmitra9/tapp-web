@@ -100,8 +100,7 @@ export default function Payments() {
             <>
               <Button label={available >= d.terms.min ? `Tarik ${idr(Math.max(net, 0))}` : 'Tarik saldo'} onPress={confirm} loading={busy} disabled={!canWithdraw} />
               <Text style={styles.terms}>
-                {available < d.terms.min ? `Minimal tarik ${idr(d.terms.min)}. ` : ''}Fee platform {d.terms.feePct}% + biaya transfer {idr(d.terms.fee)} per pencairan.
-                {d.terms.bonusPct ? ` Bonus level ${TIER_LABEL[d.terms.tier]} +${d.terms.bonusPct}% ditambahkan saat kamu menarik.` : ' Naik ke level Rising untuk mulai dapat bonus saat menarik.'}
+                {available < d.terms.min ? `Min. ${idr(d.terms.min)} · ` : ''}Fee {d.terms.feePct}% + {idr(d.terms.fee)}{d.terms.bonusPct ? ` · Bonus +${d.terms.bonusPct}%` : ''}
               </Text>
             </>
           )}
@@ -114,7 +113,7 @@ export default function Payments() {
       <Pressable style={styles.method} onPress={() => router.push('/referral')} accessibilityRole="button">
         <View style={{ flex: 1 }}>
           <Text style={styles.methodValue}>Ajak teman, dapat {idr(d?.referral?.bonus ?? 20000)}</Text>
-          <Text style={styles.methodLabel}>{d?.referral?.invited ? `${d.referral.invited} teman bergabung lewat link-mu` : 'Untuk setiap teman yang pencairan pertamanya dibayar'}</Text>
+          <Text style={styles.methodLabel}>{d?.referral?.invited ? `${d.referral.invited} teman bergabung` : 'Per teman yang cair pertama kali'}</Text>
         </View>
         <Feather name="chevron-right" size={18} color={color.textMuted} />
       </Pressable>
@@ -131,7 +130,7 @@ export default function Payments() {
       ) : null}
 
       <ShareCardSheet card={shareCard} onClose={closeCard} onShare={share} title="Total payout"
-        body="Semua yang sudah kamu cairkan dari TAPP, setelah bonus level dan fee. Simpan atau bagikan ke story-mu." />
+        body="Semua yang sudah kamu cairkan. Simpan atau bagikan ke story." />
 
       {d ? (
         <Pressable style={styles.method} onPress={() => router.push('/profile/payout')} accessibilityRole="button">
@@ -144,12 +143,6 @@ export default function Payments() {
       ) : null}
       {d && !d.method ? <View style={{ marginTop: space.md }}><Notice tone="info" message="Isi rekening atau e-wallet dulu supaya saldomu bisa ditarik." /></View> : null}
 
-      <View style={styles.explain}>
-        <Text style={styles.explainTitle}>Cara kamu dibayar</Text>
-        <Text style={styles.explainBody}>
-          1. Submit klip dari campaign yang kamu ikuti.{'\n'}2. Setelah tim TAPP menerima klipmu, bayarannya masuk ke saldo: views klip × tarif per 1.000 views.{'\n'}3. Tarik saldo kapan saja setelah mencapai minimum. Saat menarik ada fee platform dan biaya transfer, dan bonus level ditambahkan.
-        </Text>
-      </View>
 
       <Text style={styles.section}>Riwayat pencairan</Text>
       {d && !d.payouts.length ? (

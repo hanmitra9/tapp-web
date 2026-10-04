@@ -151,7 +151,7 @@ export async function uploadAvatar(uid: string, localUri: string): Promise<strin
 
 export type ProfileInput = {
   fullName: string; username: string; city: string; mainPlatform: Platform; niches: string[]; categories: string[];
-  contentStyle: string; audience: Audience; experience: Experience;
+  contentStyle: string; audience: Audience; experience: Experience | null;
 };
 
 export async function completeOnboarding(i: ProfileInput) {
@@ -165,15 +165,10 @@ export async function completeOnboarding(i: ProfileInput) {
   if (u.user) await supabase.from('profiles').update({ city: i.city.trim() }).eq('id', u.user.id);
 }
 
-export async function updateProfile(uid: string, i: ProfileInput) {
+export async function updateProfile(uid: string, i: { fullName: string; username: string; city: string }) {
   const p = await supabase.from('profiles').update({
     full_name: i.fullName.trim(), username: i.username.trim().toLowerCase(), country: 'ID', city: i.city.trim(),
-  }).eq('id', uid);
+  }).eq('id', uid).select('id');
   if (p.error) throw p.error;
-  const c = await supabase.from('creator_profiles').update({
-    main_platform: i.mainPlatform, niches: i.niches, content_categories: i.categories,
-    content_style: i.contentStyle.trim() || null, audience: i.audience, experience_level: i.experience,
-  }).eq('user_id', uid).select('user_id');
-  if (c.error) throw c.error;
-  if (!c.data?.length) throw { code: 'profile_locked' };    // suspended / banned: RLS blocks edits
+  if (!p.data?.length) throw { code: 'profile_locked' };
 }

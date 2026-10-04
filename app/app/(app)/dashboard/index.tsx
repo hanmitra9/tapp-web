@@ -115,8 +115,8 @@ export default function Home() {
         )
       ) : (
         <InfoRow icon={d.joinedAll ? 'check-circle' : 'link'}
-          title={d.joinedAll ? 'Kamu sudah ikut semua campaign yang cocok' : 'Belum ada campaign yang cocok'}
-          body={d.joinedAll ? 'Campaign baru muncul di sini. Lanjutkan klip di campaign yang kamu ikuti.' : 'Hubungkan akun TikTok, Instagram, atau YouTube lain untuk melihat lebih banyak campaign.'}
+          title={d.joinedAll ? 'Semua campaign sudah kamu ikuti' : 'Belum ada campaign yang cocok'}
+          body={d.joinedAll ? 'Campaign baru akan muncul di sini.' : 'Hubungkan akun lain untuk lihat lebih banyak.'}
           onPress={() => (d.joinedAll ? router.navigate('/dashboard/activity') : router.push('/profile/socials'))} />
       )}
 
@@ -154,7 +154,7 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
         <View style={styles.heroLevel}>
           <View style={styles.heroTrack}><View style={[styles.heroFill, { width: `${ratio * 100}%` }]} /></View>
           <Text style={styles.heroLevelText} numberOfLines={1}>
-            {done ? 'Level tertinggi · bonus terbesar setiap tarik saldo' : `${compact(level.toNext ?? 0)} views lagi ke ${LEVEL[level.next!]} · bonus +${level.nextBonusPct}%`}
+            {done ? 'Level tertinggi' : `${compact(level.toNext ?? 0)} views lagi ke ${LEVEL[level.next!]} (+${level.nextBonusPct}%)`}
           </Text>
         </View>
       ) : null}
@@ -206,7 +206,7 @@ type Rank = { me: CreatorRow | null; top: CreatorRow | null; city: CityRow | nul
 // Weekly standing teaser → the full stage.
 function RankCard({ rank }: { rank: Rank }) {
   const title = rank.me ? `Kamu #${rank.me.rank} minggu ini` : rank.top ? 'Siapa di panggung minggu ini?' : 'Panggung minggu ini masih kosong';
-  const sub = rank.city ? `${rank.city.city} peringkat #${rank.city.rank} kota` : rank.topCity ? `Kota teratas: ${rank.topCity.city}` : 'Klip yang diterima membawamu ke papan peringkat.';
+  const sub = rank.city ? `${rank.city.city} peringkat #${rank.city.rank} kota` : rank.topCity ? `Kota teratas: ${rank.topCity.city}` : 'Lihat peringkat minggu ini';
   return (
     <Pressable onPress={() => router.push('/leaderboard')} accessibilityRole="button" style={({ pressed }) => [styles.rankCard, pressed && { opacity: 0.88 }]}>
       <LinearGradient colors={['#2A1F05', '#141008']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />

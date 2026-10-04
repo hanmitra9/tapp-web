@@ -13,24 +13,20 @@ import {
   completeOnboarding, fetchCreatorProfile, fetchPayoutMethod, fetchPlatforms, isUsernameAvailable, savePayoutMethod,
   type LinkedPlatform, type PayoutMethod,
 } from '@/features/creator/api';
-import { AudienceFields } from '@/features/creator/forms/AudienceFields';
-import { ContentFields } from '@/features/creator/forms/ContentFields';
 import { emptyPayout, normalizePayout, PayoutForm, validatePayout, type PayoutValues } from '@/features/creator/forms/PayoutForm';
 import { PlatformManager } from '@/features/creator/forms/PlatformManager';
 import { ProfileFields } from '@/features/creator/forms/ProfileFields';
 import { useUsernameCheck } from '@/features/creator/forms/useUsernameCheck';
 import { maskAccount } from '@/features/creator/handles';
-import { EXPERIENCE, labelOf, platformLabel } from '@/features/creator/options';
+import { platformLabel } from '@/features/creator/options';
 import { useOnboardingDraft } from '@/features/creator/useOnboardingDraft';
 import { track } from '@/lib/analytics';
 
 const STEPS = [
-  { title: 'Profil kamu', subtitle: 'Nama dan username ini yang akan dilihat brand.' },
-  { title: 'Akun media sosial', subtitle: 'Tempat kamu memposting klip. TAPP memverifikasi akun ini sebelum kamu bisa ikut campaign.' },
-  { title: 'Konten kamu', subtitle: 'Dipakai untuk mencocokkan kamu dengan campaign yang relevan.' },
-  { title: 'Penonton kamu', subtitle: 'Perkiraan saja. Bisa diubah kapan pun.' },
-  { title: 'Rekening pembayaran', subtitle: 'Ke mana bayaran klipmu ditransfer.' },
-  { title: 'Periksa lagi', subtitle: 'Setelah dikirim, tim TAPP akan meninjau akunmu.' },
+  { title: 'Profil kamu', subtitle: 'Dilihat brand.' },
+  { title: 'Akun sosial', subtitle: 'Tempat kamu posting klip.' },
+  { title: 'Rekening', subtitle: 'Tujuan transfer saldomu.' },
+  { title: 'Periksa lagi', subtitle: 'Tim TAPP meninjau akunmu setelah ini.' },
 ];
 
 export default function Onboarding() {
@@ -58,7 +54,7 @@ export default function Onboarding() {
   }, [uid]);
   useEffect(() => { void load(); }, [load]);
 
-  const step = draft?.step ?? 0;
+  const step = Math.min(draft?.step ?? 0, STEPS.length - 1);
   const goTo = useCallback((s: number) => {
     update({ step: s }); track('onboarding_step', { step: s }); setTouched(false); setError(null); scroll.current?.scrollTo({ y: 0, animated: false });
   }, [update]);
@@ -77,13 +73,8 @@ export default function Onboarding() {
     username: draft.username ? validateUsername(draft.username) : 'Pilih username.',
     city: draft.city.trim().length >= 2 ? null : 'Pilih kota.',
   };
-  const contentErrs = {
-    categories: draft.categories.length ? null : 'Pilih minimal satu jenis konten.',
-    experience: draft.experience ? null : 'Pilih pengalamanmu.',
-  };
   const mainLinked = !!draft.mainPlatform && platforms.some((p) => p.platform === draft.mainPlatform);
   const platformErr = !platforms.length ? 'Tambahkan minimal satu akun.' : !mainLinked ? 'Pilih platform utama.' : null;
-  const audienceErr = draft.audience.cities.length ? null : 'Pilih minimal satu kota.';
 
   async function next() {
     setTouched(true); setError(null);
@@ -100,9 +91,7 @@ export default function Onboarding() {
         return goTo(1);
       }
       case 1: return platformErr ? undefined : goTo(2);
-      case 2: return contentErrs.categories || contentErrs.experience ? undefined : goTo(3);
-      case 3: return audienceErr ? undefined : goTo(4);
-      case 4: {
+      case 2: {
         if (Object.keys(validatePayout(payoutForm)).length) return;
         const norm = normalizePayout(payoutForm);
         const unchanged = payout && JSON.stringify(emptyPayout(payout)) === JSON.stringify(norm);
@@ -112,15 +101,15 @@ export default function Onboarding() {
           catch (e) { setBusy(false); return setError(errorMessage(e)); }
           setBusy(false);
         }
-        return goTo(5);
+        return goTo(3);
       }
-      case 5: {
+      case 3: {
         setBusy(true);
         try {
           await completeOnboarding({
             fullName: draft.fullName, username: draft.username, city: draft.city, mainPlatform: draft.mainPlatform!,
-            niches: draft.niches, categories: draft.categories, contentStyle: draft.contentStyle,
-            audience: draft.audience, experience: draft.experience!,
+            niches: [], categories: [], contentStyle: '',
+            audience: { ...draft.audience, cities: [draft.city.trim()] }, experience: null,
           });
           await clear();
           track('onboarding_completed');
@@ -132,7 +121,7 @@ export default function Onboarding() {
           const code = (e as { message?: string })?.message?.split(':')[0];
           if (code === 'username_taken' || (e as { code?: string })?.code === '23505') goTo(0);
           else if (code === 'platform_required' || code === 'main_platform_not_linked') goTo(1);
-          else if (code === 'payout_method_required') goTo(4);
+          else if (code === 'payout_method_required') goTo(2);
           setError(msg);
         } finally { setBusy(false); }
       }
@@ -145,7 +134,7 @@ export default function Onboarding() {
       scrollRef={scroll}
       footer={
         <>
-          <Button label={step === 5 ? 'Kirim untuk ditinjau' : 'Lanjut'} onPress={next} loading={busy} />
+          <Button label={step === 3 ? 'Kirim' : 'Lanjut'} onPress={next} loading={busy} />
           {step > 0 ? <Button variant="quiet" label="Kembali" onPress={() => goTo(step - 1)} />
             : <Button variant="quiet" label="Keluar" onPress={signOut} />}
         </>
@@ -164,17 +153,14 @@ export default function Onboarding() {
           <PlatformManager uid={uid} platforms={platforms} onPlatforms={setPlatforms} mainPlatform={draft.mainPlatform}
             onMainPlatform={(mainPlatform) => update({ mainPlatform })} error={touched ? platformErr : null} />
         ) : null}
-        {step === 2 ? <ContentFields values={draft} onChange={update} errors={touched ? contentErrs : {}} /> : null}
-        {step === 3 ? <AudienceFields value={draft.audience} onChange={(audience) => update({ audience })} error={touched ? audienceErr : null} /> : null}
-        {step === 4 ? <PayoutForm values={payoutForm} onChange={setPayoutForm} showErrors={touched} /> : null}
-        {step === 5 ? (
+        {step === 2 ? <PayoutForm values={payoutForm} onChange={setPayoutForm} showErrors={touched} /> : null}
+        {step === 3 ? (
           <View style={styles.review}>
             <ReviewRow label="Nama" value={`${draft.fullName.trim()} · @${draft.username}`} onEdit={() => goTo(0)} />
             <ReviewRow label="Kota" value={draft.city} onEdit={() => goTo(0)} />
             <ReviewRow label="Akun sosial" onEdit={() => goTo(1)}
               value={platforms.map((p) => `${platformLabel(p.platform)} @${p.handle}${p.platform === draft.mainPlatform ? ' (utama)' : ''}`).join('\n')} />
-            <ReviewRow label="Pengalaman" value={labelOf(EXPERIENCE, draft.experience ?? '')} onEdit={() => goTo(2)} />
-            <ReviewRow label="Pembayaran" onEdit={() => goTo(4)}
+            <ReviewRow label="Rekening" onEdit={() => goTo(2)}
               value={payout ? `${payout.provider} ${maskAccount(payout.account_number)} · ${payout.account_name}` : '—'} />
           </View>
         ) : null}

@@ -21,8 +21,7 @@ export function LevelProgress({ p }: { p: TierProgress }) {
         <LinearGradient colors={gradient.card} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.fill, { width: `${Math.max(ratio * 100, 3)}%` }]} />
       </View>
       <Text style={styles.note}>
-        {done ? 'Kamu di level tertinggi. Bonus terbesar ditambahkan setiap kamu menarik saldo.'
-          : `${views(p.toNext ?? 0)} qualified views lagi ke ${LABEL[p.next!]} — bonus jadi +${p.nextBonusPct}% saat menarik saldo.`}
+        {done ? 'Level tertinggi.' : `${views(p.toNext ?? 0)} views lagi ke ${LABEL[p.next!]} (+${p.nextBonusPct}%)`}
       </Text>
     </View>
   );

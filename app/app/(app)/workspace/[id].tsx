@@ -99,23 +99,22 @@ export default function Workspace() {
         </Pressable>
       ) : null}
       <ShareCardSheet card={card} onClose={closeCard} onShare={shareCard} title="Qualified views"
-        body={`Views yang sudah diverifikasi TAPP dari klipmu di ${c.title}. Simpan atau bagikan ke story-mu.`} />
+        body={`Views terverifikasi di ${c.title}. Simpan atau bagikan ke story.`} />
 
       {c.membership?.status === 'joined' ? (
         <Section title="Panggung minggu ini" action={{ label: 'Peringkat TAPP', onPress: () => router.push('/leaderboard') }}>
           {board.length ? (
             <>
               <Podium entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} />
-              <MyStanding entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} empty="Klip pertamamu yang diterima langsung masuk papan ini." />
+              <MyStanding entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} empty="Klip pertamamu yang diterima masuk papan ini." />
               <LeaderList entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} />
             </>
-          ) : <Text style={styles.muted}>Belum ada views yang masuk minggu ini. Klip pertama yang lolos langsung ada di puncak.</Text>}
+          ) : <Text style={styles.muted}>Belum ada views minggu ini.</Text>}
         </Section>
       ) : null}
 
       <Section title="Cara kerja">
-        {['Unduh konten sumber di bawah dan buat klip sesuai brief.', 'Posting di akun yang sudah kamu hubungkan.',
-          'Tekan Submit Klip lalu pilih videonya.', 'Setelah disetujui, qualified views dihitung dan penghasilan masuk.'].map((t, i) => (
+        {['Buat klip dari konten sumber.', 'Posting di akunmu.', 'Tekan Submit Klip.', 'Disetujui → saldo masuk.'].map((t, i) => (
           <View key={t} style={styles.step}><Text style={styles.stepNum}>{i + 1}</Text><Text style={styles.stepText}>{t}</Text></View>
         ))}
       </Section>
@@ -141,7 +140,7 @@ export default function Workspace() {
             onDispute={s.status === 'rejected' || s.status === 'flagged'
               ? () => router.push({ pathname: '/dispute', params: { submission: s.id, reason: s.review_reason ?? '' } }) : undefined} />
         )) : (
-          <EmptyState title="Belum ada submission" body={block ? 'Submission belum bisa dikirim saat ini.' : 'Posting klip pertamamu, lalu kirim link-nya di sini.'} />
+          <EmptyState title="Belum ada submission" body={block ? 'Submission belum bisa dikirim saat ini.' : 'Posting klip, lalu submit di sini.'} />
         )}
       </Section>
     </Screen>
