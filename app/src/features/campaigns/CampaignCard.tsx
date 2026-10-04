@@ -12,7 +12,7 @@ import { web } from '@/theme/web';
 const ICON: Record<string, string> = { tiktok: 'tiktok', instagram: 'instagram', youtube: 'youtube', x: 'x-twitter', facebook: 'facebook' };
 
 // Campaign card: banner with the rate and deadline on it, brand + title, platforms, budget left, who's in.
-export const CampaignCard = memo(function CampaignCard({ item, onPress, showReason = true }: { item: FeedItem; onPress: () => void; showReason?: boolean }) {
+export const CampaignCard = memo(function CampaignCard({ item, onPress }: { item: FeedItem; onPress: () => void }) {
   const deadline = deadlineLabel(item.submission_deadline ?? item.ends_at);
   const urgent = isUrgent(item.submission_deadline ?? item.ends_at);
   const initials = item.brand_name.split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('');
@@ -48,7 +48,6 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress, showReas
         </View>
         <View style={styles.track}><View style={[styles.fill, { width: `${Math.max(left * 100, 2)}%` }]} /></View>
         <JoinedRow count={item.creators_joined ?? 0} initials={item.joined_initials} />
-        {showReason && item.match_reasons[0] ? <Text style={styles.reason}>{item.match_reasons[0]}</Text> : null}
       </View>
     </Pressable>
   );
