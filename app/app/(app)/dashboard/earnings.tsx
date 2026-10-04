@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { showAlert } from '@/lib/alert';
 import { Button } from '@/components/Button';
-import { EmptyState } from '@/components/EmptyState';
 import { Header } from '@/components/Header';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
@@ -20,11 +19,10 @@ import { renderPayoutCard, shareRenderedCard, type RenderedCard } from '@/lib/sh
 import { ShareCardSheet } from '@/components/ShareCardSheet';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BalanceCard, cardFootText } from '@/components/BalanceCard';
-import { StatusBadge } from '@/components/StatusBadge';
 import { fetchAvatarUrl, fetchPayoutMethod } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
 import { fetchEarnings } from '@/features/campaigns/earnings';
-import { fetchPayouts, fetchWithdrawTerms, OPEN, PAYOUT_STATUS, requestPayout, TIER_LABEL, uuid, type Payout } from '@/features/payouts/api';
+import { fetchPayouts, fetchWithdrawTerms, OPEN, PAYOUT_STATUS, requestPayout, TIER_LABEL, uuid } from '@/features/payouts/api';
 
 // Wallet (0045/0046): accepted clips add to the balance; the creator withdraws it. Platform fee + transfer fee, level bonus on top.
 export default function Payments() {
@@ -144,33 +142,18 @@ export default function Payments() {
       {d && !d.method ? <View style={{ marginTop: space.md }}><Notice tone="info" message="Isi rekening atau e-wallet dulu supaya saldomu bisa ditarik." /></View> : null}
 
 
-      <Text style={styles.section}>Riwayat pencairan</Text>
-      {d && !d.payouts.length ? (
-        <EmptyState title="Belum ada pencairan" body="Pencairan saldo muncul di sini, lengkap dengan bonus, biaya, dan status transfernya."
-          action={{ label: 'Cari campaign', onPress: () => router.navigate('/dashboard/campaigns') }} />
-      ) : null}
-      {d?.payouts.map((p) => <PayoutRow key={p.id} p={p} />)}
+      <Pressable style={styles.method} onPress={() => router.push('/payouts')} accessibilityRole="button">
+        <Feather name="clock" size={18} color={color.link} />
+        <View style={{ flex: 1 }}>
+          <Text style={styles.methodValue}>Riwayat pencairan</Text>
+          {d ? <Text style={styles.methodLabel}>{d.payouts.length ? `${d.payouts.length} pencairan` : 'Belum ada'}</Text> : null}
+        </View>
+        <Feather name="chevron-right" size={18} color={color.textMuted} />
+      </Pressable>
     </Screen>
   );
 }
 
-function PayoutRow({ p }: { p: Payout }) {
-  const st = PAYOUT_STATUS[p.status];
-  const bonus = Number(p.bonus ?? 0), fee = Number(p.fee ?? 0);
-  return (
-    <View style={styles.row}>
-      <View style={styles.rowText}>
-        <Text style={styles.rowTitle}>{p.paid_at ? dateLabel(p.paid_at) : dateLabel(p.created_at)} · {p.payout_method.provider} ••{p.payout_method.account_number.slice(-4)}</Text>
-        <Text style={styles.rowMeta}>Saldo {idr(p.amount)}{bonus ? ` · bonus +${idr(bonus)}` : ''}{fee ? ` · fee ${idr(fee)}` : ''}{p.processed_reference ? ` · Ref. ${p.processed_reference}` : ''}</Text>
-        {p.status === 'rejected' && p.review_reason ? <Text style={[styles.rowMeta, { color: color.danger }]}>{p.review_reason}</Text> : null}
-      </View>
-      <View style={{ alignItems: 'flex-end', gap: 4 }}>
-        <Text style={styles.amount}>{idr(p.amount + bonus - fee)}</Text>
-        <StatusBadge label={st.label} tone={st.tone} />
-      </View>
-    </View>
-  );
-}
 
 const styles = StyleSheet.create({
   hero: { marginTop: -space.md },

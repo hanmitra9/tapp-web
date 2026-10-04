@@ -120,7 +120,7 @@ export default function Profile() {
       </Section>
       <View style={styles.menu}>
         {([
-          ['user', 'Ubah profil', '/profile/edit'], ['credit-card', 'Riwayat pencairan', '/dashboard/earnings'], ['award', 'Peringkat', '/leaderboard'],
+          ['user', 'Ubah profil', '/profile/edit'], ['credit-card', 'Riwayat pencairan', '/payouts'], ['award', 'Peringkat', '/leaderboard'],
           ['gift', 'Ajak teman', '/referral'], ['bell', 'Notifikasi', '/notifications'], ['help-circle', 'Bantuan', '/help'],
         ] as const).filter(([, , to]) => !(locked && to === '/profile/edit')).map(([icon, label, to], i) => (
           <Pressable key={to} onPress={() => router.push(to)} style={({ pressed }) => [styles.menuRow, i > 0 && styles.menuLine, pressed && { opacity: 0.6 }]} accessibilityRole="link">
