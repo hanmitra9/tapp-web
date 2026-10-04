@@ -37,7 +37,7 @@ async function draw(c: PayoutCard): Promise<HTMLCanvasElement> {
   const cv = document.createElement('canvas');
   cv.width = W; cv.height = H;
   const g = cv.getContext('2d')!;
-  try { await Promise.all([document.fonts.load('700 300px BigShoulders'), document.fonts.load('400 40px GeistMono')]); } catch { /* fallback faces */ }
+  try { await Promise.all([document.fonts.load('300px BebasNeue'), document.fonts.load('40px RobotoMono')]); } catch { /* fallback faces */ }
 
   const shape = () => { g.beginPath(); g.roundRect(1, 1, W - 2, H - 2, R); };
   g.save(); shape(); g.clip();
@@ -63,7 +63,7 @@ async function draw(c: PayoutCard): Promise<HTMLCanvasElement> {
     const fill = g.createLinearGradient(cx - cr, cy - cr, cx + cr, cy + cr);
     fill.addColorStop(0, '#2F86E8'); fill.addColorStop(1, '#08254A');
     g.fillStyle = fill; g.fillRect(cx - cr, cy - cr, cr * 2, cr * 2);
-    g.fillStyle = '#FFFFFF'; g.font = `700 ${Math.round(cr * 1.05)}px BigShoulders, sans-serif`;
+    g.fillStyle = '#FFFFFF'; g.font = `${Math.round(cr * 1.15)}px BebasNeue, sans-serif`;
     g.textAlign = 'center'; g.textBaseline = 'middle';
     g.fillText((c.name.trim()[0] ?? 'T').toUpperCase(), cx - cr * 0.12, cy + cr * 0.12);
     g.textAlign = 'left';
@@ -75,19 +75,19 @@ async function draw(c: PayoutCard): Promise<HTMLCanvasElement> {
 
   // Label + number.
   g.fillStyle = '#FFFFFF'; g.textBaseline = 'alphabetic';
-  g.font = '400 46px GeistMono, monospace';
+  g.font = '44px RobotoMono, monospace';
   g.fillText('TOTAL PAYOUT', 96, H * 0.5);
   const num = compactIdr(c.total);
-  let size = 330;
-  const fit = () => { g.font = `700 ${size}px BigShoulders, sans-serif`; const a = g.measureText(num).width; g.font = `700 ${size * 0.42}px BigShoulders, sans-serif`; return a + g.measureText('RP').width + 16; };
+  let size = 360;
+  const fit = () => { g.font = `${size}px BebasNeue, sans-serif`; const a = g.measureText(num).width; g.font = `${size * 0.42}px BebasNeue, sans-serif`; return a + g.measureText('RP').width + 16; };
   while (fit() > W - 180 && size > 120) size -= 10;
   const base = H * 0.5 + 40 + size * 0.86;
-  g.font = `700 ${size * 0.42}px BigShoulders, sans-serif`; g.fillText('RP', 92, base);
+  g.font = `${size * 0.42}px BebasNeue, sans-serif`; g.fillText('RP', 92, base);
   const rpW = g.measureText('RP').width + 14;
-  g.font = `700 ${size}px BigShoulders, sans-serif`; g.fillText(num, 92 + rpW, base);
+  g.font = `${size}px BebasNeue, sans-serif`; g.fillText(num, 92 + rpW, base);
 
   // Footer.
-  g.font = '400 46px GeistMono, monospace';
+  g.font = '44px RobotoMono, monospace';
   g.fillText(`${c.payouts}X PENCAIRAN`, 96, H - 190);
   g.fillStyle = 'rgba(255,255,255,0.92)';
   g.fillText(c.from && month(c.from) !== month(c.to) ? `${month(c.from)} — ${month(c.to)}` : month(c.to), 96, H - 118);
