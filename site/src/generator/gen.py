@@ -271,7 +271,8 @@ a{{color:inherit;text-decoration:none}}
 .lp .bsl-bars i.on{{background:linear-gradient(180deg,#A4CCF8 0%,#54A0F1 45%,#0C65C4 100%);box-shadow:0 0 14px -3px rgba(12,101,196,0.9)}}
 .lp .bsl-mark{{position:absolute;top:0;bottom:0;left:var(--p);width:2px;margin-left:-1px;background:linear-gradient(180deg,#FFFFFF 0%,rgba(194,221,250,0.7) 30%,rgba(117,178,244,0) 100%);box-shadow:0 0 14px rgba(117,178,244,0.9);pointer-events:none}}
 .lp .bsl-mark b{{position:absolute;top:-2px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#FFFFFF;border:4px solid #0C65C4;box-shadow:0 0 0 5px rgba(12,101,196,0.22),0 0 18px rgba(117,178,244,0.9)}}
-.lp .bslider{{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y}}
+.lp .bsl{{touch-action:pan-y;cursor:ew-resize;user-select:none;-webkit-user-select:none}}
+.lp .bslider{{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;pointer-events:none}}
 .lp .bsl:has(.bslider:focus-visible){{box-shadow:0 0 0 2px rgba(117,178,244,0.45)}}
 {FOOT_CSS}
 {MENU_CSS}

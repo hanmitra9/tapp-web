@@ -117,7 +117,8 @@ a{color:inherit;text-decoration:none}
 .lp .bsl-bars i.on{background:linear-gradient(180deg,#A4CCF8 0%,#54A0F1 45%,#0C65C4 100%);box-shadow:0 0 14px -3px rgba(12,101,196,0.9)}
 .lp .bsl-mark{position:absolute;top:0;bottom:0;left:var(--p);width:2px;margin-left:-1px;background:linear-gradient(180deg,#FFFFFF 0%,rgba(194,221,250,0.7) 30%,rgba(117,178,244,0) 100%);box-shadow:0 0 14px rgba(117,178,244,0.9);pointer-events:none}
 .lp .bsl-mark b{position:absolute;top:-2px;left:50%;width:16px;height:16px;margin-left:-8px;border-radius:50%;background:#FFFFFF;border:4px solid #0C65C4;box-shadow:0 0 0 5px rgba(12,101,196,0.22),0 0 18px rgba(117,178,244,0.9)}
-.lp .bslider{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y}
+.lp .bsl{touch-action:pan-y;cursor:ew-resize;user-select:none;-webkit-user-select:none}
+.lp .bslider{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;pointer-events:none}
 .lp .bsl:has(.bslider:focus-visible){box-shadow:0 0 0 2px rgba(117,178,244,0.45)}
 
 .tf{position:relative;overflow:hidden;margin-top:24px;padding:64px 64px 32px;background:#030304;border-top:1px solid rgba(255,255,255,0.05)}
@@ -1096,6 +1097,26 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = { mode: null, openC: 0, openB: 0, met: 'Views', budget: 25000000, bstep: 0 };
+    // Budget bar: drive the hidden range input from pointer position anywhere on the bar. Native range inputs on
+    // iOS only drag from their thumb, which sits a few px off the drawn marker, so a second drag often missed it.
+    if (!window.__tappBsl) {
+      window.__tappBsl = true;
+      const set = (el, x) => {
+        const inp = el.querySelector('.bslider'), r = el.getBoundingClientRect();
+        const v = Math.round(5 + Math.min(1, Math.max(0, (x - r.left) / r.width)) * 195);
+        if (inp && String(v) !== inp.value) { inp.value = String(v); inp.dispatchEvent(new Event('input', { bubbles: true })); }
+      };
+      document.addEventListener('pointerdown', (e) => {
+        const el = e.target && e.target.closest ? e.target.closest('.bsl') : null;
+        if (!el) return;
+        e.preventDefault();
+        try { el.setPointerCapture(e.pointerId); } catch (err) { /* older browsers */ }
+        set(el, e.clientX);
+        const move = (ev) => set(el, ev.clientX);
+        const up = () => { el.removeEventListener('pointermove', move); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); };
+        el.addEventListener('pointermove', move); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+      });
+    }
   }
   renderVals() {
     const s = this.state;
