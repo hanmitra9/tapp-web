@@ -57,7 +57,7 @@ export default function Workspace() {
   return (
     <Screen
       refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}
-      footer={block ? <Text style={styles.block}>{block}</Text> : <Button label="Submit konten" onPress={() => submit()} />}
+      footer={block ? <Text style={styles.block}>{block}</Text> : <Button label="Submit Klip" onPress={() => router.push({ pathname: '/take/[id]', params: { id: c.id } })} />}
     >
       <Header title="" />
       <Text style={styles.brand}>{c.brand.name} · Workspace</Text>
@@ -73,7 +73,7 @@ export default function Workspace() {
 
       <Section title="Cara kerja">
         {['Unduh konten sumber di bawah dan buat klip sesuai brief.', 'Posting di akun yang sudah kamu hubungkan.',
-          'Salin link postingan lalu tekan Submit konten.', 'Setelah disetujui, qualified views dihitung dan penghasilan masuk.'].map((t, i) => (
+          'Tekan Submit Klip lalu pilih videonya.', 'Setelah disetujui, qualified views dihitung dan penghasilan masuk.'].map((t, i) => (
           <View key={t} style={styles.step}><Text style={styles.stepNum}>{i + 1}</Text><Text style={styles.stepText}>{t}</Text></View>
         ))}
       </Section>

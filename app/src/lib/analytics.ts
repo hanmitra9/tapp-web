@@ -6,7 +6,7 @@ import posthog from 'posthog-js';
 // No-op without EXPO_PUBLIC_POSTHOG_KEY.
 export type EventName =
   | 'app_opened' | 'signup_started' | 'signup_submitted' | 'signup_completed' | 'onboarding_step' | 'onboarding_completed'
-  | 'campaign_viewed' | 'campaign_joined' | 'campaign_left' | 'marketplace_filtered'
+  | 'campaign_viewed' | 'take_campaign_started' | 'campaign_joined' | 'campaign_left' | 'marketplace_filtered'
   | 'submission_started' | 'submission_submitted' | 'performance_viewed' | 'earnings_viewed'
   | 'payout_started' | 'payout_requested' | 'notification_opened' | 'dispute_submitted' | 'support_ticket_created';
 
