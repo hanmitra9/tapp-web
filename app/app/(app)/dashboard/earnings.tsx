@@ -1,11 +1,14 @@
 import { router } from 'expo-router';
-import { useEffect } from 'react';
-import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { showAlert } from '@/lib/alert';
+import { Button } from '@/components/Button';
 import { EmptyState } from '@/components/EmptyState';
 import { Header } from '@/components/Header';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { dateLabel, idr } from '@/lib/format';
+import { errorMessage } from '@/lib/errors';
 import { track } from '@/lib/analytics';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
@@ -14,18 +17,42 @@ import { BalanceCard, cardFootText } from '@/components/BalanceCard';
 import { StatusBadge } from '@/components/StatusBadge';
 import { fetchPayoutMethod } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
-import { fetchPayments, paidTotal, type Payment } from '@/features/payouts/api';
-import { fetchMySubmissions, type MySubmission } from '@/features/submissions/api';
+import { fetchEarnings } from '@/features/campaigns/earnings';
+import { fetchPayouts, fetchWithdrawTerms, OPEN, PAYOUT_STATUS, requestPayout, TIER_LABEL, uuid, type Payout } from '@/features/payouts/api';
 
-// Simple flow: submit a clip → TAPP accepts it → TAPP transfers the pay. No balance to withdraw.
+// Wallet (0045): accepted clips add to the balance; the creator withdraws it. Flat fee per withdrawal, level bonus on top.
 export default function Payments() {
   useEffect(() => { track('earnings_viewed'); }, []);
   const { session } = useAuth();
+  const uid = session!.user.id;
   const q = useQuery(async () => {
-    const [payments, subs, method] = await Promise.all([fetchPayments(), fetchMySubmissions(undefined, 200), fetchPayoutMethod(session!.user.id)]);
-    return { payments, method, waiting: subs.filter((s) => s.status === 'approved' || s.status === 'tracking') };
-  }, [session?.user.id]);
+    const [earn, payouts, method, terms] = await Promise.all([fetchEarnings(uid), fetchPayouts(), fetchPayoutMethod(uid), fetchWithdrawTerms(uid)]);
+    return { ...earn, payouts, method, terms };
+  }, [uid]);
   const d = q.data;
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [key] = useState(uuid);   // one key per screen visit: a double tap never creates two withdrawals
+
+  const available = Math.max(d?.summary.available ?? 0, 0);
+  const open = d?.payouts.find((p) => OPEN.includes(p.status)) ?? null;
+  const bonus = d ? Math.round(available * d.terms.bonusPct / 100) : 0;
+  const net = d ? available + bonus - d.terms.fee : 0;
+  const canWithdraw = !!d && !!d.method && !open && available >= d.terms.min;
+
+  function confirm() {
+    if (!d) return;
+    showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus ? ` + bonus level ${idr(bonus)}` : ''} − biaya tarik ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method?.provider ?? ''}.`, [
+      { text: 'Batal', style: 'cancel' },
+      { text: 'Tarik', onPress: withdraw },
+    ]);
+  }
+  async function withdraw() {
+    setBusy(true); setError(null);
+    try { await requestPayout(key); track('payout_requested', { amount: available }); await q.reload(); }
+    catch (e) { setError(errorMessage(e)); }
+    finally { setBusy(false); }
+  }
 
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
@@ -33,75 +60,78 @@ export default function Payments() {
       {q.error && !d ? <Notice tone="error" message={q.error} /> : null}
 
       <View style={styles.hero}>
-        <BalanceCard label="Total dibayar ke kamu" amount={d ? idr(paidTotal(d.payments)) : null}
-          footLeft={d ? <Text style={cardFootText}>{d.payments.length} klip dibayar</Text> : null}
+        <BalanceCard label="Saldo bisa ditarik" amount={d ? idr(available) : null}
+          footLeft={d ? <Text style={cardFootText}>{d.summary.pending > 0 ? `${idr(d.summary.pending)} sedang diproses` : `Level ${TIER_LABEL[d.terms.tier] ?? d.terms.tier}`}</Text> : null}
           footRight={<Text style={cardFootText}>TAPP Creators</Text>} />
       </View>
 
       {d ? (
+        <View style={styles.withdraw}>
+          {open ? (
+            <Notice tone="info" message={`Pencairan ${idr(open.amount + Number(open.bonus ?? 0) - (open.fee ?? 0))} sedang ${PAYOUT_STATUS[open.status].label.toLowerCase()}. Biasanya selesai dalam 1x24 jam kerja.`} />
+          ) : (
+            <>
+              <Button label={available >= d.terms.min ? `Tarik ${idr(Math.max(net, 0))}` : 'Tarik saldo'} onPress={confirm} loading={busy} disabled={!canWithdraw} />
+              <Text style={styles.terms}>
+                {available < d.terms.min ? `Minimal tarik ${idr(d.terms.min)}. ` : ''}Biaya tarik {idr(d.terms.fee)} per pencairan.
+                {d.terms.bonusPct ? ` Bonus level ${TIER_LABEL[d.terms.tier]} +${d.terms.bonusPct}% ditambahkan saat kamu menarik.` : ' Naik ke level Rising untuk mulai dapat bonus saat menarik.'}
+              </Text>
+            </>
+          )}
+          <Notice tone="error" message={error} />
+        </View>
+      ) : null}
+
+      {d ? (
         <Pressable style={styles.method} onPress={() => router.push('/profile/payout')} accessibilityRole="button">
           <View style={{ flex: 1 }}>
-            <Text style={styles.methodLabel}>Dibayar ke</Text>
+            <Text style={styles.methodLabel}>Ditransfer ke</Text>
             <Text style={styles.methodValue}>{d.method ? `${d.method.provider} ${maskAccount(d.method.account_number)} · ${d.method.account_name}` : 'Belum diisi'}</Text>
           </View>
           <Text style={styles.link}>{d.method ? 'Ubah' : 'Isi sekarang'}</Text>
         </Pressable>
       ) : null}
-      {d && !d.method ? <View style={{ marginTop: space.md }}><Notice tone="info" message="Isi rekening atau e-wallet dulu supaya tim TAPP bisa mentransfer bayaranmu." /></View> : null}
+      {d && !d.method ? <View style={{ marginTop: space.md }}><Notice tone="info" message="Isi rekening atau e-wallet dulu supaya saldomu bisa ditarik." /></View> : null}
 
       <View style={styles.explain}>
         <Text style={styles.explainTitle}>Cara kamu dibayar</Text>
         <Text style={styles.explainBody}>
-          1. Submit klip dari campaign yang kamu ikuti.{'\n'}2. Tim TAPP mengecek dan menerima klipmu.{'\n'}3. Tim TAPP mentransfer bayarannya langsung ke rekening atau e-wallet di atas. Besarnya dari views klip × tarif campaign per 1.000 views, ditambah bonus tarif sesuai level-mu.
+          1. Submit klip dari campaign yang kamu ikuti.{'\n'}2. Setelah tim TAPP menerima klipmu, bayarannya masuk ke saldo: views klip × tarif per 1.000 views.{'\n'}3. Tarik saldo kapan saja setelah mencapai minimum. Bonus level ditambahkan saat kamu menarik.
         </Text>
       </View>
 
-      {d && d.waiting.length ? (
-        <>
-          <Text style={styles.section}>Menunggu dibayar</Text>
-          {d.waiting.map((s) => <WaitingRow key={s.id} s={s} />)}
-        </>
-      ) : null}
-
-      <Text style={styles.section}>Riwayat pembayaran</Text>
-      {d && !d.payments.length ? (
-        <EmptyState title="Belum ada pembayaran" body="Bayaran muncul di sini setelah klipmu diterima dan ditransfer oleh tim TAPP."
+      <Text style={styles.section}>Riwayat pencairan</Text>
+      {d && !d.payouts.length ? (
+        <EmptyState title="Belum ada pencairan" body="Pencairan saldo muncul di sini, lengkap dengan bonus, biaya, dan status transfernya."
           action={{ label: 'Cari campaign', onPress: () => router.navigate('/dashboard/campaigns') }} />
       ) : null}
-      {d?.payments.map((p) => <PaymentRow key={p.id} p={p} />)}
+      {d?.payouts.map((p) => <PayoutRow key={p.id} p={p} />)}
     </Screen>
   );
 }
 
-function WaitingRow({ s }: { s: MySubmission }) {
-  return (
-    <Pressable style={styles.row} onPress={() => Linking.openURL(s.post_url)} accessibilityRole="link">
-      <View style={styles.rowText}>
-        <Text style={styles.rowTitle} numberOfLines={1}>{s.campaign_title}</Text>
-        <Text style={styles.rowMeta}>Diterima {s.reviewed_at ? dateLabel(s.reviewed_at) : ''} · {s.platform}</Text>
-      </View>
-      <StatusBadge label="Menunggu transfer" tone="blue" />
-    </Pressable>
-  );
-}
-
-function PaymentRow({ p }: { p: Payment }) {
+function PayoutRow({ p }: { p: Payout }) {
+  const st = PAYOUT_STATUS[p.status];
+  const bonus = Number(p.bonus ?? 0), fee = Number(p.fee ?? 0);
   return (
     <View style={styles.row}>
       <View style={styles.rowText}>
-        <Text style={styles.rowTitle} numberOfLines={1}>{p.campaign_title ?? 'Pembayaran'}</Text>
-        <Text style={styles.rowMeta}>
-          {p.paid_at ? dateLabel(p.paid_at) : ''}{p.provider ? ` · ${p.provider} ••${p.account_last4 ?? ''}` : ''}{p.processed_reference ? ` · Ref. ${p.processed_reference}` : ''}
-        </Text>
-        {p.bonus > 0 || p.fee > 0 ? <Text style={styles.rowMeta}>Bayaran {idr(p.amount)}{p.bonus > 0 ? ` · bonus level +${idr(p.bonus)}` : ''}{p.fee > 0 ? ` · fee ${idr(p.fee)}` : ''}</Text> : null}
+        <Text style={styles.rowTitle}>{p.paid_at ? dateLabel(p.paid_at) : dateLabel(p.created_at)} · {p.payout_method.provider} ••{p.payout_method.account_number.slice(-4)}</Text>
+        <Text style={styles.rowMeta}>Saldo {idr(p.amount)}{bonus ? ` · bonus +${idr(bonus)}` : ''}{fee ? ` · biaya ${idr(fee)}` : ''}{p.processed_reference ? ` · Ref. ${p.processed_reference}` : ''}</Text>
+        {p.status === 'rejected' && p.review_reason ? <Text style={[styles.rowMeta, { color: color.danger }]}>{p.review_reason}</Text> : null}
       </View>
-      <Text style={styles.amount}>{idr(p.net_amount)}</Text>
+      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+        <Text style={styles.amount}>{idr(p.amount + bonus - fee)}</Text>
+        <StatusBadge label={st.label} tone={st.tone} />
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   hero: { marginTop: -space.md },
+  withdraw: { marginTop: space.lg, gap: space.sm },
+  terms: { ...type.caption, color: color.textMuted, textAlign: 'center', lineHeight: 19 },
   method: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.lg, borderRadius: radius.md, ...card },
   methodLabel: { ...type.caption, color: color.textMuted },
   methodValue: { ...type.label, color: color.text },

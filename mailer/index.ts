@@ -120,7 +120,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
         eyebrow: "Selamat datang",
         title: name ? `Selamat datang di TAPP, ${esc(name)}` : "Selamat datang di TAPP",
         intro: "Akunmu sudah aktif. Di TAPP kamu mengerjakan campaign dari brand, posting di akunmu sendiri, dan dibayar dari views yang lolos verifikasi. Empat langkah untuk mulai:",
-        rows: [["1. Hubungkan akun", "TikTok, Instagram, YouTube"], ["2. Verifikasi kode bio", "Tempel kode TAPP di bio"], ["3. Join campaign", "Mulai dari TAPP Mega Campaign"], ["4. Submit & dibayar", "Transfer langsung ke rekeningmu"]],
+        rows: [["1. Hubungkan akun", "TikTok, Instagram, YouTube"], ["2. Verifikasi kode bio", "Tempel kode TAPP di bio"], ["3. Join campaign", "Mulai dari TAPP Mega Campaign"], ["4. Submit & tarik saldo", "Bayaran masuk saldo, tarik ke rekeningmu"]],
         button: APP() ? { label: "Buka TAPP", url: APP() } : undefined,
         outro: "Pertanyaan? Balas email ini, tim TAPP siap bantu.",
       },
@@ -157,8 +157,8 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
     const camps = (Array.isArray(d.campaigns) ? d.campaigns : []) as Record<string, any>[];
     const rows: [string, string][] = [
       ["Qualified views baru", `+${nf(d.qualified_gain)}`],
-      ["Reward creator", idr(Number(d.spend))],
-      [`Fee platform (${nf(d.fee_pct)}%)`, idr(Number(d.fee))],
+      ["Biaya views", idr(Number(d.spend))],
+      [`Fee kerjasama (${nf(d.fee_pct)}%)`, idr(Number(d.fee))],
       ...camps.slice(0, 5).map((c): [string, string] => [String(c.title ?? "Campaign"),
         `${nf(c.qualified)} qualified · ${nf(c.raw)} mentah${Number(c.pending) > 0 ? ` · ${nf(c.pending)} menunggu verifikasi` : ""} · sisa ${idr(Number(c.remaining))}`]),
     ];

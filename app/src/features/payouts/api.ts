@@ -5,6 +5,7 @@ export type Payout = {
   id: string; amount: number; status: PayoutStatus; payout_method: { kind: string; provider: string; account_name: string; account_number: string };
   review_reason: string | null; processed_reference: string | null; paid_at: string | null; created_at: string; updated_at: string;
   fee?: number; fee_pct?: number; net_amount?: number;   // migration 034
+  bonus?: number;   // level bonus added at withdrawal (0045)
 };
 export const OPEN: PayoutStatus[] = ['requested', 'reviewing', 'approved', 'processing'];
 
@@ -31,7 +32,7 @@ export async function fetchPayouts(): Promise<Payout[]> {
     .select('*')
     .order('created_at', { ascending: false }).limit(50);
   if (error) throw error;
-  return (data as Payout[]).map((p) => ({ ...p, amount: Number(p.amount), fee: Number(p.fee ?? 0), net_amount: Number(p.net_amount ?? p.amount) }));
+  return (data as Payout[]).map((p) => ({ ...p, amount: Number(p.amount), fee: Number(p.fee ?? 0), bonus: Number(p.bonus ?? 0), net_amount: Number(p.net_amount ?? p.amount) }));
 }
 
 // Withdrawal fee for the creator's current level (app_settings.withdrawal_fee_pct, migration 034): higher level, lower fee.
@@ -44,6 +45,19 @@ export async function fetchWithdrawalFee(uid: string): Promise<{ tier: string; p
   const tier = (c.data?.tier as string | undefined) ?? 'new';
   const table = (s.data?.value ?? {}) as Record<string, number>;
   return { tier, pct: Number(table[tier] ?? 0) };
+}
+
+// Withdrawal terms (0045): flat fee per withdrawal, level bonus on top, minimum balance.
+export type WithdrawTerms = { tier: string; bonusPct: number; fee: number; min: number };
+export async function fetchWithdrawTerms(uid: string): Promise<WithdrawTerms> {
+  const [c, s] = await Promise.all([
+    supabase.from('creator_profiles').select('tier').eq('user_id', uid).single(),
+    supabase.from('app_settings').select('key, value').in('key', ['tier_bonus_pct', 'withdrawal_fee_idr', 'min_payout_idr']),
+  ]);
+  const tier = (c.data?.tier as string | undefined) ?? 'new';
+  const v = (k: string) => s.data?.find((x) => x.key === k)?.value;
+  const bonus = (v('tier_bonus_pct') ?? {}) as Record<string, number>;
+  return { tier, bonusPct: Number(bonus[tier] ?? 0), fee: Number(v('withdrawal_fee_idr') ?? 10000), min: Number(v('min_payout_idr') ?? 100000) };
 }
 
 export async function requestPayout(idempotencyKey: string): Promise<Payout> {

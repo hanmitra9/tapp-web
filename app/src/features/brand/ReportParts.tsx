@@ -65,13 +65,13 @@ export function CostCard({ spent, fee, feePct, total, effectiveCpm, cpm }: { spe
         <Text style={styles.cap}>Total biaya</Text>
         <Text style={styles.big}>{idr(total)}</Text>
       </View>
-      <Row label="Reward creator (qualified views × CPM)" value={idr(spent)} />
-      <Row label={`Fee platform (${num(feePct)}% dari reward)`} value={idr(fee)} />
+      <Row label="Biaya views (qualified views × CPM)" value={idr(spent)} />
+      <Row label={`Fee kerjasama (${num(feePct)}% dari biaya views)`} value={idr(fee)} />
       <View style={styles.cpmRow}>
         <View style={styles.cpmBox}>
           <Text style={styles.cap}>Effective CPM</Text>
           <Text style={[styles.cpmValue, { color: color.success }]}>{effectiveCpm == null ? '—' : idr(effectiveCpm)}</Text>
-          <Text style={styles.cap}>reward per 1.000 views mentah</Text>
+          <Text style={styles.cap}>biaya per 1.000 views mentah</Text>
         </View>
         {cpm ? (
           <View style={styles.cpmBox}>

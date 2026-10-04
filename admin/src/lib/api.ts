@@ -144,8 +144,9 @@ export async function readPublicViews(submissionId: string): Promise<PublicViews
   if (error || !data) return { error: 'unreadable' };
   return data;
 }
-export const paySubmission = (id: string, views: number, reference: string, note: string | null) =>
-  rpc('admin_pay_submission', { p_submission_id: id, p_views: views, p_reference: reference, p_note: note });
+// Accepted views go to the creator's balance (0045); the creator withdraws it from the app.
+export const creditSubmission = (id: string, views: number, note: string | null) =>
+  rpc('admin_credit_submission', { p_submission_id: id, p_views: views, p_note: note });
 export const reviewSubmission = (id: string, decision: SubStatus, reason: string | null) =>
   rpc('admin_review_submission', { p_submission_id: id, p_decision: decision, p_reason: reason });
 export const recordMetrics = (id: string, m: { views: number; likes: number; comments: number; shares: number; saves: number; capturedAt: string; state: string }) =>
@@ -190,6 +191,7 @@ export type AdminPayout = {
   earning_rows: number; creator_flagged: number; creator_open_disputes: number; creator_paid_total: number; ledger_matches: boolean;
   method_changed_recently: boolean;
   fee: number; fee_pct: number; fee_tier: string | null; net_amount: number;   // migration 034
+  bonus: number; bonus_pct: number;   // 0037 level bonus, added at withdrawal since 0045
 };
 export async function listPayouts(statuses: PayoutStatus[]): Promise<AdminPayout[]> {
   const { data, error } = await supabase.from('admin_payouts').select('*').in('status', statuses)
@@ -246,8 +248,10 @@ export type AdminCampaign = {
   min_views_to_qualify: number; max_earning_per_submission: number | null; starts_at: string | null; ends_at: string | null;
   submission_deadline: string | null; created_at: string; approved_at: string | null; platforms: string[];
   creators_joined: number; submissions: number; approved: number; pending_review: number; qualified_views: number; assets: number;
+  // Brand terms (0045): what the brand pays; cpm/budget above are the creator rate and creator-side budget.
+  brand_cpm: number; brand_budget: number; creator_share_pct: number; brand_spent: number;
 };
-const CNUM = ['cpm', 'budget', 'earned', 'paid', 'remaining', 'min_views_to_qualify', 'max_earning_per_submission', 'creators_joined', 'submissions', 'approved', 'pending_review', 'qualified_views', 'assets'];
+const CNUM = ['brand_cpm', 'brand_budget', 'creator_share_pct', 'brand_spent', 'cpm', 'budget', 'earned', 'paid', 'remaining', 'min_views_to_qualify', 'max_earning_per_submission', 'creators_joined', 'submissions', 'approved', 'pending_review', 'qualified_views', 'assets'];
 export async function listCampaigns(statuses: CampaignStatus[]): Promise<AdminCampaign[]> {
   const { data, error } = await supabase.from('admin_campaigns').select('*').in('status', statuses).order('created_at', { ascending: false }).limit(200);
   if (error) throw error;
@@ -259,6 +263,7 @@ export type CampaignFull = {
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null; guidelines_do: string[]; guidelines_dont: string[]; terms: string | null;
   platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[]; banner_url: string | null; hashtag: string | null;
   assets: { id: string; kind: string; title: string; url: string | null; storage_path: string | null; sort: number }[];
+  pricing: { brand_cpm: number; brand_budget: number; creator_share_pct: number } | null;
 };
 export async function getCampaignFull(id: string): Promise<CampaignFull> {
   const { data, error } = await supabase.from('campaigns')
@@ -266,7 +271,9 @@ export async function getCampaignFull(id: string): Promise<CampaignFull> {
     .eq('id', id).single();
   if (error) throw error;
   const c = data as unknown as CampaignFull;
-  return { ...c, cpm: Number(c.cpm), budget: Number(c.budget), rules: [...c.rules].sort((a, b) => a.sort - b.sort), assets: [...c.assets].sort((a, b) => a.sort - b.sort) };
+  const { data: pr } = await supabase.from('campaign_pricing').select('brand_cpm, brand_budget, creator_share_pct').eq('campaign_id', id).maybeSingle();
+  const pricing = pr ? { brand_cpm: Number(pr.brand_cpm), brand_budget: Number(pr.brand_budget), creator_share_pct: Number(pr.creator_share_pct) } : null;
+  return { ...c, pricing, cpm: Number(c.cpm), budget: Number(c.budget), rules: [...c.rules].sort((a, b) => a.sort - b.sort), assets: [...c.assets].sort((a, b) => a.sort - b.sort) };
 }
 // ── Campaign hashtag reach (0043) ──
 export type HashtagStat = { hashtag: string; platform: string; video_count: number; view_count: number; captured_at: string };

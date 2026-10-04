@@ -79,9 +79,9 @@ def _budget():
     return f'''<div style="width: 100%; max-width: 420px; padding: 22px; border-radius: 20px; {CARD}; display: flex; flex-direction: column; gap: 14px; text-align: center">
   <span style="font-size: 13px; font-weight: 500; color: #9A9AA5">Budget campaign</span>
   <b class="tabular" style="font-size: 38px; letter-spacing: -1px"><span style="color: #6E6E78">Rp</span>24.500.000</b>
-  <span style="font-size: 12px; color: #8A8A93; margin-top: -8px">budget reward creator</span>
+  <span style="font-size: 12px; color: #8A8A93; margin-top: -8px">budget views terverifikasi</span>
   <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; height: 30px">{ticks}<i style="position: absolute; left: 44%; bottom: -6px; width: 14px; height: 14px; border-radius: 7px; background: #75B2F4; box-shadow: 0 0 14px #75B2F4"></i></div>
-  <div style="text-align: left; margin-top: 6px">{row('Fee platform (15%, maks.)', 'Rp3.675.000')}{row('Total maksimal', 'Rp28.175.000')}{row('Status', '<span style="color: #34D07A">Terkunci saat disetujui</span>')}</div>
+  <div style="text-align: left; margin-top: 6px">{row('Fee kerjasama (18%, maks.)', 'Rp4.410.000')}{row('Total maksimal', 'Rp28.910.000')}{row('Status', '<span style="color: #34D07A">Terkunci saat disetujui</span>')}</div>
 </div>'''
 
 def _posting():
@@ -100,7 +100,7 @@ def _posting():
 
 STEPS = [
     ('Meeting', 'Strategi Dulu, Angka Kemudian', 'Kita petakan tujuan, audiens, platform, dan tarif per 1.000 views. Tim TAPP juga memverifikasi brand-mu agar creator tahu campaign ini kredibel.', _meeting()),
-    ('Brief &amp; Budget', 'Brief yang Tajam, Budget yang Terkunci', 'Aturan konten, materi sumber, dan budget reward disepakati bersama account manager. Budget dikunci saat campaign disetujui; reward tidak akan pernah melewatinya. Fee platform 15% dihitung dari reward yang benar-benar terpakai.', _budget()),
+    ('Brief &amp; Budget', 'Brief yang Tajam, Budget yang Terkunci', 'Aturan konten, materi sumber, dan budget views disepakati bersama account manager. Budget dikunci saat campaign disetujui; reward tidak akan pernah melewatinya. Fee platform 15% dihitung dari reward yang benar-benar terpakai.', _budget()),
     ('Creator Posting', 'Creator yang Tepat Mulai Bergerak', 'Creator dipilih dari platform dan rekam jejak. Mereka mengolah materimu menjadi clip, lalu memublikasikannya dari akun masing-masing.', _posting()),
     ('Report', 'Baca Hasilnya, Bayar yang Terbukti', 'Bandingkan views mentah dengan qualified views, biaya per view, dan performa tiap creator di dashboard brand. Sisa budget kembali saat campaign selesai.', None),
 ]

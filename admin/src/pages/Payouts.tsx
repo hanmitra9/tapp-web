@@ -16,9 +16,9 @@ const LABEL: Record<PayoutStatus, { t: string; tone: string }> = {
 };
 // Next actions per status — mirrors admin_update_payout's state machine.
 const NEXT: Record<PayoutStatus, { to: PayoutStatus; label: string; cls: string }[]> = {
-  requested: [{ to: 'reviewing', label: 'Mulai tinjau', cls: '' }, { to: 'rejected', label: 'Tolak', cls: 'danger' }],
-  reviewing: [{ to: 'approved', label: 'Setujui', cls: '' }, { to: 'rejected', label: 'Tolak', cls: 'danger' }],
-  approved: [{ to: 'processing', label: 'Tandai sedang ditransfer', cls: '' }, { to: 'rejected', label: 'Tolak', cls: 'danger' }],
+  requested: [{ to: 'paid', label: 'Tandai sudah ditransfer', cls: '' }, { to: 'rejected', label: 'Tolak', cls: 'danger' }],
+  reviewing: [{ to: 'paid', label: 'Tandai sudah ditransfer', cls: '' }, { to: 'rejected', label: 'Tolak', cls: 'danger' }],
+  approved: [{ to: 'paid', label: 'Tandai sudah ditransfer', cls: '' }, { to: 'rejected', label: 'Tolak', cls: 'danger' }],
   processing: [{ to: 'paid', label: 'Tandai sudah dibayar', cls: '' }, { to: 'rejected', label: 'Transfer gagal / tolak', cls: 'danger' }],
   paid: [], rejected: [],
 };
@@ -87,7 +87,7 @@ function Detail({ p, onChanged }: { p: AdminPayout; onChanged: () => Promise<voi
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
         <div><h2>Transfer {idr(p.net_amount)}</h2><p className="sub">{p.creator_name} · @{p.creator_username} · status kreator {p.creator_status}</p>
-          <p className="sub" style={{ margin: 0 }}>Saldo ditarik {idr(p.amount)} · fee penarikan {idr(p.fee)} {p.fee_tier ? `(level ${p.fee_tier})` : ''}</p></div>
+          <p className="sub" style={{ margin: 0 }}>Saldo ditarik {idr(p.amount)}{Number(p.bonus) ? ` + bonus level ${p.fee_tier ?? ''} ${idr(Number(p.bonus))}` : ''} − biaya tarik {idr(p.fee)}</p></div>
         <span className={`badge ${LABEL[p.status].tone}`}>{LABEL[p.status].t}</span>
       </div>
 

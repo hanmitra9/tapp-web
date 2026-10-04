@@ -59,7 +59,7 @@ export function Campaigns() {
           {list.data?.map((c) => (
             <button key={c.id} className={`list-item ${selected === c.id ? 'on' : ''}`} onClick={() => setSelected(c.id)}>
               <div className="row"><span className="title">{c.title}</span><span className={`badge ${CSTATUS[c.status].tone}`}>{CSTATUS[c.status].t}</span></div>
-              <div className="meta">{c.brand_name} · {idr(c.cpm)}/1K · sisa {idr(c.remaining)}</div>
+              <div className="meta">{c.brand_name} · brand {idr(c.brand_cpm)}/1K · kreator {idr(c.cpm)}/1K · sisa {idr(Math.max(c.brand_budget - c.brand_spent, 0))}</div>
               {c.pending_review ? <div className="meta">{c.pending_review} submission menunggu review</div> : null}
             </button>
           ))}
@@ -86,7 +86,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
     ? <Editor id={f.id} initial={f} onSaved={async () => { setEditing(false); await refresh(); }} onCancel={() => setEditing(false)} />
     : <CopyEditor f={f} onDone={async () => { setEditing(false); await refresh(); }} onCancel={() => setEditing(false)} />;
 
-  const used = c && c.budget ? Math.min(100, Math.round((c.earned / c.budget) * 100)) : 0;
+  const used = c && c.brand_budget ? Math.min(100, Math.round((c.brand_spent / c.brand_budget) * 100)) : 0;
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
@@ -105,7 +105,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
             ))}
           </div>
           <div className="preview">
-            <span>Budget: {idr(c.earned)} dialokasikan dari {idr(c.budget)} ({used}%) · dibayar {idr(c.paid)}{c.budget_override ? ' · override aktif' : ''}</span>
+            <span>Budget brand: {idr(c.brand_spent)} terpakai dari {idr(c.brand_budget)} ({used}%) · ke kreator {idr(c.earned)} · margin TAPP {idr(c.brand_spent - c.earned)}{c.budget_override ? ' · override aktif' : ''}</span>
             <div style={{ height: 6, background: 'var(--g150)', borderRadius: 3 }}><div style={{ width: `${used}%`, height: 6, background: used >= 90 ? 'var(--warning)' : 'var(--blue)', borderRadius: 3 }} /></div>
           </div>
         </div>
@@ -119,7 +119,8 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
       <div className="section">
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><h3>Brief</h3><button className="btn secondary" onClick={() => setEditing(true)}>{f.status === 'draft' ? 'Ubah draft' : 'Ubah teks'}</button></div>
         <dl className="kv">
-          <div><dt>CPM</dt><dd>{idr(f.cpm)} / 1.000</dd></div>
+          <div><dt>CPM brand</dt><dd>{idr(f.pricing?.brand_cpm ?? f.cpm)} / 1.000</dd></div>
+          <div><dt>Tarif kreator</dt><dd>{idr(f.cpm)} / 1.000 ({num(f.pricing?.creator_share_pct ?? 100)}%)</dd></div>
           <div><dt>Minimum views</dt><dd>{num(f.min_views_to_qualify)}</dd></div>
           <div><dt>Maks per klip</dt><dd>{f.max_earning_per_submission ? idr(Number(f.max_earning_per_submission)) : '—'}</dd></div>
           <div><dt>Mulai</dt><dd>{dt(f.starts_at)}</dd></div>
@@ -177,7 +178,7 @@ function StatusActions({ f, onDone }: { f: CampaignFull; onDone: () => Promise<v
 
 function BudgetCard({ c, onDone }: { c: AdminCampaign; onDone: () => Promise<void> }) {
   const [open, setOpen] = useState(false);
-  const [budget, setBudget] = useState(String(c.budget));
+  const [budget, setBudget] = useState(String(c.brand_budget));
   const [override, setOverride] = useState(c.budget_override);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
@@ -195,11 +196,11 @@ function BudgetCard({ c, onDone }: { c: AdminCampaign; onDone: () => Promise<voi
     <form className="section card" onSubmit={save}>
       <h2>Atur budget</h2>
       <div className="grid2">
-        <label className="field">Budget baru (Rp)<input inputMode="numeric" value={budget} onChange={(e) => setBudget(e.target.value)} /></label>
+        <label className="field">Budget brand baru (Rp)<input inputMode="numeric" value={budget} onChange={(e) => setBudget(e.target.value)} /></label>
         <label className="field">Alasan<input value={reason} onChange={(e) => setReason(e.target.value)} placeholder="mis. top-up dari brand" /></label>
       </div>
       <label className="check"><input type="checkbox" checked={override} onChange={(e) => setOverride(e.target.checked)} />Override: izinkan penghasilan melebihi budget (hanya jika disetujui brand)</label>
-      <p className="sub" style={{ margin: 0 }}>Sudah dialokasikan: {idr(c.earned)}. Menambah budget pada campaign "Segera berakhir" tidak otomatis membukanya lagi.</p>
+      <p className="sub" style={{ margin: 0 }}>Sudah terpakai: {idr(c.brand_spent)} (harga brand). Menambah budget pada campaign "Segera berakhir" tidak otomatis membukanya lagi.</p>
       {error ? <div className="notice error">{error}</div> : null}
       <div className="actions"><button className="btn" disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan budget'}</button><button type="button" className="btn secondary" onClick={() => setOpen(false)}>Batal</button></div>
     </form>
@@ -260,7 +261,8 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
     brand_id: initial?.brand_id ?? '', title: initial?.title ?? '', objective: initial?.objective ?? '', description: initial?.description ?? '',
     brand_name: initial ? (brands.data?.find((b) => b.id === initial.brand_id)?.name ?? '') : '',
     category: initial?.category ?? 'entertainment', content_type: initial?.content_type ?? '',
-    cpm: initial ? String(initial.cpm) : '', budget: initial ? String(initial.budget) : '',
+    cpm: initial ? String(initial.pricing?.brand_cpm ?? initial.cpm) : '', budget: initial ? String(initial.pricing?.brand_budget ?? initial.budget) : '',
+    share: initial ? String(initial.pricing?.creator_share_pct ?? 70) : '70',
     max_earning_per_submission: initial?.max_earning_per_submission ? String(initial.max_earning_per_submission) : '',
     min_views_to_qualify: initial ? String(initial.min_views_to_qualify) : '1000',
     starts_at: local(initial?.starts_at ?? null), submission_deadline: local(initial?.submission_deadline ?? null), ends_at: local(initial?.ends_at ?? null),
@@ -286,7 +288,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
       const brandId = id ? f.brand_id : await ensureBrand(brandName);
       const r = await upsertCampaignDraft(id, {
         brand_id: brandId, title: f.title, objective: f.objective, description: f.description, category: f.category, content_type: f.content_type,
-        cpm: n(f.cpm), budget: n(f.budget), max_earning_per_submission: n(f.max_earning_per_submission), min_views_to_qualify: n(f.min_views_to_qualify),
+        cpm: n(f.cpm), budget: n(f.budget), creator_share_pct: n(f.share), max_earning_per_submission: n(f.max_earning_per_submission), min_views_to_qualify: n(f.min_views_to_qualify),
         starts_at: iso(f.starts_at), submission_deadline: iso(f.submission_deadline), ends_at: iso(f.ends_at), platforms: f.platforms,
         guidelines_do: lines(f.do), guidelines_dont: lines(f.dont), terms: f.terms, rules,
       });
@@ -311,8 +313,11 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
       <label className="field">Tujuan<input value={f.objective} onChange={set('objective')} /></label>
       <label className="field">Deskripsi / brief<textarea value={f.description} onChange={set('description')} rows={4} /></label>
       <div className="grid2">
-        <label className="field">CPM (Rp per 1.000 qualified views)<input inputMode="numeric" value={f.cpm} onChange={set('cpm')} required /></label>
-        <label className="field">Budget (Rp)<input inputMode="numeric" value={f.budget} onChange={set('budget')} required /></label>
+        <label className="field">CPM brand (Rp per 1.000 qualified views)<input inputMode="numeric" value={f.cpm} onChange={set('cpm')} required />
+          <span className="sub" style={{ fontWeight: 400 }}>Kreator dapat {idr(Math.floor(Number(n(f.cpm) || 0) * Number(n(f.share) || 0) / 100))} / 1.000 · margin TAPP {idr(Number(n(f.cpm) || 0) - Math.floor(Number(n(f.cpm) || 0) * Number(n(f.share) || 0) / 100))}</span></label>
+        <label className="field">Budget brand (Rp, untuk views)<input inputMode="numeric" value={f.budget} onChange={set('budget')} required /></label>
+        <label className="field">Bagian kreator (%)<input inputMode="numeric" value={f.share} onChange={set('share')} required />
+          <span className="sub" style={{ fontWeight: 400 }}>Standar 70%. Isi 100 untuk campaign milik TAPP sendiri.</span></label>
         <label className="field">Minimum views sebelum dibayar<input inputMode="numeric" value={f.min_views_to_qualify} onChange={set('min_views_to_qualify')} /></label>
         <label className="field">Maks penghasilan per klip (opsional)<input inputMode="numeric" value={f.max_earning_per_submission} onChange={set('max_earning_per_submission')} /></label>
       </div>

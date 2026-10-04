@@ -45,25 +45,18 @@ test('approve is one click; reject still asks for a reason', async ({ page }) =>
   await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_decision: 'approved', p_reason: null }]);
 });
 
-test('accepted clip is paid from "Siap dibayar": views + transfer reference, amount after the level fee', async ({ page }) => {
+test('accepted clip is credited to the creator balance from "Siap dibayar": views only, no transfer', async ({ page }) => {
   const sub = { ...SUB, status: 'approved', views: 20000, latest_metric_id: null };
-  await signedInCreator(page, {
-    profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [sub],
-    creator_payout_methods: [{ kind: 'bank', provider: 'BCA', account_name: 'Rani Putri', account_number: '1234567890' }],
-    app_settings: [{ value: { new: 5 } }], payout_requests: [],
-  }, { aal: 'aal2' });
+  await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [sub] }, { aal: 'aal2' });
   const sent: Record<string, unknown>[] = [];
-  await page.route('**/rest/v1/rpc/admin_pay_submission', async (r) => { sent.push(r.request().postDataJSON()); await r.fulfill({ json: { id: 'p1', status: 'paid' } }); });
+  await page.route('**/rest/v1/rpc/admin_credit_submission', async (r) => { sent.push(r.request().postDataJSON()); await r.fulfill({ json: { id: 's1', status: 'completed' } }); });
   await page.goto('/admin/submissions?q=payable');
   await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
   await page.getByLabel('Views').fill('20.000');
-  await expect(page.getByText('Ke BCA 1234567890 a.n. Rani Putri')).toBeVisible();
-  // 20.000 views × Rp3.000 / 1.000 = Rp60.000; the mock answers 5% for both the level fee and the level bonus
-  // (Rp3.000 each), so Rp60.000 is transferred and the preview shows both parts.
-  await expect(page.getByText(/\+ bonus level new Rp3\.000 \(dari TAPP\) − fee Rp3\.000/)).toBeVisible();
-  await page.getByLabel('Referensi transfer').fill('BCA 0210');
-  await page.getByRole('button', { name: /Tandai sudah ditransfer Rp60\.000/ }).click();
-  await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_views: 20000, p_reference: 'BCA 0210', p_note: null }]);
+  // 20.000 views × Rp3.000 / 1.000 = Rp60.000 into the balance; bonus and withdrawal fee apply when the creator withdraws.
+  await expect(page.getByText('Bonus level dan biaya tarik dihitung saat kreator menarik saldo.')).toBeVisible();
+  await page.getByRole('button', { name: /Masukkan Rp60\.000 ke saldo/ }).click();
+  await expect.poll(() => sent).toEqual([{ p_submission_id: 's1', p_views: 20000, p_note: null }]);
 });
 
 test('pay form prefills the views read from the public post', async ({ page }) => {
