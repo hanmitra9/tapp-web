@@ -23,18 +23,18 @@ export default function LeaderboardScreen() {
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Peringkat" subtitle="Qualified views 7 hari terakhir. Naik turun setiap ada views baru yang masuk." />
+      <Header title="Peringkat" subtitle="Qualified views 7 hari terakhir." />
       <Segmented options={[{ value: 'creator', label: 'Creator' }, { value: 'city', label: 'Kota' }]} value={tab} onChange={(v) => setTab(v as 'creator' | 'city')} />
       {entries.length ? (
         <>
           <Podium entries={entries} />
-          <MyStanding entries={entries} empty={tab === 'creator' ? 'Klip yang diterima minggu ini langsung membawamu ke papan ini.' : 'Isi kota di Profil supaya views-mu ikut dihitung untuk kotamu.'} />
+          <MyStanding entries={entries} empty={tab === 'creator' ? 'Klip diterima = masuk papan.' : 'Isi kota di Profil.'} />
           <LeaderList entries={entries} />
         </>
       ) : (
         <View style={styles.empty}>
           <Text style={styles.emptyTitle}>Panggung masih kosong</Text>
-          <Text style={styles.emptyText}>Belum ada views yang masuk minggu ini. Klip pertama yang diterima langsung naik ke puncak.</Text>
+          <Text style={styles.emptyText}>Klip pertama yang diterima langsung di puncak.</Text>
         </View>
       )}
     </Screen>

@@ -19,7 +19,7 @@ import {
   type CreatorProfile, type CreatorStats, type LinkedPlatform, type PayoutMethod,
 } from '@/features/creator/api';
 import { maskAccount } from '@/features/creator/handles';
-import { AGE_RANGES, CONTENT_CATEGORIES, COUNTRIES, EXPERIENCE, LANGUAGES, labelOf, platformLabel } from '@/features/creator/options';
+import { platformLabel } from '@/features/creator/options';
 
 const STATUS: Record<CreatorProfile['status'], { label: string; tone: 'neutral' | 'blue' | 'danger' }> = {
   pending: { label: 'Profil belum lengkap', tone: 'neutral' },
@@ -99,14 +99,12 @@ export default function Profile() {
         <Stat label="Total penghasilan" value={idr(s.total_earned)} />
       </View>
       <Pressable onPress={() => router.push('/performance')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
-        <Text style={styles.action}>Lihat performa lengkap</Text>
+        <Text style={styles.action}>Lihat performa</Text>
       </Pressable>
 
       <Section title="Reliabilitas">
-        <Row label="Skor reliabilitas" value={reviewed ? `${Math.round(p.reliability)}/100` : 'Belum ada data'} />
-        <Row label="Tingkat persetujuan" value={approvalRate == null ? 'Belum ada submission yang ditinjau' : `${approvalRate}% dari ${reviewed} submission`} />
-        <Text style={styles.note}>Skor naik saat klipmu disetujui dan tetap tayang; turun jika ditolak, ditandai, atau postingan dihapus/diprivat.</Text>
-        <Text style={styles.note}>Level (New → Rising → Verified → Proven → Elite) naik otomatis dari total qualified views — bukan jumlah followers.</Text>
+        <Row label="Skor" value={reviewed ? `${Math.round(p.reliability)}/100` : '—'} />
+        <Row label="Disetujui" value={approvalRate == null ? '—' : `${approvalRate}% dari ${reviewed} klip`} />
       </Section>
 
       <Section title="Akun sosial" action={locked ? undefined : { label: 'Kelola', onPress: () => router.push('/profile/socials') }}>
@@ -116,32 +114,22 @@ export default function Profile() {
         )) : <Text style={styles.note}>Belum ada akun terhubung.</Text>}
       </Section>
 
-      <Section title="Konten" action={locked ? undefined : { label: 'Ubah', onPress: () => router.push('/profile/edit') }}>
-        <Row label="Jenis konten" value={p.categories.map((c) => labelOf(CONTENT_CATEGORIES, c)).join(', ')} />
-        <Row label="Gaya konten" value={p.contentStyle ?? ''} />
-        <Row label="Pengalaman" value={p.experience ? labelOf(EXPERIENCE, p.experience) : ''} />
-        <Row label="Penonton" value={[
-          (p.audience.cities.length ? p.audience.cities : p.audience.countries.map((c) => labelOf(COUNTRIES, c))).join(', '),
-          p.audience.age_ranges.map((a) => labelOf(AGE_RANGES, a)).join(', '),
-          p.audience.languages.length ? `Bahasa ${p.audience.languages.map((l) => labelOf(LANGUAGES, l)).join(', ')}` : '',
-        ].filter(Boolean).join(' · ')} />
-      </Section>
 
       <Section title="Pembayaran" action={locked ? undefined : { label: 'Ubah', onPress: () => router.push('/profile/payout') }}>
         <Row label={payout?.provider ?? 'Metode'} value={payout ? `${maskAccount(payout.account_number)} · ${payout.account_name}` : 'Belum diatur'} />
       </Section>
-      <Pressable onPress={() => router.navigate('/dashboard/earnings')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
-        <Text style={styles.action}>Riwayat pembayaran</Text>
-      </Pressable>
-      <Pressable onPress={() => router.push('/referral')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
-        <Text style={styles.action}>Ajak teman</Text>
-      </Pressable>
-      <Pressable onPress={() => router.push('/notifications')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
-        <Text style={styles.action}>Notifikasi</Text>
-      </Pressable>
-      <Pressable onPress={() => router.push('/help')} hitSlop={8} style={styles.perfLink} accessibilityRole="link">
-        <Text style={styles.action}>Bantuan & keberatan</Text>
-      </Pressable>
+      <View style={styles.menu}>
+        {([
+          ['user', 'Ubah profil', '/profile/edit'], ['credit-card', 'Riwayat pencairan', '/dashboard/earnings'], ['award', 'Peringkat', '/leaderboard'],
+          ['gift', 'Ajak teman', '/referral'], ['bell', 'Notifikasi', '/notifications'], ['help-circle', 'Bantuan', '/help'],
+        ] as const).filter(([, , to]) => !(locked && to === '/profile/edit')).map(([icon, label, to], i) => (
+          <Pressable key={to} onPress={() => router.push(to)} style={({ pressed }) => [styles.menuRow, i > 0 && styles.menuLine, pressed && { opacity: 0.6 }]} accessibilityRole="link">
+            <Feather name={icon} size={18} color={color.link} />
+            <Text style={styles.menuText}>{label}</Text>
+            <Feather name="chevron-right" size={18} color={color.textMuted} />
+          </Pressable>
+        ))}
+      </View>
       <View style={styles.logout}><Button variant="secondary" label="Keluar" onPress={signOut} /></View>
     </Screen>
   );
@@ -203,5 +191,9 @@ const styles = StyleSheet.create({
   rowValue: { ...type.body, color: color.text },
   note: { ...type.caption, color: color.textMuted },
   perfLink: { marginTop: space.md, alignSelf: 'flex-start' },
+  menu: { marginTop: space.xxl, ...card, borderRadius: radius.lg, paddingHorizontal: space.lg },
+  menuRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.lg },
+  menuLine: { borderTopWidth: 1, borderTopColor: color.border },
+  menuText: { ...type.label, color: color.text, flex: 1 },
   logout: { marginTop: space.xxxl },
 });

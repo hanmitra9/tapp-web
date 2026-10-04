@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Header } from '@/components/Header';
 import { LoadState } from '@/components/LoadState';
@@ -9,14 +9,12 @@ import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
 import { validateName, validateUsername } from '@/lib/validation';
 import { useAuth } from '@/providers/AuthProvider';
-import { color, space, type } from '@/theme/tokens';
-import { fetchCreatorProfile, updateProfile, type Audience, type CreatorProfile } from '@/features/creator/api';
-import { AudienceFields } from '@/features/creator/forms/AudienceFields';
-import { ContentFields, type ContentValues } from '@/features/creator/forms/ContentFields';
+import { space } from '@/theme/tokens';
+import { fetchCreatorProfile, updateProfile, type CreatorProfile } from '@/features/creator/api';
 import { ProfileFields, type ProfileValues } from '@/features/creator/forms/ProfileFields';
 import { useUsernameCheck } from '@/features/creator/forms/useUsernameCheck';
 
-type Form = ProfileValues & ContentValues & { audience: Audience };
+type Form = ProfileValues;
 
 export default function EditProfile() {
   const { session, refreshAccount } = useAuth();
@@ -35,8 +33,7 @@ export default function EditProfile() {
     try {
       const p = await fetchCreatorProfile(uid);
       setOriginal(p); setAvatarUrl(p.avatarUrl);
-      setForm({ fullName: p.fullName ?? '', username: p.username ?? '', city: p.city ?? '', niches: p.niches,
-        categories: p.categories, experience: p.experience, contentStyle: p.contentStyle ?? '', audience: p.audience });
+      setForm({ fullName: p.fullName ?? '', username: p.username ?? '', city: p.city ?? '' });
     } catch (e) { setLoadError(errorMessage(e)); }
   }
   useEffect(() => { void load(); }, []);  // eslint-disable-line react-hooks/exhaustive-deps
@@ -47,17 +44,15 @@ export default function EditProfile() {
 
   const errs = {
     fullName: validateName(f.fullName), username: validateUsername(f.username), city: f.city.trim().length >= 2 ? null : 'Pilih kota.',
-    categories: f.categories.length ? null : 'Pilih minimal satu jenis konten.',
-    experience: f.experience ? null : 'Pilih pengalamanmu.', audience: f.audience.cities.length ? null : 'Pilih minimal satu kota.',
   };
   const invalid = Object.values(errs).some(Boolean) || usernameStatus === 'taken';
 
   async function save() {
     setTouched(true); setError(null);
-    if (invalid || busy || !original?.mainPlatform) return;
+    if (invalid || busy) return;
     setBusy(true);
     try {
-      await updateProfile(uid, { ...f, experience: f.experience!, mainPlatform: original.mainPlatform });
+      await updateProfile(uid, f);
       await refreshAccount();
       router.back();
     } catch (e) { setError(errorMessage(e)); }
@@ -71,10 +66,6 @@ export default function EditProfile() {
         <Notice tone="error" message={error ?? (touched && invalid ? 'Periksa lagi isian yang ditandai.' : null)} />
         <ProfileFields uid={uid} values={f} onChange={patch} avatarUrl={avatarUrl} onAvatar={setAvatarUrl}
           usernameStatus={usernameStatus} errors={touched ? errs : {}} />
-        <Text style={styles.section}>Konten</Text>
-        <ContentFields values={f} onChange={patch} errors={touched ? errs : {}} />
-        <Text style={styles.section}>Penonton</Text>
-        <AudienceFields value={f.audience} onChange={(audience) => patch({ audience })} error={touched ? errs.audience : null} />
       </View>
     </Screen>
   );
@@ -82,5 +73,4 @@ export default function EditProfile() {
 
 const styles = StyleSheet.create({
   body: { gap: space.xl },
-  section: { ...type.heading, color: color.text, marginTop: space.lg, paddingTop: space.xl, borderTopWidth: 1, borderTopColor: color.border },
 });

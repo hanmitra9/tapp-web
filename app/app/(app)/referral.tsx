@@ -36,7 +36,7 @@ export default function ReferralScreen() {
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Ajak teman" subtitle={`Dapat ${idr(r.bonus)} untuk setiap teman yang pencairan pertamanya sudah dibayar.`} />
+      <Header title="Ajak teman" subtitle={`${idr(r.bonus)} per teman.`} />
 
       <View style={styles.hero}>
         <Text style={styles.label}>Kode undanganmu</Text>
@@ -52,11 +52,10 @@ export default function ReferralScreen() {
         <Stat label="Teman bergabung" value={String(r.invited)} />
         <Stat label="Bonus didapat" value={idr(r.earned)} />
       </View>
-      {r.available > 0 ? <Text style={styles.note}>{idr(r.available)} bonus referral ikut ditambahkan di pencairanmu berikutnya.</Text> : null}
+      {r.available > 0 ? <Text style={styles.note}>{idr(r.available)} ikut cair di penarikan berikutnya.</Text> : null}
 
       <Text style={styles.section}>Cara kerjanya</Text>
-      {[`Bagikan link atau kode ke teman yang belum punya akun TAPP.`, 'Temanmu daftar lewat link itu dan mulai submit klip.',
-        `Saat pencairan pertamanya dibayar, kamu dapat ${idr(r.bonus)}. Bonus ikut cair di pencairanmu berikutnya.`].map((t, i) => (
+      {['Bagikan link ke teman.', 'Teman daftar & submit klip.', `Pencairan pertamanya dibayar → kamu dapat ${idr(r.bonus)}.`].map((t, i) => (
         <View key={t} style={styles.step}><Text style={styles.stepNum}>{i + 1}</Text><Text style={styles.stepText}>{t}</Text></View>
       ))}
 
@@ -69,7 +68,7 @@ export default function ReferralScreen() {
           </View>
           <Text style={[styles.badge, f.rewarded ? styles.badgeOk : null]}>{f.rewarded ? `+${idr(r.bonus)}` : 'Belum cair'}</Text>
         </View>
-      )) : <Text style={styles.empty}>Belum ada teman yang bergabung lewat link-mu.</Text>}
+      )) : <Text style={styles.empty}>Belum ada teman.</Text>}
     </Screen>
   );
 }
