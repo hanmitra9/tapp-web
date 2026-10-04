@@ -40,10 +40,10 @@ def header(active):
     on = lambda k: ' on' if k == active else ''
     return f'''<header class="top">
   <a class="logo" href="index.html" aria-label="TAPP beranda"><img src="assets/tapp-mark.svg" alt=""></a>
-  <nav><a class="nl{on('campaigns')}" href="campaigns.html">Campaigns</a><a class="nl" href="index.html#alur">Cara Kerja</a><a class="nl{on('contact')}" href="contact.html">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
+  <nav><a class="nl{on('campaigns')}" href="campaigns.html">Campaigns</a><a class="nl" href="index.html#alur">Cara Kerja</a><a class="nl{on('blog')}" href="blog.html">Blog</a><a class="nl{on('contact')}" href="contact.html">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
   <a class="btn" href="#app:/register" style="height: 42px; padding: 0 20px; font-size: 14px">Sign Up</a>
   <button type="button" class="hb" aria-label="Buka menu" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
-  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="index.html#alur">Cara Kerja</a><a href="contact.html">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
+  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="index.html#alur">Cara Kerja</a><a href="blog.html">Blog</a><a href="contact.html">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
 </header>'''
 
 FOOT = footer('assets/tapp-mark.svg', 'index.html') + '''
@@ -492,3 +492,81 @@ urls = ['', 'campaigns', 'privacy', 'terms', 'meeting']
 (ROOT / 'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
   + ''.join(f'  <url><loc>{SITE_URL}/{u}</loc><changefreq>{"daily" if u == "campaigns" else "weekly"}</changefreq></url>\n' for u in urls) + '</urlset>\n')
 print('pages built for', SITE_URL)
+
+# ───────────────────────────── Blog ─────────────────────────────
+from blog_posts import POSTS
+from blog_covers import cover
+MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des']
+def tgl(iso):
+    y, m, d = iso.split('-')
+    return f'{int(d)} {MONTHS[int(m) - 1]} {y}'
+POSTS = sorted(POSTS, key=lambda p: p['date'], reverse=True)
+url = lambda p: f"blog-{p['slug']}.html"
+meta = lambda p: f'<span class="bl-meta"><b>{p["cat"]}</b> · {tgl(p["date"])}</span>'
+art = lambda p, i: '<div class="bl-art">' + cover(p['cover'], p['slug'][:6] + str(i)) + '</div>'
+
+def card(p, i, cls='bl-card'):
+    return (f'<a class="{cls}" href="{url(p)}" data-cat="{p["cat"]}" data-q="{(p["title"] + " " + p["excerpt"]).lower()}">'
+            f'{art(p, i)}<div class="bl-body">{meta(p)}<h3>{p["title"]}</h3></div></a>')
+
+feat = POSTS[:4]
+slides = ''.join(f'<a class="bl-slide" href="{url(p)}">{art(p, f"f{i}")}<div class="bl-over">{meta(p)}<h3>{p["title"]}</h3></div></a>' for i, p in enumerate(feat))
+dots = ''.join(f'<i{" class=on" if i == 0 else ""}></i>' for i in range(len(feat)))
+latest = ''.join(card(p, f'l{i}', 'bl-row') for i, p in enumerate(POSTS[:4]))
+popular = ''.join(card(p, f'p{i}', 'bl-card bl-big') for i, p in enumerate([p for p in POSTS if p.get('popular')][:3]))
+explore = ''.join(card(p, f'e{i}') for i, p in enumerate(POSTS))
+tabs = ''.join(f'<button type="button" class="bl-tab{" on" if c == "Terbaru" else ""}" data-cat="{c}">{c}</button>' for c in ['Terbaru', 'Panduan', 'Produk', 'News', 'Brand'])
+
+BLOG_JS = '''<script>
+(function () {
+  var t = document.getElementById('blTrack'), d = document.querySelectorAll('#blDots i');
+  if (t) {
+    t.addEventListener('scroll', function () { var i = Math.round(t.scrollLeft / t.clientWidth); d.forEach(function (x, k) { x.className = k === i ? 'on' : ''; }); }, { passive: true });
+    var auto = setInterval(function () { var i = Math.round(t.scrollLeft / t.clientWidth) + 1; t.scrollTo({ left: (i >= d.length ? 0 : i) * t.clientWidth, behavior: 'smooth' }); }, 5000);
+    t.addEventListener('pointerdown', function () { clearInterval(auto); });
+  }
+  var cat = 'Terbaru', q = document.getElementById('blQ'), cards = document.querySelectorAll('#blGrid .bl-card'), empty = document.getElementById('blEmpty');
+  function apply() {
+    var s = (q.value || '').trim().toLowerCase(), n = 0;
+    cards.forEach(function (c) { var ok = (cat === 'Terbaru' || c.dataset.cat === cat) && (!s || c.dataset.q.indexOf(s) >= 0); c.hidden = !ok; if (ok) n++; });
+    empty.hidden = n > 0;
+  }
+  document.querySelectorAll('.bl-tab').forEach(function (b) { b.addEventListener('click', function () {
+    cat = b.dataset.cat; document.querySelectorAll('.bl-tab').forEach(function (x) { x.classList.toggle('on', x === b); }); apply(); }); });
+  q.addEventListener('input', apply);
+  document.getElementById('blForm').addEventListener('submit', function (e) { e.preventDefault(); apply(); });
+})();
+</script>'''
+
+BLOG = head('Blog TAPP: update, panduan, dan info terbaru', 'Update produk, panduan clipping, dan kabar terbaru dari TAPP untuk creator dan brand.', 'blog') + header('blog') + f'''
+<main class="bl">
+  <section class="bl-hero"><h1>Update, Panduan, dan <span>Info Terbaru</span></h1>
+  <p>Kabar produk, panduan clipping, dan tips dari tim TAPP untuk creator dan brand.</p></section>
+  <section class="bl-feat"><div class="bl-track" id="blTrack">{slides}</div><div class="bl-dots" id="blDots">{dots}</div></section>
+  <section class="bl-sec"><h2>Artikel Terbaru</h2><div class="bl-rows">{latest}</div></section>
+  <section class="bl-sec"><h2>Populer</h2><div class="bl-grid">{popular}</div></section>
+  <section class="bl-sec" id="eksplor"><h2>Eksplor Artikel</h2>
+    <div class="bl-tabs" role="tablist">{tabs}</div>
+    <form class="bl-search" id="blForm" role="search"><input id="blQ" type="search" placeholder="Cari panduan, update, atau info lain" aria-label="Cari artikel">
+      <button type="submit" aria-label="Cari"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button></form>
+    <div class="bl-grid" id="blGrid">{explore}</div><p class="bl-empty" id="blEmpty" hidden>Belum ada artikel yang cocok.</p>
+  </section>
+</main>
+''' + FOOT + BLOG_JS + '\n</body>\n</html>\n'
+(ROOT / 'blog.html').write_text(BLOG.replace('__SITE_URL__', SITE_URL))
+
+for p in POSTS:
+    more = ''.join(card(o, f'm{i}') for i, o in enumerate([o for o in POSTS if o is not p][:3]))
+    cta = ('<a class="btn" href="meeting.html">Jadwalkan Meeting</a>' if p['cat'] == 'Brand'
+           else '<a class="btn" href="#app:/register">Mulai Sekarang</a><a class="btn ghost" href="campaigns.html">Jelajahi Campaign</a>')
+    page = head(f'{p["title"]} · Blog TAPP', p['excerpt'], url(p)[:-5]) + header('blog') + f'''
+<main class="bl bl-post">
+  <a class="bl-back" href="blog.html">&#8249; Semua artikel</a>
+  <header class="bl-ph">{meta(p)}<h1>{p["title"]}</h1><p>{p["excerpt"]}</p></header>
+  <div class="bl-cover">{art(p, "c")}</div>
+  <article class="bl-prose">{p["body"]}</article>
+  <div class="bl-cta">{cta}</div>
+  <section class="bl-sec"><h2>Artikel Lainnya</h2><div class="bl-grid">{more}</div></section>
+</main>
+''' + FOOT + '\n</body>\n</html>\n'
+    (ROOT / url(p)).write_text(page.replace('__SITE_URL__', SITE_URL))

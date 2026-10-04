@@ -326,10 +326,10 @@ a{{color:inherit;text-decoration:none}}
     <button role="tab" aria-selected="{{{{isBrand}}}}" onClick="{{{{setBrand}}}}" style="{{{{brandTab}}}}">Brand</button>
   </div>
   <div style="flex-grow: 1"></div>
-  <nav class="nlinks" style="display: flex; gap: 26px; font-weight: 500; font-size: 15px"><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="contact.html">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
+  <nav class="nlinks" style="display: flex; gap: 26px; font-weight: 500; font-size: 15px"><a class="nl" href="campaigns.html">Campaigns</a><a class="nl" href="blog.html">Blog</a><a class="nl" href="contact.html">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
   {pill_btn("Sign Up", "#app:/register")}
   <button type="button" class="hb" aria-label="Buka menu" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
-  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="#alur">Cara Kerja</a><a href="contact.html">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
+  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="#alur">Cara Kerja</a><a href="blog.html">Blog</a><a href="contact.html">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
 </header></div>
 
 <main id="top">
