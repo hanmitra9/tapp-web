@@ -78,7 +78,7 @@ export default function Payments() {
 
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Pembayaran" back={false} />
+      <Header title="Saldo" back={false} />
       {q.error && !d ? <Notice tone="error" message={q.error} /> : null}
 
       <View style={styles.hero}>

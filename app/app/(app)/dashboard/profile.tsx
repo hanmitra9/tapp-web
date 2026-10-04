@@ -122,7 +122,7 @@ export default function Profile() {
         <Row label="Penonton" value={[
           p.audience.countries.map((c) => labelOf(COUNTRIES, c)).join(', '),
           p.audience.age_ranges.map((a) => labelOf(AGE_RANGES, a)).join(', '),
-          p.audience.languages.map((l) => labelOf(LANGUAGES, l)).join(', '),
+          p.audience.languages.length ? `Bahasa ${p.audience.languages.map((l) => labelOf(LANGUAGES, l)).join(', ')}` : '',
         ].filter(Boolean).join(' · ')} />
       </Section>
 

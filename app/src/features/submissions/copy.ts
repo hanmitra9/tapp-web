@@ -8,5 +8,5 @@ export const SUBMISSION_STATUS: Record<SubmissionStatus, { label: string; tone: 
   tracking: { label: 'Diterima', tone: 'blue', note: 'Klipmu diterima. Bayarannya segera masuk ke saldomu.' },
   flagged: { label: 'Ditandai', tone: 'warning', note: 'Sedang diperiksa ulang oleh tim TAPP.' },
   rejected: { label: 'Ditolak', tone: 'danger', note: 'Submission ini tidak dihitung.' },
-  completed: { label: 'Masuk saldo', tone: 'success', note: 'Bayaran klip ini sudah masuk ke saldomu. Tarik kapan saja dari menu Pembayaran.' },
+  completed: { label: 'Masuk saldo', tone: 'success', note: 'Bayaran klip ini sudah masuk ke saldomu. Tarik kapan saja dari menu Saldo.' },
 };
