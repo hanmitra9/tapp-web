@@ -265,7 +265,7 @@ export type CampaignFull = {
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null; guidelines_do: string[]; guidelines_dont: string[]; terms: string | null;
   platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[]; banner_url: string | null; hashtag: string | null;
   assets: { id: string; kind: string; title: string; url: string | null; storage_path: string | null; sort: number }[];
-  pricing: { brand_cpm: number; brand_budget: number; creator_share_pct: number } | null;
+  pricing: { brand_cpm: number; brand_budget: number; creator_share_pct: number; budget_fee_pct: number } | null;
 };
 export async function getCampaignFull(id: string): Promise<CampaignFull> {
   const { data, error } = await supabase.from('campaigns')
@@ -273,8 +273,8 @@ export async function getCampaignFull(id: string): Promise<CampaignFull> {
     .eq('id', id).single();
   if (error) throw error;
   const c = data as unknown as CampaignFull;
-  const { data: pr } = await supabase.from('campaign_pricing').select('brand_cpm, brand_budget, creator_share_pct').eq('campaign_id', id).maybeSingle();
-  const pricing = pr ? { brand_cpm: Number(pr.brand_cpm), brand_budget: Number(pr.brand_budget), creator_share_pct: Number(pr.creator_share_pct) } : null;
+  const { data: pr } = await supabase.from('campaign_pricing').select('brand_cpm, brand_budget, creator_share_pct, budget_fee_pct').eq('campaign_id', id).maybeSingle();
+  const pricing = pr ? { brand_cpm: Number(pr.brand_cpm), brand_budget: Number(pr.brand_budget), creator_share_pct: Number(pr.creator_share_pct), budget_fee_pct: Number(pr.budget_fee_pct ?? 0) } : null;
   return { ...c, pricing, cpm: Number(c.cpm), budget: Number(c.budget), rules: [...c.rules].sort((a, b) => a.sort - b.sort), assets: [...c.assets].sort((a, b) => a.sort - b.sort) };
 }
 // ── Campaign hashtag reach (0043) ──

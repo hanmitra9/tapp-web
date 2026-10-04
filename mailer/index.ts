@@ -133,7 +133,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
         eyebrow: "Pembayaran",
         title: "Pencairan saldomu sudah ditransfer",
         intro: "Saldo yang kamu tarik sudah kami transfer. Biasanya langsung masuk, tapi beberapa bank bisa butuh waktu sampai 1 hari kerja.",
-        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.bonus) > 0 ? ([["Bonus level", idr(Number(d.bonus))]] as [string, string][]) : []), ...(Number(d.fee) > 0 ? ([["Fee platform & transfer", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
+        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.bonus) > 0 ? ([["Bonus level", idr(Number(d.bonus))]] as [string, string][]) : []), ...(Number(d.fee) > 0 ? ([["Biaya transfer", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
         button: APP() ? { label: "Lihat riwayat pembayaran", url: `${APP()}/dashboard/earnings` } : undefined,
       },
     };

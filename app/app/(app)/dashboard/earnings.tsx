@@ -67,7 +67,7 @@ export default function Payments() {
 
   function confirm() {
     if (!d) return;
-    showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus - refBonus ? ` + bonus level ${idr(bonus - refBonus)}` : ''}${refBonus ? ` + bonus referral ${idr(refBonus)}` : ''} − fee platform ${d.terms.feePct}% ${idr(platformFee)} − biaya transfer ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method?.provider ?? ''}.`, [
+    showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus - refBonus ? ` + bonus level ${idr(bonus - refBonus)}` : ''}${refBonus ? ` + bonus referral ${idr(refBonus)}` : ''}${platformFee ? ` − fee ${d.terms.feePct}% ${idr(platformFee)}` : ''} − biaya transfer ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method?.provider ?? ''}.`, [
       { text: 'Batal', style: 'cancel' },
       { text: 'Tarik', onPress: withdraw },
     ]);
@@ -98,7 +98,7 @@ export default function Payments() {
             <>
               <Button label={available >= d.terms.min ? `Tarik ${idr(Math.max(net, 0))}` : 'Tarik saldo'} onPress={confirm} loading={busy} disabled={!canWithdraw} />
               <Text style={styles.terms}>
-                {available < d.terms.min ? `Min. ${idr(d.terms.min)} · ` : ''}Fee {d.terms.feePct}% + {idr(d.terms.fee)}{d.terms.bonusPct ? ` · Bonus +${d.terms.bonusPct}%` : ''}
+                {available < d.terms.min ? `Min. ${idr(d.terms.min)} · ` : ''}{d.terms.feePct ? `Fee ${d.terms.feePct}% + ` : 'Biaya transfer '}{idr(d.terms.fee)}{d.terms.bonusPct ? ` · Bonus +${d.terms.bonusPct}%` : ''}
               </Text>
             </>
           )}

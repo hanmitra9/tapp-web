@@ -20,6 +20,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
 update profiles set role='admin' where id='00000000-0000-0000-0000-00000000000a';
 update app_settings set value = 'false'::jsonb where key = 'require_admin_mfa';   -- MFA has its own section at the end
 update app_settings set value = '100'::jsonb where key = 'creator_share_pct';    -- brand price = creator rate until the pricing section
+update app_settings set value = '0'::jsonb where key = 'budget_fee_pct';         -- no budget fee until the pricing section
 update profiles set role='brand' where id='00000000-0000-0000-0000-00000000000b';
 insert into brands (id,name,slug) values ('10000000-0000-0000-0000-000000000001','Acme Finance','acme');
 insert into brand_members values ('10000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000b','owner');
@@ -101,7 +102,7 @@ select id as payout_id, amount, fee, bonus, net_amount, status from request_payo
 select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_already_open');
 do $$ declare p public.payout_requests; begin
   select * into p from payout_requests order by created_at desc limit 1;
-  if p.amount <> 600000 or p.fee <> 118000 or p.fee_pct <> 18 then raise exception 'withdrawal fee should be 18%% + 10.000: % % %', p.amount, p.fee, p.fee_pct; end if;
+  if p.amount <> 600000 or p.fee <> 10000 or p.fee_pct <> 0 then raise exception 'withdrawal fee should be the flat 10.000 only: % % %', p.amount, p.fee, p.fee_pct; end if;
   if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) then raise exception 'bonus wrong'; end if;
   if p.net_amount <> p.amount + p.bonus - p.fee then raise exception 'net wrong'; end if;
 end $$;
@@ -574,7 +575,7 @@ select withdrawal_fee_pct('new') as new_5, withdrawal_fee_pct('rising') as risin
 do $$ declare p public.payout_requests; begin
   select * into p from payout_requests where status = 'paid' order by created_at limit 1;
   if p.fee_tier is null then raise exception 'fee tier not recorded'; end if;
-  if p.fee <> round(p.amount * 0.18) + 10000 or p.fee_pct <> 18 then raise exception 'creator fee expected, got % (% pct)', p.fee, p.fee_pct; end if;
+  if p.fee <> 10000 or p.fee_pct <> 0 then raise exception 'flat transfer fee expected, got % (% pct)', p.fee, p.fee_pct; end if;
   if p.net_amount <> p.amount + p.bonus - p.fee then raise exception 'net mismatch'; end if;
   if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) or p.bonus_pct <> tier_bonus_pct(p.fee_tier) then raise exception 'bonus % pct % tier %', p.bonus, p.bonus_pct, p.fee_tier; end if;
   if tier_bonus_pct('elite') <= tier_bonus_pct('new') then raise exception 'higher tier should earn more'; end if;
@@ -700,6 +701,7 @@ select 'raw_from_checks_ok' as result;
 -- ── Brand price vs creator rate (0045) ──
 reset role;
 update app_settings set value = '70'::jsonb where key = 'creator_share_pct';
+update app_settings set value = '18'::jsonb where key = 'budget_fee_pct';
 set role authenticated;
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select id as priced_id from upsert_campaign_draft(null, jsonb_build_object(
@@ -707,7 +709,9 @@ select id as priced_id from upsert_campaign_draft(null, jsonb_build_object(
 do $$ declare a record; begin
   select * into a from admin_campaigns where title = 'Priced';
   if a.brand_cpm <> 1500 or a.cpm <> 1050 or a.creator_share_pct <> 70 then raise exception 'creator rate should be 70%%: % / %', a.cpm, a.brand_cpm; end if;
-  if a.brand_budget <> 1000000 or a.budget <> 700000 then raise exception 'creator budget wrong: %', a.budget; end if;
+  -- 18% platform fee off the budget, then the 70% creator share: 1.000.000 × 82% × 70% = 574.000
+  if a.brand_budget <> 1000000 or a.budget <> 574000 or a.budget_fee_pct <> 18 then raise exception 'creator budget wrong: % (fee %)', a.budget, a.budget_fee_pct; end if;
+  if private.brand_amount(574000, private.spend_share(70, 18)) <> 1000000 then raise exception 'full creator pool should equal the brand budget'; end if;
 end $$;
 select cpm from upsert_campaign_draft(:'priced_id', jsonb_build_object('title','Priced','cpm',2000,'budget',1000000,'creator_share_pct',100)); -- admin override
 select cpm as override_expect_2000 from campaigns where id = :'priced_id';
