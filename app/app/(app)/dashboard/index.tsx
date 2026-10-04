@@ -16,6 +16,7 @@ import { CampaignCard } from '@/features/campaigns/CampaignCard';
 import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
 import { fetchDaily } from '@/features/performance/api';
+import { fetchCityBoard, fetchWeeklyBoard, type CityRow, type CreatorRow } from '@/features/campaigns/leaderboard';
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
@@ -36,13 +37,15 @@ export default function Home() {
   const { account } = useAuth();
   const { isWide: isDesktop } = useLayout();
   const q = useQuery(async () => {
-    const [home, recs, mine, unread, balance, subs, level, daily] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
+    const [home, recs, mine, unread, balance, subs, level, daily, board, cities] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
       unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []),
-      fetchTierProgress().catch(() => null), fetchDaily(14).catch(() => [])]);
+      fetchTierProgress().catch(() => null), fetchDaily(14).catch(() => []),
+      fetchWeeklyBoard().catch(() => []), fetchCityBoard().catch(() => [])]);
     const last7 = daily.slice(-7), prev7 = daily.slice(-14, -7);
     const sum = (a: typeof daily, k: 'qualified_gain' | 'earned') => a.reduce((t, x) => t + x[k], 0);
     return {
       home, unread, balance, level,
+      rank: { me: board.find((r) => r.is_me) ?? null, top: board[0] ?? null, city: cities.find((r) => r.is_mine) ?? null, topCity: cities[0] ?? null },
       week: { views: sum(last7, 'qualified_gain'), prev: sum(prev7, 'qualified_gain'), earned: sum(last7, 'earned'), days: last7 },
       accepted: subs.filter((s) => s.status === 'approved' || s.status === 'tracking' || s.status === 'completed').length,
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
@@ -85,6 +88,8 @@ export default function Home() {
 
       <SectionHead title="7 hari terakhir" action={{ label: 'Detail', onPress: () => router.push('/performance') }} />
       {d ? <Week week={d.week} accepted={d.accepted} /> : <SkeletonBlock width="100%" height={168} />}
+
+      {d ? <RankCard rank={d.rank} /> : null}
 
       {d && d.active.length ? (
         <>
@@ -194,6 +199,24 @@ function Week({ week, accepted }: { week: { views: number; prev: number; earned:
         <View style={styles.weekStat}><Text style={styles.weekStatValue}>{accepted}</Text><Text style={styles.weekLabel}>klip diterima</Text></View>
       </View>
     </View>
+  );
+}
+
+type Rank = { me: CreatorRow | null; top: CreatorRow | null; city: CityRow | null; topCity: CityRow | null };
+// Weekly standing teaser → the full stage.
+function RankCard({ rank }: { rank: Rank }) {
+  const title = rank.me ? `Kamu #${rank.me.rank} minggu ini` : rank.top ? 'Siapa di panggung minggu ini?' : 'Panggung minggu ini masih kosong';
+  const sub = rank.city ? `${rank.city.city} peringkat #${rank.city.rank} kota` : rank.topCity ? `Kota teratas: ${rank.topCity.city}` : 'Klip yang diterima membawamu ke papan peringkat.';
+  return (
+    <Pressable onPress={() => router.push('/leaderboard')} accessibilityRole="button" style={({ pressed }) => [styles.rankCard, pressed && { opacity: 0.88 }]}>
+      <LinearGradient colors={['#2A1F05', '#141008']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
+      <View style={styles.rankIcon}><Feather name="award" size={22} color="#F5C451" /></View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.rankTitle}>{title}</Text>
+        <Text style={styles.rankSub} numberOfLines={1}>{sub}</Text>
+      </View>
+      <Feather name="chevron-right" size={18} color="#F5C451" />
+    </Pressable>
   );
 }
 
@@ -313,4 +336,9 @@ const styles = StyleSheet.create({
   infoBody: { ...type.caption, color: color.textSecondary, lineHeight: 18 },
 
   push: { marginTop: space.xxl },
+  rankCard: { marginTop: space.lg, flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.lg, borderRadius: radius.lg, overflow: 'hidden',
+    borderWidth: 1, borderColor: 'rgba(245,196,81,0.28)' },
+  rankIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(245,196,81,0.14)', alignItems: 'center', justifyContent: 'center' },
+  rankTitle: { ...type.label, color: '#FFF4D6' },
+  rankSub: { ...type.caption, color: 'rgba(255,236,190,0.7)' },
 });

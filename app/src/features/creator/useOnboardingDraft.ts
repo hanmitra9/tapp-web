@@ -5,7 +5,7 @@ import type { Experience, Platform } from './options';
 
 export type Draft = {
   step: number;
-  fullName: string; username: string; country: string;
+  fullName: string; username: string; city: string;
   mainPlatform: Platform | null;
   niches: string[]; categories: string[]; experience: Experience | null; contentStyle: string;
   audience: Audience;
@@ -15,9 +15,9 @@ const key = (uid: string) => `tapp:onboarding:${uid}`;
 
 export function initialDraft(fullName: string | null): Draft {
   return {
-    step: 0, fullName: fullName ?? '', username: '', country: 'ID', mainPlatform: null,
+    step: 0, fullName: fullName ?? '', username: '', city: '', mainPlatform: null,
     niches: [], categories: [], experience: null, contentStyle: '',
-    audience: { countries: ['ID'], age_ranges: [], languages: ['id'] },
+    audience: { countries: ['ID'], cities: [], age_ranges: [], languages: ['id'] },
   };
 }
 
@@ -30,7 +30,12 @@ export function useOnboardingDraft(uid: string, fullName: string | null) {
   useEffect(() => {
     let live = true;
     AsyncStorage.getItem(key(uid))
-      .then((raw) => { if (live) setDraft(raw ? { ...initialDraft(fullName), ...JSON.parse(raw) } : initialDraft(fullName)); })
+      .then((raw) => {
+        if (!live) return;
+        const base = initialDraft(fullName);
+        const saved = raw ? JSON.parse(raw) : null;   // older drafts have no city / audience.cities
+        setDraft(saved ? { ...base, ...saved, city: saved.city ?? '', audience: { ...base.audience, ...saved.audience } } : base);
+      })
       .catch(() => { if (live) setDraft(initialDraft(fullName)); });
     return () => { live = false; };
   }, [uid, fullName]);

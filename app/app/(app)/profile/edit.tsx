@@ -35,7 +35,7 @@ export default function EditProfile() {
     try {
       const p = await fetchCreatorProfile(uid);
       setOriginal(p); setAvatarUrl(p.avatarUrl);
-      setForm({ fullName: p.fullName ?? '', username: p.username ?? '', country: p.country ?? 'ID', niches: p.niches,
+      setForm({ fullName: p.fullName ?? '', username: p.username ?? '', city: p.city ?? '', niches: p.niches,
         categories: p.categories, experience: p.experience, contentStyle: p.contentStyle ?? '', audience: p.audience });
     } catch (e) { setLoadError(errorMessage(e)); }
   }
@@ -46,9 +46,9 @@ export default function EditProfile() {
   const patch = (p: Partial<Form>) => setForm((x) => (x ? { ...x, ...p } : x));
 
   const errs = {
-    fullName: validateName(f.fullName), username: validateUsername(f.username), country: f.country ? null : 'Pilih negara.',
+    fullName: validateName(f.fullName), username: validateUsername(f.username), city: f.city.trim().length >= 2 ? null : 'Pilih kota.',
     categories: f.categories.length ? null : 'Pilih minimal satu jenis konten.',
-    experience: f.experience ? null : 'Pilih pengalamanmu.', audience: f.audience.countries.length ? null : 'Pilih minimal satu negara.',
+    experience: f.experience ? null : 'Pilih pengalamanmu.', audience: f.audience.cities.length ? null : 'Pilih minimal satu kota.',
   };
   const invalid = Object.values(errs).some(Boolean) || usernameStatus === 'taken';
 

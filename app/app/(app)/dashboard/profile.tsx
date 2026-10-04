@@ -1,3 +1,4 @@
+import Feather from '@expo/vector-icons/Feather';
 import type React from 'react';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useState } from 'react';
@@ -12,6 +13,7 @@ import { Screen } from '@/components/Screen';
 import { errorMessage } from '@/lib/errors';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type, card } from '@/theme/tokens';
+import { web } from '@/theme/web';
 import {
   fetchCreatorProfile, fetchPayoutMethod, fetchPlatforms, fetchStats, uploadAvatar,
   type CreatorProfile, type CreatorStats, type LinkedPlatform, type PayoutMethod,
@@ -74,18 +76,17 @@ export default function Profile() {
     <Screen inTabs refreshControl={<RefreshControl refreshing={refreshing} tintColor={color.blue}
       onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
       <Header title="Profil" back={false} />
-      <View style={styles.identity}>
-        <Pressable onPress={changePhoto} disabled={uploading} accessibilityRole="button" accessibilityLabel={p.avatarUrl ? 'Ganti foto profil' : 'Tambah foto profil'}>
-          <Avatar uri={p.avatarUrl} name={p.fullName} size={64} />
-          <View style={styles.photoBadge}>{uploading ? <ActivityIndicator size="small" color={color.text} /> : <Text style={styles.photoBadgeText}>{p.avatarUrl ? '✎' : '+'}</Text>}</View>
+      <View style={styles.hero}>
+        <View style={styles.heroArt} {...web('art')} />
+        <Pressable onPress={changePhoto} disabled={uploading} style={styles.heroAvatar} accessibilityRole="button" accessibilityLabel={p.avatarUrl ? 'Ganti foto profil' : 'Tambah foto profil'}>
+          <View style={styles.avatarRing}><Avatar uri={p.avatarUrl} name={p.fullName} size={88} /></View>
+          <View style={styles.photoBadge}>{uploading ? <ActivityIndicator size="small" color={color.text} /> : <Feather name={p.avatarUrl ? 'edit-2' : 'camera'} size={13} color="#FFFFFF" />}</View>
         </Pressable>
-        <View style={styles.identityText}>
-          <Text style={styles.name}>{p.fullName ?? '—'}</Text>
-          <Text style={styles.username}>@{p.username ?? '—'}</Text>
-          <View style={styles.badges}>
-            <Text style={[styles.badge, st.tone === 'blue' && styles.badgeBlue, st.tone === 'danger' && styles.badgeDanger]}>{st.label}</Text>
-            <Text style={styles.badge}>Level {TIER[p.tier]}</Text>
-          </View>
+        <Text style={styles.name}>{p.fullName ?? '—'}</Text>
+        <Text style={styles.username}>@{p.username ?? '—'}{p.city ? ` · ${p.city}` : ''}</Text>
+        <View style={styles.badges}>
+          <Text style={[styles.badge, st.tone === 'blue' && styles.badgeBlue, st.tone === 'danger' && styles.badgeDanger]}>{st.label}</Text>
+          <Text style={[styles.badge, styles.badgeLevel]}>Level {TIER[p.tier]}</Text>
         </View>
       </View>
 
@@ -120,7 +121,7 @@ export default function Profile() {
         <Row label="Gaya konten" value={p.contentStyle ?? ''} />
         <Row label="Pengalaman" value={p.experience ? labelOf(EXPERIENCE, p.experience) : ''} />
         <Row label="Penonton" value={[
-          p.audience.countries.map((c) => labelOf(COUNTRIES, c)).join(', '),
+          (p.audience.cities.length ? p.audience.cities : p.audience.countries.map((c) => labelOf(COUNTRIES, c))).join(', '),
           p.audience.age_ranges.map((a) => labelOf(AGE_RANGES, a)).join(', '),
           p.audience.languages.length ? `Bahasa ${p.audience.languages.map((l) => labelOf(LANGUAGES, l)).join(', ')}` : '',
         ].filter(Boolean).join(' · ')} />
@@ -175,13 +176,17 @@ function Row({ label, value }: { label: string; value: string }) {
 }
 
 const styles = StyleSheet.create({
-  identity: { flexDirection: 'row', gap: space.lg, alignItems: 'center' },
-  photoBadge: { position: 'absolute', right: -2, bottom: -2, width: 24, height: 24, borderRadius: 12, backgroundColor: color.blue, borderWidth: 2, borderColor: color.canvas, alignItems: 'center', justifyContent: 'center' },
+  hero: { ...card, borderRadius: radius.xl, overflow: 'hidden', alignItems: 'center', paddingBottom: space.xl, gap: 4 },
+  heroArt: { alignSelf: 'stretch', height: 96, backgroundColor: color.blueDeep },
+  heroAvatar: { marginTop: -48, marginBottom: space.sm },
+  avatarRing: { padding: 4, borderRadius: 52, backgroundColor: '#0B0B12' },
+  badgeLevel: { color: '#F5C451', backgroundColor: 'rgba(245,196,81,0.12)' },
+  photoBadge: { position: 'absolute', right: 4, bottom: 4, width: 30, height: 30, borderRadius: 15, backgroundColor: color.blue, borderWidth: 3, borderColor: '#0B0B12', alignItems: 'center', justifyContent: 'center' },
   photoBadgeText: { color: '#FFFFFF', fontSize: 13, lineHeight: 15, fontWeight: '700' },
   identityText: { flex: 1, gap: 2 },
-  name: { ...type.title, color: color.text },
-  username: { ...type.body, color: color.textSecondary },
-  badges: { flexDirection: 'row', gap: space.sm, marginTop: space.sm },
+  name: { ...type.title, color: color.text, textAlign: 'center' },
+  username: { ...type.body, color: color.textSecondary, textAlign: 'center' },
+  badges: { flexDirection: 'row', gap: space.sm, marginTop: space.sm, justifyContent: 'center' },
   badge: { ...type.caption, color: color.textSecondary, backgroundColor: color.surface, paddingHorizontal: 8, paddingVertical: 3, borderRadius: radius.sm, overflow: 'hidden' },
   badgeBlue: { color: color.link, backgroundColor: color.accentSoft },
   badgeDanger: { color: color.danger, backgroundColor: color.dangerSoft },

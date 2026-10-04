@@ -20,7 +20,7 @@ import { PlatformManager } from '@/features/creator/forms/PlatformManager';
 import { ProfileFields } from '@/features/creator/forms/ProfileFields';
 import { useUsernameCheck } from '@/features/creator/forms/useUsernameCheck';
 import { maskAccount } from '@/features/creator/handles';
-import { COUNTRIES, EXPERIENCE, labelOf, platformLabel } from '@/features/creator/options';
+import { EXPERIENCE, labelOf, platformLabel } from '@/features/creator/options';
 import { useOnboardingDraft } from '@/features/creator/useOnboardingDraft';
 import { track } from '@/lib/analytics';
 
@@ -75,7 +75,7 @@ export default function Onboarding() {
   const profileErrs = {
     fullName: validateName(draft.fullName),
     username: draft.username ? validateUsername(draft.username) : 'Pilih username.',
-    country: draft.country ? null : 'Pilih negara.',
+    city: draft.city.trim().length >= 2 ? null : 'Pilih kota.',
   };
   const contentErrs = {
     categories: draft.categories.length ? null : 'Pilih minimal satu jenis konten.',
@@ -83,14 +83,14 @@ export default function Onboarding() {
   };
   const mainLinked = !!draft.mainPlatform && platforms.some((p) => p.platform === draft.mainPlatform);
   const platformErr = !platforms.length ? 'Tambahkan minimal satu akun.' : !mainLinked ? 'Pilih platform utama.' : null;
-  const audienceErr = draft.audience.countries.length ? null : 'Pilih minimal satu negara.';
+  const audienceErr = draft.audience.cities.length ? null : 'Pilih minimal satu kota.';
 
   async function next() {
     setTouched(true); setError(null);
     if (busy || !draft) return;
     switch (step) {
       case 0: {
-        if (profileErrs.fullName || profileErrs.username || profileErrs.country || usernameStatus === 'taken') return;
+        if (profileErrs.fullName || profileErrs.username || profileErrs.city || usernameStatus === 'taken') return;
         if (usernameStatus !== 'available') {
           setBusy(true);
           try { if (!(await isUsernameAvailable(draft.username))) { setBusy(false); return setError('Username ini sudah dipakai.'); } }
@@ -118,7 +118,7 @@ export default function Onboarding() {
         setBusy(true);
         try {
           await completeOnboarding({
-            fullName: draft.fullName, username: draft.username, country: draft.country, mainPlatform: draft.mainPlatform!,
+            fullName: draft.fullName, username: draft.username, city: draft.city, mainPlatform: draft.mainPlatform!,
             niches: draft.niches, categories: draft.categories, contentStyle: draft.contentStyle,
             audience: draft.audience, experience: draft.experience!,
           });
@@ -170,7 +170,7 @@ export default function Onboarding() {
         {step === 5 ? (
           <View style={styles.review}>
             <ReviewRow label="Nama" value={`${draft.fullName.trim()} · @${draft.username}`} onEdit={() => goTo(0)} />
-            <ReviewRow label="Negara" value={labelOf(COUNTRIES, draft.country)} onEdit={() => goTo(0)} />
+            <ReviewRow label="Kota" value={draft.city} onEdit={() => goTo(0)} />
             <ReviewRow label="Akun sosial" onEdit={() => goTo(1)}
               value={platforms.map((p) => `${platformLabel(p.platform)} @${p.handle}${p.platform === draft.mainPlatform ? ' (utama)' : ''}`).join('\n')} />
             <ReviewRow label="Pengalaman" value={labelOf(EXPERIENCE, draft.experience ?? '')} onEdit={() => goTo(2)} />
