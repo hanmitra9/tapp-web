@@ -1,0 +1,195 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<!-- Blog cover scenes. Rendered to assets/blog/<id>.webp by tools/render_blog_art.py (1600x900). -->
+<style>
+@font-face{font-family:'InterTight';src:url('../../assets/fonts/InterTight-Variable.woff2') format('woff2');font-weight:100 900}
+@font-face{font-family:'Geist';src:url('../../assets/fonts/Geist-Variable.woff2') format('woff2');font-weight:100 900}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;font-family:'Geist',sans-serif;color:#fff}
+.stage{width:1600px;height:900px;position:relative;overflow:hidden;margin-bottom:20px;
+  background:radial-gradient(90% 80% at 50% 8%,#0f4a8c 0%,#08254a 30%,#04101f 62%,#020509 100%)}
+.stage::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 50% at 50% 50%,transparent 60%,rgba(0,0,0,.55) 100%)}
+.beam{position:absolute;top:-200px;width:260px;height:1400px;filter:blur(38px);opacity:.55;mix-blend-mode:screen;
+  background:linear-gradient(180deg,rgba(170,214,255,.95),rgba(47,134,232,.35) 45%,rgba(12,101,196,0) 80%)}
+.beam.l{left:260px;transform:rotate(28deg)}.beam.r{right:260px;transform:rotate(-28deg)}
+.beam.thin{width:90px;opacity:.7;filter:blur(18px)}
+.floor{position:absolute;left:-10%;right:-10%;bottom:-120px;height:420px;
+  background:radial-gradient(50% 60% at 50% 30%,rgba(47,134,232,.45),rgba(12,101,196,.12) 45%,transparent 70%)}
+.grid{position:absolute;left:-20%;right:-20%;bottom:-40px;height:380px;transform:perspective(600px) rotateX(64deg);transform-origin:bottom;opacity:.35;
+  background-image:linear-gradient(rgba(117,178,244,.35) 1px,transparent 1px),linear-gradient(90deg,rgba(117,178,244,.35) 1px,transparent 1px);background-size:70px 70px;
+  -webkit-mask-image:linear-gradient(0deg,#000 10%,transparent 85%)}
+.dust{position:absolute;inset:0;background-image:radial-gradient(#9cc8ff 1.2px,transparent 1.6px),radial-gradient(#9cc8ff 1px,transparent 1.4px);
+  background-size:180px 160px,260px 230px;background-position:20px 30px,90px 120px;opacity:.28}
+.glass{position:absolute;border-radius:28px;border:1px solid rgba(255,255,255,.16);
+  background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.035));backdrop-filter:blur(26px);-webkit-backdrop-filter:blur(26px);
+  box-shadow:0 50px 120px -30px rgba(0,0,0,.95),inset 0 1px 0 rgba(255,255,255,.22)}
+.dark{background:linear-gradient(180deg,#141a24,#0a0d13);border:1px solid rgba(255,255,255,.1)}
+.pill{display:inline-flex;align-items:center;gap:12px;padding:14px 22px;border-radius:999px;font-weight:500;font-size:22px}
+.btn{background:linear-gradient(180deg,#5aa6f5,#0c65c4 50%,#0f4c8d);box-shadow:0 18px 40px -14px rgba(12,101,196,.95),inset 0 1px 0 rgba(255,255,255,.35);border-radius:16px;text-align:center;font-weight:600}
+.ok{width:34px;height:34px;border-radius:50%;background:#34d07a;display:inline-flex;align-items:center;justify-content:center;box-shadow:0 0 22px rgba(52,208,122,.7)}
+.ok::after{content:'';width:12px;height:7px;border-left:3px solid #04210f;border-bottom:3px solid #04210f;transform:rotate(-45deg) translate(1px,-2px)}
+.muted{color:#8fa3bd}.h{font-family:'InterTight',sans-serif;font-weight:500;letter-spacing:-.01em}
+/* phone */
+.phone{position:absolute;width:420px;height:860px;border-radius:70px;padding:16px;
+  background:linear-gradient(145deg,#4a5566,#1a202b 30%,#0c1018 60%,#3a4352);box-shadow:0 80px 160px -40px rgba(0,0,0,1),0 0 0 2px rgba(255,255,255,.08),0 0 120px -10px rgba(47,134,232,.45)}
+.screen{width:100%;height:100%;border-radius:56px;overflow:hidden;position:relative;background:linear-gradient(180deg,#0c1626,#05080e)}
+.island{position:absolute;left:50%;top:18px;width:120px;height:34px;margin-left:-60px;border-radius:20px;background:#000;z-index:3}
+/* video tiles */
+.vt{position:relative;border-radius:18px;overflow:hidden}
+.vt .ph{position:absolute;inset:0}
+.vt .who{position:absolute;left:50%;bottom:-6%;width:62%;height:62%;margin-left:-31%;border-radius:50% 50% 12% 12%/60% 60% 10% 10%;background:rgba(0,0,0,.45);filter:blur(1px)}
+.vt .who::before{content:'';position:absolute;left:50%;top:-38%;width:46%;height:52%;margin-left:-23%;border-radius:50%;background:rgba(0,0,0,.5)}
+.vt .play{position:absolute;left:50%;top:44%;width:52px;height:52px;margin:-26px;border-radius:50%;background:rgba(255,255,255,.85)}
+.vt .play::after{content:'';position:absolute;left:21px;top:16px;border-left:16px solid #0b1b30;border-top:10px solid transparent;border-bottom:10px solid transparent}
+.vt .cap{position:absolute;left:12px;right:12px;bottom:12px;font-size:15px;font-weight:600;text-shadow:0 2px 8px rgba(0,0,0,.8)}
+</style></head><body>
+
+<!-- 1 · Ambil Campaign wizard -->
+<div class="stage" id="wizard">
+  <div class="beam l"></div><div class="beam r"></div><div class="beam thin" style="left:760px;transform:rotate(4deg)"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div class="phone" style="left:590px;top:20px;transform:perspective(2000px) rotateY(-16deg) rotateX(6deg) rotateZ(-2deg) scale(.95)"><div class="screen"><div class="island"></div>
+    <div style="padding:80px 30px 0">
+      <div class="muted" style="font-size:16px">TAPP · TAPP Mega Campaign</div>
+      <div style="display:flex;align-items:center;margin:26px 0 24px">
+        <span style="width:44px;height:44px;border-radius:50%;background:#0c65c4;display:inline-flex;align-items:center;justify-content:center">✓</span><span style="flex:1;height:2px;background:#2f86e8"></span>
+        <span style="width:44px;height:44px;border-radius:50%;background:#0c65c4;display:inline-flex;align-items:center;justify-content:center">✓</span><span style="flex:1;border-top:2px dashed #2f86e8"></span>
+        <span style="width:44px;height:44px;border-radius:50%;border:2px solid #2f86e8;background:rgba(12,101,196,.25);display:inline-flex;align-items:center;justify-content:center;font-weight:600">3</span>
+      </div>
+      <div class="h" style="font-size:34px">Pilih Video</div>
+      <div class="muted" style="font-size:16px;margin:6px 0 20px">Dari @rani.clips</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+        <div class="vt" style="height:250px;outline:3px solid #2f86e8"><div class="ph" style="background:radial-gradient(70% 60% at 30% 25%,#ffb47a,transparent 60%),linear-gradient(160deg,#c2553a,#3b1530)"></div><div class="who"></div><div class="play"></div><div class="cap">Cara dapat cuan dari clip</div>
+          <span style="position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:#0c65c4;border:2px solid #fff;text-align:center;line-height:30px;font-weight:600">1</span></div>
+        <div class="vt" style="height:250px;outline:3px solid #2f86e8"><div class="ph" style="background:radial-gradient(70% 60% at 70% 20%,#7fe3d0,transparent 60%),linear-gradient(160deg,#127a73,#0a2238)"></div><div class="who"></div><div class="play"></div><div class="cap">Podcast eps. 12 highlight</div>
+          <span style="position:absolute;top:10px;right:10px;width:34px;height:34px;border-radius:50%;background:#0c65c4;border:2px solid #fff;text-align:center;line-height:30px;font-weight:600">2</span></div>
+        <div class="vt" style="height:150px;opacity:.6"><div class="ph" style="background:linear-gradient(160deg,#4b3a8a,#14112b)"></div><div class="who"></div></div>
+        <div class="vt" style="height:150px;opacity:.6"><div class="ph" style="background:linear-gradient(160deg,#8a6a2a,#24180a)"></div><div class="who"></div></div>
+      </div>
+      <div class="btn" style="margin-top:22px;padding:20px;font-size:22px">Submit 2 Video</div>
+    </div></div></div>
+  <div class="glass" style="left:200px;top:250px;width:380px;padding:26px 28px;transform:perspective(1600px) rotateY(12deg)">
+    <div class="muted" style="font-size:18px">Akun</div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:12px"><span style="font-size:26px;font-weight:600">@rani.clips</span><span class="ok"></span></div>
+    <div style="color:#34d07a;font-size:17px;margin-top:6px">Terverifikasi</div></div>
+  <div class="glass" style="left:1080px;top:520px;width:330px;padding:24px 28px;transform:perspective(1600px) rotateY(-12deg)">
+    <div class="muted" style="font-size:18px">Cek otomatis</div>
+    <div class="h" style="font-size:40px;margin-top:6px">18.240 <span style="font-size:20px" class="muted">views</span></div>
+    <div style="color:#88bdf5;font-size:17px;margin-top:4px">Link terverifikasi</div></div>
+</div>
+
+<!-- 2 · Verifikasi kode bio -->
+<div class="stage" id="verify">
+  <div class="beam l"></div><div class="beam r"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div class="glass" style="left:330px;top:170px;width:780px;height:520px;padding:52px;transform:perspective(2200px) rotateY(-10deg) rotateX(6deg)">
+    <div style="display:flex;align-items:center;gap:28px">
+      <div style="width:130px;height:130px;border-radius:50%;padding:5px;background:conic-gradient(#5aa6f5,#0c65c4,#9cc8ff,#5aa6f5)"><div style="width:100%;height:100%;border-radius:50%;background:radial-gradient(60% 60% at 40% 35%,#f2b28c,#9a5634);border:5px solid #0b1424"></div></div>
+      <div><div class="h" style="font-size:44px">@rani.clips</div><div class="muted" style="font-size:22px;margin-top:6px">12,4 rb pengikut · 214 video</div></div></div>
+    <div class="muted" style="font-size:20px;margin-top:40px">Bio</div>
+    <div style="font-size:24px;line-height:36px;margin-top:8px;color:#d6dbe3">Clipper harian ✂️ podcast &amp; film<br>
+      <span style="display:inline-block;margin-top:14px;padding:12px 22px;border-radius:14px;background:rgba(12,101,196,.25);border:1.5px solid #2f86e8;font-family:Menlo,monospace;font-size:30px;letter-spacing:5px;box-shadow:0 0 40px -6px rgba(47,134,232,.9)">TAPP-482913</span></div>
+    <div class="btn" style="position:absolute;left:52px;right:52px;bottom:44px;padding:22px;font-size:24px">Cek bio sekarang</div>
+  </div>
+  <div style="position:absolute;left:1070px;top:120px;width:260px;height:300px;transform:perspective(1600px) rotateY(-18deg)">
+    <div style="position:absolute;inset:0;clip-path:path('M130 0 L255 46 V150 C255 230 200 278 130 300 C60 278 5 230 5 150 V46 Z');background:linear-gradient(160deg,#9cc8ff,#2f86e8 40%,#0c4d96);box-shadow:0 0 80px rgba(47,134,232,.8)"></div>
+    <div style="position:absolute;left:78px;top:118px;width:104px;height:56px;border-left:16px solid #fff;border-bottom:16px solid #fff;transform:rotate(-45deg);border-radius:4px"></div></div>
+  <div class="glass pill" style="left:180px;top:610px"><span style="font-size:26px">♪</span> TikTok · Terverifikasi <span class="ok"></span></div>
+</div>
+
+<!-- 3 · Qualified views -->
+<div class="stage" id="views">
+  <div class="beam l"></div><div class="beam r"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div class="glass" style="left:300px;top:150px;width:1000px;height:560px;padding:48px 54px;transform:perspective(2400px) rotateX(10deg)">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start">
+      <div><div class="muted" style="font-size:22px">Qualified views</div><div class="h" style="font-size:76px;margin-top:4px">1,4 jt</div></div>
+      <div style="text-align:right"><div class="muted" style="font-size:22px">Views mentah</div><div class="h" style="font-size:40px;margin-top:10px;color:#9aa8bb">1,61 jt</div></div></div>
+    <svg viewBox="0 0 900 260" style="width:100%;height:280px;margin-top:20px">
+      <defs><linearGradient id="va" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2f86e8" stop-opacity=".6"/><stop offset="1" stop-color="#2f86e8" stop-opacity="0"/></linearGradient>
+      <filter id="vg"><feGaussianBlur stdDeviation="6"/></filter></defs>
+      <path d="M0 230 C90 220 140 200 210 196 S330 150 400 140 S520 120 600 84 S760 50 900 18 L900 260 L0 260Z" fill="url(#va)"/>
+      <path d="M0 230 C90 220 140 200 210 196 S330 150 400 140 S520 120 600 84 S760 50 900 18" stroke="#9cc8ff" stroke-width="10" fill="none" filter="url(#vg)" opacity=".7"/>
+      <path d="M0 230 C90 220 140 200 210 196 S330 150 400 140 S520 120 600 84 S760 50 900 18" stroke="#cfe5ff" stroke-width="4" fill="none"/>
+      <path d="M0 236 C120 232 200 222 300 214 S480 196 560 170 S760 120 900 96" stroke="#5c6b80" stroke-width="3" fill="none" stroke-dasharray="8 8"/>
+      <circle cx="900" cy="18" r="10" fill="#fff"/></svg></div>
+  <div class="glass pill" style="left:1150px;top:110px"><span class="ok"></span> Bot tersaring</div>
+  <div class="glass pill" style="left:200px;top:650px">Dicek tiap 6 jam · 30 hari</div>
+</div>
+
+<!-- 4 · Level -->
+<div class="stage" id="level">
+  <div class="beam l"></div><div class="beam r"></div><div class="beam thin" style="left:770px;transform:rotate(0deg);opacity:.9"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div style="position:absolute;left:560px;top:110px;width:480px;height:540px">
+    <div style="position:absolute;inset:0;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:linear-gradient(150deg,#e3f0ff,#7fb3ee 20%,#1d5fa8 52%,#0a2a52 80%,#5aa6f5);filter:drop-shadow(0 0 60px rgba(47,134,232,.9))"></div>
+    <div style="position:absolute;inset:34px;clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%);background:radial-gradient(70% 60% at 35% 25%,#3c8ee6,#0c4d96 55%,#06264a)"></div>
+    <img src="../../assets/tapp-mark-white.svg" style="position:absolute;left:140px;top:170px;width:200px;height:200px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.6))"></div>
+  <div style="position:absolute;left:520px;top:690px;width:560px;height:70px;border-radius:50%;background:radial-gradient(closest-side,rgba(156,200,255,.55),transparent)"></div>
+  <div style="position:absolute;left:0;right:0;top:770px;display:flex;justify-content:center;gap:34px">
+    <span class="glass pill" style="position:relative">New</span><span class="glass pill" style="position:relative;color:#34d07a">Rising</span><span class="glass pill" style="position:relative;color:#88bdf5;border-color:#2f86e8">Verified</span><span class="glass pill" style="position:relative;color:#c0a8ff">Proven</span><span class="glass pill" style="position:relative;color:#f0c45a">Elite</span></div>
+</div>
+
+<!-- 5 · Payout -->
+<div class="stage" id="payout">
+  <div class="beam l"></div><div class="beam r"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div class="phone" style="left:300px;top:20px;transform:perspective(2000px) rotateY(16deg) rotateX(6deg) rotateZ(2deg) scale(.95)"><div class="screen"><div class="island"></div>
+    <div style="padding:90px 30px 0">
+      <div class="muted" style="font-size:18px">Total payout diterima</div>
+      <div class="h" style="font-size:58px;margin-top:6px">Rp4.250.000</div>
+      <div style="margin-top:28px;height:190px;border-radius:26px;padding:24px;background:radial-gradient(80% 120% at 90% -10%,rgba(125,178,244,.6),transparent 55%),linear-gradient(135deg,#061a33,#0c4d96 60%,#2f86e8)">
+        <div style="font-size:17px;opacity:.8">TAPP Creators</div><div class="h" style="font-size:32px;margin-top:46px;white-space:nowrap">GoPay •••• 7890</div></div>
+      <div style="margin-top:22px;display:grid;gap:12px">
+        <div style="display:flex;justify-content:space-between;padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.05);font-size:19px"><span>Clip TikTok · 3 Okt</span><span style="color:#34d07a">+Rp300.000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.05);font-size:19px"><span>Clip Reels · 1 Okt</span><span style="color:#34d07a">+Rp186.000</span></div>
+        <div style="display:flex;justify-content:space-between;padding:18px 20px;border-radius:18px;background:rgba(255,255,255,.05);font-size:19px"><span>Clip Shorts · 28 Sep</span><span style="color:#34d07a">+Rp92.000</span></div></div>
+    </div></div></div>
+  <div class="glass" style="left:840px;top:230px;width:480px;padding:30px 34px;display:flex;gap:22px;align-items:center;transform:perspective(1600px) rotateY(-10deg)">
+    <span class="ok" style="width:64px;height:64px;flex-shrink:0"></span>
+    <div><div class="h" style="font-size:34px">Rp300.000 ditransfer</div><div class="muted" style="font-size:20px;margin-top:6px">Clip-mu diterima · ke GoPay</div></div></div>
+  <div class="glass pill" style="left:900px;top:470px">BCA · BRI · BNI · Mandiri</div>
+  <div class="glass pill" style="left:960px;top:560px">GoPay · OVO · DANA</div>
+</div>
+
+<!-- 6 · Brand dashboard -->
+<div class="stage" id="brand">
+  <div class="beam l"></div><div class="beam r"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div class="glass" style="left:190px;top:110px;width:1220px;height:640px;padding:40px 46px;transform:perspective(2600px) rotateX(12deg)">
+    <div style="display:flex;justify-content:space-between;align-items:center"><div class="h" style="font-size:34px">Laporan Campaign</div><span class="pill" style="background:rgba(12,101,196,.25);border:1px solid #2f86e8;font-size:18px;padding:10px 18px">Live</span></div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-top:28px">
+      <div class="dark" style="border-radius:20px;padding:22px"><div class="muted" style="font-size:17px">Qualified views</div><div class="h" style="font-size:40px;color:#34d07a;margin-top:6px">25 jt</div></div>
+      <div class="dark" style="border-radius:20px;padding:22px"><div class="muted" style="font-size:17px">Views mentah</div><div class="h" style="font-size:40px;margin-top:6px">28,4 jt</div></div>
+      <div class="dark" style="border-radius:20px;padding:22px"><div class="muted" style="font-size:17px">Video #hashtag</div><div class="h" style="font-size:40px;margin-top:6px">1.240</div></div>
+      <div class="dark" style="border-radius:20px;padding:22px"><div class="muted" style="font-size:17px">Sisa budget</div><div class="h" style="font-size:40px;margin-top:6px;color:#88bdf5">62%</div></div></div>
+    <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:16px;margin-top:24px">
+      <div class="vt" style="height:290px"><div class="ph" style="background:radial-gradient(70% 60% at 30% 25%,#ffb47a,transparent 60%),linear-gradient(160deg,#c2553a,#3b1530)"></div><div class="who"></div><div class="cap">▶ 412K</div></div>
+      <div class="vt" style="height:290px"><div class="ph" style="background:radial-gradient(70% 60% at 70% 20%,#7fe3d0,transparent 60%),linear-gradient(160deg,#127a73,#0a2238)"></div><div class="who"></div><div class="cap">▶ 286K</div></div>
+      <div class="vt" style="height:290px"><div class="ph" style="background:radial-gradient(70% 60% at 50% 20%,#b9a2ff,transparent 60%),linear-gradient(160deg,#4b3a8a,#14112b)"></div><div class="who"></div><div class="cap">▶ 198K</div></div>
+      <div class="vt" style="height:290px"><div class="ph" style="background:radial-gradient(70% 60% at 40% 20%,#ffd98a,transparent 60%),linear-gradient(160deg,#8a6a2a,#24180a)"></div><div class="who"></div><div class="cap">▶ 154K</div></div>
+      <div class="vt" style="height:290px"><div class="ph" style="background:radial-gradient(70% 60% at 60% 20%,#9cc8ff,transparent 60%),linear-gradient(160deg,#1d5fa8,#071a33)"></div><div class="who"></div><div class="cap">▶ 131K</div></div>
+      <div class="vt" style="height:290px"><div class="ph" style="background:radial-gradient(70% 60% at 30% 20%,#ff9fb8,transparent 60%),linear-gradient(160deg,#a33a5c,#2a0d1a)"></div><div class="who"></div><div class="cap">▶ 97K</div></div></div>
+  </div>
+</div>
+
+<!-- 7 · Materi video -->
+<div class="stage" id="assets">
+  <div class="beam l"></div><div class="beam r"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div style="position:absolute;left:330px;top:170px;width:940px;height:520px;transform:perspective(2200px) rotateX(10deg)">
+    <div class="vt" style="position:absolute;left:0;top:70px;width:300px;height:420px;transform:rotate(-10deg);box-shadow:0 40px 90px -20px #000"><div class="ph" style="background:radial-gradient(70% 60% at 30% 25%,#ffb47a,transparent 60%),linear-gradient(160deg,#c2553a,#3b1530)"></div><div class="who"></div><div class="play"></div></div>
+    <div class="vt" style="position:absolute;left:640px;top:70px;width:300px;height:420px;transform:rotate(10deg);box-shadow:0 40px 90px -20px #000"><div class="ph" style="background:radial-gradient(70% 60% at 70% 20%,#7fe3d0,transparent 60%),linear-gradient(160deg,#127a73,#0a2238)"></div><div class="who"></div><div class="play"></div></div>
+    <div class="vt" style="position:absolute;left:300px;top:0;width:340px;height:500px;box-shadow:0 50px 120px -20px #000,0 0 80px -10px rgba(47,134,232,.7);outline:2px solid rgba(156,200,255,.5)"><div class="ph" style="background:radial-gradient(70% 60% at 50% 20%,#9cc8ff,transparent 60%),linear-gradient(160deg,#1d5fa8,#071a33)"></div><div class="who"></div><div class="play"></div><div class="cap" style="font-size:20px">Konten sumber · 4K</div></div>
+  </div>
+  <div class="glass" style="left:70px;top:60px;width:380px;padding:28px 30px;z-index:2;transform:perspective(1600px) rotateY(12deg)">
+    <div class="h" style="font-size:28px">Brief</div>
+    <div style="font-size:19px;line-height:32px;margin-top:10px;color:#d6dbe3"><span style="color:#34d07a">✓</span> Sebut brand di 3 detik pertama<br><span style="color:#34d07a">✓</span> Pakai #TAPPMega<br><span style="color:#ff6b70">✕</span> Musik berhak cipta</div></div>
+  <div class="btn" style="position:absolute;left:1120px;top:620px;padding:22px 34px;font-size:24px">⬇ Unduh materi</div>
+</div>
+
+<!-- 8 · Mega Campaign -->
+<div class="stage" id="mega">
+  <div class="beam l"></div><div class="beam r"></div><div class="beam thin" style="left:520px;transform:rotate(14deg)"></div><div class="beam thin" style="right:520px;transform:rotate(-14deg)"></div><div class="floor"></div><div class="grid"></div><div class="dust"></div>
+  <div style="position:absolute;left:640px;top:90px;width:320px;height:320px;border-radius:80px;background:linear-gradient(160deg,#9cc8ff,#2f86e8 30%,#0c4d96 70%,#06264a);box-shadow:0 0 140px rgba(47,134,232,.9),inset 0 2px 0 rgba(255,255,255,.6),inset 0 -20px 60px rgba(0,0,0,.4)">
+    <img src="../../assets/tapp-mark-white.svg" style="position:absolute;left:60px;top:60px;width:200px;height:200px;filter:drop-shadow(0 10px 30px rgba(0,0,0,.5))"></div>
+  <div class="h" style="position:absolute;left:0;right:0;top:470px;text-align:center;font-size:120px;font-weight:700;letter-spacing:4px;
+    background:linear-gradient(180deg,#ffffff,#cfe5ff 45%,#5aa6f5);-webkit-background-clip:text;color:transparent;filter:drop-shadow(0 10px 40px rgba(47,134,232,.6))">MEGA CAMPAIGN</div>
+  <div style="position:absolute;left:0;right:0;top:640px;display:flex;justify-content:center;gap:22px">
+    <span class="glass pill" style="position:relative">Rp3.000 / 1K views</span><span class="glass pill" style="position:relative">Min. 5.000 views</span><span class="glass pill" style="position:relative">Maks Rp300.000 / clip</span></div>
+</div>
+</body></html>
