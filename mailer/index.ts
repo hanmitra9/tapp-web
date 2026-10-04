@@ -133,7 +133,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
         eyebrow: "Pembayaran",
         title: "Pencairan saldomu sudah ditransfer",
         intro: "Saldo yang kamu tarik sudah kami transfer. Biasanya langsung masuk, tapi beberapa bank bisa butuh waktu sampai 1 hari kerja.",
-        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.bonus) > 0 ? ([["Bonus level", idr(Number(d.bonus))]] as [string, string][]) : []), ...(Number(d.fee) > 0 ? ([["Biaya tarik", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
+        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.bonus) > 0 ? ([["Bonus level", idr(Number(d.bonus))]] as [string, string][]) : []), ...(Number(d.fee) > 0 ? ([["Fee platform & transfer", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
         button: APP() ? { label: "Lihat riwayat pembayaran", url: `${APP()}/dashboard/earnings` } : undefined,
       },
     };
@@ -158,7 +158,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
     const rows: [string, string][] = [
       ["Qualified views baru", `+${nf(d.qualified_gain)}`],
       ["Biaya views", idr(Number(d.spend))],
-      [`Fee kerjasama (${nf(d.fee_pct)}%)`, idr(Number(d.fee))],
+      ...(Number(d.fee_pct) > 0 ? ([[`Fee kerjasama (${nf(d.fee_pct)}%)`, idr(Number(d.fee))]] as [string, string][]) : []),
       ...camps.slice(0, 5).map((c): [string, string] => [String(c.title ?? "Campaign"),
         `${nf(c.qualified)} qualified · ${nf(c.raw)} mentah${Number(c.pending) > 0 ? ` · ${nf(c.pending)} menunggu verifikasi` : ""} · sisa ${idr(Number(c.remaining))}`]),
     ];

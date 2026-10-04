@@ -20,7 +20,7 @@ import { maskAccount } from '@/features/creator/handles';
 import { fetchEarnings } from '@/features/campaigns/earnings';
 import { fetchPayouts, fetchWithdrawTerms, OPEN, PAYOUT_STATUS, requestPayout, TIER_LABEL, uuid, type Payout } from '@/features/payouts/api';
 
-// Wallet (0045): accepted clips add to the balance; the creator withdraws it. Flat fee per withdrawal, level bonus on top.
+// Wallet (0045/0046): accepted clips add to the balance; the creator withdraws it. Platform fee + transfer fee, level bonus on top.
 export default function Payments() {
   useEffect(() => { track('earnings_viewed'); }, []);
   const { session } = useAuth();
@@ -37,12 +37,13 @@ export default function Payments() {
   const available = Math.max(d?.summary.available ?? 0, 0);
   const open = d?.payouts.find((p) => OPEN.includes(p.status)) ?? null;
   const bonus = d ? Math.round(available * d.terms.bonusPct / 100) : 0;
-  const net = d ? available + bonus - d.terms.fee : 0;
+  const platformFee = d ? Math.round(available * d.terms.feePct / 100) : 0;
+  const net = d ? available + bonus - platformFee - d.terms.fee : 0;
   const canWithdraw = !!d && !!d.method && !open && available >= d.terms.min;
 
   function confirm() {
     if (!d) return;
-    showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus ? ` + bonus level ${idr(bonus)}` : ''} − biaya tarik ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method?.provider ?? ''}.`, [
+    showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus ? ` + bonus level ${idr(bonus)}` : ''} − fee platform ${d.terms.feePct}% ${idr(platformFee)} − biaya transfer ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method?.provider ?? ''}.`, [
       { text: 'Batal', style: 'cancel' },
       { text: 'Tarik', onPress: withdraw },
     ]);
@@ -73,7 +74,7 @@ export default function Payments() {
             <>
               <Button label={available >= d.terms.min ? `Tarik ${idr(Math.max(net, 0))}` : 'Tarik saldo'} onPress={confirm} loading={busy} disabled={!canWithdraw} />
               <Text style={styles.terms}>
-                {available < d.terms.min ? `Minimal tarik ${idr(d.terms.min)}. ` : ''}Biaya tarik {idr(d.terms.fee)} per pencairan.
+                {available < d.terms.min ? `Minimal tarik ${idr(d.terms.min)}. ` : ''}Fee platform {d.terms.feePct}% + biaya transfer {idr(d.terms.fee)} per pencairan.
                 {d.terms.bonusPct ? ` Bonus level ${TIER_LABEL[d.terms.tier]} +${d.terms.bonusPct}% ditambahkan saat kamu menarik.` : ' Naik ke level Rising untuk mulai dapat bonus saat menarik.'}
               </Text>
             </>
@@ -96,7 +97,7 @@ export default function Payments() {
       <View style={styles.explain}>
         <Text style={styles.explainTitle}>Cara kamu dibayar</Text>
         <Text style={styles.explainBody}>
-          1. Submit klip dari campaign yang kamu ikuti.{'\n'}2. Setelah tim TAPP menerima klipmu, bayarannya masuk ke saldo: views klip × tarif per 1.000 views.{'\n'}3. Tarik saldo kapan saja setelah mencapai minimum. Bonus level ditambahkan saat kamu menarik.
+          1. Submit klip dari campaign yang kamu ikuti.{'\n'}2. Setelah tim TAPP menerima klipmu, bayarannya masuk ke saldo: views klip × tarif per 1.000 views.{'\n'}3. Tarik saldo kapan saja setelah mencapai minimum. Saat menarik ada fee platform dan biaya transfer, dan bonus level ditambahkan.
         </Text>
       </View>
 
@@ -117,7 +118,7 @@ function PayoutRow({ p }: { p: Payout }) {
     <View style={styles.row}>
       <View style={styles.rowText}>
         <Text style={styles.rowTitle}>{p.paid_at ? dateLabel(p.paid_at) : dateLabel(p.created_at)} · {p.payout_method.provider} ••{p.payout_method.account_number.slice(-4)}</Text>
-        <Text style={styles.rowMeta}>Saldo {idr(p.amount)}{bonus ? ` · bonus +${idr(bonus)}` : ''}{fee ? ` · biaya ${idr(fee)}` : ''}{p.processed_reference ? ` · Ref. ${p.processed_reference}` : ''}</Text>
+        <Text style={styles.rowMeta}>Saldo {idr(p.amount)}{bonus ? ` · bonus +${idr(bonus)}` : ''}{fee ? ` · fee ${idr(fee)}` : ''}{p.processed_reference ? ` · Ref. ${p.processed_reference}` : ''}</Text>
         {p.status === 'rejected' && p.review_reason ? <Text style={[styles.rowMeta, { color: color.danger }]}>{p.review_reason}</Text> : null}
       </View>
       <View style={{ alignItems: 'flex-end', gap: 4 }}>

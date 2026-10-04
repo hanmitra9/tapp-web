@@ -75,10 +75,10 @@ POSTS = [
 </tbody></table>
 <h2>Cara bonus dihitung</h2>
 <p>Bayaran clip masuk ke saldomu. Saat kamu menarik saldo, TAPP menambahkan bonus tarif <b>di atas</b> jumlah yang ditarik, sesuai level kamu saat itu. Bonus ini dibayar TAPP, jadi tidak mengurangi budget brand.</p>
-<p>Setiap pencairan dikenai biaya tarik Rp10.000, dengan minimal saldo Rp100.000.</p>
+<p>Setiap pencairan dipotong fee platform 18% dan biaya transfer Rp10.000, dengan minimal saldo Rp100.000. Bonus level menutup sebagian fee ini, makin tinggi levelmu makin besar.</p>
 <ul>
-<li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, dikurangi biaya tarik Rp10.000, diterima <b>Rp305.000</b>.</li>
-<li>Tarik saldo yang sama di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, dikurangi biaya tarik Rp10.000, diterima <b>Rp335.000</b>.</li>
+<li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, fee platform Rp54.000, biaya transfer Rp10.000, diterima <b>Rp251.000</b>.</li>
+<li>Tarik saldo yang sama di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, diterima <b>Rp281.000</b>.</li>
 </ul>
 <p>Rincian bonus dan biaya tercantum di riwayat pencairan dan di email bukti transfer.</p>
 <h2>Selain bonus</h2>
@@ -110,10 +110,11 @@ POSTS = [
 <h2>Ketentuan penarikan</h2>
 <table class="bl-table"><tbody>
 <tr><td>Minimal saldo</td><td>Rp100.000</td></tr>
-<tr><td>Biaya tarik</td><td>Rp10.000 per pencairan</td></tr>
+<tr><td>Fee platform</td><td>18% dari saldo yang ditarik</td></tr>
+<tr><td>Biaya transfer</td><td>Rp10.000 per pencairan</td></tr>
 <tr><td>Bonus level</td><td>+2% sampai +15% dari jumlah yang ditarik</td></tr>
 </tbody></table>
-<p>Tips: tarik saldo sekaligus dalam jumlah lebih besar supaya biaya tarik terasa lebih kecil. Kalau levelmu naik, bonus saat menarik juga ikut naik.</p>
+<p>Fee platform membiayai konten sumber yang siap edit, pelacakan views otomatis, dan jaminan pembayaran. Tips: tarik saldo sekaligus dalam jumlah lebih besar supaya biaya transfer terasa lebih kecil. Kalau levelmu naik, bonus saat menarik juga ikut naik.</p>
 <h2>Metode pembayaran</h2>
 <p>E-wallet seperti GoPay, OVO, DANA, ShopeePay, dan LinkAja, atau rekening bank seperti BCA, BRI, BNI, Mandiri, dan lainnya. Atur di <b>Profil → Pembayaran</b>.</p>
 <h2>Kalau transfer gagal</h2>
@@ -169,6 +170,7 @@ POSTS = [
 <li><b>Tarif</b>: Rp3.000 per 1.000 qualified views.</li>
 <li><b>Minimal views</b>: clip mulai dihitung setelah 5.000 views.</li>
 <li><b>Batas per clip</b>: dibayar sampai 100K views, jadi maksimal Rp300.000 per clip.</li>
+<li><b>Pencairan</b>: bayaran masuk saldo; saat menarik ada fee platform 18% dan biaya transfer Rp10.000, plus bonus level.</li>
 <li><b>Platform</b>: TikTok, Instagram, dan YouTube.</li>
 </ul>
 <h2>Cara ikut</h2>
@@ -181,30 +183,22 @@ POSTS = [
 <p>Tidak ada minimum follower. Yang dihitung adalah views dari clip-mu.</p>
 '''),
   dict(slug='biaya-campaign-brand', cat='Brand', date='2026-10-04', cover='fee', popular=True,
-    title='Biaya Campaign di TAPP: Bayar Views Terverifikasi + Fee 18%',
-    excerpt='Struktur biaya yang jelas: biaya views dari qualified views, ditambah fee kerjasama 18%.',
+    title='Biaya Campaign di TAPP: Satu Harga All-in per 1.000 Views',
+    excerpt='Tanpa fee tambahan. Satu harga per 1.000 qualified views, sudah termasuk garansi views valid dan penyaringan fraud.',
     body='''
-<p>Di TAPP, brand tidak membayar per posting atau per jumlah follower. Kamu membayar views yang lolos verifikasi, ditambah fee kerjasama yang jelas sejak awal.</p>
-<h2>Dua komponen biaya</h2>
-<ul>
-<li><b>Biaya views</b>: qualified views dikali tarif per 1.000 views (CPM) yang disepakati bersama tim TAPP.</li>
-<li><b>Fee kerjasama 18%</b>: dihitung dari biaya views.</li>
-</ul>
+<p>Di TAPP, brand tidak membayar per posting, per jumlah follower, atau fee tambahan. Kamu membayar <b>satu harga all-in per 1.000 qualified views</b>, dan hanya untuk views yang lolos verifikasi.</p>
 <h2>Contoh hitungan</h2>
 <table class="bl-table"><tbody>
-<tr><td>Tarif campaign</td><td>Rp3.000 / 1.000 qualified views</td></tr>
+<tr><td>Harga campaign</td><td>Rp1.500 / 1.000 qualified views</td></tr>
 <tr><td>Qualified views terkumpul</td><td>2.000.000</td></tr>
-<tr><td>Biaya views</td><td>Rp6.000.000</td></tr>
-<tr><td>Fee kerjasama (18%)</td><td>Rp1.080.000</td></tr>
-<tr><td><b>Total biaya</b></td><td><b>Rp7.080.000</b></td></tr>
+<tr><td><b>Total biaya</b></td><td><b>Rp3.000.000</b></td></tr>
 </tbody></table>
-<h2>Apa saja yang termasuk?</h2>
+<h2>Apa saja yang sudah termasuk?</h2>
 <ul>
-<li>Pencarian, seleksi, dan pembayaran creator, termasuk verifikasi akun lewat kode bio.</li>
-<li>Pemantauan views otomatis setiap 6 jam dan penyaringan bot serta aktivitas janggal.</li>
-<li>Review setiap clip oleh tim TAPP sebelum dihitung.</li>
-<li>Satu tagihan ke TAPP, jadi kamu tidak perlu mengurus pembayaran ke banyak creator.</li>
-<li>Dashboard brand, laporan harian, dan pendampingan account manager.</li>
+<li><b>Garansi views valid</b>: kamu hanya ditagih views yang lolos penyaringan. Views bot, iklan, dan repost tidak pernah kamu bayar.</li>
+<li><b>Penyaringan fraud</b>: verifikasi akun lewat kode bio, pemantauan views setiap 6 jam, dan review setiap clip oleh tim TAPP.</li>
+<li><b>Creator</b>: pencarian, pengelolaan, dan pembayaran semua creator. Kamu cukup membayar satu tagihan ke TAPP.</li>
+<li><b>Laporan</b>: dashboard brand, laporan harian, dan pendampingan account manager.</li>
 </ul>
 <h2>Budget selalu terkendali</h2>
 <p>Kamu menetapkan budget di awal. Kalau budget habis di tengah jalan, campaign otomatis masuk fase segera berakhir dan views berikutnya tidak ditagih. Views mentah yang tidak lolos tetap terlihat di laporan sebagai pembanding, tapi tidak pernah kamu bayar.</p>
@@ -264,7 +258,7 @@ POSTS = [
 </tbody></table>
 <h2>Kapan endorse masih cocok?</h2>
 <p>Kalau kamu butuh wajah tertentu untuk mewakili brand. Untuk menyebarkan pesan seluas-luasnya dengan biaya yang terukur, clipping jauh lebih efisien.</p>
-<p>Biaya di TAPP terdiri dari biaya views ditambah fee kerjasama 18%. Rinciannya bisa kamu baca di artikel <a href="blog-biaya-campaign-brand.html">Biaya Campaign di TAPP</a>.</p>
+<p>Biaya di TAPP adalah satu harga all-in per 1.000 qualified views, tanpa fee tambahan. Rinciannya bisa kamu baca di artikel <a href="blog-biaya-campaign-brand.html">Biaya Campaign di TAPP</a>.</p>
 '''),
 
   dict(slug='mulai-di-tapp', cat='Panduan', date='2026-09-23', cover='start',

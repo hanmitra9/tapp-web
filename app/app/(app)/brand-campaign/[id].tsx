@@ -66,7 +66,7 @@ export default function BrandCampaignReport() {
           <View style={{ alignItems: 'flex-end' }}><Text style={styles.cap}>Sisa budget</Text><Text style={styles.budgetSide}>{idr(c.remaining)}</Text></View>
         </View>
         <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${Math.max(used * 100, 1)}%` }]} {...web(used >= 0.9 ? 'seg-p' : 'seg-q')} /></View>
-        <Text style={styles.cap}>{Math.round(used * 100)}% dari budget views {idr(c.budget)} · fee kerjasama {c.fee_pct}% ditagih terpisah</Text>
+        <Text style={styles.cap}>{Math.round(used * 100)}% dari budget {idr(c.budget)}{c.fee_pct > 0 ? ` · fee kerjasama ${c.fee_pct}% ditagih terpisah` : ' · harga all-in'}</Text>
       </View>
 
       <View style={styles.grid}>
