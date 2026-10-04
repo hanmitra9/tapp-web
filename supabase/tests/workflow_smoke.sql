@@ -19,6 +19,7 @@ insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) value
  ('00000000-0000-0000-0000-0000000000c2','c2@x.id', null,  '{"full_name":"Creator Two"}');
 update profiles set role='admin' where id='00000000-0000-0000-0000-00000000000a';
 update app_settings set value = 'false'::jsonb where key = 'require_admin_mfa';   -- MFA has its own section at the end
+update app_settings set value = '100'::jsonb where key = 'creator_share_pct';    -- brand price = creator rate until the pricing section
 update profiles set role='brand' where id='00000000-0000-0000-0000-00000000000b';
 insert into brands (id,name,slug) values ('10000000-0000-0000-0000-000000000001','Acme Finance','acme');
 insert into brand_members values ('10000000-0000-0000-0000-000000000001','00000000-0000-0000-0000-00000000000b','owner');
@@ -85,17 +86,28 @@ select budget, earned, status, status_reason from campaigns where id='20000000-0
 select pg_temp.expect_error($$update content_metrics set views = 1$$,'permission denied');
 reset role; select pg_temp.expect_error($$update content_metrics set views = 1$$,'append_only'); set role authenticated;
 
--- Payout (0035): creators no longer withdraw; the admin pays the accepted clip directly.
+-- Wallet (0045): accepted views are credited to the balance; the creator withdraws (flat fee, level bonus on top).
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select * from my_earnings_summary;
-select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_by_admin');
-select pg_temp.expect_error(format($$select admin_pay_submission(%L, 300000, 'X')$$, :'sub_id'),'forbidden');
+select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_below_minimum');      -- still on hold
+select pg_temp.expect_error(format($$select admin_credit_submission(%L, 300000)$$, :'sub_id'),'forbidden');
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
-select pg_temp.expect_error(format($$select admin_pay_submission(%L, 300000, ' ')$$, :'sub_id'),'reference_required');
-select pg_temp.expect_error(format($$select admin_pay_submission(%L, 100, 'X')$$, :'sub_id'),'views_below_paid');
-select id as payout_id, amount, status from admin_pay_submission(:'sub_id', 300000, 'BCA-TRX-88231') \gset
-select status from submissions where id = :'sub_id';                                -- completed
-select pg_temp.expect_error(format($$select admin_pay_submission(%L, 300000, 'BCA-2')$$, :'sub_id'),'nothing_to_pay');  -- nothing new
+select pg_temp.expect_error(format($$select admin_credit_submission(%L, 100)$$, :'sub_id'),'views_below_paid');
+select pg_temp.expect_error(format($$select admin_pay_submission(%L, 300000, 'X')$$, :'sub_id'),'use_admin_credit_submission');
+select status from admin_credit_submission(:'sub_id', 300000);                       -- completed
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+do $$ begin if (select available from my_earnings_summary) <> 600000 then raise exception 'credit should be withdrawable'; end if; end $$;
+select id as payout_id, amount, fee, bonus, net_amount, status from request_payout(gen_random_uuid()) \gset
+select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_already_open');
+do $$ declare p public.payout_requests; begin
+  select * into p from payout_requests order by created_at desc limit 1;
+  if p.amount <> 600000 or p.fee <> 10000 then raise exception 'flat withdrawal fee wrong: % %', p.amount, p.fee; end if;
+  if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) then raise exception 'bonus wrong'; end if;
+  if p.net_amount <> p.amount + p.bonus - p.fee then raise exception 'net wrong'; end if;
+end $$;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid', null, ' ')$$, :'payout_id'),'reference_required');
+select status from admin_update_payout(:'payout_id', 'paid', null, 'BCA-TRX-88231');   -- straight from the queue
 select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid', null, 'again')$$, :'payout_id'),'invalid_transition');
 select earned, paid from campaigns where id='20000000-0000-0000-0000-000000000001';
 
@@ -268,7 +280,8 @@ do $$ declare r record; begin
   for r in select * from brand_campaigns() loop
     if r.raw_views < r.qualified_views + r.pending_views and r.excluded_views <> 0 then raise exception 'views breakdown inconsistent'; end if;
     if r.excluded_views <> greatest(r.raw_views - r.qualified_views - r.pending_views, 0) then raise exception 'excluded wrong'; end if;
-    if r.platform_fee <> round(r.spent * 0.15) or r.total_cost <> r.spent + r.platform_fee then raise exception 'fee wrong'; end if;
+    if r.platform_fee <> round(r.spent * platform_fee_pct() / 100) or r.total_cost <> r.spent + r.platform_fee then raise exception 'fee wrong'; end if;
+    if r.fee_pct <> 18 then raise exception 'partnership fee should be 18%%'; end if;
     if r.raw_views > 0 and r.effective_cpm <> round(r.spent * 1000.0 / r.raw_views) then raise exception 'effective cpm wrong'; end if;
   end loop;
 end $$;
@@ -558,16 +571,14 @@ select 'instagram_connect_ok' as result;
 reset role;
 select withdrawal_fee_pct('new') as new_5, withdrawal_fee_pct('rising') as rising_4, withdrawal_fee_pct('verified') as verified_3,
        withdrawal_fee_pct('proven') as proven_2, withdrawal_fee_pct('elite') as elite_0;
-do $$ declare p public.payout_requests; v numeric; begin
-  select * into p from payout_requests where submission_id is not null order by created_at limit 1;
-  v := withdrawal_fee_pct(p.fee_tier);
+do $$ declare p public.payout_requests; begin
+  select * into p from payout_requests where status = 'paid' order by created_at limit 1;
   if p.fee_tier is null then raise exception 'fee tier not recorded'; end if;
-  if p.fee <> round(p.amount * v / 100) or p.fee_pct <> v then raise exception 'fee % pct % for amount % tier %', p.fee, p.fee_pct, p.amount, p.fee_tier; end if;
+  if p.fee <> 10000 or p.fee_pct <> 0 then raise exception 'flat fee expected, got % (% pct)', p.fee, p.fee_pct; end if;
   if p.net_amount <> p.amount + p.bonus - p.fee then raise exception 'net mismatch'; end if;
   if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) or p.bonus_pct <> tier_bonus_pct(p.fee_tier) then raise exception 'bonus % pct % tier %', p.bonus, p.bonus_pct, p.fee_tier; end if;
   if tier_bonus_pct('elite') <= tier_bonus_pct('new') then raise exception 'higher tier should earn more'; end if;
   if (select paid from campaigns where id = '20000000-0000-0000-0000-000000000001') <> 600000 then raise exception 'bonus must not touch the campaign budget'; end if;
-  if withdrawal_fee_pct('new') <> 0 or withdrawal_fee_pct('elite') <> 0 or p.fee <> 0 then raise exception 'fee should be 0 since 0038'; end if;
 end $$;
 select amount, fee, fee_pct, net_amount from admin_payouts limit 1;
 select 'withdrawal_fee_ok' as result;
@@ -685,3 +696,25 @@ select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select pg_temp.expect_error($$select record_check_metrics(gen_random_uuid(), 1, 0, 0, 0)$$, 'permission denied');
 reset role;
 select 'raw_from_checks_ok' as result;
+
+-- ── Brand price vs creator rate (0045) ──
+reset role;
+update app_settings set value = '70'::jsonb where key = 'creator_share_pct';
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select id as priced_id from upsert_campaign_draft(null, jsonb_build_object(
+  'brand_id','10000000-0000-0000-0000-000000000001','title','Priced','cpm',1500,'budget',1000000,'platforms',jsonb_build_array('tiktok'))) \gset
+do $$ declare a record; begin
+  select * into a from admin_campaigns where title = 'Priced';
+  if a.brand_cpm <> 1500 or a.cpm <> 1050 or a.creator_share_pct <> 70 then raise exception 'creator rate should be 70%%: % / %', a.cpm, a.brand_cpm; end if;
+  if a.brand_budget <> 1000000 or a.budget <> 700000 then raise exception 'creator budget wrong: %', a.budget; end if;
+end $$;
+select cpm from upsert_campaign_draft(:'priced_id', jsonb_build_object('title','Priced','cpm',2000,'budget',1000000,'creator_share_pct',100)); -- admin override
+select cpm as override_expect_2000 from campaigns where id = :'priced_id';
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as creator_reads_pricing_expect_0 from campaign_pricing;
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select count(*) > 0 as brand_reads_own_pricing from campaign_pricing;
+reset role;
+select private.brand_amount(1050, 70) as brand_money_expect_1500;
+select 'brand_pricing_ok' as result;

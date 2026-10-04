@@ -74,12 +74,13 @@ POSTS = [
 <tr><td><b>Elite</b></td><td>10 juta</td><td>+15%</td></tr>
 </tbody></table>
 <h2>Cara bonus dihitung</h2>
-<p>Bonus tarif dibayar TAPP <b>di atas</b> bayaran clip-mu, jadi tidak mengurangi budget brand dan tidak memotong penghasilanmu. Bonus mengikuti level kamu saat clip dibayar.</p>
+<p>Bayaran clip masuk ke saldomu. Saat kamu menarik saldo, TAPP menambahkan bonus tarif <b>di atas</b> jumlah yang ditarik, sesuai level kamu saat itu. Bonus ini dibayar TAPP, jadi tidak mengurangi budget brand.</p>
+<p>Setiap pencairan dikenai biaya tarik Rp10.000, dengan minimal saldo Rp100.000.</p>
 <ul>
-<li>Clip dibayar Rp300.000 saat kamu di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, total diterima Rp315.000.</li>
-<li>Clip yang sama saat kamu di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, total diterima Rp345.000.</li>
+<li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, dikurangi biaya tarik Rp10.000, diterima <b>Rp305.000</b>.</li>
+<li>Tarik saldo yang sama di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, dikurangi biaya tarik Rp10.000, diterima <b>Rp335.000</b>.</li>
 </ul>
-<p>Rincian bonus level juga tercantum di email bukti transfer setiap kali bayaranmu dikirim. Tidak ada potongan penarikan di level mana pun.</p>
+<p>Rincian bonus dan biaya tercantum di riwayat pencairan dan di email bukti transfer.</p>
 <h2>Selain bonus</h2>
 <ul>
 <li>Level tampil di profil creator-mu bersama approval rate dan reliability score.</li>
@@ -96,21 +97,27 @@ POSTS = [
 
   dict(slug='dari-views-ke-rekening', cat='Panduan', date='2026-09-30', cover='payout', popular=True,
     title='Dari Views ke Rekening: Cara Pembayaran di TAPP',
-    excerpt='Tidak perlu mengajukan penarikan. Bayaran ditransfer setelah clip-mu diterima.',
+    excerpt='Bayaran clip masuk ke saldo, lalu kamu tarik ke rekening atau e-wallet kapan saja.',
     body='''
-<p>Di TAPP, kamu tidak perlu menekan tombol tarik dana. Setelah clip-mu diterima tim TAPP, bayarannya ditransfer langsung ke rekening atau e-wallet yang kamu isi di profil.</p>
+<p>Di TAPP, bayaran setiap clip yang diterima masuk ke <b>saldo</b>-mu. Kamu bebas menariknya ke rekening atau e-wallet kapan saja setelah saldo mencapai minimum.</p>
 <h2>Alurnya</h2>
 <ol>
 <li>Submit clip lewat <b>Ambil Campaign</b>.</li>
 <li>TAPP memantau views clip-mu secara otomatis.</li>
-<li>Tim TAPP mereview clip dan menghitung qualified views-nya.</li>
-<li>Bayaran ditransfer, dan kamu menerima email konfirmasi berisi jumlah dan tujuan transfer.</li>
+<li>Tim TAPP mereview clip dan menghitung qualified views-nya. Bayarannya masuk ke saldo.</li>
+<li>Buka menu <b>Pembayaran</b> dan tekan <b>Tarik</b>. Tim TAPP mentransfer, biasanya dalam 1x24 jam kerja, lalu kamu menerima email konfirmasi.</li>
 </ol>
+<h2>Ketentuan penarikan</h2>
+<table class="bl-table"><tbody>
+<tr><td>Minimal saldo</td><td>Rp100.000</td></tr>
+<tr><td>Biaya tarik</td><td>Rp10.000 per pencairan</td></tr>
+<tr><td>Bonus level</td><td>+2% sampai +15% dari jumlah yang ditarik</td></tr>
+</tbody></table>
+<p>Tips: tarik saldo sekaligus dalam jumlah lebih besar supaya biaya tarik terasa lebih kecil. Kalau levelmu naik, bonus saat menarik juga ikut naik.</p>
 <h2>Metode pembayaran</h2>
 <p>E-wallet seperti GoPay, OVO, DANA, ShopeePay, dan LinkAja, atau rekening bank seperti BCA, BRI, BNI, Mandiri, dan lainnya. Atur di <b>Profil → Pembayaran</b>.</p>
 <h2>Kalau transfer gagal</h2>
-<p>Biasanya karena nama atau nomor rekening tidak cocok. Kamu akan menerima email berisi alasannya. Perbaiki data di profil, lalu tim TAPP akan mentransfer ulang.</p>
-<p>Semua bayaran tercatat di menu <b>Pembayaran</b>, lengkap dengan clip dan tanggal transfernya.</p>
+<p>Biasanya karena nama atau nomor rekening tidak cocok. Kamu akan menerima email berisi alasannya dan saldomu kembali utuh. Perbaiki data di profil, lalu tarik lagi.</p>
 '''),
 
   dict(slug='memantau-clip-brand', cat='Brand', date='2026-09-29', cover='brand',
@@ -126,7 +133,7 @@ POSTS = [
 <li><b>Jangkauan hashtag campaign</b>, berupa jumlah video dan total views dari hashtag yang kamu pakai (saat ini untuk TikTok).</li>
 </ul>
 <h2>Laporan harian lewat email</h2>
-<p>Setiap hari, tim brand bisa menerima ringkasan berisi qualified views baru, reward creator, dan status setiap campaign. Laporan ini bisa dimatikan dari menu Akun di dashboard brand.</p>
+<p>Setiap hari, tim brand bisa menerima ringkasan berisi qualified views baru, biaya views, dan status setiap campaign. Laporan ini bisa dimatikan dari menu Akun di dashboard brand.</p>
 <h2>Budget tidak pernah terlewati</h2>
 <p>Kalau budget habis di tengah campaign, campaign otomatis masuk fase segera berakhir dan views berikutnya tidak dibayar. Pengeluaranmu selalu berada di bawah budget yang disepakati.</p>
 '''),
@@ -174,33 +181,33 @@ POSTS = [
 <p>Tidak ada minimum follower. Yang dihitung adalah views dari clip-mu.</p>
 '''),
   dict(slug='biaya-campaign-brand', cat='Brand', date='2026-10-04', cover='fee', popular=True,
-    title='Biaya Campaign di TAPP: Bayar Views Terverifikasi + Fee 15%',
-    excerpt='Struktur biaya yang transparan: reward creator dari qualified views, ditambah fee platform 15%.',
+    title='Biaya Campaign di TAPP: Bayar Views Terverifikasi + Fee 18%',
+    excerpt='Struktur biaya yang jelas: biaya views dari qualified views, ditambah fee kerjasama 18%.',
     body='''
-<p>Di TAPP, brand tidak membayar per posting atau per jumlah follower. Kamu hanya membayar views yang lolos verifikasi, ditambah fee platform yang jelas sejak awal.</p>
+<p>Di TAPP, brand tidak membayar per posting atau per jumlah follower. Kamu membayar views yang lolos verifikasi, ditambah fee kerjasama yang jelas sejak awal.</p>
 <h2>Dua komponen biaya</h2>
 <ul>
-<li><b>Reward creator</b>: qualified views dikali tarif per 1.000 views (CPM) yang kamu tentukan bersama tim TAPP.</li>
-<li><b>Fee platform 15%</b>: dihitung dari total reward yang dibayarkan ke creator.</li>
+<li><b>Biaya views</b>: qualified views dikali tarif per 1.000 views (CPM) yang disepakati bersama tim TAPP.</li>
+<li><b>Fee kerjasama 18%</b>: dihitung dari biaya views.</li>
 </ul>
 <h2>Contoh hitungan</h2>
 <table class="bl-table"><tbody>
 <tr><td>Tarif campaign</td><td>Rp3.000 / 1.000 qualified views</td></tr>
 <tr><td>Qualified views terkumpul</td><td>2.000.000</td></tr>
-<tr><td>Reward creator</td><td>Rp6.000.000</td></tr>
-<tr><td>Fee platform (15%)</td><td>Rp900.000</td></tr>
-<tr><td><b>Total biaya</b></td><td><b>Rp6.900.000</b></td></tr>
+<tr><td>Biaya views</td><td>Rp6.000.000</td></tr>
+<tr><td>Fee kerjasama (18%)</td><td>Rp1.080.000</td></tr>
+<tr><td><b>Total biaya</b></td><td><b>Rp7.080.000</b></td></tr>
 </tbody></table>
-<h2>Apa saja yang termasuk fee 15%?</h2>
+<h2>Apa saja yang termasuk?</h2>
 <ul>
-<li>Pencarian dan pengelolaan creator, termasuk verifikasi akun lewat kode bio.</li>
+<li>Pencarian, seleksi, dan pembayaran creator, termasuk verifikasi akun lewat kode bio.</li>
 <li>Pemantauan views otomatis setiap 6 jam dan penyaringan bot serta aktivitas janggal.</li>
-<li>Review setiap clip oleh tim TAPP sebelum dibayar.</li>
-<li>Pembayaran ke semua creator, jadi kamu cukup membayar satu tagihan ke TAPP.</li>
+<li>Review setiap clip oleh tim TAPP sebelum dihitung.</li>
+<li>Satu tagihan ke TAPP, jadi kamu tidak perlu mengurus pembayaran ke banyak creator.</li>
 <li>Dashboard brand, laporan harian, dan pendampingan account manager.</li>
 </ul>
 <h2>Budget selalu terkendali</h2>
-<p>Kamu menetapkan budget di awal. Kalau budget habis di tengah jalan, campaign otomatis masuk fase segera berakhir dan views berikutnya tidak dibayar. Views mentah yang tidak lolos tetap terlihat di laporan sebagai pembanding, tapi tidak pernah kamu bayar.</p>
+<p>Kamu menetapkan budget di awal. Kalau budget habis di tengah jalan, campaign otomatis masuk fase segera berakhir dan views berikutnya tidak ditagih. Views mentah yang tidak lolos tetap terlihat di laporan sebagai pembanding, tapi tidak pernah kamu bayar.</p>
 '''),
 
   dict(slug='tips-clip-lolos-review', cat='Panduan', date='2026-09-26', cover='tips',
@@ -229,7 +236,7 @@ POSTS = [
 <ul>
 <li><b>Menunggu review</b>: clip sudah masuk antrean. Kalau salah submit, tekan <b>Tarik submission</b>.</li>
 <li><b>Perlu revisi</b>: ada yang perlu diperbaiki. Baca catatan reviewer, perbaiki, lalu tekan <b>Kirim ulang</b>.</li>
-<li><b>Diterima</b>: views clip-mu dihitung dan bayarannya diproses. Setelah ditransfer, statusnya berubah jadi <b>Dibayar</b>.</li>
+<li><b>Diterima</b>: views clip-mu dihitung. Setelah bayarannya masuk ke saldomu, statusnya berubah jadi <b>Masuk saldo</b>.</li>
 <li><b>Ditandai</b>: clip sedang diperiksa ulang oleh tim TAPP.</li>
 <li><b>Ditolak</b>: clip tidak memenuhi syarat, misalnya bukan dari akunmu, diposting sebelum bergabung, atau melanggar brief.</li>
 </ul>
@@ -257,7 +264,7 @@ POSTS = [
 </tbody></table>
 <h2>Kapan endorse masih cocok?</h2>
 <p>Kalau kamu butuh wajah tertentu untuk mewakili brand. Untuk menyebarkan pesan seluas-luasnya dengan biaya yang terukur, clipping jauh lebih efisien.</p>
-<p>Biaya di TAPP terdiri dari reward creator ditambah fee platform 15%. Rinciannya bisa kamu baca di artikel <a href="blog-biaya-campaign-brand.html">Biaya Campaign di TAPP</a>.</p>
+<p>Biaya di TAPP terdiri dari biaya views ditambah fee kerjasama 18%. Rinciannya bisa kamu baca di artikel <a href="blog-biaya-campaign-brand.html">Biaya Campaign di TAPP</a>.</p>
 '''),
 
   dict(slug='mulai-di-tapp', cat='Panduan', date='2026-09-23', cover='start',

@@ -120,7 +120,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
         eyebrow: "Selamat datang",
         title: name ? `Selamat datang di TAPP, ${esc(name)}` : "Selamat datang di TAPP",
         intro: "Akunmu sudah aktif. Di TAPP kamu mengerjakan campaign dari brand, posting di akunmu sendiri, dan dibayar dari views yang lolos verifikasi. Empat langkah untuk mulai:",
-        rows: [["1. Hubungkan akun", "TikTok, Instagram, YouTube"], ["2. Verifikasi kode bio", "Tempel kode TAPP di bio"], ["3. Join campaign", "Mulai dari TAPP Mega Campaign"], ["4. Submit & dibayar", "Transfer langsung ke rekeningmu"]],
+        rows: [["1. Hubungkan akun", "TikTok, Instagram, YouTube"], ["2. Verifikasi kode bio", "Tempel kode TAPP di bio"], ["3. Join campaign", "Mulai dari TAPP Mega Campaign"], ["4. Submit & tarik saldo", "Bayaran masuk saldo, tarik ke rekeningmu"]],
         button: APP() ? { label: "Buka TAPP", url: APP() } : undefined,
         outro: "Pertanyaan? Balas email ini, tim TAPP siap bantu.",
       },
@@ -128,12 +128,12 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
   }
   if (type === "payout_paid") {
     return {
-      subject: `Bayaran ${idr(Number(d.amount))} sudah ditransfer`,   // amount = net (after the withdrawal fee)
+      subject: `Pencairan ${idr(Number(d.amount))} sudah ditransfer`,   // amount = net (balance + level bonus − withdrawal fee)
       block: {
         eyebrow: "Pembayaran",
-        title: "Bayaran clip-mu sudah ditransfer",
-        intro: "Clip-mu sudah diterima dan bayarannya sudah ditransfer. Biasanya langsung masuk, tapi beberapa bank bisa butuh waktu sampai 1 hari kerja.",
-        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.bonus) > 0 ? ([["Bonus level", idr(Number(d.bonus))]] as [string, string][]) : []), ...(Number(d.fee) > 0 ? ([["Fee level", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
+        title: "Pencairan saldomu sudah ditransfer",
+        intro: "Saldo yang kamu tarik sudah kami transfer. Biasanya langsung masuk, tapi beberapa bank bisa butuh waktu sampai 1 hari kerja.",
+        rows: [["Diterima", idr(Number(d.amount))], ...(Number(d.bonus) > 0 ? ([["Bonus level", idr(Number(d.bonus))]] as [string, string][]) : []), ...(Number(d.fee) > 0 ? ([["Biaya tarik", idr(Number(d.fee))]] as [string, string][]) : []), ["Tujuan", d.method ?? "-"], ...(d.reference ? ([["Referensi", String(d.reference)]] as [string, string][]) : [])],
         button: APP() ? { label: "Lihat riwayat pembayaran", url: `${APP()}/dashboard/earnings` } : undefined,
       },
     };
@@ -144,7 +144,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
       block: {
         eyebrow: "Pembayaran",
         title: "Transfer belum bisa diproses",
-        intro: "Transfer untuk clip-mu belum bisa kami proses. Perbaiki hal di bawah ini (biasanya data rekening atau e-wallet), tim TAPP akan mentransfer ulang.",
+        intro: "Pencairan saldomu belum bisa kami proses dan saldonya sudah kembali utuh. Perbaiki hal di bawah ini (biasanya data rekening atau e-wallet), lalu tarik lagi dari menu Pembayaran.",
         rows: [["Jumlah", idr(Number(d.amount))], ["Alasan", d.reason ?? "-"]],
         button: APP() ? { label: "Periksa rekening", url: `${APP()}/profile/payout` } : undefined,
         outro: "Ada pertanyaan? Balas email ini.",
@@ -157,8 +157,8 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
     const camps = (Array.isArray(d.campaigns) ? d.campaigns : []) as Record<string, any>[];
     const rows: [string, string][] = [
       ["Qualified views baru", `+${nf(d.qualified_gain)}`],
-      ["Reward creator", idr(Number(d.spend))],
-      [`Fee platform (${nf(d.fee_pct)}%)`, idr(Number(d.fee))],
+      ["Biaya views", idr(Number(d.spend))],
+      [`Fee kerjasama (${nf(d.fee_pct)}%)`, idr(Number(d.fee))],
       ...camps.slice(0, 5).map((c): [string, string] => [String(c.title ?? "Campaign"),
         `${nf(c.qualified)} qualified · ${nf(c.raw)} mentah${Number(c.pending) > 0 ? ` · ${nf(c.pending)} menunggu verifikasi` : ""} · sisa ${idr(Number(c.remaining))}`]),
     ];

@@ -11,7 +11,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { EMPTY_FILTERS, fetchFeed, fetchHome, fetchMyCampaigns } from '@/features/campaigns/api';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
-import { fetchPayments, paidTotal } from '@/features/payouts/api';
+import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
@@ -29,10 +29,10 @@ const STATUS_NOTE: Record<string, string> = {
 export default function Home() {
   const { account, session } = useAuth();
   const q = useQuery(async () => {
-    const [home, recs, mine, unread, payments, subs] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
-      unreadCount().catch(() => 0), fetchPayments().catch(() => []), fetchMySubmissions(undefined, 200).catch(() => [])]);
+    const [home, recs, mine, unread, balance, subs] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
+      unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => [])]);
     return {
-      home, unread, paid: paidTotal(payments),
+      home, unread, balance,
       accepted: subs.filter((s) => s.status === 'approved' || s.status === 'tracking').length,
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
       recs: recs.filter((r) => !r.joined).slice(0, 3),
@@ -62,8 +62,8 @@ export default function Home() {
       </View>
 
       <View style={styles.cardWrap}>
-        <BalanceCard label="Total payout diterima" amount={d ? idr(d.paid) : null}
-          footLeft={<Text style={cardFootText}>{d ? (d.accepted ? `${d.accepted} klip menunggu transfer` : `${d.reviewing} klip sedang direview`) : ' '}</Text>}
+        <BalanceCard label="Saldo kamu" amount={d ? idr(d.balance) : null}
+          footLeft={<Text style={cardFootText}>{d ? (d.accepted ? `${d.accepted} klip menunggu masuk saldo` : `${d.reviewing} klip sedang direview`) : ' '}</Text>}
           footRight={<Text style={cardFootText}>TAPP Creators</Text>} />
       </View>
 

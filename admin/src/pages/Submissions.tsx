@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchBonusPct, fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchFeePct, fetchHistory, runCheck, type SubmissionCheck, fetchPaid, fetchPayTo, getSubmission, listSubmissions, paySubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
+  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { fairness, previewEarnings, signals, typicalEngagement, type CheckPoint, type Fairness } from '../lib/engine';
@@ -12,7 +12,7 @@ import { useLoad } from '../lib/useLoad';
 const STATUS: Record<SubStatus, { label: string; tone: string }> = {
   pending_review: { label: 'Menunggu review', tone: '' }, needs_changes: { label: 'Perlu revisi', tone: 'warning' },
   approved: { label: 'Diterima', tone: 'blue' }, tracking: { label: 'Diterima', tone: 'blue' }, flagged: { label: 'Ditandai', tone: 'warning' },
-  rejected: { label: 'Ditolak', tone: 'danger' }, completed: { label: 'Dibayar', tone: 'success' },
+  rejected: { label: 'Ditolak', tone: 'danger' }, completed: { label: 'Masuk saldo', tone: 'success' },
 };
 const TABS: Record<'review' | 'performance', { q: Queue; label: string }[]> = {
   review: [{ q: 'review', label: 'Perlu review' }, { q: 'payable', label: 'Siap dibayar' }, { q: 'paid', label: 'Sudah dibayar' }, { q: 'flagged', label: 'Ditandai' }, { q: 'closed', label: 'Ditolak / revisi' }],
@@ -276,12 +276,8 @@ function ReviewPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<
 
 // Accepted clip → pay it: views in, amount computed (CPM, minimum, cap, budget), level fee off, transferred by hand.
 function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latestViews: number | null; fair: Fairness; onDone: () => Promise<void> }) {
-  const info = useLoad(async () => {
-    const [to, pct, bonusPct, paid] = await Promise.all([fetchPayTo(s.creator_id), fetchFeePct(s.creator_tier), fetchBonusPct(s.creator_tier), fetchPaid(s.id)]);
-    return { to, pct, bonusPct, paid };
-  }, [s.id]);
   const [views, setViews] = useState(String(Math.max(latestViews ?? 0, s.qualified_views) || ''));
-  // Read the post's public view count once and prefill it; the admin still checks it before paying.
+  // Read the post's public view count once and prefill it; the admin still checks it before crediting.
   const [auto, setAuto] = useState<PublicViews | 'loading' | null>(null);
   const readAuto = async () => {
     setAuto('loading');
@@ -290,7 +286,6 @@ function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latest
     if ('views' in r && r.views >= s.qualified_views) setViews(String(r.views));
   };
   useEffect(() => { void readAuto(); }, [s.id]);   // eslint-disable-line react-hooks/exhaustive-deps
-  const [reference, setReference] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
@@ -300,54 +295,39 @@ function PayPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latest
     qualified: valid ? v : 0, minViews: s.min_views_to_qualify, cpm: s.cpm, maxPerSubmission: s.max_earning_per_submission,
     alreadyEarned: s.earned, budget: s.budget, campaignEarned: s.campaign_earned, override: s.budget_override,
   }), [v, valid, s]);
-  const paidSoFar = (info.data?.paid ?? []).reduce((a, r) => a + r.amount, 0);
-  const amount = Math.max(p.delta, 0) + Math.max(s.earned - paidSoFar, 0);   // new + accepted-but-unpaid
-  const fee = info.data ? Math.min(Math.round(amount * info.data.pct / 100), Math.max(amount - 1, 0)) : 0;
-  const bonus = info.data ? Math.round(amount * info.data.bonusPct / 100) : 0;   // paid by TAPP, outside the campaign budget
-  const transfer = amount + bonus - fee;
-  const to = info.data?.to;
+  const amount = Math.max(p.delta, 0);
 
-  async function pay() {
+  async function credit() {
     setError(null); setOk(null);
     if (!valid) return setError('Isi angka views.');
-    if (v < s.qualified_views) return setError(`Views tidak boleh lebih kecil dari yang sudah dibayar (${num(s.qualified_views)}).`);
-    if (!reference.trim()) return setError('Isi nomor referensi / bukti transfer.');
+    if (v < s.qualified_views) return setError(`Views tidak boleh lebih kecil dari yang sudah dihitung (${num(s.qualified_views)}).`);
     setBusy(true);
-    try { await paySubmission(s.id, v, reference.trim(), null); setOk(`Tercatat dibayar. Kreator mendapat notifikasi dan email.`); setReference(''); await info.reload(); await onDone(); }
+    try { await creditSubmission(s.id, v, null); setOk(`${idr(amount)} masuk ke saldo kreator. Kreator bisa menariknya dari app.`); await onDone(); }
     catch (e) { setError(adminError(e)); }
     finally { setBusy(false); }
   }
   return (
     <div className="section card">
-      <h2>{s.status === 'completed' ? 'Sudah dibayar' : 'Bayar klip ini'}</h2>
+      <h2>{s.status === 'completed' ? 'Sudah masuk saldo' : 'Masukkan ke saldo kreator'}</h2>
       {fair.tone === 'danger' || fair.tone === 'warning' ? <FairBox fair={fair} /> : null}
-      {info.data?.paid.length ? (
-        <table><thead><tr><th>Dibayar</th><th className="n">Transfer</th><th>Referensi</th></tr></thead>
-          <tbody>{info.data.paid.map((r) => <tr key={r.id}><td>{dt(r.paid_at)}</td><td className="n">{idr(r.net_amount)}</td><td>{r.processed_reference}</td></tr>)}</tbody></table>
-      ) : null}
-      {s.status === 'completed' ? <p className="sub" style={{ margin: 0 }}>Views naik lagi? Isi views terbaru untuk membayar selisihnya.</p> : null}
-      <p className="sub" style={{ margin: 0 }}>Cek views di <a href={s.post_url} target="_blank" rel="noreferrer noopener">postingan ↗</a>. Tarif {idr(s.cpm)} per 1.000 views, minimal {num(s.min_views_to_qualify)} views{s.max_earning_per_submission ? `, maks ${idr(s.max_earning_per_submission)} per klip` : ''}.</p>
-      <div className="grid2">
-        <label className="field">Views<input inputMode="numeric" value={views} onChange={(e) => setViews(e.target.value)} />
-          <span className="sub" style={{ fontWeight: 400 }}>
-            {auto === 'loading' ? 'Membaca views dari postingan…'
-              : auto && 'views' in auto ? <>Terbaca otomatis: {num(auto.views)} views{auto.likes != null ? ` · ${num(auto.likes)} likes` : ''}. <a href="#" onClick={(e) => { e.preventDefault(); void readAuto(); }}>Baca ulang</a></>
-              : auto ? <>Views tidak terbaca otomatis, isi manual dari postingan. <a href="#" onClick={(e) => { e.preventDefault(); void readAuto(); }}>Coba lagi</a></> : null}
-          </span></label>
-        <label className="field">Referensi transfer<input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="mis. BCA 0210-8823" /></label>
-      </div>
+      {s.status === 'completed' ? <p className="sub" style={{ margin: 0 }}>Sudah dihitung {num(s.qualified_views)} views ({idr(s.earned)}). Views naik lagi? Isi views terbaru untuk menambah selisihnya.</p> : null}
+      <p className="sub" style={{ margin: 0 }}>Cek views di <a href={s.post_url} target="_blank" rel="noreferrer noopener">postingan ↗</a>. Tarif kreator {idr(s.cpm)} per 1.000 views, minimal {num(s.min_views_to_qualify)} views{s.max_earning_per_submission ? `, maks ${idr(s.max_earning_per_submission)} per klip` : ''}.</p>
+      <label className="field">Views<input inputMode="numeric" value={views} onChange={(e) => setViews(e.target.value)} />
+        <span className="sub" style={{ fontWeight: 400 }}>
+          {auto === 'loading' ? 'Membaca views dari postingan…'
+            : auto && 'views' in auto ? <>Terbaca otomatis: {num(auto.views)} views{auto.likes != null ? ` · ${num(auto.likes)} likes` : ''}. <a href="#" onClick={(e) => { e.preventDefault(); void readAuto(); }}>Baca ulang</a></>
+            : auto ? <>Views tidak terbaca otomatis, isi manual dari postingan. <a href="#" onClick={(e) => { e.preventDefault(); void readAuto(); }}>Coba lagi</a></> : null}
+        </span></label>
       <div className="preview">
-        <span>Transfer ke kreator</span>
-        <strong>{idr(transfer)}</strong>
-        <span className="sub">Bayaran {idr(amount)}{bonus ? ` + bonus level ${s.creator_tier} ${idr(bonus)} (dari TAPP)` : ''}{fee ? ` − fee ${idr(fee)}` : ''}</span>
-        {to ? <span>Ke {to.provider} {to.account_number} a.n. {to.account_name}</span>
-          : info.data ? <span style={{ color: 'var(--warning)' }}>Kreator belum mengisi rekening / e-wallet.</span> : null}
+        <span>Masuk ke saldo kreator</span>
+        <strong>{idr(amount)}</strong>
+        <span className="sub">Bonus level dan biaya tarik dihitung saat kreator menarik saldo.</span>
         {p.belowMin ? <span style={{ color: 'var(--warning)' }}>Di bawah minimum {num(s.min_views_to_qualify)} views, jadi bayarannya 0.</span> : null}
         {p.capped ? <span style={{ color: 'var(--warning)' }}>Dibatasi sisa budget campaign.</span> : null}
       </div>
       {error ? <div className="notice error">{error}</div> : null}
       {ok ? <div className="notice ok">{ok}</div> : null}
-      <div className="actions"><button className="btn" onClick={pay} disabled={busy || !valid || amount <= 0 || !to}>{busy ? 'Menyimpan…' : `Tandai sudah ditransfer ${idr(transfer)}`}</button></div>
+      <div className="actions"><button className="btn" onClick={credit} disabled={busy || !valid || amount <= 0}>{busy ? 'Menyimpan…' : `Masukkan ${idr(amount)} ke saldo`}</button></div>
     </div>
   );
 }
