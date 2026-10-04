@@ -1,3 +1,4 @@
+import re
 """Build the sub-pages (campaigns, privacy, terms) with the shared header/footer. Run: python3 site/tools/build_pages.py"""
 import os, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / 'src' / 'generator'))
@@ -39,10 +40,10 @@ def header(active):
     on = lambda k: ' on' if k == active else ''
     return f'''<header class="top">
   <a class="logo" href="index.html" aria-label="TAPP beranda"><img src="assets/tapp-mark.svg" alt=""></a>
-  <nav><a class="nl{on('campaigns')}" href="campaigns.html">Campaigns</a><a class="nl" href="index.html#alur">Cara Kerja</a><a class="nl" href="#mail">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
+  <nav><a class="nl{on('campaigns')}" href="campaigns.html">Campaigns</a><a class="nl" href="index.html#alur">Cara Kerja</a><a class="nl{on('contact')}" href="contact.html">Contact</a><a class="nl" href="#app:/login">Log In</a></nav>
   <a class="btn" href="#app:/register" style="height: 42px; padding: 0 20px; font-size: 14px">Sign Up</a>
   <button type="button" class="hb" aria-label="Buka menu" aria-expanded="false" aria-controls="mmenu"><span></span><span></span></button>
-  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="index.html#alur">Cara Kerja</a><a href="#mail">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
+  <div class="mmenu" id="mmenu"><nav class="mm-links"><a href="campaigns.html">Campaigns</a><a href="index.html#alur">Cara Kerja</a><a href="contact.html">Contact</a></nav><div class="mm-act"><a class="mm-btn ghost" href="#app:/login">Log In</a><a class="mm-btn pri" href="#app:/register">Sign Up</a></div></div>
 </header>'''
 
 FOOT = footer('assets/tapp-mark.svg', 'index.html') + '''
@@ -387,6 +388,31 @@ MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit deng
 </html>
 '''
 (ROOT / 'meeting.html').write_text(MEETING.replace('__SITE_URL__', SITE_URL))
+
+# ───────────────────────────── Contact ─────────────────────────────
+_cards = (ROOT / 'src' / 'generator' / 'contact_cards.html').read_text()
+_svgs = re.findall(r'<svg.*?</svg>', _cards, flags=re.S)
+WA_ICON, ARROW, MAIL_ICON = _svgs[0], _svgs[1], _svgs[2]
+def contact_card(icon, label, href, text, cfg=''):
+    return (f'<div class="ct-card" data-hide-empty>{icon}<span class="ct-label">{label}</span>'
+            f'<a href="{href}" class="ct-link"><span{cfg}>{text}</span>{ARROW}</a></div>')
+GLOBE_SVG = (ROOT / 'src' / 'generator' / 'globe.svg.frag').read_text().replace('/_blob/2d5aebeddb5d0a63b818258d6ea37530', 'assets/tapp-mark-white.svg?v=2')
+CONTACT = head('Hubungi TAPP', 'Hubungi tim TAPP lewat WhatsApp atau email, untuk creator maupun brand.', 'contact') + header('contact') + f"""
+<main class="ct">
+  <section class="ct-hero">
+    <h1>Ngobrol Langsung <br><span>Dengan Tim TAPP</span></h1>
+    <p>Creator yang mau mulai, atau brand yang siap bikin campaign. Kami balas secepatnya.</p>
+  </section>
+  <div class="ct-globe" aria-hidden="true">{GLOBE_SVG}</div>
+  <section class="ct-grid">
+    {contact_card(WA_ICON, 'WhatsApp untuk Creator', '#whatsapp', 'Chat tim creator TAPP')}
+    {contact_card(WA_ICON, 'WhatsApp untuk Brand', '#whatsapp-brand', 'Chat tim brand TAPP')}
+    {contact_card(MAIL_ICON, 'Hubungi kami di Email', '#mail', 'tappcreators@gmail.com', ' data-config-text="SUPPORT_EMAIL"')}
+  </section>
+</main>
+""" + FOOT + '\n</body>\n</html>\n'
+(ROOT / 'contact.html').write_text(CONTACT.replace('__SITE_URL__', SITE_URL))
+
 
 # ───────────────────────────── Legal pages ─────────────────────────────
 def legal(fname, title, lead, sections, desc):
