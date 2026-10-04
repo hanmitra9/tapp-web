@@ -60,26 +60,37 @@ POSTS = [
 <p>Setiap campaign bisa punya minimal views dan batas bayaran per clip. Di TAPP Mega Campaign, misalnya, clip mulai dihitung setelah 5.000 views dan dibayar sampai 100K views per clip. Aturannya selalu tertulis di halaman detail campaign sebelum kamu bergabung.</p>
 '''),
 
-  dict(slug='sistem-level-creator', cat='Produk', date='2026-10-01', cover='level',
-    title='Sistem Level TAPP: Dari New Sampai Elite',
-    excerpt='Level naik otomatis dari total qualified views, bukan dari jumlah follower.',
+  dict(slug='sistem-level-creator', cat='Produk', date='2026-10-01', cover='level', popular=True,
+    title='Sistem Level TAPP: Syarat dan Bonus Tiap Level',
+    excerpt='Dari New sampai Elite: syarat qualified views, bonus tarif sampai +15%, dan contoh hitungannya.',
     body='''
-<p>Di TAPP, semua creator mulai dari titik yang sama. Level tidak ditentukan oleh jumlah follower, tapi oleh hasil kerjamu: total qualified views dari clip yang lolos review.</p>
-<h2>Lima level creator</h2>
+<p>Di TAPP, semua creator mulai dari titik yang sama. Level tidak ditentukan oleh jumlah follower, tapi oleh hasil kerjamu: total qualified views dari clip yang lolos review. Level naik otomatis, tanpa perlu mengajukan apa pun.</p>
+<h2>Syarat dan bonus tiap level</h2>
+<table class="bl-table"><thead><tr><th>Level</th><th>Syarat total qualified views</th><th>Bonus tarif</th></tr></thead><tbody>
+<tr><td><b>New</b></td><td>Mulai dari 0</td><td>Tarif standar</td></tr>
+<tr><td><b>Rising</b></td><td>100.000</td><td>+2%</td></tr>
+<tr><td><b>Verified</b></td><td>500.000</td><td>+5%</td></tr>
+<tr><td><b>Proven</b></td><td>2 juta</td><td>+10%</td></tr>
+<tr><td><b>Elite</b></td><td>10 juta</td><td>+15%</td></tr>
+</tbody></table>
+<h2>Cara bonus dihitung</h2>
+<p>Bonus tarif dibayar TAPP <b>di atas</b> bayaran clip-mu, jadi tidak mengurangi budget brand dan tidak memotong penghasilanmu. Bonus mengikuti level kamu saat clip dibayar.</p>
 <ul>
-<li><b>New</b>: level awal setiap creator.</li>
-<li><b>Rising</b>: mulai dari 100K qualified views.</li>
-<li><b>Verified</b>: mulai dari 500K qualified views.</li>
-<li><b>Proven</b>: mulai dari 2 juta qualified views.</li>
-<li><b>Elite</b>: mulai dari 10 juta qualified views.</li>
+<li>Clip dibayar Rp300.000 saat kamu di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, total diterima Rp315.000.</li>
+<li>Clip yang sama saat kamu di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, total diterima Rp345.000.</li>
 </ul>
-<h2>Apa untungnya naik level?</h2>
-<p>Setiap naik level, bonus tarifmu ikut naik. Level juga tampil di profil creator-mu bersama approval rate dan reliability score, jadi rekam jejakmu terlihat jelas.</p>
+<p>Rincian bonus level juga tercantum di email bukti transfer setiap kali bayaranmu dikirim. Tidak ada potongan penarikan di level mana pun.</p>
+<h2>Selain bonus</h2>
+<ul>
+<li>Level tampil di profil creator-mu bersama approval rate dan reliability score.</li>
+<li>Rekam jejak yang kuat membuat profilmu lebih mudah dilirik brand untuk campaign berikutnya.</li>
+</ul>
 <h2>Tips naik level lebih cepat</h2>
 <ul>
 <li>Ikuti brief dengan teliti supaya clip lolos review sejak awal.</li>
 <li>Posting konsisten di akun yang sama dan sudah terverifikasi.</li>
-<li>Hindari cara instan seperti membeli views. Views seperti ini tersaring dan bisa menurunkan reliability score.</li>
+<li>Ikut beberapa campaign sekaligus. Semua qualified views dari setiap campaign dijumlahkan.</li>
+<li>Hindari cara instan seperti membeli views. Views seperti ini tersaring, tidak dihitung, dan bisa menurunkan reliability score.</li>
 </ul>
 '''),
 
@@ -161,5 +172,126 @@ POSTS = [
 <li>Kembali ke campaign dan pilih videomu untuk disubmit.</li>
 </ol>
 <p>Tidak ada minimum follower. Yang dihitung adalah views dari clip-mu.</p>
+'''),
+  dict(slug='biaya-campaign-brand', cat='Brand', date='2026-10-04', cover='fee', popular=True,
+    title='Biaya Campaign di TAPP: Bayar Views Terverifikasi + Fee 15%',
+    excerpt='Struktur biaya yang transparan: reward creator dari qualified views, ditambah fee platform 15%.',
+    body='''
+<p>Di TAPP, brand tidak membayar per posting atau per jumlah follower. Kamu hanya membayar views yang lolos verifikasi, ditambah fee platform yang jelas sejak awal.</p>
+<h2>Dua komponen biaya</h2>
+<ul>
+<li><b>Reward creator</b>: qualified views dikali tarif per 1.000 views (CPM) yang kamu tentukan bersama tim TAPP.</li>
+<li><b>Fee platform 15%</b>: dihitung dari total reward yang dibayarkan ke creator.</li>
+</ul>
+<h2>Contoh hitungan</h2>
+<table class="bl-table"><tbody>
+<tr><td>Tarif campaign</td><td>Rp3.000 / 1.000 qualified views</td></tr>
+<tr><td>Qualified views terkumpul</td><td>2.000.000</td></tr>
+<tr><td>Reward creator</td><td>Rp6.000.000</td></tr>
+<tr><td>Fee platform (15%)</td><td>Rp900.000</td></tr>
+<tr><td><b>Total biaya</b></td><td><b>Rp6.900.000</b></td></tr>
+</tbody></table>
+<h2>Apa saja yang termasuk fee 15%?</h2>
+<ul>
+<li>Pencarian dan pengelolaan creator, termasuk verifikasi akun lewat kode bio.</li>
+<li>Pemantauan views otomatis setiap 6 jam dan penyaringan bot serta aktivitas janggal.</li>
+<li>Review setiap clip oleh tim TAPP sebelum dibayar.</li>
+<li>Pembayaran ke semua creator, jadi kamu cukup membayar satu tagihan ke TAPP.</li>
+<li>Dashboard brand, laporan harian, dan pendampingan account manager.</li>
+</ul>
+<h2>Budget selalu terkendali</h2>
+<p>Kamu menetapkan budget di awal. Kalau budget habis di tengah jalan, campaign otomatis masuk fase segera berakhir dan views berikutnya tidak dibayar. Views mentah yang tidak lolos tetap terlihat di laporan sebagai pembanding, tapi tidak pernah kamu bayar.</p>
+'''),
+
+  dict(slug='tips-clip-lolos-review', cat='Panduan', date='2026-09-26', cover='tips',
+    title='7 Tips Bikin Clip yang Lolos Review dan Ramai Views',
+    excerpt='Dari hook 3 detik pertama sampai hashtag campaign: kebiasaan creator yang clip-nya cepat diterima.',
+    body='''
+<p>Clip yang lolos review sejak awal berarti bayaran lebih cepat dan level naik lebih cepat. Ini kebiasaan yang paling sering kami lihat dari creator dengan approval rate tinggi.</p>
+<ol>
+<li><b>Baca brief sampai habis.</b> Bagian Lakukan dan Hindari adalah alasan paling umum clip diminta revisi.</li>
+<li><b>Hook di 3 detik pertama.</b> Potong langsung ke momen paling menarik dari konten sumber.</li>
+<li><b>Satu clip, satu ide.</b> Clip pendek yang fokus lebih sering ditonton sampai habis.</li>
+<li><b>Pakai subtitle.</b> Banyak orang menonton tanpa suara.</li>
+<li><b>Pakai hashtag campaign.</b> Brand memantau jangkauan hashtag-nya, dan ini membantu clip-mu ditemukan.</li>
+<li><b>Posting dari akun yang terverifikasi</b> dan setelah kamu bergabung ke campaign. Video lama tidak dihitung.</li>
+<li><b>Jangan beli views.</b> Lonjakan tidak wajar akan tersaring dan bisa menurunkan reliability score.</li>
+</ol>
+<p>Setelah posting, submit lewat <b>Ambil Campaign</b>. TAPP langsung memeriksa link-mu dan menampilkan hasilnya.</p>
+'''),
+
+  dict(slug='clip-ditolak-revisi-keberatan', cat='Panduan', date='2026-09-25', cover='review',
+    title='Clip Ditolak atau Perlu Revisi? Ini yang Harus Dilakukan',
+    excerpt='Arti setiap status review, cara kirim ulang, dan cara mengajukan keberatan.',
+    body='''
+<p>Setiap clip yang kamu submit direview tim TAPP. Statusnya selalu terlihat di workspace campaign, lengkap dengan alasannya.</p>
+<h2>Arti status</h2>
+<ul>
+<li><b>Menunggu review</b>: clip sudah masuk antrean. Kalau salah submit, tekan <b>Tarik submission</b>.</li>
+<li><b>Perlu revisi</b>: ada yang perlu diperbaiki. Baca catatan reviewer, perbaiki, lalu tekan <b>Kirim ulang</b>.</li>
+<li><b>Diterima</b>: views clip-mu dihitung dan bayarannya diproses. Setelah ditransfer, statusnya berubah jadi <b>Dibayar</b>.</li>
+<li><b>Ditandai</b>: clip sedang diperiksa ulang oleh tim TAPP.</li>
+<li><b>Ditolak</b>: clip tidak memenuhi syarat, misalnya bukan dari akunmu, diposting sebelum bergabung, atau melanggar brief.</li>
+</ul>
+<h2>Merasa keputusannya keliru?</h2>
+<p>Untuk clip yang ditolak atau ditandai, tekan <b>Ajukan keberatan</b> di workspace dan jelaskan alasannya. Tim TAPP akan meninjau ulang.</p>
+<h2>Hindari penolakan</h2>
+<ul>
+<li>Pastikan postingan tetap publik dan tidak dihapus selama campaign berjalan.</li>
+<li>Submit link video dari akun yang sudah kamu verifikasi.</li>
+<li>Ikuti daftar Lakukan dan Hindari di brief.</li>
+</ul>
+'''),
+
+  dict(slug='bayar-per-views-vs-endorse', cat='Brand', date='2026-09-24', cover='compare',
+    title='Bayar per Views vs Endorse: Mana yang Lebih Efisien?',
+    excerpt='Endorse membayar di depan untuk satu akun. Clipping membayar hasil dari banyak akun sekaligus.',
+    body='''
+<p>Endorse klasik membayar satu creator di depan, berapa pun hasilnya. Model clipping di TAPP membalik logikanya: banyak creator memposting, dan kamu membayar views yang benar-benar terjadi.</p>
+<table class="bl-table"><thead><tr><th></th><th>Endorse</th><th>Clipping di TAPP</th></tr></thead><tbody>
+<tr><td>Dasar biaya</td><td>Tarif per posting</td><td>Qualified views</td></tr>
+<tr><td>Risiko sepi views</td><td>Ditanggung brand</td><td>Tidak dibayar</td></tr>
+<tr><td>Jumlah akun</td><td>Satu atau beberapa</td><td>Puluhan sampai ratusan</td></tr>
+<tr><td>Bot dan views palsu</td><td>Sulit dicek</td><td>Disaring sebelum dibayar</td></tr>
+<tr><td>Laporan</td><td>Screenshot dari creator</td><td>Dashboard dan laporan harian</td></tr>
+</tbody></table>
+<h2>Kapan endorse masih cocok?</h2>
+<p>Kalau kamu butuh wajah tertentu untuk mewakili brand. Untuk menyebarkan pesan seluas-luasnya dengan biaya yang terukur, clipping jauh lebih efisien.</p>
+<p>Biaya di TAPP terdiri dari reward creator ditambah fee platform 15%. Rinciannya bisa kamu baca di artikel <a href="blog-biaya-campaign-brand.html">Biaya Campaign di TAPP</a>.</p>
+'''),
+
+  dict(slug='mulai-di-tapp', cat='Panduan', date='2026-09-23', cover='start',
+    title='Pertama Kali di TAPP: Dari Daftar Sampai Clip Pertama',
+    excerpt='Panduan singkat untuk creator baru, langkah demi langkah.',
+    body='''
+<ol>
+<li><b>Daftar</b> dengan email, lalu masukkan kode verifikasi yang dikirim ke inbox-mu.</li>
+<li><b>Isi profil</b>: nama, username, negara, akun sosial (TikTok, Instagram, atau YouTube), pengalaman, dan metode pembayaran berupa rekening bank atau e-wallet.</li>
+<li><b>Kirim untuk ditinjau.</b> Tim TAPP memeriksa profilmu. Setelah disetujui, kamu bisa bergabung ke campaign.</li>
+<li><b>Verifikasi akun sosial</b> dengan kode bio di <b>Profil → Akun sosial</b>, atau langsung saat mengambil campaign.</li>
+<li><b>Pilih campaign</b> di tab Campaign. Baca tarif, minimal views, dan brief-nya.</li>
+<li><b>Tekan Ambil Campaign</b>, unduh konten sumber, lalu buat clip-mu.</li>
+<li><b>Posting dan submit.</b> Kembali ke campaign, pilih videomu, dan kirim.</li>
+</ol>
+<p>Tidak ada minimum follower. Kamu bisa submit sampai 20 clip per hari, dan semua qualified views-mu dihitung untuk naik level.</p>
+'''),
+
+  dict(slug='cara-tapp-deteksi-bot', cat='Produk', date='2026-09-22', cover='shield',
+    title='Cara TAPP Menyaring Views Bot dan Aktivitas Janggal',
+    excerpt='Pengecekan otomatis tiap 6 jam, pola yang diperhatikan, dan review manusia sebelum bayar.',
+    body='''
+<p>Kepercayaan brand bergantung pada satu hal: views yang dibayar harus nyata. Karena itu setiap clip di TAPP melewati beberapa lapis pengecekan.</p>
+<h2>1. Kepemilikan akun</h2>
+<p>Akun creator diverifikasi lewat kode bio, dan setiap link dicek apakah benar diposting dari akun tersebut.</p>
+<h2>2. Riwayat views</h2>
+<p>TAPP membaca views, likes, dan komentar setiap 6 jam selama 30 hari. Riwayat ini memperlihatkan pertumbuhan yang wajar dan yang tidak.</p>
+<h2>3. Pola yang diperhatikan</h2>
+<ul>
+<li>Lonjakan views yang tidak wajar dalam waktu singkat.</li>
+<li>Engagement yang terlalu rendah dibanding jumlah views.</li>
+<li>Views yang terlalu besar dibanding ukuran akun.</li>
+</ul>
+<h2>4. Review manusia</h2>
+<p>Hasil pengecekan otomatis tidak langsung menolak clip. Tim TAPP melihat semuanya sebelum memutuskan berapa qualified views yang dibayar. Views yang tidak lolos tetap terlihat di laporan brand sebagai views mentah, tapi tidak dibayar.</p>
 '''),
 ]
