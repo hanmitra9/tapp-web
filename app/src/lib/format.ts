@@ -40,11 +40,11 @@ export function greeting(d = new Date()) {
 
 // Rotating home greeting (a new one each time the app is opened), always ending in a comma: the name goes on the next line.
 const GREETINGS = {
-  pagi: ['Selamat pagi,', 'Pagi yang produktif,', 'Pagi, siap bikin klip?', 'Awal hari yang cerah,'],
-  siang: ['Selamat siang,', 'Siang yang semangat,', 'Lanjut ngonten,', 'Istirahat sebentar,'],
-  sore: ['Selamat sore,', 'Sore yang santai,', 'Sore, cek views dulu?', 'Hampir beres hari ini,'],
-  malam: ['Selamat malam,', 'Malam yang tenang,', 'Masih semangat malam ini,', 'Waktunya cek hasil,'],
-  any: ['Halo lagi,', 'Senang lihat kamu lagi,', 'Gas cuan hari ini,', 'Selamat datang kembali,', 'Siap ngonten,'],
+  pagi: ['Selamat pagi,', 'Pagi cerah,', 'Pagi semangat,'],
+  siang: ['Selamat siang,', 'Siang semangat,', 'Siang produktif,'],
+  sore: ['Selamat sore,', 'Sore santai,', 'Sore produktif,'],
+  malam: ['Selamat malam,', 'Malam tenang,', 'Malam produktif,'],
+  any: ['Halo lagi,', 'Selamat datang,', 'Gas cuan,', 'Ayo ngonten,', 'Semangat terus,'],
 };
 export function pickGreeting(d = new Date()): string {
   const h = d.getHours();
