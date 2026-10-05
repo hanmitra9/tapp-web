@@ -19,6 +19,8 @@ export default function TabsLayout() {
         tabBarPosition: isWide ? 'left' : 'bottom',
         headerShown: false,
         ...tabChrome,
+        // Phones navigate with the hamburger side menu; no bottom bar.
+        ...(isWide ? {} : { tabBarStyle: { display: 'none' as const } }),
         sceneStyle: { backgroundColor: color.canvas },
       }}
     >

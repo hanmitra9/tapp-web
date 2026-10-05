@@ -65,6 +65,6 @@ const styles = StyleSheet.create({
   centered: { justifyContent: 'center', paddingVertical: space.xxxl },
   card: { backgroundColor: color.panel, borderRadius: radius.xl, padding: space.xxl, borderWidth: 1, borderColor: color.border },
   cardFooter: { marginTop: space.xxl, gap: space.sm },
-  tabsPad: { paddingBottom: 110 },   // clears the floating tab bar (phones only)
+  tabsPad: { paddingBottom: 48 },   // phones: no bottom bar (side menu), just breathing room
   footer: { paddingHorizontal: space.xl, paddingTop: space.md, paddingBottom: space.lg, gap: space.sm },
 });

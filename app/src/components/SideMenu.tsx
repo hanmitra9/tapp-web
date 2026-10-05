@@ -84,6 +84,7 @@ function Drawer({ onClose }: { onClose: () => void }) {
           <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
             {item('home', 'Beranda', '/dashboard')}
             {item('compass', 'Campaign', '/dashboard/campaigns')}
+            {item('repeat', 'Aktivitas', '/dashboard/activity')}
             {item('bar-chart-2', 'Performa', '/performance')}
             {item('credit-card', 'Saldo', '/dashboard/earnings')}
             {item('award', 'Leaderboard', '/leaderboard')}

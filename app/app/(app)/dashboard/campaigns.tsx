@@ -162,7 +162,7 @@ const styles = StyleSheet.create({
   sortText: { ...type.label, color: color.textSecondary },
   sortTextOn: { color: color.onAccent },
   wideColumn: { width: '100%', maxWidth: 1040, alignSelf: 'center' },
-  list: { paddingHorizontal: space.xl, paddingTop: space.lg, paddingBottom: 120, flexGrow: 1, gap: space.md },
+  list: { paddingHorizontal: space.xl, paddingTop: space.lg, paddingBottom: 48, flexGrow: 1, gap: space.md },
   err: { marginTop: space.lg },
   sheetHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', padding: space.xl },
   sheetBody: { paddingHorizontal: space.xl, gap: space.xl, paddingBottom: space.xl },
