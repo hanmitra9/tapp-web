@@ -107,10 +107,10 @@ export default function CampaignDetailScreen() {
         <Fact icon="users" label="Kreator" value={num(c.creators_joined)} />
       </View>
 
-      <View style={styles.budget} accessible accessibilityLabel={`Budget terpakai ${Math.round(pct * 100)} persen`}>
+      <View style={styles.budget} accessible accessibilityLabel={`Sisa budget ${Math.round(pct * 100)} persen`}>
         <View style={styles.budgetHead}>
           <Text style={styles.budgetLabel}>Sisa budget</Text>
-          <Text style={styles.budgetValue}>{idrCompact(c.remaining)} dari {idrCompact(c.budget)}</Text>
+          <Text style={styles.budgetValue}>{Math.round(pct * 100)}%</Text>
         </View>
         <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${pct * 100}%` }]} {...web('seg-q')} /></View>
       </View>
