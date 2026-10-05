@@ -15,7 +15,7 @@ import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 import { EMPTY_FILTERS, fetchFeed, fetchMyCampaigns, type FeedItem, type MyCampaign, type Sort } from '@/features/campaigns/api';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
 import { Dropdown } from '@/components/Dropdown';
-import { CONTENT_CATEGORIES } from '@/features/creator/options';
+import { FEED_SORTS, FILTER_CATEGORIES, FILTER_TYPES } from '@/features/campaigns/copy';
 import { SubmissionRow } from '@/features/submissions/SubmissionRow';
 import type { MySubmission } from '@/features/submissions/api';
 import { useLayout } from '@/lib/useLayout';
@@ -35,10 +35,7 @@ const STATUS_NOTE: Record<string, string> = {
 const LEVEL: Record<string, string> = { new: 'New', rising: 'Rising', verified: 'Verified', proven: 'Proven', elite: 'Elite' };
 const PENDING = ['pending_review', 'needs_changes', 'flagged'];
 const DONE = ['approved', 'tracking', 'completed'];
-const CATEGORIES = [{ value: '', label: 'Semua' }, { value: 'entertainment', label: 'Entertainment' }, { value: 'education', label: 'Education' },
-  { value: 'music', label: 'Music' }, { value: 'gaming', label: 'Gaming' }, { value: 'lifestyle', label: 'Lifestyle' }];
-const TYPES = [{ value: '', label: 'Semua' }, ...CONTENT_CATEGORIES];
-const SORTS = [{ value: 'recommended', label: 'Rekomendasi' }, { value: 'newest', label: 'Terbaru' }, { value: 'cpm', label: 'Tarif tertinggi' }, { value: 'deadline', label: 'Segera berakhir' }];
+const CATEGORIES = FILTER_CATEGORIES, TYPES = FILTER_TYPES, SORTS = FEED_SORTS;
 
 // Home: balance and what to do with it, this week's results, campaigns in progress, then new campaigns.
 export default function Home() {

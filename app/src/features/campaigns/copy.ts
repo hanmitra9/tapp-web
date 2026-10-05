@@ -38,3 +38,10 @@ export function joinBlockCopy(code: string | null): { label: string; note: strin
   };
   return map[code] ?? { label: 'Tidak bisa bergabung', note: null };
 }
+
+// Dropdown filters shared by Beranda and the Campaign tab.
+export const FILTER_CATEGORIES = [{ value: '', label: 'Semua' }, { value: 'entertainment', label: 'Entertainment' }, { value: 'education', label: 'Education' },
+  { value: 'music', label: 'Music' }, { value: 'gaming', label: 'Gaming' }, { value: 'lifestyle', label: 'Lifestyle' }];
+export const FILTER_TYPES = [{ value: '', label: 'Semua' }, ...CONTENT_CATEGORIES];
+export const FEED_SORTS = [{ value: 'recommended', label: 'Rekomendasi' }, { value: 'newest', label: 'Terbaru' },
+  { value: 'cpm', label: 'Tarif tertinggi' }, { value: 'deadline', label: 'Segera berakhir' }];
