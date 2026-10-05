@@ -1,27 +1,31 @@
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { SkeletonBlock } from '@/components/Skeleton';
 import Feather from '@expo/vector-icons/Feather';
-import { compact, deadlineLabel, greeting, idr, idrCompact, isUrgent } from '@/lib/format';
+import { compact, greeting, idr } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { PushToggle } from '@/components/PushToggle';
 import { fetchTierProgress, type TierProgress } from '@/features/creator/tier';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
-import { fetchHome, fetchMyCampaigns, type MyCampaign } from '@/features/campaigns/api';
+import { EMPTY_FILTERS, fetchFeed, fetchMyCampaigns, type FeedItem, type MyCampaign, type Sort } from '@/features/campaigns/api';
+import { CampaignCard } from '@/features/campaigns/CampaignCard';
+import { Dropdown } from '@/components/Dropdown';
+import { CONTENT_CATEGORIES } from '@/features/creator/options';
+import { SubmissionRow } from '@/features/submissions/SubmissionRow';
+import type { MySubmission } from '@/features/submissions/api';
+import { useLayout } from '@/lib/useLayout';
 import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
-import { fetchDaily } from '@/features/performance/api';
 import { fetchCityBoard, fetchWeeklyBoard, type CityRow, type CreatorRow } from '@/features/campaigns/leaderboard';
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
-import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { MenuButton } from '@/components/SideMenu';
 import { unreadCount } from '@/features/notifications/api';
-import { web } from '@/theme/web';
 
 const STATUS_NOTE: Record<string, string> = {
   verified: 'Akunmu sedang ditinjau. Kamu sudah bisa melihat campaign, dan bisa bergabung setelah disetujui.',
@@ -29,25 +33,25 @@ const STATUS_NOTE: Record<string, string> = {
   banned: 'Akunmu ditutup.',
 };
 const LEVEL: Record<string, string> = { new: 'New', rising: 'Rising', verified: 'Verified', proven: 'Proven', elite: 'Elite' };
-const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
+const PENDING = ['pending_review', 'needs_changes', 'flagged'];
+const DONE = ['approved', 'tracking', 'completed'];
+const CATEGORIES = [{ value: '', label: 'Semua' }, { value: 'entertainment', label: 'Entertainment' }, { value: 'education', label: 'Education' },
+  { value: 'music', label: 'Music' }, { value: 'gaming', label: 'Gaming' }, { value: 'lifestyle', label: 'Lifestyle' }];
+const TYPES = [{ value: '', label: 'Semua' }, ...CONTENT_CATEGORIES];
+const SORTS = [{ value: 'recommended', label: 'Rekomendasi' }, { value: 'newest', label: 'Terbaru' }, { value: 'cpm', label: 'Tarif tertinggi' }, { value: 'deadline', label: 'Segera berakhir' }];
 
 // Home: balance and what to do with it, this week's results, campaigns in progress, then new campaigns.
 export default function Home() {
   const { account } = useAuth();
   const q = useQuery(async () => {
-    const [home, mine, unread, balance, subs, level, daily, board, cities] = await Promise.all([fetchHome(), fetchMyCampaigns(),
+    const [mine, unread, balance, subs, level, board, cities] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
       unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []),
-      fetchTierProgress().catch(() => null), fetchDaily(14).catch(() => []),
-      fetchWeeklyBoard().catch(() => []), fetchCityBoard().catch(() => [])]);
-    const last7 = daily.slice(-7), prev7 = daily.slice(-14, -7);
-    const sum = (a: typeof daily, k: 'qualified_gain' | 'earned') => a.reduce((t, x) => t + x[k], 0);
+      fetchTierProgress().catch(() => null), fetchWeeklyBoard().catch(() => []), fetchCityBoard().catch(() => [])]);
     return {
-      home, unread, balance, level,
+      unread, balance, level, subs,
       rank: { me: board.find((r) => r.is_me) ?? null, top: board[0] ?? null, city: cities.find((r) => r.is_mine) ?? null, topCity: cities[0] ?? null },
-      week: { views: sum(last7, 'qualified_gain'), prev: sum(prev7, 'qualified_gain'), earned: sum(last7, 'earned'), days: last7 },
-      accepted: subs.filter((s) => s.status === 'approved' || s.status === 'tracking' || s.status === 'completed').length,
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
-      active: mine.filter((m) => m.status === 'joined' && m.campaign && ['active', 'paused', 'ending'].includes(m.campaign.status)).slice(0, 6),
+      campaigns: mine.filter((m) => m.status === 'joined' && m.campaign).map((m) => ({ value: m.campaign!.id, label: m.campaign!.title })),
     };
   }, []);
   const first = account?.fullName?.split(' ')[0];
@@ -83,19 +87,11 @@ export default function Home() {
       {account && STATUS_NOTE[account.status] ? <View style={styles.notice}><Notice tone="info" message={STATUS_NOTE[account.status]!} /></View> : null}
       {q.error && !d ? <View style={styles.notice}><Notice tone="error" message={`${q.error} Tarik ke bawah untuk memuat ulang.`} /></View> : null}
 
-      <SectionHead title="7 hari terakhir" action={{ label: 'Detail', onPress: () => router.push('/performance') }} />
-      {d ? <Week week={d.week} accepted={d.accepted} /> : <SkeletonBlock width="100%" height={168} />}
+      <Videos subs={d?.subs ?? null} campaigns={d?.campaigns ?? []} />
 
       {d ? <RankCard rank={d.rank} /> : null}
 
-      {d && d.active.length ? (
-        <>
-          <SectionHead title="Lanjutkan" action={{ label: 'Semua', onPress: () => router.navigate('/dashboard/activity') }} />
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail} style={styles.railWrap}>
-            {d.active.map((m) => <ActiveCard key={m.id} m={m} />)}
-          </ScrollView>
-        </>
-      ) : null}
+      <AllCampaigns />
 
       {d ? <View style={styles.push}><PushToggle compact /></View> : null}
     </Screen>
@@ -139,46 +135,6 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
   );
 }
 
-// This week: qualified views with the change vs last week, a 7-day bar strip, earnings and accepted clips.
-function Week({ week, accepted }: { week: { views: number; prev: number; earned: number; days: { day: string; qualified_gain: number }[] }; accepted: number }) {
-  const max = Math.max(1, ...week.days.map((x) => x.qualified_gain));
-  const change = week.prev > 0 ? Math.round(((week.views - week.prev) / week.prev) * 100) : null;
-  return (
-    <View style={styles.week}>
-      <View style={styles.weekTop}>
-        <View style={{ flex: 1, gap: 2 }}>
-          <Text style={styles.weekBig}>+{compact(week.views)}</Text>
-          <Text style={styles.weekLabel}>qualified views</Text>
-        </View>
-        {change != null ? (
-          <View style={[styles.trend, change < 0 && styles.trendDown]}>
-            <Feather name={change >= 0 ? 'trending-up' : 'trending-down'} size={13} color={change >= 0 ? color.success : color.danger} />
-            <Text style={[styles.trendText, change < 0 && { color: color.danger }]}>{change >= 0 ? '+' : ''}{change}%</Text>
-          </View>
-        ) : null}
-      </View>
-      <View style={styles.bars}>
-        {week.days.map((x, i) => {
-          const today = i === week.days.length - 1;
-          return (
-            <View key={x.day} style={styles.barCol}>
-              <View style={styles.barTrack}>
-                <View style={[styles.bar, { height: `${Math.max(6, (x.qualified_gain / max) * 100)}%` }, today && styles.barToday]} />
-              </View>
-              <Text style={[styles.barDay, today && { color: color.text }]}>{DAYS[new Date(`${x.day}T00:00:00`).getDay()]}</Text>
-            </View>
-          );
-        })}
-      </View>
-      <View style={styles.weekFoot}>
-        <View style={styles.weekStat}><Text style={styles.weekStatValue}>{idrCompact(week.earned)}</Text><Text style={styles.weekLabel}>penghasilan</Text></View>
-        <View style={styles.weekDivider} />
-        <View style={styles.weekStat}><Text style={styles.weekStatValue}>{accepted}</Text><Text style={styles.weekLabel}>klip diterima</Text></View>
-      </View>
-    </View>
-  );
-}
-
 type Rank = { me: CreatorRow | null; top: CreatorRow | null; city: CityRow | null; topCity: CityRow | null };
 // Weekly standing teaser → the full stage.
 function RankCard({ rank }: { rank: Rank }) {
@@ -197,25 +153,97 @@ function RankCard({ rank }: { rank: Rank }) {
   );
 }
 
-function ActiveCard({ m }: { m: MyCampaign }) {
-  const c = m.campaign!;
-  const dl = deadlineLabel(c.submission_deadline);
+// "Video kamu": every clip with a status tab, campaign filter and sort, plus when views refresh next.
+function Videos({ subs, campaigns }: { subs: MySubmission[] | null; campaigns: { value: string; label: string }[] }) {
+  const [tab, setTab] = useState<'all' | 'pending' | 'done'>('all');
+  const [camp, setCamp] = useState('');
+  const [sort, setSort] = useState('newest');
+  const list = (subs ?? [])
+    .filter((s) => (tab === 'all' ? true : tab === 'pending' ? PENDING.includes(s.status) : DONE.includes(s.status)))
+    .filter((s) => !camp || s.campaign_id === camp)
+    .sort((a, b) => (sort === 'views' ? (b.raw_views ?? b.qualified_views) - (a.raw_views ?? a.qualified_views)
+      : sort === 'earned' ? b.earned - a.earned : b.created_at.localeCompare(a.created_at)));
   return (
-    <Pressable onPress={() => router.push({ pathname: '/workspace/[id]', params: { id: c.id } })} accessibilityRole="button"
-      style={({ pressed }) => [styles.active, pressed && { opacity: 0.85 }]}>
-      <View style={styles.activeArt} {...web('art')}>
-        <Text style={styles.activeBrand} numberOfLines={1}>{c.brand?.name ?? 'Campaign'}</Text>
-        {dl ? <Text style={[styles.activeDl, isUrgent(c.submission_deadline) && { color: color.warning }]}>{dl}</Text> : null}
+    <View style={styles.videos}>
+      <Text style={styles.cardTitle} accessibilityRole="header">Video kamu</Text>
+      <Countdown />
+      <View style={styles.tabs}>
+        {([['all', 'Semua'], ['pending', 'Pending'], ['done', 'Diterima']] as const).map(([k, label]) => (
+          <Pressable key={k} onPress={() => setTab(k)} accessibilityRole="tab" accessibilityState={{ selected: tab === k }} style={[styles.tab, tab === k && styles.tabOn]}>
+            <Text style={[styles.tabText, tab === k && styles.tabTextOn]}>{label}</Text>
+          </Pressable>
+        ))}
       </View>
-      <View style={styles.activeBody}>
-        <Text style={styles.activeTitle} numberOfLines={2}>{c.title}</Text>
-        <Text style={styles.activeMeta}>{c.status !== 'active' ? CAMPAIGN_STATUS[c.status as keyof typeof CAMPAIGN_STATUS] : `${idr(c.cpm)} / 1.000 views`}</Text>
-        <View style={styles.activeCta}><Text style={styles.activeCtaText}>Buka workspace</Text><Feather name="arrow-right" size={14} color={color.link} /></View>
+      <View style={styles.filters}>
+        <View style={{ flex: 1.3 }}><Dropdown label="Semua campaign" value={camp} options={[{ value: '', label: 'Semua campaign' }, ...campaigns]} onChange={setCamp} /></View>
+        <View style={{ flex: 1 }}><Dropdown label="Urutkan" icon="sliders" value={sort} onChange={setSort}
+          options={[{ value: 'newest', label: 'Terbaru' }, { value: 'views', label: 'Views terbanyak' }, { value: 'earned', label: 'Penghasilan' }]} /></View>
       </View>
-    </Pressable>
+      {subs == null ? <SkeletonBlock width="100%" height={96} /> : list.length ? (
+        <>
+          {list.slice(0, 5).map((s) => (
+            <SubmissionRow key={s.id} s={s} showCampaign onPress={() => router.push({ pathname: '/workspace/[id]', params: { id: s.campaign_id } })} />
+          ))}
+          {list.length > 5 ? (
+            <Pressable onPress={() => router.navigate('/dashboard/activity')} accessibilityRole="button" style={styles.more}>
+              <Text style={styles.link}>Lihat semua ({list.length})</Text><Feather name="chevron-right" size={16} color={color.link} />
+            </Pressable>
+          ) : null}
+        </>
+      ) : (
+        <View style={styles.empty}><Text style={styles.emptyText}>{subs.length ? 'Belum ada video di filter ini.' : 'Belum ada video. Ambil campaign lalu posting klipmu.'}</Text></View>
+      )}
+    </View>
   );
 }
 
+// Views are re-fetched every 3 hours (fetch-metrics-sweep, 0 */3 UTC).
+function Countdown() {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+  const step = 3 * 3600e3;
+  const left = Math.ceil(now / step) * step - now;
+  const pad = (n: number) => String(Math.floor(n)).padStart(2, '0');
+  return (
+    <View style={styles.refresh}>
+      <Feather name="refresh-cw" size={16} color="#F5C451" />
+      <Text style={styles.refreshText}>Update views dalam <Text style={styles.refreshTime}>{pad(left / 3600e3)}:{pad((left % 3600e3) / 60e3)}:{pad((left % 60e3) / 1e3)}</Text></Text>
+    </View>
+  );
+}
+
+// "Semua campaign aktif": sort, category and type filters over the live feed.
+function AllCampaigns() {
+  const { isWide } = useLayout();
+  const [sort, setSort] = useState<Sort>('recommended');
+  const [cat, setCat] = useState('');
+  const [kind, setKind] = useState('');
+  const [items, setItems] = useState<FeedItem[] | null>(null);
+  useEffect(() => {
+    let live = true;
+    setItems(null);
+    fetchFeed(sort, { ...EMPTY_FILTERS, categories: cat ? [cat] : [], contentTypes: kind ? [kind] : [] })
+      .then((r) => live && setItems(r)).catch(() => live && setItems([]));
+    return () => { live = false; };
+  }, [sort, cat, kind]);
+  return (
+    <>
+      <SectionHead title="Semua campaign aktif" action={{ label: 'Semua', onPress: () => router.navigate('/dashboard/campaigns') }} />
+      <View style={styles.filters}>
+        <View style={{ flex: 1 }}><Dropdown label="Urutkan" icon="sliders" value={sort} options={SORTS} onChange={(v) => setSort(v as Sort)} /></View>
+        <View style={{ flex: 1 }}><Dropdown label="Kategori" value={cat} options={CATEGORIES} onChange={setCat} /></View>
+        <View style={{ flex: 1 }}><Dropdown label="Tipe" value={kind} options={TYPES} onChange={setKind} /></View>
+      </View>
+      <View style={[styles.grid, { marginTop: space.md }]}>
+        {items == null ? <SkeletonBlock width="100%" height={260} /> : items.length ? items.slice(0, 6).map((c) => (
+          <View key={c.id} style={isWide ? styles.gridItem : { width: '100%' }}>
+            <CampaignCard item={c} onPress={() => router.push({ pathname: '/campaign/[id]', params: { id: c.id } })} />
+          </View>
+        )) : <View style={[styles.empty, { width: '100%' }]}><Text style={styles.emptyText}>Belum ada campaign di filter ini.</Text></View>}
+      </View>
+    </>
+  );
+}
 
 function SectionHead({ title, action }: { title: string; action?: { label: string; onPress: () => void } }) {
   return (
@@ -301,6 +329,21 @@ const styles = StyleSheet.create({
   infoBody: { ...type.caption, color: color.textSecondary, lineHeight: 18 },
 
   push: { marginTop: space.xxl },
+  videos: { ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md, marginTop: space.xl },
+  cardTitle: { ...type.heading, fontSize: 20, color: color.text },
+  refresh: { flexDirection: 'row', alignItems: 'center', gap: space.sm, alignSelf: 'flex-start', paddingHorizontal: space.md, height: 40,
+    borderRadius: radius.pill, borderWidth: 1, borderColor: color.border, backgroundColor: '#0E0E13' },
+  refreshText: { ...type.caption, color: color.textSecondary },
+  refreshTime: { fontFamily: type.label.fontFamily, color: color.text, fontVariant: ['tabular-nums'] },
+  tabs: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: color.border },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: space.sm, borderBottomWidth: 2, borderBottomColor: 'transparent', marginBottom: -1 },
+  tabOn: { borderBottomColor: color.blueLight },
+  tabText: { ...type.label, color: color.textMuted },
+  tabTextOn: { color: color.text },
+  filters: { flexDirection: 'row', gap: space.sm },
+  empty: { borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.14)', borderRadius: radius.md, paddingVertical: space.xl, paddingHorizontal: space.lg, alignItems: 'center' },
+  emptyText: { ...type.caption, color: color.textSecondary, textAlign: 'center' },
+  more: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
   rankCard: { marginTop: space.lg, flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.lg, borderRadius: radius.lg, overflow: 'hidden',
     borderWidth: 1, borderColor: 'rgba(245,196,81,0.28)' },
   rankIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(245,196,81,0.14)', alignItems: 'center', justifyContent: 'center' },
