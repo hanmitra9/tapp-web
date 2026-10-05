@@ -5,14 +5,21 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { unreadCount } from '@/features/notifications/api';
 import { color, radius, space, type } from '@/theme/tokens';
 import { MenuButton } from './SideMenu';
+import { useLayout } from '@/lib/useLayout';
 
 // Tab screen header (konten-style): menu, title, "Ajak & cuan" pill, bell with unread dot.
-export function TopBar({ title }: { title: string }) {
+// `back`: pages outside the tabs also get a back arrow on desktop (no side menu there).
+export function TopBar({ title, back = false }: { title: string; back?: boolean }) {
+  const { isWide } = useLayout();
   const [unread, setUnread] = useState(0);
   useFocusEffect(useCallback(() => { unreadCount().then(setUnread).catch(() => {}); }, []));
   return (
     <View style={styles.top}>
-      <MenuButton />
+      {back && isWide ? (
+        <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/dashboard'))} hitSlop={8} accessibilityRole="button" accessibilityLabel="Kembali" style={styles.iconBtn}>
+          <Feather name="chevron-left" size={22} color={color.text} />
+        </Pressable>
+      ) : <MenuButton />}
       <Text style={styles.title} accessibilityRole="header" numberOfLines={1}>{title}</Text>
       <Pressable onPress={() => router.push('/referral')} accessibilityRole="button" style={({ pressed }) => [styles.invite, pressed && { opacity: 0.8 }]}>
         <Feather name="gift" size={14} color="#F5C451" />
