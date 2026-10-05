@@ -799,7 +799,7 @@ select rank, name, city, views, is_me from weekly_leaderboard();
 select rank, city, views, creators, is_mine from city_leaderboard();
 do $$ begin if not exists (select 1 from city_leaderboard() where city = 'Surabaya' and is_mine) then raise exception 'city board'; end if; end $$;
 select pg_temp.expect_error($$update profiles set city = 'x' where id = auth.uid()$$, 'new row');
-select rank, name, tier, payout, is_me from alltime_leaderboard();
+select rank, name, tier, payout, campaigns, is_me from alltime_leaderboard();
 do $$ begin
   if not exists (select 1 from alltime_leaderboard() where is_me and payout > 0) then raise exception 'alltime board missing me'; end if;
   if exists (select 1 from alltime_leaderboard() where name !~ '\*') then raise exception 'alltime names not masked'; end if;
