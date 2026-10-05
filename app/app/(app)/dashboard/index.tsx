@@ -6,7 +6,7 @@ import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { SkeletonBlock } from '@/components/Skeleton';
 import Feather from '@expo/vector-icons/Feather';
-import { compact, greeting, idr } from '@/lib/format';
+import { compact, idr, pickGreeting } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { PushToggle } from '@/components/PushToggle';
@@ -51,7 +51,7 @@ export default function Home() {
       campaigns: mine.filter((m) => m.status === 'joined' && m.campaign).map((m) => ({ value: m.campaign!.id, label: m.campaign!.title })),
     };
   }, []);
-  const first = account?.fullName?.split(' ')[0];
+  const [hello] = useState(() => pickGreeting());   // a new greeting each time the app is opened
   const d = q.data;
 
   return (
@@ -62,7 +62,7 @@ export default function Home() {
           <Avatar uri={account?.avatarUrl ?? null} name={account?.fullName ?? null} size={46} />
         </Pressable>
         <View style={{ flex: 1 }}>
-          <Text style={styles.hello}>{greeting()}{first ? `, ${first}` : ''}</Text>
+          <Text style={styles.hello}>{hello}</Text>
           <Text style={styles.name} accessibilityRole="header" numberOfLines={1}>{account?.fullName ?? 'Creator'}</Text>
         </View>
         <Pressable onPress={() => router.push('/notifications')} hitSlop={8} accessibilityRole="button"

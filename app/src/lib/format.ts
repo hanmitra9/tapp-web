@@ -37,3 +37,23 @@ export function greeting(d = new Date()) {
   const h = d.getHours();
   return h < 11 ? 'Selamat pagi' : h < 15 ? 'Selamat siang' : h < 18 ? 'Selamat sore' : 'Selamat malam';
 }
+
+// Rotating home greeting (a new one each time the app is opened), always ending in a comma: the name goes on the next line.
+const GREETINGS = {
+  pagi: ['Selamat pagi,', 'Pagi yang produktif,', 'Pagi, siap bikin klip?', 'Awal hari yang cerah,'],
+  siang: ['Selamat siang,', 'Siang yang semangat,', 'Lanjut ngonten,', 'Istirahat sebentar,'],
+  sore: ['Selamat sore,', 'Sore yang santai,', 'Sore, cek views dulu?', 'Hampir beres hari ini,'],
+  malam: ['Selamat malam,', 'Malam yang tenang,', 'Masih semangat malam ini,', 'Waktunya cek hasil,'],
+  any: ['Halo lagi,', 'Senang lihat kamu lagi,', 'Gas cuan hari ini,', 'Selamat datang kembali,', 'Siap ngonten,'],
+};
+export function pickGreeting(d = new Date()): string {
+  const h = d.getHours();
+  const part = h < 11 ? 'pagi' : h < 15 ? 'siang' : h < 18 ? 'sore' : 'malam';
+  const pool = [...GREETINGS[part], ...GREETINGS.any];
+  let last: string | null = null;
+  try { last = localStorage.getItem('tapp:greeting'); } catch { /* no storage */ }
+  const options = pool.filter((g) => g !== last);
+  const g = options[Math.floor(Math.random() * options.length)] ?? pool[0]!;
+  try { localStorage.setItem('tapp:greeting', g); } catch { /* no storage */ }
+  return g;
+}
