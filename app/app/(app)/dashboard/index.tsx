@@ -21,7 +21,7 @@ import type { MySubmission } from '@/features/submissions/api';
 import { useLayout } from '@/lib/useLayout';
 import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
-import { fetchAllTimeBoard, type AllTimeRow } from '@/features/campaigns/leaderboard';
+import { fetchMonthlyBoard, type MonthlyRow } from '@/features/campaigns/leaderboard';
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { MenuButton } from '@/components/SideMenu';
@@ -43,7 +43,7 @@ export default function Home() {
   const q = useQuery(async () => {
     const [mine, unread, balance, subs, level, board] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
       unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []),
-      fetchTierProgress().catch(() => null), fetchAllTimeBoard(10).catch(() => [] as AllTimeRow[])]);
+      fetchTierProgress().catch(() => null), fetchMonthlyBoard(10).then((m) => m.rows).catch(() => [] as MonthlyRow[])]);
     return {
       unread, balance, level, subs,
       rank: { me: board.find((r) => r.is_me) ?? null, top: board[0] ?? null },
@@ -132,11 +132,11 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
   );
 }
 
-type Rank = { me: AllTimeRow | null; top: AllTimeRow | null };
+type Rank = { me: MonthlyRow | null; top: MonthlyRow | null };
 // All-time standing teaser → the leaderboard stage.
 function RankCard({ rank }: { rank: Rank }) {
-  const title = rank.me ? `Kamu #${rank.me.rank} di leaderboard` : rank.top ? 'Siapa di puncak leaderboard?' : 'Leaderboard masih kosong';
-  const sub = rank.me ? `Payout ${idr(rank.me.payout)} sepanjang masa` : rank.top ? `#1 sudah payout ${idr(rank.top.payout)}` : 'Klip pertama yang diterima langsung di puncak';
+  const title = rank.me ? `Kamu #${rank.me.rank} bulan ini` : rank.top ? 'Rebut hadiah bulan ini' : 'Jadi #1 bulan ini';
+  const sub = rank.me ? (rank.me.prize ? `Hadiah ${idr(rank.me.prize)} kalau bertahan` : `Payout ${idr(rank.me.payout)} bulan ini`) : 'Top 3 tiap bulan dapat hadiah';
   return (
     <Pressable onPress={() => router.push('/leaderboard')} accessibilityRole="button" style={({ pressed }) => [styles.rankCard, pressed && { opacity: 0.88 }]}>
       <LinearGradient colors={['#2A1F05', '#141008']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />

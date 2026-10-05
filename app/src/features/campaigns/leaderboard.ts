@@ -29,3 +29,17 @@ export async function fetchAllTimeBoard(limit = 20): Promise<AllTimeRow[]> {
   if (error) throw error;
   return ((data ?? []) as AllTimeRow[]).map((r) => ({ ...r, rank: Number(r.rank), payout: Number(r.payout), campaigns: Number(r.campaigns ?? 0) }));
 }
+
+// Monthly board with prizes (0057): resets on the 1st (WIB). Meta gives prizes + reset time even when the board is empty.
+export type MonthlyRow = AllTimeRow & { prize: number };
+export type Monthly = { rows: MonthlyRow[]; prizes: number[]; resetsAt: string };
+export async function fetchMonthlyBoard(limit = 30): Promise<Monthly> {
+  const [b, m] = await Promise.all([supabase.rpc('monthly_leaderboard', { p_limit: limit }), supabase.rpc('leaderboard_meta')]);
+  if (b.error) throw b.error;
+  if (m.error) throw m.error;
+  const meta = (m.data as { prizes: number[]; resets_at: string }[])[0];
+  return {
+    rows: ((b.data ?? []) as MonthlyRow[]).map((r) => ({ ...r, rank: Number(r.rank), payout: Number(r.payout), campaigns: Number(r.campaigns ?? 0), prize: Number(r.prize ?? 0) })),
+    prizes: (meta?.prizes ?? []).map(Number), resetsAt: meta?.resets_at ?? new Date().toISOString(),
+  };
+}
