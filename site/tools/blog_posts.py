@@ -75,7 +75,7 @@ POSTS = [
 </tbody></table>
 <h2>Cara bonus dihitung</h2>
 <p>Bayaran clip masuk ke saldomu. Saat kamu menarik saldo, TAPP menambahkan bonus tarif <b>di atas</b> jumlah yang ditarik, sesuai level kamu saat itu. Bonus ini dibayar TAPP, jadi tidak mengurangi budget brand.</p>
-<p>Setiap pencairan hanya dipotong biaya transfer Rp10.000, dengan minimal saldo Rp100.000. Tidak ada potongan persen dari saldomu.</p>
+<p>Setiap pencairan hanya dipotong biaya transfer Rp10.000, dengan minimal saldo Rp50.000. Tidak ada potongan persen dari saldomu.</p>
 <ul>
 <li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, biaya transfer Rp10.000, diterima <b>Rp305.000</b>.</li>
 <li>Tarik saldo yang sama di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, diterima <b>Rp335.000</b>.</li>
@@ -109,7 +109,7 @@ POSTS = [
 </ol>
 <h2>Ketentuan penarikan</h2>
 <table class="bl-table"><tbody>
-<tr><td>Minimal saldo</td><td>Rp100.000</td></tr>
+<tr><td>Minimal saldo</td><td>Rp50.000</td></tr>
 <tr><td>Biaya transfer</td><td>Rp10.000 per pencairan</td></tr>
 <tr><td>Bonus level</td><td>+2% sampai +15% dari jumlah yang ditarik</td></tr>
 </tbody></table>
