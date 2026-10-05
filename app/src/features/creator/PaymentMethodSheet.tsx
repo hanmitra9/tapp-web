@@ -1,7 +1,7 @@
 import Feather from '@expo/vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { TextField } from '@/components/TextField';
 import { Notice } from '@/components/Notice';
 import { errorMessage } from '@/lib/errors';
@@ -19,7 +19,19 @@ const TINT: Record<string, string> = {
 const SHORT: Record<string, string> = { Mandiri: 'MDR', 'CIMB Niaga': 'CIMB', Permata: 'PMT', 'Bank Jago': 'JAGO' };
 const initials = (p: string) => SHORT[p] ?? (p.length <= 4 ? p.toUpperCase() : (p.match(/[A-Z]/g) ?? [p[0]]).join('').slice(0, 3));
 
+// Official marks (assets/pay, idn-finlogos, see LICENSE-ASSETS.txt) on a white tile; letter tile for anything else.
+const LOGO: Record<string, number> = {
+  BCA: require('../../../assets/pay/bca.png'), Mandiri: require('../../../assets/pay/mandiri.png'), GoPay: require('../../../assets/pay/gopay.png'),
+  ShopeePay: require('../../../assets/pay/shopeepay.png'), DANA: require('../../../assets/pay/dana.png'),
+};
+
 export function ProviderTile({ provider, size = 40 }: { provider: string; size?: number }) {
+  const logo = LOGO[provider];
+  if (logo) return (
+    <View style={[styles.logoTile, { width: size * 1.6, height: size, borderRadius: size * 0.26 }]}>
+      <Image source={logo} style={{ width: '100%', height: '100%' }} resizeMode="contain" accessibilityIgnoresInvertColors />
+    </View>
+  );
   return (
     <View style={[styles.tile, { width: size, height: size, borderRadius: size * 0.3, backgroundColor: TINT[provider] ?? color.blue }]}>
       <Text style={[styles.tileText, { fontSize: size * 0.3 }]}>{initials(provider)}</Text>
@@ -121,6 +133,7 @@ const styles = StyleSheet.create({
   rowText: { ...type.label, fontSize: 15, color: color.text, flex: 1 },
   sub: { ...type.caption, color: color.textMuted },
   tile: { alignItems: 'center', justifyContent: 'center' },
+  logoTile: { backgroundColor: '#FFFFFF', padding: 6, alignItems: 'center', justifyContent: 'center' },
   tileText: { fontFamily: type.label.fontFamily, color: '#FFFFFF', letterSpacing: -0.2 },
   form: { padding: space.xl, gap: space.lg },
   picked: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderRadius: radius.md,
