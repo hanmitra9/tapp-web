@@ -2,7 +2,7 @@ import Feather from '@expo/vector-icons/Feather';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef } from 'react';
-import { Animated, Easing, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Animated, Easing, Image, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
@@ -38,6 +38,7 @@ export default function LeaderboardScreen() {
       <TopBar title="" back />
 
       <View style={styles.hero}>
+        <View style={[StyleSheet.absoluteFill, webStyle(GRID)]} pointerEvents="none" />
         <View style={[styles.beam, webStyle({ background: 'conic-gradient(from 180deg at 50% 0%, transparent 155deg, rgba(245,196,81,0.18) 172deg, rgba(255,236,180,0.32) 180deg, rgba(245,196,81,0.18) 188deg, transparent 205deg)' })]} />
         <View style={styles.eyebrowRow}>
           <View style={styles.eyebrowLine} />
@@ -55,7 +56,16 @@ export default function LeaderboardScreen() {
             <Podium r={byRank(3)} place={3} delay={300} />
           </View>
         ) : null}
-        <LinearGradient colors={['rgba(245,196,81,0.18)', 'rgba(245,196,81,0)']} style={styles.floor} />
+        {rows.length ? (
+          <View style={styles.plinthWrap}>
+            <LinearGradient colors={['#2A2418', '#141210', '#09090B']} style={styles.plinth}>
+              <View style={[StyleSheet.absoluteFill, webStyle(NOISE)]} pointerEvents="none" />
+              <LinearGradient colors={['rgba(245,196,81,0)', 'rgba(245,196,81,0.9)', 'rgba(245,196,81,0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.trim} />
+              <Text style={styles.plinthText}>TAPP · HALL OF FAME</Text>
+            </LinearGradient>
+          </View>
+        ) : null}
+        <LinearGradient colors={['rgba(245,196,81,0.14)', 'rgba(245,196,81,0)']} style={styles.floor} />
       </View>
 
       {rows.length ? (
@@ -122,8 +132,18 @@ function Podium({ r, place, delay }: { r: AllTimeRow | null; place: Place; delay
       <Animated.View style={{ width: '100%', height: rise.interpolate({ inputRange: [0, 1], outputRange: [12, m.h] }) }}>
         <LinearGradient colors={m.face} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.face} />
         <LinearGradient colors={m.body} locations={[0, 0.28, 0.7, 1]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.body}>
+          <View style={[StyleSheet.absoluteFill, webStyle(BRUSHED)]} pointerEvents="none" />
+          <View style={[StyleSheet.absoluteFill, webStyle(NOISE)]} pointerEvents="none" />
           <LinearGradient colors={['rgba(255,255,255,0.35)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.sheen} />
-          <Text style={[styles.num, { color: m.ink }, webStyle({ textShadow: '0 1px 0 rgba(255,255,255,0.65), 0 -1px 0 rgba(0,0,0,0.25)' })]}>{place}</Text>
+          <View style={styles.edgeL} /><View style={styles.edgeR} />
+          {/* Engraved TAPP mark: light copy 1px below, dark copy on top = carved into the metal. */}
+          <View style={{ width: T, height: T, marginTop: place === 1 ? 4 : 0 }}>
+            <Image source={MARK} style={[styles.mark, { tintColor: 'rgba(255,255,255,0.55)', top: 1.2 }]} accessibilityIgnoresInvertColors />
+            <Image source={MARK} style={[styles.mark, { tintColor: m.ink }]} accessibilityIgnoresInvertColors />
+          </View>
+          <View style={[styles.medal, { borderColor: m.ink }]}>
+            <Text style={[styles.num, { color: m.ink }, webStyle({ textShadow: '0 1px 0 rgba(255,255,255,0.65)' })]}>{place}</Text>
+          </View>
         </LinearGradient>
       </Animated.View>
     </View>
@@ -149,6 +169,13 @@ function Row({ r, max }: { r: AllTimeRow; max: number }) {
 
 // Web-only CSS (gradients on text, conic light, glows) merged into a style.
 const webStyle = (css: object) => css as object;
+const MARK = require('../../assets/tapp-mark-white.png');
+const T = 46;
+// Brushed-metal streaks, film grain, and a faint stage grid that fades out from the centre.
+const BRUSHED = { backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px, transparent 1px, transparent 3px, rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px)', mixBlendMode: 'overlay' };
+const NOISE = { backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")", mixBlendMode: 'overlay', opacity: 0.6 };
+const GRID = { backgroundImage: 'linear-gradient(rgba(245,196,81,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(245,196,81,0.07) 1px, transparent 1px)',
+  backgroundSize: '28px 28px', maskImage: 'radial-gradient(ellipse at 50% 60%, black 0%, transparent 70%)', WebkitMaskImage: 'radial-gradient(ellipse at 50% 60%, black 0%, transparent 70%)' };
 const goldText = { backgroundImage: 'linear-gradient(180deg, #FFF4CF 0%, #F5C451 55%, #B8862A 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' };
 
 const styles = StyleSheet.create({
@@ -177,7 +204,15 @@ const styles = StyleSheet.create({
   face: { height: 12, borderTopLeftRadius: 10, borderTopRightRadius: 10, marginHorizontal: 4 },
   body: { flex: 1, alignItems: 'center', paddingTop: space.md, overflow: 'hidden', borderBottomLeftRadius: 2, borderBottomRightRadius: 2 },
   sheen: { position: 'absolute', left: 0, top: 0, bottom: 0, width: '38%' },
-  num: { fontFamily: type.display.fontFamily, fontWeight: '700', fontSize: 54, lineHeight: 60 },
+  num: { fontFamily: type.display.fontFamily, fontWeight: '700', fontSize: 20, lineHeight: 24 },
+  medal: { width: 34, height: 34, borderRadius: 17, borderWidth: 1.5, alignItems: 'center', justifyContent: 'center', marginTop: space.sm, backgroundColor: 'rgba(255,255,255,0.12)' },
+  mark: { position: 'absolute', left: 0, top: 0, width: T, height: T, resizeMode: 'contain' },
+  edgeL: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, backgroundColor: 'rgba(255,255,255,0.35)' },
+  edgeR: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 3, backgroundColor: 'rgba(0,0,0,0.28)' },
+  plinthWrap: { width: '100%', maxWidth: 440, paddingHorizontal: space.sm },
+  plinth: { height: 34, borderRadius: 6, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(245,196,81,0.18)' },
+  trim: { position: 'absolute', top: 0, left: 0, right: 0, height: 1 },
+  plinthText: { fontSize: 9, letterSpacing: 3, fontFamily: type.label.fontFamily, color: 'rgba(245,196,81,0.55)' },
 
   me: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.md, borderRadius: radius.lg,
     borderWidth: 1, borderColor: 'rgba(117,178,244,0.35)' },
