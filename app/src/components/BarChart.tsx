@@ -31,7 +31,10 @@ export function BarChart({ data, height = 180, format, summary }: Props) {
   const s = pts[sel];
   const colW = Math.min(36, Math.max(14, step * 0.8));
   const tipLeft = s ? Math.min(Math.max(s.x - 50, 0), Math.max(w - 100, 0)) : 0;
-  const labels = data.length <= 12 ? data : data.filter((_, i) => i % Math.ceil(data.length / 6) === 0 || i === data.length - 1);
+  // Evenly spaced ticks counted back from the latest day, each placed under its own point (so gaps match the dates).
+  const stride = data.length <= 8 ? 1 : Math.ceil((data.length - 1) / 5);
+  const ticks = data.map((d, i) => ({ d, i })).filter(({ i }) => (data.length - 1 - i) % stride === 0);
+  const LW = 44;
 
   return (
     <View accessible accessibilityLabel={summary} onLayout={(e: LayoutChangeEvent) => setW(e.nativeEvent.layout.width)}>
@@ -73,7 +76,12 @@ export function BarChart({ data, height = 180, format, summary }: Props) {
         </View>
       </View>
       <View style={styles.axis}>
-        {labels.map((d) => <Text key={d.key} style={[styles.axisText, data[sel]?.key === d.key && styles.axisOn]}>{d.label}</Text>)}
+        {w > 0 ? ticks.map(({ d, i }) => {
+          const x = i * step;
+          const left = Math.min(Math.max(x - LW / 2, 0), w - LW);
+          const align = left === 0 ? 'left' : left === w - LW ? 'right' : 'center';
+          return <Text key={d.key} numberOfLines={1} style={[styles.axisText, { left, width: LW, textAlign: align }, data[sel]?.key === d.key && styles.axisOn]}>{d.label}</Text>;
+        }) : null}
       </View>
     </View>
   );
@@ -83,7 +91,7 @@ const styles = StyleSheet.create({
   tip: { position: 'absolute', width: 100, backgroundColor: color.onAccent, borderRadius: radius.sm, paddingVertical: 6, alignItems: 'center' },
   tipText: { ...type.caption, fontFamily: type.label.fontFamily, color: '#0A0A0C', fontVariant: ['tabular-nums'] },
   hit: { flex: 1, flexDirection: 'row' },
-  axis: { flexDirection: 'row', justifyContent: 'space-between', marginTop: space.sm },
-  axisText: { ...type.caption, fontSize: 11, color: color.textMuted },
+  axis: { height: 16, marginTop: space.sm },
+  axisText: { ...type.caption, fontSize: 11, lineHeight: 16, color: color.textMuted, position: 'absolute', top: 0 },
   axisOn: { color: color.text },
 });

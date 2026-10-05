@@ -105,7 +105,7 @@ export default function Payments() {
   const points = (chart.data ?? []).map((p) => {
     run += p.earned;
     const dt = new Date(p.day);
-    return { key: p.day, value: mode === 'total' ? run : p.earned, label: days <= 7 ? dt.toLocaleDateString('id-ID', { weekday: 'short' }) : `${dt.getDate()}/${dt.getMonth() + 1}` };
+    return { key: p.day, value: mode === 'total' ? run : p.earned, label: (chart.data?.length ?? 0) <= 7 ? dt.toLocaleDateString('id-ID', { weekday: 'short' }) : `${dt.getDate()}/${dt.getMonth() + 1}` };
   });
   const periodSum = (chart.data ?? []).reduce((a, p) => a + p.earned, 0);
 
