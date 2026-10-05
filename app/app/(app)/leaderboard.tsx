@@ -17,9 +17,9 @@ const GOLD = '#F5C451';
 type Place = 1 | 2 | 3;
 // Metal per place: body gradient, top face, engraved number, ring glow.
 const METAL: Record<Place, { body: readonly [string, string, ...string[]]; face: readonly [string, string]; pit: readonly [string, string, string]; ink: string; ring: string; glow: string; h: number }> = {
-  1: { body: ['#F9E7A8', '#E0B54A', '#A9801F', '#5A400C'], face: ['#FFF6D6', '#E9C766'], pit: ['#6E4F10', '#A07A26', '#CDA544'], ink: 'rgba(90,62,8,0.85)', ring: GOLD, glow: 'rgba(245,196,81,0.55)', h: 196 },
-  2: { body: ['#F1F4F9', '#BCC4D0', '#848D9C', '#454B57'], face: ['#FFFFFF', '#CDD4DF'], pit: ['#565D69', '#838C9A', '#AAB3C0'], ink: 'rgba(60,66,78,0.85)', ring: '#D5DCE7', glow: 'rgba(213,220,231,0.35)', h: 152 },
-  3: { body: ['#FBD3AE', '#CF8D57', '#8F5328', '#4E2A13'], face: ['#FFE3C9', '#DDA16F'], pit: ['#5E3214', '#8E552A', '#B57A48'], ink: 'rgba(84,44,16,0.85)', ring: '#E0A06A', glow: 'rgba(224,160,106,0.35)', h: 124 },
+  1: { body: ['#F9E7A8', '#E0B54A', '#A9801F', '#5A400C'], face: ['#FFF6D6', '#E9C766'], pit: ['#6E4F10', '#A07A26', '#CDA544'], ink: 'rgba(90,62,8,0.85)', ring: GOLD, glow: 'rgba(245,196,81,0.55)', h: 226 },
+  2: { body: ['#F1F4F9', '#BCC4D0', '#848D9C', '#454B57'], face: ['#FFFFFF', '#CDD4DF'], pit: ['#565D69', '#838C9A', '#AAB3C0'], ink: 'rgba(60,66,78,0.85)', ring: '#D5DCE7', glow: 'rgba(213,220,231,0.35)', h: 178 },
+  3: { body: ['#FBD3AE', '#CF8D57', '#8F5328', '#4E2A13'], face: ['#FFE3C9', '#DDA16F'], pit: ['#5E3214', '#8E552A', '#B57A48'], ink: 'rgba(84,44,16,0.85)', ring: '#E0A06A', glow: 'rgba(224,160,106,0.35)', h: 148 },
 };
 
 // All-time leaderboard: a lit gold stage with metal podiums for the top three, your standing, then the ranked list.
@@ -38,33 +38,32 @@ export default function LeaderboardScreen() {
       <TopBar title="" back />
 
       <View style={styles.hero}>
-        <View style={[StyleSheet.absoluteFill, webStyle(GRID)]} pointerEvents="none" />
-        <View style={[styles.beam, webStyle({ background: 'conic-gradient(from 180deg at 50% 0%, transparent 155deg, rgba(245,196,81,0.18) 172deg, rgba(255,236,180,0.32) 180deg, rgba(245,196,81,0.18) 188deg, transparent 205deg)' })]} />
-        <View style={styles.eyebrowRow}>
-          <View style={styles.eyebrowLine} />
-          <Text style={styles.eyebrow}>ALL TIME</Text>
-          <View style={styles.eyebrowLine} />
-        </View>
+        <View style={[styles.beam, webStyle({ background: 'conic-gradient(from 180deg at 50% 0%, transparent 160deg, rgba(245,196,81,0.16) 174deg, rgba(255,236,180,0.3) 180deg, rgba(245,196,81,0.16) 186deg, transparent 200deg)' })]} />
         <Text style={[styles.title, webStyle(goldText)]} accessibilityRole="header">Leaderboard</Text>
         <Text style={styles.sub}>Creator dengan payout terbesar di TAPP</Text>
 
         {rows.length ? (
+          <View style={styles.stageWrap}>
+          <View style={[styles.rays, webStyle(RAYS)]} pointerEvents="none" />
+          <View style={[styles.halo, webStyle(HALO)]} pointerEvents="none" />
+          {SPARKS.map(([x, y, sz, d], i) => (
+            <View key={i} pointerEvents="none" style={[styles.spark, { left: `${x}%`, top: y, width: sz, height: sz, borderRadius: sz },
+              webStyle({ animation: `tapp-twinkle ${2.4 + (i % 4) * 0.7}s ease-in-out ${d}s infinite` })]} />
+          ))}
           <View style={styles.stage}>
-            <View style={styles.spot} />
             <Podium r={byRank(2)} place={2} delay={150} />
             <Podium r={byRank(1)} place={1} delay={0} />
             <Podium r={byRank(3)} place={3} delay={300} />
           </View>
-        ) : null}
-        {rows.length ? (
-          <View style={styles.plinthWrap}>
-            <LinearGradient colors={['#2A2418', '#141210', '#09090B']} style={styles.plinth}>
-              <View style={[StyleSheet.absoluteFill, webStyle(NOISE)]} pointerEvents="none" />
-              <LinearGradient colors={['rgba(245,196,81,0)', 'rgba(245,196,81,0.9)', 'rgba(245,196,81,0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.trim} />
-            </LinearGradient>
+          <View style={styles.reflect} pointerEvents="none">
+            {([2, 1, 3] as const).map((p) => (
+              <LinearGradient key={p} colors={[`${METAL[p].body[1]}55`, `${METAL[p].body[2]}14`, 'rgba(0,0,0,0)']} locations={[0, 0.45, 1]} style={styles.reflectCol} />
+            ))}
+          </View>
+          <View style={[styles.floorLine, webStyle({ backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,226,150,0.9), transparent)', boxShadow: '0 0 24px 4px rgba(245,196,81,0.45)' })]} />
+          <View style={[styles.floorGlow, webStyle({ backgroundImage: 'radial-gradient(ellipse at 50% 0%, rgba(245,196,81,0.28), transparent 70%)' })]} pointerEvents="none" />
           </View>
         ) : null}
-        <LinearGradient colors={['rgba(245,196,81,0.14)', 'rgba(245,196,81,0)']} style={styles.floor} />
       </View>
 
       {rows.length ? (
@@ -135,6 +134,8 @@ function Podium({ r, place, delay }: { r: AllTimeRow | null; place: Place; delay
           <View style={[StyleSheet.absoluteFill, webStyle(NOISE)]} pointerEvents="none" />
           <LinearGradient colors={['rgba(255,255,255,0.35)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.sheen} />
           <View style={styles.edgeL} /><View style={styles.edgeR} />
+          <View pointerEvents="none" style={[StyleSheet.absoluteFill, webStyle({ backgroundImage: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.6) 50%, transparent 60%)',
+            backgroundSize: '300% 100%', animation: `tapp-shine 5s ease-in-out ${delay + 900}ms infinite`, mixBlendMode: 'overlay' })]} />
           {/* Engraved TAPP mark: light copy 1px below, dark copy on top = carved into the metal. */}
           <Engraved pit={m.pit} top={place === 1 ? 4 : 0} />
           <View style={[styles.medal, { borderColor: m.ink }]}>
@@ -190,7 +191,23 @@ const BRUSHED = { backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,25
 const NOISE = { backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")", mixBlendMode: 'overlay', opacity: 0.6 };
 const GRID = { backgroundImage: 'linear-gradient(rgba(245,196,81,0.07) 1px, transparent 1px), linear-gradient(90deg, rgba(245,196,81,0.07) 1px, transparent 1px)',
   backgroundSize: '28px 28px', maskImage: 'radial-gradient(ellipse at 50% 60%, black 0%, transparent 70%)', WebkitMaskImage: 'radial-gradient(ellipse at 50% 60%, black 0%, transparent 70%)' };
-const goldText = { backgroundImage: 'linear-gradient(180deg, #FFF4CF 0%, #F5C451 55%, #B8862A 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' };
+// Keyframes for the stage (web): slow ray spin, twinkling sparks, light sweeping across the metal.
+if (typeof document !== 'undefined' && !document.getElementById('tapp-stage-kf')) {
+  const el = document.createElement('style');
+  el.id = 'tapp-stage-kf';
+  el.textContent = '@keyframes tapp-spin{to{transform:rotate(360deg)}}'
+    + '@keyframes tapp-twinkle{0%,100%{opacity:.15;transform:scale(.6)}50%{opacity:1;transform:scale(1)}}'
+    + '@keyframes tapp-shine{0%{background-position:150% 0}55%,100%{background-position:-50% 0}}';
+  document.head.appendChild(el);
+}
+const RAYS = { backgroundImage: 'repeating-conic-gradient(from 0deg, rgba(255,214,120,0.16) 0deg 3deg, transparent 3deg 12deg)',
+  maskImage: 'radial-gradient(circle, black 0%, rgba(0,0,0,0.6) 25%, transparent 62%)', WebkitMaskImage: 'radial-gradient(circle, black 0%, rgba(0,0,0,0.6) 25%, transparent 62%)',
+  animation: 'tapp-spin 90s linear infinite' };
+const HALO = { backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(255,222,140,0.55) 0%, rgba(245,166,35,0.22) 28%, rgba(245,166,35,0.06) 50%, transparent 68%)' };
+// [left %, top px, size px, delay s]
+const SPARKS: [number, number, number, number][] = [[12, 60, 3, 0], [22, 140, 2, 1.1], [30, 30, 2, 0.5], [41, 95, 3, 1.8], [58, 20, 2, 0.9], [66, 120, 3, 0.2],
+  [74, 55, 2, 1.4], [84, 150, 3, 0.7], [90, 80, 2, 2.1], [8, 190, 2, 1.6], [50, 170, 2, 2.4], [36, 210, 3, 0.4], [70, 220, 2, 1.2]];
+const goldText = { filter: 'drop-shadow(0 0 22px rgba(245,196,81,0.45))', backgroundImage: 'linear-gradient(180deg, #FFF4CF 0%, #F5C451 55%, #B8862A 100%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' };
 
 const styles = StyleSheet.create({
   hero: { marginHorizontal: -space.xl, marginTop: space.md, paddingTop: space.xl, overflow: 'hidden', alignItems: 'center' },
@@ -200,8 +217,16 @@ const styles = StyleSheet.create({
   eyebrow: { ...type.caption, fontSize: 11, letterSpacing: 2.4, color: GOLD, fontFamily: type.label.fontFamily },
   title: { fontFamily: type.display.fontFamily, fontWeight: '600', fontSize: 44, lineHeight: 52, letterSpacing: -1.6, color: GOLD, marginTop: space.sm },
   sub: { ...type.caption, color: 'rgba(255,236,190,0.6)', marginTop: 2 },
+  stageWrap: { width: '100%', alignItems: 'center', marginTop: space.lg, paddingBottom: space.sm },
+  rays: { position: 'absolute', width: 820, height: 820, top: -300, left: '50%', marginLeft: -410 },
+  halo: { position: 'absolute', width: 520, height: 520, top: -150, left: '50%', marginLeft: -260 },
+  spark: { position: 'absolute', backgroundColor: '#FFE7A3', boxShadow: '0 0 8px 2px rgba(255,214,120,0.8)' } as object,
+  floorLine: { position: 'absolute', bottom: 92, width: '92%', height: 2, borderRadius: 2 },
+  reflect: { flexDirection: 'row', gap: 10, width: '100%', maxWidth: 440, paddingHorizontal: space.lg, height: 90 },
+  reflectCol: { flex: 1, borderBottomLeftRadius: 8, borderBottomRightRadius: 8 },
+  floorGlow: { position: 'absolute', bottom: 0, left: 0, right: 0, height: 80 },
   stage: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 10, width: '100%', maxWidth: 440,
-    paddingHorizontal: space.lg, marginTop: space.xl },
+    paddingHorizontal: space.lg, marginTop: space.md },
   spot: { position: 'absolute', bottom: 40, alignSelf: 'center', left: '25%', right: '25%', height: 220, borderRadius: 220,
     backgroundColor: 'rgba(245,196,81,0.22)', filter: 'blur(48px)' } as object,
   floor: { width: '100%', height: 36 },
