@@ -2,7 +2,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { LinearGradient } from 'expo-linear-gradient';
 import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { deadlineLabel, idr, idrCompact, isUrgent } from '@/lib/format';
+import { deadlineLabel, idr, isUrgent } from '@/lib/format';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import type { FeedItem } from './api';
 import { categoryLabel } from './copy';
@@ -44,7 +44,7 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress }: { item
           <View style={styles.plats}>
             {item.platforms.map((p) => <View key={p} style={styles.plat}><FontAwesome6 name={ICON[p] ?? 'link'} brand size={12} color={color.text} /></View>)}
           </View>
-          <Text style={styles.budget}>Sisa {idrCompact(item.remaining)}</Text>
+          <Text style={styles.budget}>Sisa budget {Math.round(left * 100)}%</Text>
         </View>
         <View style={styles.track}><View style={[styles.fill, { width: `${Math.max(left * 100, 2)}%` }]} /></View>
         <JoinedRow count={item.creators_joined ?? 0} initials={item.joined_initials} />
