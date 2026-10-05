@@ -65,7 +65,7 @@ export default function Profile() {
     finally { setUploading(false); }
   }
 
-  if (!data) return <Screen inTabs scroll={false}><Header title="Profil" back={false} /><LoadState error={error} onRetry={load} /></Screen>;
+  if (!data) return <Screen inTabs scroll={false}><Header title="Profil" back={false} menu /><LoadState error={error} onRetry={load} /></Screen>;
   const { profile: p, stats: s, platforms, payout } = data;
   const reviewed = s.approved + s.rejected;
   const approvalRate = reviewed ? Math.round((s.approved / reviewed) * 100) : null;
@@ -75,7 +75,7 @@ export default function Profile() {
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={refreshing} tintColor={color.blue}
       onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
-      <Header title="Profil" back={false} />
+      <Header title="Profil" back={false} menu />
       <View style={styles.hero}>
         <View style={styles.heroArt} {...web('art')} />
         <Pressable onPress={changePhoto} disabled={uploading} style={styles.heroAvatar} accessibilityRole="button" accessibilityLabel={p.avatarUrl ? 'Ganti foto profil' : 'Tambah foto profil'}>

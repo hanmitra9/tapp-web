@@ -42,7 +42,7 @@ export default function Activity() {
 
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Aktivitas" back={false} />
+      <Header title="Aktivitas" back={false} menu />
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {!q.data && !q.error ? <><CardSkeleton /><CardSkeleton /></> : null}
       {q.data && !rows.length ? (

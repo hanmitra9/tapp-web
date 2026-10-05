@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { SideMenuProvider } from '@/components/SideMenu';
 import { useEffect } from 'react';
 import { claimPendingReferral } from '@/features/referral/api';
 import { LoadState } from '@/components/LoadState';
@@ -20,6 +21,7 @@ export default function AppLayout() {
   const needsOnboarding = !isBrand && !account.onboarded && account.status === 'pending';
   const creator = !isBrand && !needsOnboarding;
   return (
+    <SideMenuProvider>
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
       <Stack.Protected guard={isBrand}>
         <Stack.Screen name="brand" />
@@ -47,5 +49,6 @@ export default function AppLayout() {
         <Stack.Screen name="profile/payout" />
       </Stack.Protected>
     </Stack>
+    </SideMenuProvider>
   );
 }
