@@ -6,7 +6,7 @@ import { Image, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-
 import { showAlert } from '@/lib/alert';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
-import { MenuButton } from '@/components/SideMenu';
+import { TopBar } from '@/components/TopBar';
 import { BarChart } from '@/components/BarChart';
 import { dateLabel, idr } from '@/lib/format';
 import { compactIdr } from '@/lib/shareCard';
@@ -125,18 +125,7 @@ export default function Payments() {
 
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={() => { void chart.refresh(); return q.refresh(); }} tintColor={color.blue} />}>
-      <View style={styles.top}>
-        <MenuButton />
-        <Text style={styles.title} accessibilityRole="header">Saldo</Text>
-        <Pressable onPress={() => router.push('/referral')} accessibilityRole="button" style={({ pressed }) => [styles.invite, pressed && { opacity: 0.8 }]}>
-          <Feather name="gift" size={14} color="#F5C451" />
-          <Text style={styles.inviteText}>AJAK & CUAN</Text>
-        </Pressable>
-        <Pressable onPress={() => router.push('/notifications')} hitSlop={8} accessibilityRole="button" accessibilityLabel="Notifikasi" style={styles.iconBtn}>
-          <Feather name="bell" size={19} color={color.text} />
-          {d?.unread ? <View style={styles.dot} /> : null}
-        </Pressable>
-      </View>
+      <View style={{ marginBottom: space.lg }}><TopBar title="Saldo" /></View>
 
       <View style={styles.actionsRow}>
         <Pressable onPress={openCard} disabled={saving} accessibilityRole="button" accessibilityLabel="Kartu total payout"
