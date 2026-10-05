@@ -49,7 +49,8 @@ insert into campaign_platforms values ('20000000-0000-0000-0000-000000000001','t
 insert into campaign_assets (campaign_id,kind,title,url) values ('20000000-0000-0000-0000-000000000001','video','Ep. 12 raw','https://drive.example/ep12');
 select status from submit_campaign_for_approval('20000000-0000-0000-0000-000000000001');
 update campaigns set budget=1 where id='20000000-0000-0000-0000-000000000001';  -- RLS: 0 rows (no longer draft)
-select budget from campaigns where id='20000000-0000-0000-0000-000000000001';
+select pg_temp.expect_error($$select budget from campaigns$$, 'permission denied');   -- money columns are not readable
+reset role; select budget from campaigns where id='20000000-0000-0000-0000-000000000001'; set role authenticated;
 
 -- Admin approves creator + campaign
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
@@ -83,7 +84,7 @@ select earned, qualified_views from submissions where id = :'sub_id';           
 -- more views → budget cap (600k budget, 555k used)
 select id as metric2 from admin_record_metrics(:'sub_id', 400000) \gset
 select qualified_views, budget_capped from admin_qualify_views(:'sub_id', :'metric2', 300000);
-select budget, earned, status, status_reason from campaigns where id='20000000-0000-0000-0000-000000000001';  -- earned 600000, ending
+select budget, earned, status, status_reason from admin_campaigns where id='20000000-0000-0000-0000-000000000001';  -- earned 600000, ending
 select pg_temp.expect_error($$update content_metrics set views = 1$$,'permission denied');
 reset role; select pg_temp.expect_error($$update content_metrics set views = 1$$,'append_only'); set role authenticated;
 
@@ -110,7 +111,7 @@ select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid', null, ' ')$$, :'payout_id'),'reference_required');
 select status from admin_update_payout(:'payout_id', 'paid', null, 'BCA-TRX-88231');   -- straight from the queue
 select pg_temp.expect_error(format($$select admin_update_payout(%L,'paid', null, 'again')$$, :'payout_id'),'invalid_transition');
-select earned, paid from campaigns where id='20000000-0000-0000-0000-000000000001';
+reset role; select earned, paid from campaigns where id='20000000-0000-0000-0000-000000000001'; set role authenticated;
 
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select * from my_earnings_summary;
@@ -774,16 +775,16 @@ select 'growth_ok' as result;
 set role authenticated;
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select id as appr_sub, campaign_id as appr_camp, status as appr_status from submissions where status in ('pending_review','flagged') order by created_at limit 1 \gset
-select earned as earned_before from campaigns where id = :'appr_camp' \gset
+select earned as earned_before from admin_campaigns where id = :'appr_camp' \gset
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select pg_temp.expect_error(format($$select admin_approve_submission(%L, 50000)$$, :'appr_sub'),'forbidden');
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select pg_temp.expect_error(format($$select admin_approve_submission(%L, -1)$$, :'appr_sub'),'invalid_views');
 select status as approved_status from admin_approve_submission(:'appr_sub', 50000);
-select s.earned as clip_earned, c.earned - :earned_before as campaign_delta, a.remaining = greatest(c.budget - c.earned, 0) as remaining_ok
-from submissions s join campaigns c on c.id = s.campaign_id join admin_campaigns a on a.id = c.id where s.id = :'appr_sub';
+select s.earned as clip_earned, a.earned - :earned_before as campaign_delta, a.remaining = greatest(a.budget - a.earned, 0) as remaining_ok
+from submissions s join admin_campaigns a on a.id = s.campaign_id where s.id = :'appr_sub';
 do $$ begin
-  if exists (select 1 from submissions s join campaigns c on c.id = s.campaign_id
+  if exists (select 1 from submissions s join admin_campaigns c on c.id = s.campaign_id
              where s.id = (select id from submissions where status = 'completed' order by updated_at desc limit 1)
                and s.earned > 0 and c.earned < s.earned) then raise exception 'campaign earned not updated'; end if;
 end $$;
@@ -800,3 +801,14 @@ do $$ begin if not exists (select 1 from city_leaderboard() where city = 'Suraba
 select pg_temp.expect_error($$update profiles set city = 'x' where id = auth.uid()$$, 'new row');
 reset role;
 select 'city_ok' as result;
+
+-- ── 0053: creators see budget left as a percentage only ──
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select earned from campaigns$$, 'permission denied');
+select count(*) as creator_sees_admin_campaigns_expect_0 from admin_campaigns;
+do $$ declare r jsonb := get_campaign('20000000-0000-0000-0000-000000000001'); begin
+  if (r->>'budget')::int <> 100 or (r->>'remaining')::int not between 0 and 100 then raise exception 'get_campaign must report percent only: %', r; end if;
+end $$;
+reset role;
+select 'money_hidden_ok' as result;

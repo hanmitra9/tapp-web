@@ -269,10 +269,13 @@ export type CampaignFull = {
 };
 export async function getCampaignFull(id: string): Promise<CampaignFull> {
   const { data, error } = await supabase.from('campaigns')
-    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, budget, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, hashtag, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
+    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, hashtag, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
     .eq('id', id).single();
   if (error) throw error;
   const c = data as unknown as CampaignFull;
+  // Money columns are only readable through the admin view (0053).
+  const { data: money } = await supabase.from('admin_campaigns').select('budget').eq('id', id).maybeSingle();
+  c.budget = Number(money?.budget ?? 0);
   const { data: pr } = await supabase.from('campaign_pricing').select('brand_cpm, brand_budget, creator_share_pct, budget_fee_pct').eq('campaign_id', id).maybeSingle();
   const pricing = pr ? { brand_cpm: Number(pr.brand_cpm), brand_budget: Number(pr.brand_budget), creator_share_pct: Number(pr.creator_share_pct), budget_fee_pct: Number(pr.budget_fee_pct ?? 0) } : null;
   return { ...c, pricing, cpm: Number(c.cpm), budget: Number(c.budget), rules: [...c.rules].sort((a, b) => a.sort - b.sort), assets: [...c.assets].sort((a, b) => a.sort - b.sort) };

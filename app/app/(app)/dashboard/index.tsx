@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Image, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
-import { CardSkeleton, SkeletonBlock } from '@/components/Skeleton';
+import { SkeletonBlock } from '@/components/Skeleton';
 import Feather from '@expo/vector-icons/Feather';
 import { compact, deadlineLabel, greeting, idr, idrCompact, isUrgent } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
@@ -11,8 +11,7 @@ import { useAuth } from '@/providers/AuthProvider';
 import { PushToggle } from '@/components/PushToggle';
 import { fetchTierProgress, type TierProgress } from '@/features/creator/tier';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
-import { EMPTY_FILTERS, fetchFeed, fetchHome, fetchMyCampaigns, type MyCampaign } from '@/features/campaigns/api';
-import { CampaignCard } from '@/features/campaigns/CampaignCard';
+import { fetchHome, fetchMyCampaigns, type MyCampaign } from '@/features/campaigns/api';
 import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
 import { fetchDaily } from '@/features/performance/api';
@@ -21,7 +20,6 @@ import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { unreadCount } from '@/features/notifications/api';
-import { useLayout } from '@/lib/useLayout';
 import { web } from '@/theme/web';
 
 const STATUS_NOTE: Record<string, string> = {
@@ -35,9 +33,8 @@ const DAYS = ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'];
 // Home: balance and what to do with it, this week's results, campaigns in progress, then new campaigns.
 export default function Home() {
   const { account } = useAuth();
-  const { isWide: isDesktop } = useLayout();
   const q = useQuery(async () => {
-    const [home, recs, mine, unread, balance, subs, level, daily, board, cities] = await Promise.all([fetchHome(), fetchFeed('recommended', EMPTY_FILTERS), fetchMyCampaigns(),
+    const [home, mine, unread, balance, subs, level, daily, board, cities] = await Promise.all([fetchHome(), fetchMyCampaigns(),
       unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []),
       fetchTierProgress().catch(() => null), fetchDaily(14).catch(() => []),
       fetchWeeklyBoard().catch(() => []), fetchCityBoard().catch(() => [])]);
@@ -49,8 +46,6 @@ export default function Home() {
       week: { views: sum(last7, 'qualified_gain'), prev: sum(prev7, 'qualified_gain'), earned: sum(last7, 'earned'), days: last7 },
       accepted: subs.filter((s) => s.status === 'approved' || s.status === 'tracking' || s.status === 'completed').length,
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
-      recs: recs.filter((r) => !r.joined).slice(0, 6),
-      joinedAll: recs.length > 0 && recs.every((r) => r.joined),
       active: mine.filter((m) => m.status === 'joined' && m.campaign && ['active', 'paused', 'ending'].includes(m.campaign.status)).slice(0, 6),
     };
   }, []);
@@ -99,26 +94,6 @@ export default function Home() {
           </ScrollView>
         </>
       ) : null}
-
-      <SectionHead title="Campaign untukmu" action={{ label: d && d.home.available ? `${d.home.available >= 50 ? '50+' : d.home.available} tersedia` : 'Lihat semua', onPress: () => router.navigate('/dashboard/campaigns') }} />
-      {!d ? <CardSkeleton /> : d.recs.length ? (
-        isDesktop ? (
-          <View style={styles.grid}>{d.recs.slice(0, 4).map((c) => (
-            <View key={c.id} style={styles.gridItem}><CampaignCard item={c} onPress={() => router.push({ pathname: '/campaign/[id]', params: { id: c.id } })} /></View>
-          ))}</View>
-        ) : (
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rail} style={styles.railWrap} snapToInterval={292} decelerationRate="fast">
-            {d.recs.map((c) => (
-              <View key={c.id} style={styles.recItem}><CampaignCard item={c} onPress={() => router.push({ pathname: '/campaign/[id]', params: { id: c.id } })} /></View>
-            ))}
-          </ScrollView>
-        )
-      ) : (
-        <InfoRow icon={d.joinedAll ? 'check-circle' : 'link'}
-          title={d.joinedAll ? 'Semua campaign sudah kamu ikuti' : 'Belum ada campaign yang cocok'}
-          body={d.joinedAll ? 'Campaign baru akan muncul di sini.' : 'Hubungkan akun lain untuk lihat lebih banyak.'}
-          onPress={() => (d.joinedAll ? router.navigate('/dashboard/activity') : router.push('/profile/socials'))} />
-      )}
 
       {d ? <View style={styles.push}><PushToggle compact /></View> : null}
     </Screen>
@@ -239,18 +214,6 @@ function ActiveCard({ m }: { m: MyCampaign }) {
   );
 }
 
-function InfoRow({ icon, title, body, onPress }: { icon: 'check-circle' | 'link'; title: string; body: string; onPress: () => void }) {
-  return (
-    <Pressable onPress={onPress} style={({ pressed }) => [styles.info, pressed && { opacity: 0.85 }]} accessibilityRole="button">
-      <View style={styles.infoIcon}><Feather name={icon} size={18} color={color.link} /></View>
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={styles.infoTitle}>{title}</Text>
-        <Text style={styles.infoBody}>{body}</Text>
-      </View>
-      <Feather name="chevron-right" size={18} color={color.textMuted} />
-    </Pressable>
-  );
-}
 
 function SectionHead({ title, action }: { title: string; action?: { label: string; onPress: () => void } }) {
   return (
