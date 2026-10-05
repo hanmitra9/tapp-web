@@ -19,6 +19,7 @@ import { fetchCityBoard, fetchWeeklyBoard, type CityRow, type CreatorRow } from 
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
+import { MenuButton } from '@/components/SideMenu';
 import { unreadCount } from '@/features/notifications/api';
 import { web } from '@/theme/web';
 
@@ -55,6 +56,7 @@ export default function Home() {
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
       <View style={styles.top}>
+        <MenuButton />
         <Pressable onPress={() => router.navigate('/dashboard/profile')} accessibilityRole="button" accessibilityLabel="Profil">
           <Avatar uri={account?.avatarUrl ?? null} name={account?.fullName ?? null} size={46} />
         </Pressable>

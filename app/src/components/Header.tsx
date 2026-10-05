@@ -4,11 +4,14 @@ import { goToSite } from '@/lib/site';
 import type { ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { color, radius, space, type } from '@/theme/tokens';
+import { MenuButton } from './SideMenu';
+import { useLayout } from '@/lib/useLayout';
 
-type Props = { title: string; subtitle?: string; back?: boolean; right?: ReactNode };
+type Props = { title: string; subtitle?: string; back?: boolean; right?: ReactNode; menu?: boolean };
 
 // Reference style: a quiet top bar (chevron back, optional right action) with a bold title beneath.
-export function Header({ title, subtitle, back = true, right }: Props) {
+export function Header({ title, subtitle, back = true, right, menu = false }: Props) {
+  const showMenu = menu && !back && !useLayout().isWide;
   // A page can be opened directly (no history): back then returns to the landing page when signed out,
   // or to the role's home when signed in, instead of vanishing.
   const canBack = back;
@@ -16,14 +19,14 @@ export function Header({ title, subtitle, back = true, right }: Props) {
   const fallback = () => (signedOutPage ? goToSite('/') : router.replace('/dashboard'));
   return (
     <View style={styles.wrap}>
-      {canBack || right ? (
+      {canBack || right || showMenu ? (
         <View style={styles.bar}>
           {canBack ? (
             <Pressable onPress={() => (router.canGoBack() ? router.back() : fallback())} hitSlop={12} accessibilityRole="button" accessibilityLabel="Kembali"
               style={({ pressed }) => [styles.icon, pressed && { backgroundColor: color.surfaceRaised }]}>
               <Feather name="chevron-left" size={24} color={color.text} />
             </Pressable>
-          ) : <View />}
+          ) : showMenu ? <MenuButton /> : <View />}
           {right ?? null}
         </View>
       ) : null}

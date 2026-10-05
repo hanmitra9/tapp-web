@@ -1,4 +1,5 @@
 import Feather from '@expo/vector-icons/Feather';
+import { MenuButton } from '@/components/SideMenu';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, FlatList, Modal, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -65,6 +66,7 @@ export default function Campaigns() {
   return (
     <SafeAreaView style={[styles.safe, !focused && { display: 'none' }]} edges={['top']}>
       <View style={[styles.head, column, isWide && { paddingTop: space.xxxl }]}>
+        <MenuButton />
         <Text style={styles.title} accessibilityRole="header">Campaign</Text>
         <Pressable onPress={() => setSheet(true)} hitSlop={8} accessibilityRole="button"
           accessibilityLabel={count ? `Filter, ${count} aktif` : 'Filter'} style={({ pressed }) => [styles.filterBtn, pressed && { backgroundColor: color.surfaceRaised }]}>
@@ -147,8 +149,8 @@ function FilterSheet({ visible, initial, onClose, onApply }: { visible: boolean;
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: color.canvas },
-  head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: space.xl, paddingTop: space.lg + space.md },
-  title: { ...type.title, color: color.text },
+  head: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.xl, paddingTop: space.lg + space.md },
+  title: { ...type.title, color: color.text, flex: 1 },
   filterBtn: { width: 44, height: 44, borderRadius: radius.pill, backgroundColor: color.surface, alignItems: 'center', justifyContent: 'center' },
   filterDot: { position: 'absolute', top: -2, right: -2, minWidth: 18, height: 18, borderRadius: 9, backgroundColor: color.blue, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 4 },
   closeText: { ...type.label, color: color.link },
