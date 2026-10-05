@@ -58,7 +58,7 @@ export const LANGUAGES: Option[] = [
   { value: 'su', label: 'Sunda' }, { value: 'ms', label: 'Melayu' },
 ];
 
-export const BANKS = ['BCA', 'BRI', 'BNI', 'Mandiri', 'BSI', 'CIMB Niaga', 'Permata', 'Bank Jago', 'SeaBank', 'BTN'];
-export const EWALLETS = ['GoPay', 'OVO', 'DANA', 'ShopeePay', 'LinkAja'];
+export const BANKS = ['BCA', 'Mandiri'];
+export const EWALLETS = ['GoPay', 'ShopeePay', 'DANA'];
 
 export const labelOf = (opts: Option[], v: string) => opts.find((o) => o.value === v)?.label ?? v;
