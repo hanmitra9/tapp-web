@@ -23,9 +23,9 @@ export async function fetchCityBoard(): Promise<CityRow[]> {
 }
 
 // All-time board (0055): total credited earnings, masked names, avatar, level.
-export type AllTimeRow = { rank: number; name: string; avatar_url: string | null; tier: string | null; payout: number; is_me: boolean };
+export type AllTimeRow = { rank: number; name: string; avatar_url: string | null; tier: string | null; payout: number; campaigns: number; is_me: boolean };
 export async function fetchAllTimeBoard(limit = 20): Promise<AllTimeRow[]> {
   const { data, error } = await supabase.rpc('alltime_leaderboard', { p_limit: limit });
   if (error) throw error;
-  return ((data ?? []) as AllTimeRow[]).map((r) => ({ ...r, rank: Number(r.rank), payout: Number(r.payout) }));
+  return ((data ?? []) as AllTimeRow[]).map((r) => ({ ...r, rank: Number(r.rank), payout: Number(r.payout), campaigns: Number(r.campaigns ?? 0) }));
 }
