@@ -21,7 +21,7 @@ import type { MySubmission } from '@/features/submissions/api';
 import { useLayout } from '@/lib/useLayout';
 import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
-import { fetchCityBoard, fetchWeeklyBoard, type CityRow, type CreatorRow } from '@/features/campaigns/leaderboard';
+import { fetchAllTimeBoard, type AllTimeRow } from '@/features/campaigns/leaderboard';
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { MenuButton } from '@/components/SideMenu';
@@ -41,12 +41,12 @@ const CATEGORIES = FILTER_CATEGORIES, TYPES = FILTER_TYPES, SORTS = FEED_SORTS;
 export default function Home() {
   const { account } = useAuth();
   const q = useQuery(async () => {
-    const [mine, unread, balance, subs, level, board, cities] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
+    const [mine, unread, balance, subs, level, board] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
       unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []),
-      fetchTierProgress().catch(() => null), fetchWeeklyBoard().catch(() => []), fetchCityBoard().catch(() => [])]);
+      fetchTierProgress().catch(() => null), fetchAllTimeBoard(10).catch(() => [] as AllTimeRow[])]);
     return {
       unread, balance, level, subs,
-      rank: { me: board.find((r) => r.is_me) ?? null, top: board[0] ?? null, city: cities.find((r) => r.is_mine) ?? null, topCity: cities[0] ?? null },
+      rank: { me: board.find((r) => r.is_me) ?? null, top: board[0] ?? null },
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
       campaigns: mine.filter((m) => m.status === 'joined' && m.campaign).map((m) => ({ value: m.campaign!.id, label: m.campaign!.title })),
     };
@@ -132,11 +132,11 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
   );
 }
 
-type Rank = { me: CreatorRow | null; top: CreatorRow | null; city: CityRow | null; topCity: CityRow | null };
-// Weekly standing teaser → the full stage.
+type Rank = { me: AllTimeRow | null; top: AllTimeRow | null };
+// All-time standing teaser → the leaderboard stage.
 function RankCard({ rank }: { rank: Rank }) {
-  const title = rank.me ? `Kamu #${rank.me.rank} minggu ini` : rank.top ? 'Siapa di panggung minggu ini?' : 'Panggung minggu ini masih kosong';
-  const sub = rank.city ? `${rank.city.city} peringkat #${rank.city.rank} kota` : rank.topCity ? `Kota teratas: ${rank.topCity.city}` : 'Lihat peringkat minggu ini';
+  const title = rank.me ? `Kamu #${rank.me.rank} di leaderboard` : rank.top ? 'Siapa di puncak leaderboard?' : 'Leaderboard masih kosong';
+  const sub = rank.me ? `Payout ${idr(rank.me.payout)} sepanjang masa` : rank.top ? `#1 sudah payout ${idr(rank.top.payout)}` : 'Klip pertama yang diterima langsung di puncak';
   return (
     <Pressable onPress={() => router.push('/leaderboard')} accessibilityRole="button" style={({ pressed }) => [styles.rankCard, pressed && { opacity: 0.88 }]}>
       <LinearGradient colors={['#2A1F05', '#141008']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
