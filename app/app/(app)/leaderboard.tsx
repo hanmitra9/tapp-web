@@ -16,10 +16,10 @@ const LEVEL: Record<string, string> = { new: 'New', rising: 'Rising', verified: 
 const GOLD = '#F5C451';
 type Place = 1 | 2 | 3;
 // Metal per place: body gradient, top face, engraved number, ring glow.
-const METAL: Record<Place, { body: readonly [string, string, ...string[]]; face: readonly [string, string]; ink: string; ring: string; glow: string; h: number }> = {
-  1: { body: ['#F9E7A8', '#E0B54A', '#A9801F', '#5A400C'], face: ['#FFF6D6', '#E9C766'], ink: 'rgba(90,62,8,0.85)', ring: GOLD, glow: 'rgba(245,196,81,0.55)', h: 196 },
-  2: { body: ['#F1F4F9', '#BCC4D0', '#848D9C', '#454B57'], face: ['#FFFFFF', '#CDD4DF'], ink: 'rgba(60,66,78,0.85)', ring: '#D5DCE7', glow: 'rgba(213,220,231,0.35)', h: 152 },
-  3: { body: ['#FBD3AE', '#CF8D57', '#8F5328', '#4E2A13'], face: ['#FFE3C9', '#DDA16F'], ink: 'rgba(84,44,16,0.85)', ring: '#E0A06A', glow: 'rgba(224,160,106,0.35)', h: 124 },
+const METAL: Record<Place, { body: readonly [string, string, ...string[]]; face: readonly [string, string]; pit: readonly [string, string, string]; ink: string; ring: string; glow: string; h: number }> = {
+  1: { body: ['#F9E7A8', '#E0B54A', '#A9801F', '#5A400C'], face: ['#FFF6D6', '#E9C766'], pit: ['#6E4F10', '#A07A26', '#CDA544'], ink: 'rgba(90,62,8,0.85)', ring: GOLD, glow: 'rgba(245,196,81,0.55)', h: 196 },
+  2: { body: ['#F1F4F9', '#BCC4D0', '#848D9C', '#454B57'], face: ['#FFFFFF', '#CDD4DF'], pit: ['#565D69', '#838C9A', '#AAB3C0'], ink: 'rgba(60,66,78,0.85)', ring: '#D5DCE7', glow: 'rgba(213,220,231,0.35)', h: 152 },
+  3: { body: ['#FBD3AE', '#CF8D57', '#8F5328', '#4E2A13'], face: ['#FFE3C9', '#DDA16F'], pit: ['#5E3214', '#8E552A', '#B57A48'], ink: 'rgba(84,44,16,0.85)', ring: '#E0A06A', glow: 'rgba(224,160,106,0.35)', h: 124 },
 };
 
 // All-time leaderboard: a lit gold stage with metal podiums for the top three, your standing, then the ranked list.
@@ -42,7 +42,7 @@ export default function LeaderboardScreen() {
         <View style={[styles.beam, webStyle({ background: 'conic-gradient(from 180deg at 50% 0%, transparent 155deg, rgba(245,196,81,0.18) 172deg, rgba(255,236,180,0.32) 180deg, rgba(245,196,81,0.18) 188deg, transparent 205deg)' })]} />
         <View style={styles.eyebrowRow}>
           <View style={styles.eyebrowLine} />
-          <Text style={styles.eyebrow}>HALL OF FAME · ALL TIME</Text>
+          <Text style={styles.eyebrow}>ALL TIME</Text>
           <View style={styles.eyebrowLine} />
         </View>
         <Text style={[styles.title, webStyle(goldText)]} accessibilityRole="header">Leaderboard</Text>
@@ -61,7 +61,6 @@ export default function LeaderboardScreen() {
             <LinearGradient colors={['#2A2418', '#141210', '#09090B']} style={styles.plinth}>
               <View style={[StyleSheet.absoluteFill, webStyle(NOISE)]} pointerEvents="none" />
               <LinearGradient colors={['rgba(245,196,81,0)', 'rgba(245,196,81,0.9)', 'rgba(245,196,81,0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.trim} />
-              <Text style={styles.plinthText}>TAPP · HALL OF FAME</Text>
             </LinearGradient>
           </View>
         ) : null}
@@ -137,15 +136,27 @@ function Podium({ r, place, delay }: { r: AllTimeRow | null; place: Place; delay
           <LinearGradient colors={['rgba(255,255,255,0.35)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.sheen} />
           <View style={styles.edgeL} /><View style={styles.edgeR} />
           {/* Engraved TAPP mark: light copy 1px below, dark copy on top = carved into the metal. */}
-          <View style={{ width: T, height: T, marginTop: place === 1 ? 4 : 0 }}>
-            <Image source={MARK} style={[styles.mark, { tintColor: 'rgba(255,255,255,0.55)', top: 1.2 }]} accessibilityIgnoresInvertColors />
-            <Image source={MARK} style={[styles.mark, { tintColor: m.ink }]} accessibilityIgnoresInvertColors />
-          </View>
+          <Engraved pit={m.pit} top={place === 1 ? 4 : 0} />
           <View style={[styles.medal, { borderColor: m.ink }]}>
             <Text style={[styles.num, { color: m.ink }, webStyle({ textShadow: '0 1px 0 rgba(255,255,255,0.65)' })]}>{place}</Text>
           </View>
         </LinearGradient>
       </Animated.View>
+    </View>
+  );
+}
+
+// The TAPP mark carved into the metal: a light rim where the cut catches light (bottom), a dark lip where it falls
+// into shadow (top), and a darker brushed fill shaded from deep at the top edge to lighter at the floor of the cut.
+function Engraved({ pit, top }: { pit: readonly [string, string, string]; top: number }) {
+  return (
+    <View style={{ width: T, height: T, marginTop: top }} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Image source={MARK} style={[styles.mark, { tintColor: 'rgba(255,255,255,0.7)', top: 1.4, left: 0.6 }]} />
+      <Image source={MARK} style={[styles.mark, { tintColor: 'rgba(0,0,0,0.6)', top: -1.2, left: -0.4 }]} />
+      <View style={[styles.mark, webStyle({
+        ...maskOf(MARK_URI),
+        backgroundImage: `repeating-linear-gradient(90deg, rgba(255,255,255,0.08) 0px, rgba(255,255,255,0.08) 1px, transparent 1px, transparent 3px), linear-gradient(180deg, ${pit[0]} 0%, ${pit[1]} 55%, ${pit[2]} 100%)`,
+      })]} />
     </View>
   );
 }
@@ -170,7 +181,10 @@ function Row({ r, max }: { r: AllTimeRow; max: number }) {
 // Web-only CSS (gradients on text, conic light, glows) merged into a style.
 const webStyle = (css: object) => css as object;
 const MARK = require('../../assets/tapp-mark-white.png');
-const T = 46;
+const T = 48;
+const MARK_URI: string = (() => { const m = MARK as unknown; return typeof m === 'string' ? m : (m as { uri?: string; default?: string })?.uri ?? (m as { default?: string })?.default ?? Image.resolveAssetSource?.(MARK)?.uri ?? ''; })();
+const maskOf = (uri: string) => ({ maskImage: `url(${uri})`, WebkitMaskImage: `url(${uri})`, maskSize: 'contain', WebkitMaskSize: 'contain',
+  maskRepeat: 'no-repeat', WebkitMaskRepeat: 'no-repeat', maskPosition: 'center', WebkitMaskPosition: 'center' });
 // Brushed-metal streaks, film grain, and a faint stage grid that fades out from the centre.
 const BRUSHED = { backgroundImage: 'repeating-linear-gradient(90deg, rgba(255,255,255,0.07) 0px, rgba(255,255,255,0.07) 1px, transparent 1px, transparent 3px, rgba(0,0,0,0.05) 3px, rgba(0,0,0,0.05) 4px)', mixBlendMode: 'overlay' };
 const NOISE = { backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)' opacity='0.55'/></svg>\")", mixBlendMode: 'overlay', opacity: 0.6 };
@@ -210,9 +224,8 @@ const styles = StyleSheet.create({
   edgeL: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 2, backgroundColor: 'rgba(255,255,255,0.35)' },
   edgeR: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 3, backgroundColor: 'rgba(0,0,0,0.28)' },
   plinthWrap: { width: '100%', maxWidth: 440, paddingHorizontal: space.sm },
-  plinth: { height: 34, borderRadius: 6, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(245,196,81,0.18)' },
+  plinth: { height: 22, borderRadius: 6, alignItems: 'center', justifyContent: 'center', overflow: 'hidden', borderWidth: 1, borderColor: 'rgba(245,196,81,0.18)' },
   trim: { position: 'absolute', top: 0, left: 0, right: 0, height: 1 },
-  plinthText: { fontSize: 9, letterSpacing: 3, fontFamily: type.label.fontFamily, color: 'rgba(245,196,81,0.55)' },
 
   me: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.lg, padding: space.md, borderRadius: radius.lg,
     borderWidth: 1, borderColor: 'rgba(117,178,244,0.35)' },
