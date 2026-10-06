@@ -63,7 +63,7 @@ export function ProfileFields({ uid, values, onChange, avatarUrl, onAvatar, user
         onChangeText={(v) => onChange({ username: v.toLowerCase().replace(/\s/g, '') })}
         hint={USERNAME_HINT[usernameStatus] ?? 'Huruf kecil, angka, titik, atau garis bawah. 3–24 karakter.'}
         error={usernameError} />
-      <Field label="Kota tempat tinggal" hint="Untuk peringkat kota." error={errors.city}>
+      <Field label="Kota tempat tinggal" error={errors.city}>
         <CityPicker value={values.city} onChange={(city) => onChange({ city })} />
       </Field>
     </View>

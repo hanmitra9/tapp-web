@@ -40,7 +40,6 @@ export default function AppLayout() {
         <Stack.Screen name="payouts" />
         <Stack.Screen name="help" />
         <Stack.Screen name="referral" />
-        <Stack.Screen name="leaderboard" />
         <Stack.Screen name="dispute" options={{ presentation: 'modal' }} />
         <Stack.Screen name="submit/[campaignId]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="take/[id]" />
