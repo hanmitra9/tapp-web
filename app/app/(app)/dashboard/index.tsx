@@ -21,7 +21,6 @@ import type { MySubmission } from '@/features/submissions/api';
 import { useLayout } from '@/lib/useLayout';
 import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
-import { fetchMonthlyBoard, type MonthlyRow } from '@/features/campaigns/leaderboard';
 import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { MenuButton } from '@/components/SideMenu';
@@ -41,12 +40,11 @@ const CATEGORIES = FILTER_CATEGORIES, TYPES = FILTER_TYPES, SORTS = FEED_SORTS;
 export default function Home() {
   const { account } = useAuth();
   const q = useQuery(async () => {
-    const [mine, unread, balance, subs, level, board] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
+    const [mine, unread, balance, subs, level] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
       unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []),
-      fetchTierProgress().catch(() => null), fetchMonthlyBoard(10).then((m) => m.rows).catch(() => [] as MonthlyRow[])]);
+      fetchTierProgress().catch(() => null)]);
     return {
       unread, balance, level, subs,
-      rank: { me: board.find((r) => r.is_me) ?? null, top: board[0] ?? null },
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
       campaigns: mine.filter((m) => m.status === 'joined' && m.campaign).map((m) => ({ value: m.campaign!.id, label: m.campaign!.title })),
     };
@@ -85,8 +83,6 @@ export default function Home() {
       {q.error && !d ? <View style={styles.notice}><Notice tone="error" message={`${q.error} Tarik ke bawah untuk memuat ulang.`} /></View> : null}
 
       <Videos subs={d?.subs ?? null} campaigns={d?.campaigns ?? []} />
-
-      {d ? <RankCard rank={d.rank} /> : null}
 
       <AllCampaigns />
 
@@ -132,23 +128,6 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
   );
 }
 
-type Rank = { me: MonthlyRow | null; top: MonthlyRow | null };
-// All-time standing teaser → the leaderboard stage.
-function RankCard({ rank }: { rank: Rank }) {
-  const title = rank.me ? `Kamu #${rank.me.rank} bulan ini` : rank.top ? 'Rebut hadiah bulan ini' : 'Jadi #1 bulan ini';
-  const sub = rank.me ? (rank.me.prize ? `Hadiah ${idr(rank.me.prize)} kalau bertahan` : `Payout ${idr(rank.me.payout)} bulan ini`) : 'Top 3 tiap bulan dapat hadiah';
-  return (
-    <Pressable onPress={() => router.push('/leaderboard')} accessibilityRole="button" style={({ pressed }) => [styles.rankCard, pressed && { opacity: 0.88 }]}>
-      <LinearGradient colors={['#2A1F05', '#141008']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={StyleSheet.absoluteFill} />
-      <View style={styles.rankIcon}><Feather name="award" size={22} color="#F5C451" /></View>
-      <View style={{ flex: 1, gap: 2 }}>
-        <Text style={styles.rankTitle}>{title}</Text>
-        <Text style={styles.rankSub} numberOfLines={1}>{sub}</Text>
-      </View>
-      <Feather name="chevron-right" size={18} color="#F5C451" />
-    </Pressable>
-  );
-}
 
 // "Video kamu": every clip with a status tab, campaign filter and sort, plus when views refresh next.
 function Videos({ subs, campaigns }: { subs: MySubmission[] | null; campaigns: { value: string; label: string }[] }) {
@@ -341,9 +320,4 @@ const styles = StyleSheet.create({
   empty: { borderWidth: 1, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.14)', borderRadius: radius.md, paddingVertical: space.xl, paddingHorizontal: space.lg, alignItems: 'center' },
   emptyText: { ...type.caption, color: color.textSecondary, textAlign: 'center' },
   more: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4 },
-  rankCard: { marginTop: space.lg, flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.lg, borderRadius: radius.lg, overflow: 'hidden',
-    borderWidth: 1, borderColor: 'rgba(245,196,81,0.28)' },
-  rankIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: 'rgba(245,196,81,0.14)', alignItems: 'center', justifyContent: 'center' },
-  rankTitle: { ...type.label, color: '#FFF4D6' },
-  rankSub: { ...type.caption, color: 'rgba(255,236,190,0.7)' },
 });

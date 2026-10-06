@@ -725,7 +725,7 @@ reset role;
 select private.brand_amount(1050, 70) as brand_money_expect_1500;
 select 'brand_pricing_ok' as result;
 
--- ── Growth (0048): referral, leaderboard, deadline reminders, push subscriptions ──
+-- ── Growth (0048): referral, deadline reminders, push subscriptions ──
 reset role;
 insert into auth.users (id, email, email_confirmed_at, raw_user_meta_data) values
  ('00000000-0000-0000-0000-0000000000c3','c3@x.id', now(), '{"full_name":"Creator Three"}');
@@ -754,11 +754,7 @@ select count(*) as c3_rows_visible_expect_1 from referral_rewards;
 select pg_temp.act('00000000-0000-0000-0000-0000000000c3');
 do $$ begin if (select count(*) from referral_rewards) <> 0 then raise exception 'referee must not see rewards'; end if; end $$;
 
--- leaderboard: members only, masked names, own row says Kamu
-select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
-select rank, name, views, is_me from campaign_leaderboard('20000000-0000-0000-0000-000000000001');
 select pg_temp.act('00000000-0000-0000-0000-00000000000b');
-select pg_temp.expect_error($$select * from campaign_leaderboard('20000000-0000-0000-0000-000000000001')$$,'forbidden');
 select pg_temp.expect_error($$select send_deadline_reminders()$$,'permission denied');
 
 -- push subscriptions: own rows only
@@ -791,24 +787,12 @@ end $$;
 reset role;
 select 'approve_credit_ok' as result;
 
--- ── 0050: city + weekly leaderboards ──
+-- ── 0050: profile city ──
+select count(*) = 0 as boards_dropped from pg_proc where proname like '%leaderboard%';
 set role authenticated;
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 update profiles set city = 'Surabaya' where id = auth.uid();
-select rank, name, city, views, is_me from weekly_leaderboard();
-select rank, city, views, creators, is_mine from city_leaderboard();
-do $$ begin if not exists (select 1 from city_leaderboard() where city = 'Surabaya' and is_mine) then raise exception 'city board'; end if; end $$;
 select pg_temp.expect_error($$update profiles set city = 'x' where id = auth.uid()$$, 'new row');
-select rank, name, tier, payout, campaigns, is_me from alltime_leaderboard();
-select rank, payout, prize, is_me, resets_at > now() as future from monthly_leaderboard();
-do $$ begin
-  if not exists (select 1 from monthly_leaderboard() where is_me and rank = 1 and prize = 150000) then raise exception 'monthly board/prize'; end if;
-  if (select resets_at from leaderboard_meta()) <= now() then raise exception 'reset time'; end if;
-end $$;
-do $$ begin
-  if not exists (select 1 from alltime_leaderboard() where is_me and payout > 0) then raise exception 'alltime board missing me'; end if;
-  if exists (select 1 from alltime_leaderboard() where name !~ '\*') then raise exception 'alltime names not masked'; end if;
-end $$;
 reset role;
 select 'city_ok' as result;
 

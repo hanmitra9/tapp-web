@@ -19,8 +19,6 @@ import { assetLink, fetchAssets, fetchCampaign, type Asset, type CampaignDetail 
 import { CAMPAIGN_STATUS } from '@/features/campaigns/copy';
 import { fetchMySubmissions, withdrawSubmission } from '@/features/submissions/api';
 import { SubmissionRow } from '@/features/submissions/SubmissionRow';
-import { fetchLeaderboard, type LeaderRow } from '@/features/campaigns/leaderboard';
-import { LeaderList, MyStanding, Podium } from '@/components/Leaderboard';
 import { ShareCardSheet } from '@/components/ShareCardSheet';
 import { GuideCard, GuideSheet, guideSteps } from '@/features/campaigns/GuideSheet';
 import { track } from '@/lib/analytics';
@@ -44,9 +42,8 @@ export default function Workspace() {
   const q = useQuery(async () => {
     const c = await fetchCampaign(id);
     const joined = c.membership?.status === 'joined';
-    const [assets, subs, board] = await Promise.all([joined ? fetchAssets(id) : Promise.resolve([] as Asset[]), fetchMySubmissions(id),
-      joined ? fetchLeaderboard(id).catch(() => [] as LeaderRow[]) : Promise.resolve([] as LeaderRow[])]);
-    return { c, assets, subs, board };
+    const [assets, subs] = await Promise.all([joined ? fetchAssets(id) : Promise.resolve([] as Asset[]), fetchMySubmissions(id)]);
+    return { c, assets, subs };
   }, [id]);
   const [error, setError] = useState<string | null>(null);
   const [card, setCard] = useState<RenderedCard | null>(null);
@@ -57,7 +54,7 @@ export default function Workspace() {
   const [making, setMaking] = useState(false);
 
   if (!q.data) return <Screen scroll={false}><Header title="Workspace" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
-  const { c, assets, subs, board } = q.data;
+  const { c, assets, subs } = q.data;
   const block = submitBlock(c, account?.status);
   const totals = subs.reduce((t, s) => ({ q: t.q + s.qualified_views, e: t.e + s.earned }), { q: 0, e: 0 });
   const dl = deadlineLabel(c.submission_deadline ?? c.ends_at);
@@ -109,17 +106,6 @@ export default function Workspace() {
       <ShareCardSheet card={card} onClose={closeCard} onShare={shareCard} title="Qualified views"
         body={`Views terverifikasi di ${c.title}. Simpan atau bagikan ke story.`} />
 
-      {c.membership?.status === 'joined' ? (
-        <Section title="Panggung minggu ini" action={{ label: 'Peringkat TAPP', onPress: () => router.push('/leaderboard') }}>
-          {board.length ? (
-            <>
-              <Podium entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} />
-              <MyStanding entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} empty="Klip pertamamu yang diterima masuk papan ini." />
-              <LeaderList entries={board.map((r) => ({ rank: r.rank, title: r.name, value: r.views, me: r.is_me }))} />
-            </>
-          ) : <Text style={styles.muted}>Belum ada views minggu ini.</Text>}
-        </Section>
-      ) : null}
 
       <View style={styles.section}><GuideCard count={guideSteps(c, assets.length).length} onPress={() => setGuide(true)} /></View>
       <GuideSheet c={c} assetCount={assets.length} visible={guide} onClose={closeGuide}
@@ -187,11 +173,6 @@ const styles = StyleSheet.create({
   wStat: { flex: 1, padding: space.md, gap: 2, borderRadius: radius.md, backgroundColor: 'rgba(5,10,20,0.45)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.12)' },
   wStatValue: { ...type.label, fontSize: 15, color: '#FFFFFF', fontVariant: ['tabular-nums'] },
   wStatLabel: { ...type.caption, fontSize: 11, color: 'rgba(255,255,255,0.7)' },
-  lbRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.sm + 2, paddingHorizontal: space.md, borderRadius: radius.sm },
-  lbMe: { backgroundColor: color.accentSoft },
-  lbRank: { ...type.label, color: color.textMuted, width: 22, fontVariant: ['tabular-nums'] },
-  lbName: { ...type.body, color: color.textSecondary, flex: 1 },
-  lbViews: { ...type.label, color: color.text, fontVariant: ['tabular-nums'] },
   shareRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm, marginTop: space.md, alignSelf: 'flex-start', paddingVertical: space.xs },
   brand: { ...type.label, color: color.textSecondary, marginTop: -space.xl },
   title: { ...type.title, color: color.text, marginTop: space.xs },
