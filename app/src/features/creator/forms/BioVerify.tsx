@@ -37,7 +37,7 @@ export function BioVerify({ p, onVerified }: { p: LinkedPlatform; onVerified: ()
   }
 
   const note = status === 'not_found' ? `Kode belum ditemukan di bio @${p.handle}. Pastikan sudah disimpan, lalu cek lagi.`
-    : status === 'review' ? 'Bio sedang dicek manual oleh tim TAPP, biasanya kurang dari 1x24 jam. Biarkan kodenya tetap di bio.'
+    : status === 'review' ? 'Dicek manual (maks. 1x24 jam). Biarkan kode di bio.'
     : status === 'rejected' ? `Tim TAPP belum menemukan kodenya${p.bio_note ? `: ${p.bio_note}` : '.'} Tempel kodenya lagi, lalu cek ulang.`
     : null;
 

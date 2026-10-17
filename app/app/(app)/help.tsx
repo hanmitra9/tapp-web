@@ -49,8 +49,8 @@ export default function Help() {
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}
       footer={composing ? <Button label="Kirim pertanyaan" onPress={send} loading={busy} />
         : <Button label="Tanya tim TAPP" onPress={() => { setComposing(true); setSent(false); }} />}>
-      <Header title="Bantuan" subtitle="Tim TAPP biasanya membalas dalam 1 hari kerja. Balasan masuk ke notifikasi dan halaman ini." />
-      {sent ? <Notice tone="info" message="Pertanyaan terkirim. Kami akan mengabari lewat notifikasi." /> : null}
+      <Header title="Bantuan" subtitle="Dibalas maks. 1 hari kerja." />
+      {sent ? <Notice tone="info" message="Terkirim. Balasan masuk ke notifikasi." /> : null}
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
 
       {composing ? (
@@ -61,7 +61,7 @@ export default function Help() {
           </Field>
           <TextField label="Judul" value={subject} onChangeText={setSubject} maxLength={120} error={touched ? errs.subject : null} />
           <TextField label="Pertanyaan" value={body} onChangeText={setBody} multiline maxLength={4000} style={styles.multiline}
-            hint="Sertakan nama campaign atau link postingan kalau berhubungan." error={touched ? errs.body : null} />
+            hint="Sertakan nama campaign / link postingan." error={touched ? errs.body : null} />
           <Button variant="quiet" label="Batal" onPress={() => setComposing(false)} />
         </View>
       ) : null}
@@ -92,7 +92,7 @@ export default function Help() {
         </View>
       ))}
       {q.data && !q.data.tickets.length && !q.data.disputes.length && !composing ? (
-        <Text style={styles.muted}>Belum ada pertanyaan. Ada kendala soal akun, campaign, submission, atau pencairan? Tanyakan di sini.</Text>
+        <Text style={styles.muted}>Belum ada pertanyaan.</Text>
       ) : null}
     </Screen>
   );

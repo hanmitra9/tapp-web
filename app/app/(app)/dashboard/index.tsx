@@ -27,8 +27,8 @@ import { MenuButton } from '@/components/SideMenu';
 import { unreadCount } from '@/features/notifications/api';
 
 const STATUS_NOTE: Record<string, string> = {
-  verified: 'Akunmu sedang ditinjau. Kamu sudah bisa melihat campaign, dan bisa bergabung setelah disetujui.',
-  suspended: 'Akunmu ditangguhkan. Kamu tidak bisa bergabung ke campaign atau submit konten.',
+  verified: 'Akun sedang ditinjau (maks. 1x24 jam).',
+  suspended: 'Akun ditangguhkan. Hubungi admin.',
   banned: 'Akunmu ditutup.',
 };
 const LEVEL: Record<string, string> = { new: 'New', rising: 'Rising', verified: 'Verified', proven: 'Proven', elite: 'Elite' };
@@ -167,7 +167,7 @@ function Videos({ subs, campaigns }: { subs: MySubmission[] | null; campaigns: {
           ) : null}
         </>
       ) : (
-        <View style={styles.empty}><Text style={styles.emptyText}>{subs.length ? 'Belum ada video di filter ini.' : 'Belum ada video. Ambil campaign lalu posting klipmu.'}</Text></View>
+        <View style={styles.empty}><Text style={styles.emptyText}>{subs.length ? 'Belum ada video di filter ini.' : 'Belum ada video.'}</Text></View>
       )}
     </View>
   );

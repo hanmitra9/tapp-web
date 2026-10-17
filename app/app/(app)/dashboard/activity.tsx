@@ -46,7 +46,7 @@ export default function Activity() {
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {!q.data && !q.error ? <><CardSkeleton /><CardSkeleton /></> : null}
       {q.data && !rows.length ? (
-        <EmptyState title="Belum ikut campaign" body="Gabung ke campaign untuk mulai membuat klip dan mendapat penghasilan."
+        <EmptyState title="Belum ikut campaign" body="Ambil campaign untuk mulai."
           action={{ label: 'Cari campaign', onPress: () => router.navigate('/dashboard/campaigns') }} />
       ) : null}
 

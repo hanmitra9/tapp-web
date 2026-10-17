@@ -46,7 +46,7 @@ export default function CampaignDetailScreen() {
 
   function confirmLeave() {
     showAlert('Keluar dari campaign?',
-      'Kamu tidak bisa submit konten baru. Klip yang sudah disubmit tetap dilacak dan penghasilannya tetap milikmu.',
+      'Submit baru ditutup. Klip lama tetap dihitung.',
       [{ text: 'Batal', style: 'cancel' }, { text: 'Keluar', style: 'destructive', onPress: async () => {
         setBusy(true); setError(null);
         try { await leaveCampaign(c.id); track('campaign_left', { campaign_id: c.id }); await q.reload(); } catch (e) { setError(errorMessage(e)); }

@@ -43,7 +43,7 @@ export default function Payout() {
     <Screen footer={<Button label="Simpan" onPress={save} loading={busy} />}>
       <Header title="Rekening pembayaran" />
       <View style={styles.body}>
-        <Notice tone="info" message="Tim TAPP mentransfer bayaran klipmu ke rekening atau e-wallet ini." />
+        <Notice tone="info" message="Saldo ditransfer ke sini." />
         <Notice tone="error" message={error} />
         <PayoutForm values={form} onChange={setForm} showErrors={touched} />
       </View>

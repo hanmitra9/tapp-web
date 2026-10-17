@@ -69,7 +69,7 @@ export default function Payments() {
   const [saving, setSaving] = useState(false);
   const [shareCard, setShareCard] = useState<RenderedCard | null>(null);
   async function openCard() {
-    if (!totalPaid) { showAlert('Belum ada payout', 'Kartu total payout muncul setelah pencairan pertamamu.'); return; }
+    if (!totalPaid) { showAlert('Belum ada payout', 'Muncul setelah pencairan pertama.'); return; }
     setSaving(true);
     try {
       setShareCard(await renderPayoutCard({ total: totalPaid, from: firstPaid, to: new Date().toISOString(),
@@ -268,7 +268,7 @@ export default function Payments() {
 
       <PaymentMethodSheet uid={uid} current={d?.method ?? null} visible={methodOpen} onClose={() => setMethodOpen(false)} onSaved={() => void q.reload()} />
       <ShareCardSheet card={shareCard} onClose={closeCard} onShare={share} title="Total payout"
-        body="Semua yang sudah kamu cairkan. Simpan atau bagikan ke story." />
+        body="Simpan atau bagikan ke story." />
     </Screen>
   );
 }

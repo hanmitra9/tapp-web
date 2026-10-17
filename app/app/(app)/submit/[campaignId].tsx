@@ -188,7 +188,7 @@ export default function Submit() {
           </View>
         ) : null}
         <Checkbox checked={agree} onChange={setAgree} error={touched ? errs.agree : null}
-          label="Postingan ini milikku, publik, dan mengikuti brief serta aturan campaign." />
+          label="Postingan milikku, publik, dan sesuai brief." />
       </View>
     </Screen>
   );

@@ -27,7 +27,7 @@ export default function VerifyEmail() {
   if (!email) {
     return (
       <Screen width="narrow" footer={<Button label="Kembali ke halaman masuk" onPress={() => router.replace('/login')} />}>
-        <Header title="Verifikasi email" subtitle="Masuk dengan email dan kata sandimu untuk mendapatkan kode verifikasi baru." />
+        <Header title="Verifikasi email" subtitle="Masuk lagi untuk dapat kode baru." />
       </Screen>
     );
   }

@@ -50,7 +50,7 @@ export function SubmissionRow({ s, showCampaign, onResubmit, onWithdraw, onDispu
           {onResubmit ? <Action label="Kirim ulang" onPress={onResubmit} /> : null}
           {onDispute ? <Action label="Ajukan keberatan" onPress={onDispute} /> : null}
           {onWithdraw ? <Action label="Tarik submission" danger onPress={() =>
-            showAlert('Tarik submission?', 'Submission ini dihapus dari campaign. Kamu bisa submit ulang postingan yang sama nanti.', [
+            showAlert('Tarik submission?', 'Dihapus dari campaign. Bisa disubmit ulang.', [
               { text: 'Batal', style: 'cancel' }, { text: 'Tarik', style: 'destructive', onPress: onWithdraw },
             ])} /> : null}
         </View>

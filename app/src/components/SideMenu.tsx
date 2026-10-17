@@ -120,7 +120,7 @@ function MenuBody({ run }: { run: (then?: () => void) => void }) {
         </View>
         <View style={{ padding: space.md, gap: 4 }}>
           <Text style={styles.learnTitle}>Mulai dari sini</Text>
-          <Text style={styles.learnSub}>Cara kerja campaign dari ambil sampai cair.</Text>
+          <Text style={styles.learnSub}>Dari ambil campaign sampai cair.</Text>
         </View>
         <View style={styles.learnFoot}><Text style={styles.learnLink}>Pelajari</Text><Feather name="arrow-right" size={16} color={color.link} /></View>
       </Pressable>

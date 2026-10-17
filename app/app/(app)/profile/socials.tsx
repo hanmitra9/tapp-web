@@ -19,7 +19,7 @@ const ERRORS: Record<string, (label: string) => string> = {
   cancelled: (l) => `Login ${l} dibatalkan.`,
   expired: (l) => `Sesi login ${l} kedaluwarsa. Coba lagi.`,
   no_profile: () => 'Lengkapi profil kreatormu dulu.',
-  profile: (l) => (l === 'Instagram' ? 'Gunakan akun Instagram Professional (Business atau Creator), lalu coba lagi.' : `Profil ${l} tidak terbaca. Coba lagi.`),
+  profile: (l) => (l === 'Instagram' ? 'Pakai akun Instagram Professional, lalu coba lagi.' : `Profil ${l} tidak terbaca. Coba lagi.`),
 };
 
 export default function Socials() {
@@ -61,7 +61,7 @@ export default function Socials() {
 
   return (
     <Screen scroll={!!platforms}>
-      <Header title="Akun media sosial" subtitle="Verifikasi akun TikTok dan Instagram-mu dengan kode di bio sebelum dipakai untuk submission." />
+      <Header title="Akun media sosial" subtitle="Verifikasi akun lewat kode di bio." />
       {platforms ? (
         <>
           <Notice tone={returned && q[returned] === 'error' ? 'error' : 'info'} message={result} />

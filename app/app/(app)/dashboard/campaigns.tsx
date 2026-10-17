@@ -119,7 +119,7 @@ export default function Campaigns() {
         ) : activeFilterCount(filters) ? (
           <EmptyState title="Tidak ada campaign dengan filter ini" action={{ label: 'Hapus filter', onPress: () => changeFilters(EMPTY_FILTERS) }} />
         ) : (
-          <EmptyState title="Belum ada campaign untukmu" body="Campaign muncul sesuai platform yang kamu hubungkan. Cek lagi nanti atau tambah akun sosial."
+          <EmptyState title="Belum ada campaign untukmu" body="Sesuai platform yang kamu hubungkan."
             action={{ label: 'Kelola akun sosial', onPress: () => router.push('/profile/socials') }} />
         )}
         ListFooterComponent={loadingMore ? <ActivityIndicator color={color.blue} style={{ marginVertical: space.xl }} /> : null}
