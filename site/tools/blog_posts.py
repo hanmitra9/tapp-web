@@ -62,22 +62,22 @@ POSTS = [
 
   dict(slug='sistem-level-creator', cat='Produk', date='2026-10-01', cover='level', popular=True,
     title='Sistem Level TAPP: Syarat dan Bonus Tiap Level',
-    excerpt='Dari New sampai Elite: syarat qualified views, bonus tarif sampai +15%, dan contoh hitungannya.',
+    excerpt='Dari New sampai Elite: syarat views, klip diterima, approval rate, dan bonus sampai +15%, dan contoh hitungannya.',
     body='''
-<p>Di TAPP, semua creator mulai dari titik yang sama. Level tidak ditentukan oleh jumlah follower, tapi oleh hasil kerjamu: total qualified views dari clip yang lolos review. Level naik otomatis, tanpa perlu mengajukan apa pun.</p>
+<p>Di TAPP, semua creator mulai dari titik yang sama. Level tidak ditentukan oleh jumlah follower, tapi oleh hasil kerjamu: total qualified views, jumlah klip yang diterima, dan approval rate (persentase klip yang diterima dari semua yang sudah direview). Level naik otomatis begitu semua syarat terpenuhi, tanpa perlu mengajukan apa pun.</p>
 <h2>Syarat dan bonus tiap level</h2>
-<table class="bl-table"><thead><tr><th>Level</th><th>Syarat total qualified views</th><th>Bonus tarif</th></tr></thead><tbody>
+<table class="bl-table"><thead><tr><th>Level</th><th>Syarat</th><th>Bonus tarif</th></tr></thead><tbody>
 <tr><td><b>New</b></td><td>Mulai dari 0</td><td>Tarif standar</td></tr>
-<tr><td><b>Rising</b></td><td>100.000</td><td>+2%</td></tr>
-<tr><td><b>Verified</b></td><td>500.000</td><td>+5%</td></tr>
-<tr><td><b>Proven</b></td><td>2 juta</td><td>+10%</td></tr>
-<tr><td><b>Elite</b></td><td>10 juta</td><td>+15%</td></tr>
+<tr><td><b>Rising</b></td><td>150.000 views · 3 klip diterima</td><td>+3%</td></tr>
+<tr><td><b>Verified</b></td><td>1 juta views · 10 klip · approval 60%</td><td>+6%</td></tr>
+<tr><td><b>Proven</b></td><td>3 juta views · 25 klip · approval 70%</td><td>+10%</td></tr>
+<tr><td><b>Elite</b></td><td>10 juta views · 60 klip · approval 75%</td><td>+15%</td></tr>
 </tbody></table>
 <h2>Cara bonus dihitung</h2>
 <p>Bayaran clip masuk ke saldomu. Saat kamu menarik saldo, TAPP menambahkan bonus tarif <b>di atas</b> jumlah yang ditarik, sesuai level kamu saat itu. Bonus ini dibayar TAPP, jadi tidak mengurangi budget brand.</p>
 <p>Setiap pencairan hanya dipotong biaya transfer Rp10.000, dengan minimal saldo Rp50.000. Tidak ada potongan persen dari saldomu.</p>
 <ul>
-<li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +5% = <b>Rp15.000</b>, biaya transfer Rp10.000, diterima <b>Rp305.000</b>.</li>
+<li>Tarik saldo Rp300.000 di level <b>Verified</b>: bonus +6% = <b>Rp18.000</b>, biaya transfer Rp10.000, diterima <b>Rp308.000</b>.</li>
 <li>Tarik saldo yang sama di level <b>Elite</b>: bonus +15% = <b>Rp45.000</b>, diterima <b>Rp335.000</b>.</li>
 </ul>
 <p>Rincian bonus dan biaya tercantum di riwayat pencairan dan di email bukti transfer.</p>
@@ -111,7 +111,7 @@ POSTS = [
 <table class="bl-table"><tbody>
 <tr><td>Minimal saldo</td><td>Rp50.000</td></tr>
 <tr><td>Biaya transfer</td><td>Rp10.000 per pencairan</td></tr>
-<tr><td>Bonus level</td><td>+2% sampai +15% dari jumlah yang ditarik</td></tr>
+<tr><td>Bonus level</td><td>+3% sampai +15% dari jumlah yang ditarik</td></tr>
 </tbody></table>
 <p>Tidak ada potongan persen dari saldomu. Tips: tarik saldo sekaligus dalam jumlah lebih besar supaya biaya transfer terasa lebih kecil. Kalau levelmu naik, bonus saat menarik juga ikut naik.</p>
 <h2>Metode pembayaran</h2>

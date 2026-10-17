@@ -8,6 +8,8 @@ export type TierProgress = {
   next: Tier | null; nextBonusPct: number | null; toNext: number | null;
   from: number; to: number | null;          // thresholds of the current and next level
   thresholds: Record<Tier, number>; bonuses: Record<Tier, number>;   // every level, for the Rank & Rewards page
+  minApproved: Record<Tier, number>; minApprovalPct: Record<Tier, number>;   // quality bars per level (0059)
+  approved: number; approvalPct: number;                                     // the creator's own quality
 };
 
 export async function fetchTierProgress(): Promise<TierProgress> {
@@ -16,7 +18,8 @@ export async function fetchTierProgress(): Promise<TierProgress> {
     supabase.from('app_settings').select('value').eq('key', 'tier_bonus_pct').maybeSingle(),
   ]);
   if (p.error) throw p.error;
-  const d = p.data as { tier: Tier; lifetime_qualified_views: number; next_tier: Tier | null; views_to_next: number | null; thresholds: Record<string, number> };
+  const d = p.data as { tier: Tier; lifetime_qualified_views: number; next_tier: Tier | null; views_to_next: number | null; thresholds: Record<string, number>;
+    requirements?: { min_approved?: Record<string, number>; min_approval_pct?: Record<string, number> }; approved?: number; approval_pct?: number };
   const bonus = (s.data?.value ?? {}) as Record<string, number>;
   const th = (t: Tier | null) => (t ? Number(d.thresholds?.[t] ?? 0) : null);
   return {
@@ -26,5 +29,8 @@ export async function fetchTierProgress(): Promise<TierProgress> {
     from: th(d.tier) ?? 0, to: th(d.next_tier),
     thresholds: Object.fromEntries(TIERS.map((t) => [t, Number(d.thresholds?.[t] ?? 0)])) as Record<Tier, number>,
     bonuses: Object.fromEntries(TIERS.map((t) => [t, Number(bonus[t] ?? 0)])) as Record<Tier, number>,
+    minApproved: Object.fromEntries(TIERS.map((t) => [t, Number(d.requirements?.min_approved?.[t] ?? 0)])) as Record<Tier, number>,
+    minApprovalPct: Object.fromEntries(TIERS.map((t) => [t, Number(d.requirements?.min_approval_pct?.[t] ?? 0)])) as Record<Tier, number>,
+    approved: Number(d.approved ?? 0), approvalPct: Number(d.approval_pct ?? 100),
   };
 }

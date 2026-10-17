@@ -129,7 +129,7 @@ def _level_card():
       {_badge('#8A8A93', 54)}
       <b style="font-size: 18px">New</b>
       <span style="width: 100%; height: 1px; background: rgba(255,255,255,0.08)"></span>
-      <span style="font-size: 11px; font-weight: 500; color: #9A9AA5; line-height: 15px">Rising di <b class="tabular" style="color: #FFFFFF">100K</b> qualified views</span>
+      <span style="font-size: 11px; font-weight: 500; color: #9A9AA5; line-height: 15px">Rising di <b class="tabular" style="color: #FFFFFF">150K</b> qualified views</span>
     </div>'''
 
 HUB = f'''<div class="hub" style="position: absolute; left: 540px; top: 120px; width: 120px; height: 120px; border-radius: 30px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, #519EF1, #104F92); border: 1px solid rgba(194,221,250,0.6); box-shadow: 0 0 0 10px rgba(12,101,196,0.14), 0 0 0 22px rgba(12,101,196,0.06), 0 0 90px rgba(12,101,196,0.85), inset 0 1px 0 rgba(255,255,255,0.35)"><img src="{BLOB_WHITE}" alt="" style="width: 62px; height: 62px"></div>'''
@@ -208,21 +208,23 @@ def hero_hub():
 </div>'''
 
 # ── Level arc ─────────────────────────────────────────────────────────────────────────
-# Real tiers and thresholds (app_settings.tier_thresholds, migration 022).
+# Real tiers and bars (app_settings.tier_thresholds + tier_requirements, migration 0059).
 TIERS = [
-    ('New', '0', '#8A8A93'), ('Rising', '100K', '#34D07A'), ('Verified', '500K', '#75B2F4'),
-    ('Proven', '2 juta', '#A78BFA'), ('Elite', '10 juta', '#F0B429'),
+    ('New', '0', '#8A8A93'), ('Rising', '150K', '#34D07A'), ('Verified', '1 juta', '#75B2F4'),
+    ('Proven', '3 juta', '#A78BFA'), ('Elite', '10 juta', '#F0B429'),
 ]
+# Quality bars on top of views: approved clips and approval rate (accepted / reviewed).
+TIER_QUALITY = ['', '3 klip diterima', '10 klip diterima · approval 60%', '25 klip diterima · approval 70%', '60 klip diterima · approval 75%']
 TIER_BODY = [
     'Semua mulai dari sini. Selesaikan campaign pertama dan kumpulkan clip yang lolos.',
     'Clip-mu mulai konsisten lolos, dan bonus tarif pertamamu aktif.',
     'Rekam jejakmu terbukti di banyak campaign. Brand mulai melirik clip-mu.',
-    'Dua juta views nyata. Kamu terbukti bisa menggerakkan audiens.',
+    'Tiga juta views nyata dengan klip yang konsisten lolos. Kamu terbukti bisa menggerakkan audiens.',
     'Level tertinggi di TAPP: sepuluh juta views nyata dan bonus tarif terbesar.',
 ]
 
 # Rate bonus per level (app_settings.tier_bonus_pct, migration 0037), paid by TAPP on top of the clip's pay.
-TIER_BONUS = [0, 2, 5, 10, 15]
+TIER_BONUS = [0, 3, 6, 10, 15]
 
 # Picking a level is plain HTML/CSS (radio + label), so it also works where scripts are blocked.
 # Layout: a staircase of five steps (taller = higher level) next to a detail card for the picked level.
@@ -234,7 +236,7 @@ def _rgba(hex_, a):
 
 def _tier_card(i):
     name, thr, color = TIERS[i]
-    req = 'Mulai dari 0 qualified views' if i == 0 else f'Mulai dari {thr} qualified views'
+    req = 'Mulai dari 0 qualified views' if i == 0 else f'{thr} qualified views · {TIER_QUALITY[i]}'
     bonus = (f'<span class="tabular" style="font-size: 15px; font-weight: 600; color: #34D07A">Bonus tarif +{TIER_BONUS[i]}%</span>'
              if TIER_BONUS[i] else '<span style="font-size: 15px; font-weight: 600; color: #9A9AA5">Tarif standar</span>')
     return f'''<div class="tcard tc{i}" style="flex-direction: column; gap: 14px; padding: 28px; border-radius: 22px; background: linear-gradient(160deg, {_rgba(color, 0.16)}, rgba(15,15,20,0.9) 55%); border: 1px solid {_rgba(color, 0.35)}">
@@ -296,7 +298,7 @@ LEVELS = f'''<section id="level" class="sec pad" style="max-width: 1180px; margi
     <div style="display: flex; flex-direction: column; gap: 18px; align-items: center; text-align: center; max-width: 760px; margin: 0 auto 48px">
       <span class="eyebrow">Level Creator</span>
       <h2 class="h2" style="font-size: 46px; line-height: 52px; font-weight: 600; letter-spacing: -1.5px">Makin Konsisten, <br><span style="color: #75B2F4">Makin Besar Bayaranmu</span></h2>
-      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views, bukan dari jumlah follower. Setiap naik level, bonus tarifmu ikut naik. Pilih level untuk lihat syaratnya.</p>
+      <p style="font-size: 17px; line-height: 27px; color: #9A9AA5; font-weight: 400; max-width: 600px">Level naik otomatis dari total qualified views dan kualitas klip, bukan dari jumlah follower. Setiap naik level, bonus tarifmu ikut naik. Pilih level untuk lihat syaratnya.</p>
     </div>
     {''.join(f'<input type="radio" name="tier" id="tr{i}" class="tradio"{" checked" if i == 2 else ""}>' for i in range(len(TIERS)))}
     <div class="tlad">

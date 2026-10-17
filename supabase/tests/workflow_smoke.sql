@@ -796,6 +796,23 @@ select pg_temp.expect_error($$update profiles set city = 'x' where id = auth.uid
 reset role;
 select 'city_ok' as result;
 
+-- ── 0059: rank requirements (views + approved clips + approval rate) ──
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select q->>'tier' as tier, q->>'approved' as approved, q->>'approval_pct' as approval_pct, q->'requirements' is not null as has_req from my_tier_progress() q;
+do $$ begin
+  if (select value from app_settings where key = 'tier_requirements') is null then raise exception 'requirements not readable'; end if;
+end $$;
+reset role;
+do $$ declare c uuid := '00000000-0000-0000-0000-0000000000c1'; q record; begin
+  select * into q from public.creator_quality(c);
+  if public.tier_for_creator(c)::text <> (select tier::text from creator_profiles where user_id = c) then raise exception 'stored tier stale'; end if;
+  -- the bars: below 150k views is always new; elite needs 60 approved clips
+  if public.lifetime_qualified_views(c) < 10000000 and public.tier_for_creator(c) = 'elite' then raise exception 'elite without views'; end if;
+  if q.approved < 3 and public.tier_for_creator(c) <> 'new' then raise exception 'rank without approved clips'; end if;
+end $$;
+select 'rank_ok' as result;
+
 -- ── 0053: creators see budget left as a percentage only ──
 set role authenticated;
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
