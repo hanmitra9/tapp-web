@@ -54,7 +54,7 @@ export default function Register() {
   return (
     <Screen width="narrow" footer={<Button label="Buat akun" onPress={submit} loading={busy} />}>
       <Header title={isBrand ? 'Buat akun brand' : 'Buat akun kreator'}
-        subtitle={isBrand ? 'Pakai email yang diundang tim TAPP. Setelah email terverifikasi, dashboard brand langsung terbuka.' : 'Setelah ini kamu akan melengkapi profil dan menghubungkan media sosial.'} />
+        subtitle={isBrand ? 'Pakai email yang diundang tim TAPP.' : 'Lanjut isi profil & hubungkan sosmed.'} />
       <View style={styles.form}>
       <Notice tone="error" message={error} />
       <TextField label="Nama lengkap" value={name} onChangeText={setName} autoComplete="name" textContentType="name"

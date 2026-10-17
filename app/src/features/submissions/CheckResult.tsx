@@ -27,10 +27,10 @@ export function CheckResult({ check }: { check: SubmissionCheck | null | 'checki
     check.views != null ? `Views saat ini: ${nf.format(check.views)}` : null,
     check.likes != null ? `Likes: ${nf.format(check.likes)}` : null,
   ].filter(Boolean).join(' · ');
-  const hint = check.status === 'not_owner' ? 'Submit ulang dengan link dari akun yang terhubung di profilmu, kalau tidak klip ini akan ditolak.'
-    : check.status === 'not_found' ? 'Pastikan postingannya publik dan link-nya benar. Tim TAPP akan memeriksa ulang.'
-    : check.status === 'unreadable' ? check.note ?? 'Platform tidak bisa dibaca otomatis. Tim TAPP akan mengeceknya.'
-    : 'Postingan ditemukan dan milik akunmu. Tinggal menunggu review tim TAPP.';
+  const hint = check.status === 'not_owner' ? 'Pakai link dari akun yang terhubung.'
+    : check.status === 'not_found' ? 'Pastikan publik & link benar.'
+    : check.status === 'unreadable' ? check.note ?? 'Dicek manual oleh tim TAPP.'
+    : 'Postingan cocok. Menunggu review.';
   return (
     <View style={[styles.box, { borderColor: t.tone }]}>
       <View style={[styles.dot, { backgroundColor: t.tone }]} />

@@ -26,9 +26,9 @@ import { renderViewsCard, shareRenderedCard, type RenderedCard } from '@/lib/sha
 
 // Why the creator can't submit right now (null = can submit). Mirrors check_submission on the server.
 function submitBlock(c: CampaignDetail, accountStatus: string | undefined): string | null {
-  if (c.membership?.status !== 'joined') return 'Kamu sudah tidak tergabung di campaign ini.';
-  if (accountStatus !== 'active') return 'Akunmu belum aktif, jadi belum bisa submit konten.';
-  if (c.status === 'paused') return 'Campaign sedang dijeda. Submission dibuka lagi saat campaign aktif.';
+  if (c.membership?.status !== 'joined') return 'Kamu sudah keluar dari campaign ini.';
+  if (accountStatus !== 'active') return 'Akun belum aktif.';
+  if (c.status === 'paused') return 'Campaign dijeda sementara.';
   if (c.status !== 'active') return `Campaign ${CAMPAIGN_STATUS[c.status].toLowerCase()}. Submission baru ditutup.`;
   const dl = c.submission_deadline;
   if (dl && new Date(dl) < new Date()) return 'Batas waktu submission sudah lewat.';

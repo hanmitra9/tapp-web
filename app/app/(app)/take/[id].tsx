@@ -105,7 +105,7 @@ export default function TakeCampaign() {
     if (step === 1) return toVideos();
   }
 
-  const joinNote = !joined ? 'Dengan lanjut, kamu bergabung dan setuju mengikuti brief serta aturan campaign.' : null;
+  const joinNote = !joined ? 'Lanjut = setuju brief & aturan campaign.' : null;
   const footer = step === 2 ? null : (
     <>
       {joinNote ? <Text style={styles.footNote}>{joinNote}</Text> : null}
@@ -277,7 +277,7 @@ function VideoStep({ c, account, submitted, onBack, onLater, onDone }: {
     setLinkBusy(false);
     const author = v?.author?.replace(/^@/, '').toLowerCase();
     if (author && author !== account.handle.replace(/^@/, '').toLowerCase()) return setLinkErr(`Video ini diposting oleh @${v!.author}, bukan @${account.handle}.`);
-    if (v && tooOld(v)) return setLinkErr('Video ini diposting sebelum kamu bergabung, jadi tidak dihitung.');
+    if (v && tooOld(v)) return setLinkErr('Diposting sebelum gabung, tidak dihitung.');
     setPicks([...picks, { ...(v ?? { platform: account.platform, url, thumb: null, caption: null, author: null, views: null, likes: null, comments: null, posted_at: null }), url, day: null }]);
     setLink('');
   }
@@ -286,7 +286,7 @@ function VideoStep({ c, account, submitted, onBack, onLater, onDone }: {
   async function submit() {
     setError(null);
     if (!picks.length) return setError('Pilih minimal satu video.');
-    if (needDay.length) return setError('Pilih tanggal posting untuk video yang tanggalnya belum terbaca.');
+    if (needDay.length) return setError('Pilih tanggal posting.');
     if (!agree) return setError('Centang pernyataan di bawah untuk melanjutkan.');
     setBusy(true);
     const ids: (string | null)[] = [];
@@ -353,7 +353,7 @@ function VideoStep({ c, account, submitted, onBack, onLater, onDone }: {
       ) : list?.supported ? (
         <View style={styles.empty}>
           <Feather name="film" size={20} color={color.textMuted} />
-          <Text style={styles.emptyText}>{list.unreadable ? 'Video belum bisa dibaca otomatis. Tempel link videonya di bawah.' : 'Belum ada video di akun ini. Posting klipmu, lalu muat ulang.'}</Text>
+          <Text style={styles.emptyText}>{list.unreadable ? 'Tempel link videonya di bawah.' : 'Belum ada video. Posting dulu, lalu muat ulang.'}</Text>
         </View>
       ) : (
         <View style={styles.empty}>
@@ -398,7 +398,7 @@ function VideoStep({ c, account, submitted, onBack, onLater, onDone }: {
         </View>
       ) : null}
 
-      <Checkbox checked={agree} onChange={setAgree} label="Video ini milikku, publik, dan mengikuti brief serta aturan campaign." />
+      <Checkbox checked={agree} onChange={setAgree} label="Video milikku, publik, dan sesuai brief." />
       <Notice tone="error" message={error} />
       <View style={styles.footRow}>
         <View style={{ flex: 1 }}><Button variant="secondary" label="Ganti akun" onPress={onBack} /></View>
@@ -429,7 +429,7 @@ function DoneView({ c, done }: { c: CampaignDetail; done: Done }) {
         </View>
         <Text style={styles.doneTitle}>{sent ? 'Klip Kamu Terkirim' : 'Kamu Sudah Bergabung'}</Text>
         <Text style={styles.doneBody}>
-          {sent ? 'Kami cek videomu sekarang dan setiap 6 jam. Penghasilan dihitung dari qualified views setelah klip disetujui.'
+          {sent ? 'Dicek tiap 6 jam. Dibayar per qualified views setelah disetujui.'
             : `Konten sumber ${c.title} sudah terbuka. Buat klip, posting di akunmu, lalu kembali ke sini untuk memilih videonya.`}
         </Text>
         {sent ? <View style={{ alignSelf: 'stretch' }}>{done.checks.map((ch, i) => <CheckResult key={i} check={ch} />)}</View> : (

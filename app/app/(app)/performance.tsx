@@ -108,13 +108,13 @@ export default function Performance() {
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>Per campaign</Text>
         {d && !d.campaigns.length ? (
-          <EmptyState title="Belum ada data performa" body="Data muncul setelah kamu submit klip dan views-nya mulai dilacak."
+          <EmptyState title="Belum ada data performa" body="Muncul setelah klipmu dilacak."
             action={{ label: 'Cari campaign', onPress: () => router.navigate('/dashboard/campaigns') }} />
         ) : null}
         {d?.campaigns.map((c) => <CampaignRow key={c.campaign_id} c={c} />)}
       </View>
 
-      <ShareCardSheet card={shareCard} onClose={closeCard} title="Total views" body="Semua qualified views kamu. Simpan atau bagikan ke story."
+      <ShareCardSheet card={shareCard} onClose={closeCard} title="Total views" body="Simpan atau bagikan ke story."
         onShare={async () => { if (shareCard) await shareRenderedCard(shareCard).catch(() => {}); }} />
     </Screen>
   );

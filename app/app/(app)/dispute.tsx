@@ -35,12 +35,12 @@ export default function DisputeScreen() {
 
   return (
     <Screen width="narrow" footer={<Button label="Kirim keberatan" onPress={send} loading={busy} />}>
-      <Header title="Ajukan keberatan" subtitle="Tim TAPP akan meninjau ulang. Kamu akan mendapat notifikasi saat ada keputusan." />
+      <Header title="Ajukan keberatan" subtitle="Ditinjau ulang. Hasilnya lewat notifikasi." />
       <View style={styles.form}>
         {prior ? <Notice tone="info" message={`Alasan sebelumnya: ${prior}`} /> : null}
         <Notice tone="error" message={error} />
         <TextField label="Kenapa keputusan ini perlu ditinjau ulang?" value={text} onChangeText={setText} multiline maxLength={2000}
-          style={styles.multiline} placeholder="Contoh: postingan saya masih publik dan sudah sesuai brief, ini link-nya…"
+          style={styles.multiline} placeholder="Contoh: masih publik & sesuai brief, link-nya…"
           error={touched ? invalid : null} hint={`${text.length}/2000`} />
       </View>
     </Screen>
