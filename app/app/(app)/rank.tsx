@@ -40,14 +40,14 @@ export default function RankScreen() {
       <View style={styles.hero}>
         <LinearGradient colors={[m.glow.replace(/[\d.]+\)$/, '0.35)'), 'rgba(0,0,0,0)']} style={StyleSheet.absoluteFill} />
         <RankBadge tier={shown} size={150} />
-        <Text style={styles.level}>Level: Rank {shownIdx + 1}</Text>
+        <Text style={styles.level}>Rank {shownIdx + 1}</Text>
         <Text style={[styles.tierName, css({ backgroundImage: `linear-gradient(180deg, #FFFFFF 0%, ${m.hi} 100%)`, WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' })]}>
           {NAME[shown]} Clipper
         </Text>
         <View style={[styles.bonusPill, { borderColor: `${m.hi}55` }]}>
-          <Text style={styles.bonusPillText}>{p.bonuses[shown] ? `Bonus +${p.bonuses[shown]}% tiap tarik saldo` : 'Bonus dasar'}</Text>
+          <Text style={styles.bonusPillText}>{p.bonuses[shown] ? `+${p.bonuses[shown]}% bonus` : 'Tanpa bonus'}</Text>
         </View>
-        {shown !== p.tier ? <Text style={styles.peek}>{shownIdx > idx ? `Butuh ${compact(p.thresholds[shown])} views` : 'Sudah kamu lewati'}</Text> : null}
+        {shown !== p.tier ? <Text style={styles.peek}>{shownIdx > idx ? 'Terkunci' : 'Terlewati'}</Text> : null}
 
         <View style={styles.divider} />
         <View style={styles.strip}>
@@ -62,26 +62,17 @@ export default function RankScreen() {
         </View>
       </View>
 
-      <View style={styles.auto}>
-        <Feather name="zap" size={16} color="#F5C451" />
-        <View style={{ flex: 1 }}>
-          <Text style={styles.autoTitle}>Naik rank otomatis</Text>
-          <Text style={styles.autoSub}>Dari total qualified views, jumlah klip diterima, dan approval rate. Begitu semua syarat terpenuhi, rank langsung naik.</Text>
-        </View>
-      </View>
 
       <View style={[styles.row2, !isWide && { flexDirection: 'column' }]}>
         <View style={[styles.rewards, isWide && { flex: 1 }]}>
           <View style={styles.rewardCol}>
-            <Text style={styles.rewardLabel}>Rewards</Text>
-            <Text style={styles.rewardBig}>{p.bonusPct ? `+${p.bonusPct}%` : 'Dasar'}</Text>
-            <Text style={styles.rewardSub}>bonus saat tarik saldo</Text>
+            <Text style={styles.rewardBig}>+{p.bonusPct}%</Text>
+            <Text style={styles.rewardSub}>Bonus tarik</Text>
           </View>
           <View style={styles.vline} />
           <View style={styles.rewardCol}>
-            <Text style={styles.rewardLabel}>Bonus kamu</Text>
             <Text style={[styles.rewardBig, { color: '#F5A35C' }]}>{idr(bonusReceived)}</Text>
-            <Text style={styles.rewardSub}>total bonus diterima</Text>
+            <Text style={styles.rewardSub}>Bonus diterima</Text>
           </View>
         </View>
 
@@ -89,15 +80,15 @@ export default function RankScreen() {
           {p.next ? (() => {
             const n = p.next;
             const reqs = [
-              { label: `${compact(p.thresholds[n])} qualified views`, have: p.views, need: p.thresholds[n], fmt: compact },
-              ...(p.minApproved[n] ? [{ label: `${p.minApproved[n]} klip diterima`, have: p.approved, need: p.minApproved[n], fmt: (x: number) => String(x) }] : []),
-              ...(p.minApprovalPct[n] ? [{ label: `Approval rate ${p.minApprovalPct[n]}%`, have: p.approvalPct, need: p.minApprovalPct[n], fmt: (x: number) => `${x}%` }] : []),
+              { label: 'Views', have: p.views, need: p.thresholds[n], fmt: compact },
+              ...(p.minApproved[n] ? [{ label: 'Klip diterima', have: p.approved, need: p.minApproved[n], fmt: (x: number) => String(x) }] : []),
+              ...(p.minApprovalPct[n] ? [{ label: 'Approval', have: p.approvalPct, need: p.minApprovalPct[n], fmt: (x: number) => `${x}%` }] : []),
             ];
             return (
               <>
                 <View style={styles.nextHead}>
-                  <Text style={styles.nextTitle}>Menuju {NAME[n]} Clipper</Text>
-                  <Text style={styles.reqPill}>{reqs.filter((r) => r.have >= r.need).length}/{reqs.length} syarat</Text>
+                  <Text style={styles.nextTitle}>Menuju {NAME[n]} · +{p.nextBonusPct}%</Text>
+                  <Text style={styles.reqPill}>{reqs.filter((r) => r.have >= r.need).length}/{reqs.length}</Text>
                 </View>
                 {reqs.map((r) => {
                   const done = r.have >= r.need, rr = Math.min(1, r.have / Math.max(1, r.need));
@@ -112,35 +103,34 @@ export default function RankScreen() {
                     </View>
                   );
                 })}
-                <Text style={styles.reqHint}>Semua syarat terpenuhi → bonus naik ke +{p.nextBonusPct}%</Text>
               </>
             );
           })() : (
             <View style={{ gap: 6 }}>
               <Text style={styles.nextTitle}>Rank tertinggi</Text>
-              <Text style={styles.reqHint}>Kamu sudah Elite Clipper dengan bonus +{p.bonusPct}% di setiap penarikan.</Text>
+              <Text style={styles.reqHint}>+{p.bonusPct}% di setiap penarikan.</Text>
             </View>
           )}
         </View>
       </View>
 
       <View style={styles.all}>
-        <Text style={styles.allTitle}>Jelajahi semua rank</Text>
+        <Text style={styles.allTitle}>Semua rank</Text>
         <View style={styles.grid}>
           {TIERS.map((t, i) => {
             const mine = t === p.tier, locked = i > idx;
             return (
               <Pressable key={t} onPress={() => setPick(t)} accessibilityRole="button"
-                style={({ pressed }) => [styles.tierCard, isWide ? { flexBasis: '18%' } : { flexBasis: '47%' }, mine && styles.tierCardMine, pressed && { opacity: 0.8 }]}>
-                <Text style={[styles.tierCardName, { color: RANK_METAL[t].hi }]} numberOfLines={1}>{NAME[t]} Clipper</Text>
+                style={({ pressed }) => [styles.tierCard, isWide ? { flexBasis: '18%' } : { flexBasis: '30%' }, mine && styles.tierCardMine, pressed && { opacity: 0.8 }]}>
+                <Text style={[styles.tierCardName, { color: RANK_METAL[t].hi }]} numberOfLines={1}>{NAME[t]}</Text>
                 <RankBadge tier={t} size={64} dim={locked} />
                 <View style={styles.cardLine} />
                 <Text style={styles.tierPct}>+{p.bonuses[t]}%</Text>
                 <Text style={styles.tierReq}>{p.thresholds[t] ? `${compact(p.thresholds[t])} views` : 'Awal'}</Text>
-                {p.minApproved[t] ? <Text style={styles.tierReq2}>{p.minApproved[t]} klip diterima{p.minApprovalPct[t] ? ` · approval ${p.minApprovalPct[t]}%` : ''}</Text> : null}
+                {p.minApproved[t] ? <Text style={styles.tierReq2}>{p.minApproved[t]} klip{p.minApprovalPct[t] ? ` · ${p.minApprovalPct[t]}%` : ''}</Text> : null}
                 <View style={styles.tierFoot}>
-                  {mine ? <Text style={styles.mineText}>Rank kamu</Text>
-                    : <><Text style={styles.lockText}>Rank {i + 1}</Text>{locked ? <Feather name="lock" size={11} color={color.textMuted} /> : <Feather name="check" size={12} color={color.success} />}</>}
+                  {mine ? <Text style={styles.mineText}>Kamu</Text>
+                    : locked ? <Feather name="lock" size={12} color={color.textMuted} /> : <Feather name="check" size={13} color={color.success} />}
                 </View>
               </Pressable>
             );
