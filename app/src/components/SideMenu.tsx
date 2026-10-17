@@ -42,30 +42,9 @@ export function MenuButton() {
 }
 
 function Drawer({ onClose }: { onClose: () => void }) {
-  const { signOut } = useAuth();
-  const path = usePathname();
   const x = useRef(new Animated.Value(-W)).current;
-  const [campaigns, setCampaigns] = useState<MyCampaign[]>([]);
-  const [unread, setUnread] = useState(0);
-  useEffect(() => {
-    Animated.timing(x, { toValue: 0, duration: 220, useNativeDriver: false }).start();
-    fetchMyCampaigns().then((r) => setCampaigns(r.filter((c) => c.status === 'joined' && c.campaign && ['active', 'paused', 'ending'].includes(c.campaign.status)))).catch(() => {});
-    unreadCount().then(setUnread).catch(() => {});
-  }, [x]);
+  useEffect(() => { Animated.timing(x, { toValue: 0, duration: 220, useNativeDriver: false }).start(); }, [x]);
   const close = (then?: () => void) => Animated.timing(x, { toValue: -W, duration: 180, useNativeDriver: false }).start(() => { onClose(); then?.(); });
-  const go = (to: string) => close(() => (to.startsWith('/dashboard') ? router.navigate(to as never) : router.push(to as never)));
-
-  const item = (icon: Icon, label: string, to: string, badge?: number) => {
-    const on = path === to || (to === '/dashboard' && path === '/dashboard/index');
-    return (
-      <Pressable key={to} onPress={() => go(to)} accessibilityRole="menuitem" accessibilityState={{ selected: on }}
-        style={({ pressed }) => [styles.item, on && styles.itemOn, pressed && !on && { backgroundColor: 'rgba(255,255,255,0.04)' }]}>
-        <Feather name={icon} size={20} color={on ? color.text : color.textSecondary} />
-        <Text style={[styles.itemText, on && { color: color.text }]}>{label}</Text>
-        {badge ? <View style={styles.badge}><Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text></View> : null}
-      </Pressable>
-    );
-  };
 
   return (
     <Modal visible transparent animationType="none" onRequestClose={() => close()}>
@@ -81,62 +60,104 @@ function Drawer({ onClose }: { onClose: () => void }) {
             <Image source={require('../../assets/tapp-logo.png')} style={styles.logo} accessibilityIgnoresInvertColors />
             <Text style={styles.brand}>TAPP</Text>
           </View>
-          <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
-            {item('home', 'Beranda', '/dashboard')}
-            {item('compass', 'Campaign', '/dashboard/campaigns')}
-            {item('repeat', 'Aktivitas', '/dashboard/activity')}
-            {item('bar-chart-2', 'Performa', '/performance')}
-            {item('credit-card', 'Saldo', '/dashboard/earnings')}
-            {item('award', 'Rank & Rewards', '/rank')}
-            {item('gift', 'Ajak teman', '/referral')}
-
-            <Pressable onPress={() => go('/help')} accessibilityRole="button" style={({ pressed }) => [styles.learn, pressed && { opacity: 0.85 }]}>
-              <View style={styles.learnArt} {...({ dataSet: { tapp: 'art' } } as object)}>
-                <Image source={require('../../assets/tapp-mark-white.png')} style={styles.learnMark} accessibilityIgnoresInvertColors />
-              </View>
-              <View style={{ padding: space.md, gap: 4 }}>
-                <Text style={styles.learnTitle}>Mulai dari sini</Text>
-                <Text style={styles.learnSub}>Cara kerja campaign dari ambil sampai cair.</Text>
-              </View>
-              <View style={styles.learnFoot}><Text style={styles.learnLink}>Pelajari</Text><Feather name="arrow-right" size={16} color={color.link} /></View>
-            </Pressable>
-
-            {campaigns.length ? (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Campaign diikuti</Text>
-                {campaigns.slice(0, 5).map((c) => (
-                  <Pressable key={c.id} onPress={() => go(`/workspace/${c.campaign!.id}`)} accessibilityRole="button" style={({ pressed }) => [styles.camp, pressed && { opacity: 0.7 }]}>
-                    <View style={styles.mono}><Text style={styles.monoText}>{(c.campaign!.brand?.name ?? c.campaign!.title).slice(0, 1).toUpperCase()}</Text></View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.campTitle} numberOfLines={1}>{c.campaign!.title}</Text>
-                      {c.campaign!.brand?.name ? <Text style={styles.campSub} numberOfLines={1}>{c.campaign!.brand.name}</Text> : null}
-                    </View>
-                  </Pressable>
-                ))}
-              </View>
-            ) : null}
-
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Butuh bantuan?</Text>
-              <Pressable onPress={() => close(() => void Linking.openURL(WA))} accessibilityRole="link" style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}>
-                <Feather name="message-circle" size={20} color={color.textSecondary} />
-                <Text style={styles.itemText}>Hubungi admin</Text>
-              </Pressable>
-              {item('help-circle', 'FAQ & aturan', '/help')}
-            </View>
-
-            <View style={styles.section}>
-              {item('user', 'Profil', '/dashboard/profile')}
-              {item('bell', 'Notifikasi', '/notifications', unread)}
-              <Pressable onPress={() => close(() => void signOut())} accessibilityRole="button" style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}>
-                <Feather name="log-out" size={20} color={color.danger} />
-                <Text style={[styles.itemText, { color: color.danger }]}>Keluar</Text>
-              </Pressable>
-            </View>
-          </ScrollView>
+          <MenuBody run={(then) => close(then)} />
         </SafeAreaView>
       </Animated.View>
     </Modal>
+  );
+}
+
+// Desktop: the same menu as a fixed left sidebar on every creator page.
+export function DesktopSidebar() {
+  return (
+    <View style={styles.desk} accessibilityRole="menu">
+      <Pressable onPress={() => router.navigate('/dashboard')} style={styles.head} accessibilityRole="link" accessibilityLabel="TAPP beranda">
+        <Image source={require('../../assets/tapp-logo.png')} style={styles.logo} accessibilityIgnoresInvertColors />
+        <Text style={styles.brand}>TAPP</Text>
+      </Pressable>
+      <MenuBody run={(then) => then?.()} />
+    </View>
+  );
+}
+
+// Menu content shared by the phone drawer and the desktop sidebar. `run` closes the drawer (if any) and then navigates.
+function MenuBody({ run }: { run: (then?: () => void) => void }) {
+  const { signOut } = useAuth();
+  const path = usePathname();
+  const [campaigns, setCampaigns] = useState<MyCampaign[]>([]);
+  const [unread, setUnread] = useState(0);
+  useEffect(() => {
+    fetchMyCampaigns().then((r) => setCampaigns(r.filter((c) => c.status === 'joined' && c.campaign && ['active', 'paused', 'ending'].includes(c.campaign.status)))).catch(() => {});
+    unreadCount().then(setUnread).catch(() => {});
+  }, [path]);
+  const go = (to: string) => run(() => (to.startsWith('/dashboard') ? router.navigate(to as never) : router.push(to as never)));
+
+  const item = (icon: Icon, label: string, to: string, badge?: number) => {
+    const on = path === to || (to === '/dashboard' && path === '/dashboard/index');
+    return (
+      <Pressable key={to} onPress={() => go(to)} accessibilityRole="menuitem" accessibilityState={{ selected: on }}
+        style={({ pressed }) => [styles.item, on && styles.itemOn, pressed && !on && { backgroundColor: 'rgba(255,255,255,0.04)' }]}>
+        <Feather name={icon} size={20} color={on ? color.text : color.textSecondary} />
+        <Text style={[styles.itemText, on && { color: color.text }]}>{label}</Text>
+        {badge ? <View style={styles.badge}><Text style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Text></View> : null}
+      </Pressable>
+    );
+  };
+
+  return (
+    <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+      {item('home', 'Beranda', '/dashboard')}
+      {item('compass', 'Campaign', '/dashboard/campaigns')}
+      {item('repeat', 'Aktivitas', '/dashboard/activity')}
+      {item('bar-chart-2', 'Performa', '/performance')}
+      {item('credit-card', 'Saldo', '/dashboard/earnings')}
+      {item('award', 'Rank & Rewards', '/rank')}
+      {item('gift', 'Ajak teman', '/referral')}
+
+      <Pressable onPress={() => go('/help')} accessibilityRole="button" style={({ pressed }) => [styles.learn, pressed && { opacity: 0.85 }]}>
+        <View style={styles.learnArt} {...({ dataSet: { tapp: 'art' } } as object)}>
+          <Image source={require('../../assets/tapp-mark-white.png')} style={styles.learnMark} accessibilityIgnoresInvertColors />
+        </View>
+        <View style={{ padding: space.md, gap: 4 }}>
+          <Text style={styles.learnTitle}>Mulai dari sini</Text>
+          <Text style={styles.learnSub}>Cara kerja campaign dari ambil sampai cair.</Text>
+        </View>
+        <View style={styles.learnFoot}><Text style={styles.learnLink}>Pelajari</Text><Feather name="arrow-right" size={16} color={color.link} /></View>
+      </Pressable>
+
+      {campaigns.length ? (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Campaign diikuti</Text>
+          {campaigns.slice(0, 5).map((c) => (
+            <Pressable key={c.id} onPress={() => go(`/workspace/${c.campaign!.id}`)} accessibilityRole="button" style={({ pressed }) => [styles.camp, pressed && { opacity: 0.7 }]}>
+              <View style={styles.mono}><Text style={styles.monoText}>{(c.campaign!.brand?.name ?? c.campaign!.title).slice(0, 1).toUpperCase()}</Text></View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.campTitle} numberOfLines={1}>{c.campaign!.title}</Text>
+                {c.campaign!.brand?.name ? <Text style={styles.campSub} numberOfLines={1}>{c.campaign!.brand.name}</Text> : null}
+              </View>
+            </Pressable>
+          ))}
+        </View>
+      ) : null}
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>Butuh bantuan?</Text>
+        <Pressable onPress={() => run(() => void Linking.openURL(WA))} accessibilityRole="link" style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}>
+          <Feather name="message-circle" size={20} color={color.textSecondary} />
+          <Text style={styles.itemText}>Hubungi admin</Text>
+        </Pressable>
+        {item('help-circle', 'FAQ & aturan', '/help')}
+      </View>
+
+      <View style={styles.section}>
+        {item('user', 'Profil', '/dashboard/profile')}
+        {item('bell', 'Notifikasi', '/notifications', unread)}
+        <Pressable onPress={() => run(() => void signOut())} accessibilityRole="button" style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}>
+          <Feather name="log-out" size={20} color={color.danger} />
+          <Text style={[styles.itemText, { color: color.danger }]}>Keluar</Text>
+        </Pressable>
+      </View>
+    </ScrollView>
   );
 }
 
@@ -145,6 +166,7 @@ const styles = StyleSheet.create({
   backdrop: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.6)' },
   panel: { position: 'absolute', left: 0, top: 0, bottom: 0, width: W, maxWidth: '86%', backgroundColor: '#08080B',
     borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.08)' },
+  desk: { width: 268, backgroundColor: '#08080B', borderRightWidth: 1, borderRightColor: 'rgba(255,255,255,0.08)', paddingTop: space.md },
   head: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md, paddingVertical: space.md },
   logo: { width: 28, height: 28, marginLeft: space.xs },
   brand: { ...type.heading, fontSize: 20, color: color.text, letterSpacing: -0.4 },

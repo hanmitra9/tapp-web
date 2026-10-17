@@ -1,7 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { WebSidebar } from '@/components/WebSidebar';
 import { tabChrome } from '@/components/tabChrome';
 import { useLayout } from '@/lib/useLayout';
 import { color } from '@/theme/tokens';
@@ -14,7 +13,7 @@ export default function TabsLayout() {
   const { isWide } = useLayout();
   return (
     <Tabs
-      tabBar={isWide ? (props) => <WebSidebar {...props} /> : undefined}
+      tabBar={isWide ? () => null : undefined}   // desktop: the app-wide DesktopSidebar (SideMenu.tsx) replaces the tab bar
       screenOptions={{
         tabBarPosition: isWide ? 'left' : 'bottom',
         headerShown: false,

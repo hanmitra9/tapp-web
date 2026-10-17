@@ -1,5 +1,7 @@
 import { Stack } from 'expo-router';
-import { SideMenuProvider } from '@/components/SideMenu';
+import { DesktopSidebar, SideMenuProvider } from '@/components/SideMenu';
+import { View } from 'react-native';
+import { useLayout } from '@/lib/useLayout';
 import { useEffect } from 'react';
 import { claimPendingReferral } from '@/features/referral/api';
 import { LoadState } from '@/components/LoadState';
@@ -9,6 +11,7 @@ import { color } from '@/theme/tokens';
 
 export default function AppLayout() {
   const { account, accountError, refreshAccount } = useAuth();
+  const { isWide } = useLayout();
   const role = account?.role;
   useEffect(() => { if (role === 'creator') claimPendingReferral().catch(() => {}); }, [role]);
   if (!account) {
@@ -22,6 +25,9 @@ export default function AppLayout() {
   const creator = !isBrand && !needsOnboarding;
   return (
     <SideMenuProvider>
+    <View style={{ flex: 1, flexDirection: 'row' }}>
+    {creator && isWide ? <DesktopSidebar /> : null}
+    <View style={{ flex: 1 }}>
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
       <Stack.Protected guard={isBrand}>
         <Stack.Screen name="brand" />
@@ -49,6 +55,8 @@ export default function AppLayout() {
         <Stack.Screen name="profile/payout" />
       </Stack.Protected>
     </Stack>
+    </View>
+    </View>
     </SideMenuProvider>
   );
 }

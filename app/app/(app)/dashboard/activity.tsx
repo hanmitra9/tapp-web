@@ -3,7 +3,7 @@ import { router } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { EmptyState } from '@/components/EmptyState';
-import { Header } from '@/components/Header';
+import { TopBar } from '@/components/TopBar';
 import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { Segmented } from '@/components/Segmented';
@@ -42,7 +42,7 @@ export default function Activity() {
 
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
-      <Header title="Aktivitas" back={false} menu />
+      <View style={{ marginBottom: space.xl }}><TopBar title="Aktivitas" /></View>
       {q.error && !q.data ? <Notice tone="error" message={q.error} /> : null}
       {!q.data && !q.error ? <><CardSkeleton /><CardSkeleton /></> : null}
       {q.data && !rows.length ? (
