@@ -1,5 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet, Text, View } from 'react-native';
+import { router } from 'expo-router';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 import type { TierProgress } from '@/features/creator/tier';
 
@@ -11,7 +12,7 @@ export function LevelProgress({ p }: { p: TierProgress }) {
   const done = p.next == null || p.to == null;
   const ratio = done ? 1 : Math.min(1, Math.max(0, (p.views - p.from) / Math.max(1, p.to! - p.from)));
   return (
-    <View style={styles.wrap} accessibilityRole="summary"
+    <Pressable onPress={() => router.push('/rank')} style={({ pressed }) => [styles.wrap, pressed && { opacity: 0.85 }]} accessibilityRole="button"
       accessibilityLabel={done ? `Level ${LABEL[p.tier]}, level tertinggi` : `Level ${LABEL[p.tier]}, ${views(p.toNext ?? 0)} qualified views lagi ke ${LABEL[p.next!]}`}>
       <View style={styles.head}>
         <Text style={styles.level}>Level {LABEL[p.tier]}</Text>
@@ -23,7 +24,7 @@ export function LevelProgress({ p }: { p: TierProgress }) {
       <Text style={styles.note}>
         {done ? 'Level tertinggi.' : `${views(p.toNext ?? 0)} views lagi ke ${LABEL[p.next!]} (+${p.nextBonusPct}%)`}
       </Text>
-    </View>
+    </Pressable>
   );
 }
 

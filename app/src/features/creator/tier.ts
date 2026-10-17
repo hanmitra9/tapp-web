@@ -7,6 +7,7 @@ export type TierProgress = {
   tier: Tier; views: number; bonusPct: number;
   next: Tier | null; nextBonusPct: number | null; toNext: number | null;
   from: number; to: number | null;          // thresholds of the current and next level
+  thresholds: Record<Tier, number>; bonuses: Record<Tier, number>;   // every level, for the Rank & Rewards page
 };
 
 export async function fetchTierProgress(): Promise<TierProgress> {
@@ -23,5 +24,7 @@ export async function fetchTierProgress(): Promise<TierProgress> {
     next: d.next_tier, nextBonusPct: d.next_tier ? Number(bonus[d.next_tier] ?? 0) : null,
     toNext: d.views_to_next == null ? null : Number(d.views_to_next),
     from: th(d.tier) ?? 0, to: th(d.next_tier),
+    thresholds: Object.fromEntries(TIERS.map((t) => [t, Number(d.thresholds?.[t] ?? 0)])) as Record<Tier, number>,
+    bonuses: Object.fromEntries(TIERS.map((t) => [t, Number(bonus[t] ?? 0)])) as Record<Tier, number>,
   };
 }
