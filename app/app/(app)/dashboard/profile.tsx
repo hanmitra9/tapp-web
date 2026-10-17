@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { ActivityIndicator, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Avatar } from '@/components/Avatar';
 import { Button } from '@/components/Button';
-import { Header } from '@/components/Header';
+import { TopBar } from '@/components/TopBar';
 import { Notice } from '@/components/Notice';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
@@ -65,7 +65,7 @@ export default function Profile() {
     finally { setUploading(false); }
   }
 
-  if (!data) return <Screen inTabs scroll={false}><Header title="Profil" back={false} menu /><LoadState error={error} onRetry={load} /></Screen>;
+  if (!data) return <Screen inTabs scroll={false}><View style={{ marginBottom: space.xl }}><TopBar title="Profil" /></View><LoadState error={error} onRetry={load} /></Screen>;
   const { profile: p, stats: s, platforms, payout } = data;
   const reviewed = s.approved + s.rejected;
   const approvalRate = reviewed ? Math.round((s.approved / reviewed) * 100) : null;
@@ -75,7 +75,7 @@ export default function Profile() {
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={refreshing} tintColor={color.blue}
       onRefresh={async () => { setRefreshing(true); await load(); setRefreshing(false); }} />}>
-      <Header title="Profil" back={false} menu />
+      <View style={{ marginBottom: space.xl }}><TopBar title="Profil" /></View>
       <View style={styles.hero}>
         <View style={styles.heroArt} {...web('art')} />
         <Pressable onPress={changePhoto} disabled={uploading} style={styles.heroAvatar} accessibilityRole="button" accessibilityLabel={p.avatarUrl ? 'Ganti foto profil' : 'Tambah foto profil'}>
