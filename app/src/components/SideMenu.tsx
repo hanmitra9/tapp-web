@@ -87,6 +87,7 @@ function Drawer({ onClose }: { onClose: () => void }) {
             {item('repeat', 'Aktivitas', '/dashboard/activity')}
             {item('bar-chart-2', 'Performa', '/performance')}
             {item('credit-card', 'Saldo', '/dashboard/earnings')}
+            {item('award', 'Rank & Rewards', '/rank')}
             {item('gift', 'Ajak teman', '/referral')}
 
             <Pressable onPress={() => go('/help')} accessibilityRole="button" style={({ pressed }) => [styles.learn, pressed && { opacity: 0.85 }]}>

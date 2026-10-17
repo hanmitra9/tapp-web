@@ -117,12 +117,12 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
         </Pressable>
       </View>
       {level ? (
-        <View style={styles.heroLevel}>
+        <Pressable onPress={() => router.push('/rank')} accessibilityRole="button" accessibilityLabel="Rank & Rewards" style={styles.heroLevel}>
           <View style={styles.heroTrack}><View style={[styles.heroFill, { width: `${ratio * 100}%` }]} /></View>
           <Text style={styles.heroLevelText} numberOfLines={1}>
             {done ? 'Level tertinggi' : `${compact(level.toNext ?? 0)} views lagi ke ${LEVEL[level.next!]} (+${level.nextBonusPct}%)`}
           </Text>
-        </View>
+        </Pressable>
       ) : null}
     </LinearGradient>
   );
