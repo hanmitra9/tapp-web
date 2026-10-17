@@ -66,7 +66,7 @@ export default function RankScreen() {
         <Feather name="zap" size={16} color="#F5C451" />
         <View style={{ flex: 1 }}>
           <Text style={styles.autoTitle}>Naik rank otomatis</Text>
-          <Text style={styles.autoSub}>Dihitung dari total qualified views. Begitu syarat terpenuhi, rank langsung naik.</Text>
+          <Text style={styles.autoSub}>Dari total qualified views, jumlah klip diterima, dan approval rate. Begitu semua syarat terpenuhi, rank langsung naik.</Text>
         </View>
       </View>
 
@@ -86,21 +86,36 @@ export default function RankScreen() {
         </View>
 
         <View style={[styles.next, isWide && { flex: 1.6 }]}>
-          {p.next ? (
-            <>
-              <View style={styles.nextHead}>
-                <Text style={styles.nextTitle}>Menuju {NAME[p.next]} Clipper</Text>
-                <Text style={styles.reqPill}>1 syarat</Text>
-              </View>
-              <View style={styles.req}>
-                <Feather name={ratio >= 1 ? 'check-circle' : 'circle'} size={16} color={ratio >= 1 ? color.success : color.textMuted} />
-                <Text style={styles.reqText}>{compact(p.to ?? 0)} qualified views</Text>
-                <Text style={styles.reqNum}>{compact(p.views)}/{compact(p.to ?? 0)}</Text>
-              </View>
-              <View style={styles.track}><LinearGradient colors={[RANK_METAL[p.next].hi, RANK_METAL[p.next].mid]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.fill, { width: `${Math.max(2, ratio * 100)}%` }]} /></View>
-              <Text style={styles.reqHint}>{compact(p.toNext ?? 0)} views lagi · bonus naik ke +{p.nextBonusPct}%</Text>
-            </>
-          ) : (
+          {p.next ? (() => {
+            const n = p.next;
+            const reqs = [
+              { label: `${compact(p.thresholds[n])} qualified views`, have: p.views, need: p.thresholds[n], fmt: compact },
+              ...(p.minApproved[n] ? [{ label: `${p.minApproved[n]} klip diterima`, have: p.approved, need: p.minApproved[n], fmt: (x: number) => String(x) }] : []),
+              ...(p.minApprovalPct[n] ? [{ label: `Approval rate ${p.minApprovalPct[n]}%`, have: p.approvalPct, need: p.minApprovalPct[n], fmt: (x: number) => `${x}%` }] : []),
+            ];
+            return (
+              <>
+                <View style={styles.nextHead}>
+                  <Text style={styles.nextTitle}>Menuju {NAME[n]} Clipper</Text>
+                  <Text style={styles.reqPill}>{reqs.filter((r) => r.have >= r.need).length}/{reqs.length} syarat</Text>
+                </View>
+                {reqs.map((r) => {
+                  const done = r.have >= r.need, rr = Math.min(1, r.have / Math.max(1, r.need));
+                  return (
+                    <View key={r.label} style={{ gap: 6 }}>
+                      <View style={styles.req}>
+                        <Feather name={done ? 'check-circle' : 'circle'} size={16} color={done ? color.success : color.textMuted} />
+                        <Text style={styles.reqText}>{r.label}</Text>
+                        <Text style={styles.reqNum}>{r.fmt(r.have)}/{r.fmt(r.need)}</Text>
+                      </View>
+                      <View style={styles.track}><LinearGradient colors={[RANK_METAL[n].hi, RANK_METAL[n].mid]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.fill, { width: `${Math.max(2, rr * 100)}%` }]} /></View>
+                    </View>
+                  );
+                })}
+                <Text style={styles.reqHint}>Semua syarat terpenuhi → bonus naik ke +{p.nextBonusPct}%</Text>
+              </>
+            );
+          })() : (
             <View style={{ gap: 6 }}>
               <Text style={styles.nextTitle}>Rank tertinggi</Text>
               <Text style={styles.reqHint}>Kamu sudah Elite Clipper dengan bonus +{p.bonusPct}% di setiap penarikan.</Text>
@@ -122,6 +137,7 @@ export default function RankScreen() {
                 <View style={styles.cardLine} />
                 <Text style={styles.tierPct}>+{p.bonuses[t]}%</Text>
                 <Text style={styles.tierReq}>{p.thresholds[t] ? `${compact(p.thresholds[t])} views` : 'Awal'}</Text>
+                {p.minApproved[t] ? <Text style={styles.tierReq2}>{p.minApproved[t]} klip diterima{p.minApprovalPct[t] ? ` · approval ${p.minApprovalPct[t]}%` : ''}</Text> : null}
                 <View style={styles.tierFoot}>
                   {mine ? <Text style={styles.mineText}>Rank kamu</Text>
                     : <><Text style={styles.lockText}>Rank {i + 1}</Text>{locked ? <Feather name="lock" size={11} color={color.textMuted} /> : <Feather name="check" size={12} color={color.success} />}</>}
@@ -184,6 +200,7 @@ const styles = StyleSheet.create({
   cardLine: { alignSelf: 'stretch', height: 1, backgroundColor: 'rgba(255,255,255,0.07)', marginVertical: 4 },
   tierPct: { ...type.heading, fontSize: 20, color: color.text, fontVariant: ['tabular-nums'] },
   tierReq: { ...type.caption, fontSize: 12, color: color.textMuted },
+  tierReq2: { ...type.caption, fontSize: 11, color: color.textMuted, textAlign: 'center' },
   tierFoot: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
   mineText: { ...type.label, fontSize: 12, color: color.text },
   lockText: { ...type.caption, fontSize: 12, color: color.textMuted },
