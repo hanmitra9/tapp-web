@@ -4,7 +4,7 @@ import { useLocalSearchParams } from 'expo-router';
 import { useMemo, useState } from 'react';
 import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
-import { Chips } from '@/components/Chips';
+import { Segmented } from '@/components/Segmented';
 import { Header } from '@/components/Header';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
@@ -16,6 +16,8 @@ import { platformLabel, type Platform } from '@/features/creator/options';
 
 // Best clips of a campaign, ready to reuse as ads: ranked by qualified views, with cost per 1.000 views,
 // quick copy/open, and a request to TAPP for the creator's ad permission (Spark Ads / Partnership Ads).
+const MEDAL = ['#F5C451', '#C9D3E0', '#E0965A'];
+
 export default function BrandClips() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const q = useQuery(async () => {
@@ -50,8 +52,8 @@ export default function BrandClips() {
 
       {platforms.length > 1 ? (
         <View style={{ marginBottom: space.lg }}>
-          <Chips options={[{ value: 'all', label: 'Semua' }, ...platforms.map((p) => ({ value: p, label: platformLabel(p as Platform) }))]}
-            value={[platform]} onChange={(v) => setPlatform(v[0] ?? 'all')} />
+          <Segmented options={[{ value: 'all', label: 'Semua' }, ...platforms.map((p) => ({ value: p, label: platformLabel(p as Platform) }))]}
+            value={platform} onChange={setPlatform} />
         </View>
       ) : null}
 
@@ -63,7 +65,9 @@ export default function BrandClips() {
 
       {list.length ? (
         <View style={styles.info}>
-          <Text style={styles.infoTitle}>Pakai klip sebagai iklan</Text>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: space.sm }}>
+            <Feather name="zap" size={16} color={color.link} /><Text style={styles.infoTitle}>Pakai sebagai iklan</Text>
+          </View>
           <Text style={styles.infoText}>Spark Ads / Partnership Ads butuh izin kreator. Pilih klip, tim TAPP yang urus.</Text>
           <Pressable onPress={() => copy(list.map((k) => k.post_url).join('\n'), 'all')} hitSlop={8} accessibilityRole="button">
             <Text style={styles.link}>{copied === 'all' ? 'Tersalin' : `Salin semua link (${list.length})`}</Text>
@@ -79,7 +83,9 @@ function ClipCard({ k, rank, picked, copied, onPick, onCopy }: { k: Clip; rank: 
   return (
     <Pressable onPress={onPick} style={[styles.card, picked && styles.cardOn]} accessibilityRole="checkbox" accessibilityState={{ checked: picked }}>
       <View style={styles.top}>
-        <Text style={[styles.rank, rank <= 3 && { color: color.link }]}>#{rank}</Text>
+        <View style={[styles.rankBox, rank <= 3 && { backgroundColor: MEDAL[rank - 1] + '22', borderColor: MEDAL[rank - 1] + '66' }]}>
+          <Text style={[styles.rank, rank <= 3 && { color: MEDAL[rank - 1] }]}>{rank}</Text>
+        </View>
         <View style={{ flex: 1 }}>
           <Text style={styles.creator}>@{k.creator_username ?? 'kreator'}</Text>
           <Text style={styles.meta}>{platformLabel(k.platform as Platform)} · {dateLabel(k.published_at)}</Text>
@@ -87,9 +93,9 @@ function ClipCard({ k, rank, picked, copied, onPick, onCopy }: { k: Clip; rank: 
         <View style={[styles.check, picked && styles.checkOn]}>{picked ? <Feather name="check" size={14} color="#fff" /> : null}</View>
       </View>
       <View style={styles.nums}>
-        <Num label="Qualified views" value={compact(k.qualified_views)} />
+        <Num label="Views lolos" value={compact(k.qualified_views)} />
         <Num label="Total views" value={compact(k.raw_views)} />
-        <Num label="Biaya / 1.000" value={cpm != null ? idr(cpm) : '—'} />
+        <Num label="Biaya / 1K" value={cpm != null ? idr(cpm) : '—'} />
       </View>
       <View style={styles.actions}>
         <Pressable onPress={() => Linking.openURL(k.post_url).catch(() => {})} hitSlop={6} style={styles.action} accessibilityRole="link">
@@ -111,7 +117,9 @@ const styles = StyleSheet.create({
   card: { padding: space.lg, gap: space.md, borderRadius: radius.lg, marginBottom: space.md, ...card, borderWidth: 1, borderColor: color.border },
   cardOn: { borderColor: color.blue, backgroundColor: 'rgba(12,101,196,0.10)' },
   top: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  rank: { ...type.heading, color: color.textMuted, width: 36, fontVariant: ['tabular-nums'] },
+  rankBox: { width: 38, height: 38, borderRadius: 12, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surfaceRaised,
+    borderWidth: 1, borderColor: color.border },
+  rank: { ...type.heading, color: color.textMuted, fontVariant: ['tabular-nums'] },
   creator: { ...type.label, color: color.text },
   meta: { ...type.caption, color: color.textMuted },
   check: { width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: color.borderStrong, alignItems: 'center', justifyContent: 'center' },
@@ -121,7 +129,7 @@ const styles = StyleSheet.create({
   actions: { flexDirection: 'row', gap: space.xl },
   action: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   link: { ...type.label, color: color.link, fontSize: 14 },
-  info: { marginTop: space.lg, padding: space.lg, gap: space.sm, borderRadius: radius.md, ...card },
+  info: { marginTop: space.lg, padding: space.lg, gap: space.sm, borderRadius: radius.lg, backgroundColor: color.accentSoft, borderWidth: 1, borderColor: 'rgba(117,178,244,0.25)' },
   infoTitle: { ...type.label, color: color.text },
   infoText: { ...type.caption, color: color.textSecondary, lineHeight: 19 },
 });
