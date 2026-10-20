@@ -7,7 +7,7 @@ import { StatusBadge } from '@/components/StatusBadge';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type, card } from '@/theme/tokens';
-import { fetchMyBrands, setDailyReport } from '@/features/brand/api';
+import { BRAND_WA, fetchMyBrands, setDailyReport } from '@/features/brand/api';
 import { errorMessage } from '@/lib/errors';
 
 const ROLE = { owner: 'Pemilik', member: 'Anggota', viewer: 'Hanya lihat' } as const;
@@ -36,8 +36,8 @@ export default function BrandAccount() {
           <StatusBadge label={ROLE[b.role]} tone="neutral" />
         </View>
       ))}
-      <Text style={styles.section}>Laporan harian via email</Text>
-      <Text style={styles.helpBody}>Setiap pagi sekitar 08.00 WIB: qualified views baru, biaya kemarin, dan status tiap campaign.</Text>
+      <Text style={styles.section}>Laporan harian</Text>
+      <Text style={styles.helpBody}>Email tiap pagi 08.00 WIB.</Text>
       {q.data?.map((b) => (
         <View key={`r-${b.id}`} style={styles.row}>
           <Text style={styles.value}>{b.name}</Text>
@@ -47,9 +47,9 @@ export default function BrandAccount() {
       ))}
       {err ? <Text style={[styles.helpBody, { color: color.danger }]}>{err}</Text> : null}
       <View style={styles.help}>
-        <Text style={styles.helpTitle}>Mau campaign baru atau ubah budget?</Text>
-        <Text style={styles.helpBody}>Untuk saat ini campaign disiapkan oleh tim TAPP. Hubungi account manager-mu dan kami akan mengaturnya.</Text>
-        <Text style={styles.link} onPress={() => Linking.openURL('mailto:tappcreators@gmail.com?subject=Campaign%20baru').catch(() => {})}>tappcreators@gmail.com</Text>
+        <Text style={styles.helpTitle}>Campaign baru atau top up?</Text>
+        <Text style={styles.helpBody}>Atur langsung dengan account manager.</Text>
+        <Text style={styles.link} onPress={() => Linking.openURL(BRAND_WA).catch(() => {})}>Chat WhatsApp</Text>
       </View>
       <View style={{ marginTop: space.xxl }}><Button variant="secondary" label="Keluar" onPress={signOut} /></View>
     </Screen>

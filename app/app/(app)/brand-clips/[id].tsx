@@ -11,10 +11,8 @@ import { Screen } from '@/components/Screen';
 import { compact, dateLabel, idr } from '@/lib/format';
 import { useQuery } from '@/lib/useQuery';
 import { color, radius, space, type, card } from '@/theme/tokens';
-import { fetchBrandCampaigns, fetchTopClips, type Clip } from '@/features/brand/api';
+import { BRAND_WA, fetchBrandCampaigns, fetchTopClips, type Clip } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
-
-const SUPPORT = 'tappcreators@gmail.com';
 
 // Best clips of a campaign, ready to reuse as ads: ranked by qualified views, with cost per 1.000 views,
 // quick copy/open, and a request to TAPP for the creator's ad permission (Spark Ads / Partnership Ads).
@@ -42,13 +40,13 @@ export default function BrandClips() {
     const rows = chosen.map((k, i) => `${i + 1}. @${k.creator_username ?? 'kreator'} · ${k.post_url}`).join('\n');
     const subject = `Izin iklan klip · ${c?.title ?? 'campaign'}`;
     const body = `Halo tim TAPP,\n\nKami ingin memakai klip berikut sebagai iklan (Spark Ads / Partnership Ads):\n${rows}\n\nBrand: ${c?.brand_name ?? ''}\nCampaign: ${c?.title ?? ''}\n\nTerima kasih.`;
-    Linking.openURL(`mailto:${SUPPORT}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`).catch(() => {});
+    Linking.openURL(`${BRAND_WA}?text=${encodeURIComponent(`${subject}\n\n${body}`)}`).catch(() => {});
   }
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}
       footer={chosen.length ? <Button label={`Minta izin iklan (${chosen.length} klip)`} onPress={requestAds} /> : undefined}>
-      <Header title="Klip terbaik" subtitle={`${c?.title ?? ''} · urut dari qualified views terbanyak. Pilih klip yang mau dipakai ulang sebagai iklan.`} />
+      <Header title="Klip terbaik" subtitle={`${c?.title ?? ''} · pilih klip untuk iklan.`} />
 
       {platforms.length > 1 ? (
         <View style={{ marginBottom: space.lg }}>
@@ -66,7 +64,7 @@ export default function BrandClips() {
       {list.length ? (
         <View style={styles.info}>
           <Text style={styles.infoTitle}>Pakai klip sebagai iklan</Text>
-          <Text style={styles.infoText}>Untuk Spark Ads (TikTok) atau Partnership Ads (Instagram), creator perlu memberi kode atau izin. Pilih klipnya, lalu tekan Minta izin iklan — tim TAPP yang menghubungi creator.</Text>
+          <Text style={styles.infoText}>Spark Ads / Partnership Ads butuh izin kreator. Pilih klip, tim TAPP yang urus.</Text>
           <Pressable onPress={() => copy(list.map((k) => k.post_url).join('\n'), 'all')} hitSlop={8} accessibilityRole="button">
             <Text style={styles.link}>{copied === 'all' ? 'Tersalin' : `Salin semua link (${list.length})`}</Text>
           </Pressable>

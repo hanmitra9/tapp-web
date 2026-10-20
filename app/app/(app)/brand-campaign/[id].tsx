@@ -1,6 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { router, useLocalSearchParams } from 'expo-router';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { BarChart } from '@/components/BarChart';
 import { Header } from '@/components/Header';
@@ -13,40 +13,52 @@ import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { CostCard, Freshness, HashtagReach, ViewsBreakdown } from '@/features/brand/ReportParts';
+import { BudgetHero, Kpi, KpiGrid, Section, canExport, downloadCsv } from '@/features/brand/ui';
 import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
-import { BRAND_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchHashtagStats, fetchPlatformBreakdown, fetchTopClips } from '@/features/brand/api';
+import { BRAND_STATUS, CLIP_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchBrandSubmissions, fetchHashtagStats, fetchPlatformBreakdown,
+  waTopUp, type Clip } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
 
+const TABS = [{ value: 'detail', label: 'Detail' }, { value: 'subs', label: 'Submission' }, { value: 'stats', label: 'Analitik' }, { value: 'clips', label: 'Klip' }];
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
+const FILTERS = [{ value: 'all', label: 'Semua' }, { value: 'review', label: 'Direview' }, { value: 'ok', label: 'Disetujui' }, { value: 'no', label: 'Ditolak' }];
 const dayLabel = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' });
+const handle = (k: Clip) => `@${k.creator_username ?? 'kreator'}`;
 
-// Brand report for one campaign: budget, funnel, trend, platforms, best clips. Read-only.
+// Brand report for one campaign, in four tabs: Detail, Submission, Analitik, Klip. Read-only.
 export default function BrandCampaignReport() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const [tab, setTab] = useState('detail');
   const [range, setRange] = useState('30');
+  const [filter, setFilter] = useState('all');
   const q = useQuery(async () => {
-    const [all, platforms, clips, tags] = await Promise.all([fetchBrandCampaigns(), fetchPlatformBreakdown(id), fetchTopClips(id), fetchHashtagStats(id)]);
+    const [all, platforms, subs, tags] = await Promise.all([fetchBrandCampaigns(), fetchPlatformBreakdown(id), fetchBrandSubmissions(id), fetchHashtagStats(id)]);
     const c = all.find((x) => x.id === id);
     if (!c) throw { code: 'campaign_not_found' };
-    return { c, platforms, clips, tags };
+    return { c, platforms, subs, tags };
   }, [id]);
   const daily = useQuery(() => fetchBrandDaily(id, Number(range)), [id, range]);
   const reloadAll = useCallback(async () => { await Promise.all([q.reload(), daily.reload()]); }, [q.reload, daily.reload]);
   const refreshedAt = useAutoRefresh(reloadAll);
+  const subs = useMemo(() => (q.data?.subs ?? []).filter((k) => filter === 'all' || CLIP_STATUS[k.status]?.group === filter), [q.data, filter]);
 
-  if (!q.data) return <Screen scroll={false}><Header title="Laporan campaign" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
-  const { c, platforms, clips, tags } = q.data;
-  const used = c.budget ? Math.min(1, c.spent / c.budget) : 0;
-  const qualRate = c.raw_views ? c.qualified_views / c.raw_views : null;
-  const funnel = [
-    { l: 'Kreator bergabung', v: c.creators_joined },
-    { l: 'Klip disubmit', v: c.submissions },
-    { l: 'Klip disetujui', v: c.approved },
-  ];
-  const top = Math.max(1, ...funnel.map((f) => f.v));
+  if (!q.data) return <Screen scroll={false}><Header title="Campaign" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
+  const { c, platforms, tags } = q.data;
   const st = BRAND_STATUS[c.status];
   const gain = daily.data?.reduce((a, x) => a + x.qualified_gain, 0) ?? 0;
+  const top = [...q.data.subs].filter((k) => CLIP_STATUS[k.status]?.group === 'ok').sort((a, b) => b.qualified_views - a.qualified_views);
+  const funnel = [{ l: 'Kreator', v: c.creators_joined }, { l: 'Video masuk', v: c.submissions }, { l: 'Disetujui', v: c.approved }];
+  const fmax = Math.max(1, ...funnel.map((f) => f.v));
+  const saving = c.effective_cpm != null && c.cpm ? Math.round((1 - c.effective_cpm / c.cpm) * 100) : null;
+
+  function exportCsv() {
+    downloadCsv(`${c.title.replace(/[^\w-]+/g, '_')}_submission.csv`, [
+      ['Kreator', 'Platform', 'Link', 'Status', 'Tanggal posting', 'Views', 'Views lolos', 'Biaya (Rp)'],
+      ...q.data!.subs.map((k) => [handle(k), platformLabel(k.platform as Platform), k.post_url, CLIP_STATUS[k.status]?.label ?? k.status,
+        k.published_at?.slice(0, 10) ?? '', k.raw_views, k.qualified_views, k.spend]),
+    ]);
+  }
 
   return (
     <Screen refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={async () => { await q.refresh(); await daily.refresh(); }} tintColor={color.blue} />}>
@@ -56,104 +68,129 @@ export default function BrandCampaignReport() {
         <StatusBadge label={st.label} tone={st.tone} />
       </View>
       <Text style={styles.title} accessibilityRole="header">{c.title}</Text>
-      <Text style={styles.meta}>{idr(c.cpm)} per 1.000 qualified views · {c.platforms.map((p) => platformLabel(p as Platform)).join(', ')}
-        {c.submission_deadline ? ` · deadline ${dateLabel(c.submission_deadline)}` : ''}</Text>
+      <Text style={styles.meta}>{idr(c.cpm)} / 1K views · {c.platforms.map((p) => platformLabel(p as Platform)).join(', ')}
+        {c.submission_deadline ? ` · s/d ${dateLabel(c.submission_deadline)}` : ''}</Text>
       <Freshness metricsAt={c.last_metrics_at} qualifiedAt={c.last_qualified_at} refreshedAt={refreshedAt} />
 
-      <View style={styles.budgetCard}>
-        <View style={styles.budgetTop}>
-          <View><Text style={styles.cap}>Terpakai</Text><Text style={styles.budgetValue}>{idr(c.spent)}</Text></View>
-          <View style={{ alignItems: 'flex-end' }}><Text style={styles.cap}>Sisa budget</Text><Text style={styles.budgetSide}>{idr(c.remaining)}</Text></View>
-        </View>
-        <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${Math.max(used * 100, 1)}%` }]} {...web(used >= 0.9 ? 'seg-p' : 'seg-q')} /></View>
-        <Text style={styles.cap}>{Math.round(used * 100)}% dari budget {idr(c.budget)}{c.fee_pct > 0 ? ` · fee kerjasama ${c.fee_pct}% ditagih terpisah` : ' · harga all-in'}</Text>
-      </View>
+      <View style={{ marginTop: space.lg }}><Segmented options={TABS} value={tab} onChange={setTab} /></View>
 
-      <View style={styles.grid}>
-        <Stat label="Qualified views" value={num(c.qualified_views)} />
-        <Stat label="Views mentah" value={num(c.raw_views)} />
-        <Stat label="Effective CPM" value={c.effective_cpm == null ? '—' : idr(c.effective_cpm)} />
-        <Stat label="Views lolos verifikasi" value={qualRate == null ? '—' : `${Math.round(qualRate * 100)}%`} />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Ke mana views mentah pergi</Text>
-        <ViewsBreakdown raw={c.raw_views} qualified={c.qualified_views} pending={c.pending_views} excluded={c.excluded_views} />
-      </View>
-
-      {tags.length ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Jangkauan hashtag</Text>
-          <HashtagReach stats={tags} />
-        </View>
+      {tab === 'detail' ? (
+        <>
+          <BudgetHero budget={c.budget} spent={c.spent} topUpUrl={waTopUp(c.brand_name, c.title)}
+            second={{ label: 'Submission', icon: 'film', onPress: () => setTab('subs') }} />
+          <KpiGrid>
+            <Kpi icon="eye" label="Views terverifikasi" value={compact(c.qualified_views)} />
+            <Kpi icon="trending-down" label="Effective CPM" value={c.effective_cpm == null ? '—' : idr(c.effective_cpm)} tint={color.success}
+              note={saving != null && saving > 0 ? `Hemat ${saving}% dari CPM asli` : `CPM asli ${idr(c.cpm)}`} />
+            <Kpi icon="film" label="Video masuk" value={num(c.submissions)} note={`${num(c.approved)} disetujui`} tint="#B794F6" />
+            <Kpi icon="users" label="Kreator" value={num(c.creators_joined)} tint="#E8B65A" />
+          </KpiGrid>
+          <Section title="Biaya">
+            <CostCard spent={c.spent} fee={c.platform_fee} feePct={c.fee_pct} total={c.total_cost} effectiveCpm={c.effective_cpm} cpm={c.cpm} />
+          </Section>
+        </>
       ) : null}
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Biaya &amp; CPM</Text>
-        <CostCard spent={c.spent} fee={c.platform_fee} feePct={c.fee_pct} total={c.total_cost} effectiveCpm={c.effective_cpm} cpm={c.cpm} />
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Funnel kreator</Text>
-        {funnel.map((f, i) => (
-          <View key={f.l} style={styles.funnelRow}>
-            <Text style={styles.funnelLabel}>{f.l}</Text>
-            <View style={styles.funnelTrack} {...web('track')}><View style={[styles.funnelFill, { width: `${Math.max((f.v / top) * 100, 2)}%` }]} {...web('seg-q')} /></View>
-            <Text style={styles.funnelValue}>{num(f.v)}</Text>
-            <Text style={styles.funnelPct}>{i && funnel[i - 1]!.v ? `${Math.round((f.v / funnel[i - 1]!.v) * 100)}%` : ''}</Text>
-          </View>
-        ))}
-      </View>
-
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Qualified views per hari</Text>
-        <Segmented options={RANGES} value={range} onChange={setRange} />
-        {!daily.data ? <SkeletonBlock width="100%" height={180} /> : gain > 0 ? (
-          <BarChart data={daily.data.map((x) => ({ key: x.day, value: x.qualified_gain, label: dayLabel(x.day) }))}
-            format={(v) => `+${compact(v)}`} summary={`${num(gain)} qualified views dalam ${range} hari`} />
-        ) : <Text style={styles.muted}>Belum ada qualified views dalam {range} hari terakhir.</Text>}
-      </View>
-
-      {platforms.length ? (
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Per platform</Text>
-          {platforms.map((p) => (
-            <View key={p.platform} style={styles.platRow}>
-              <Text style={styles.platName}>{platformLabel(p.platform as Platform)}</Text>
-              <Text style={styles.platMeta}>{p.approved} klip · {compact(p.qualified_views)} views</Text>
-              <Text style={styles.platSpend}>{idr(p.earned)}</Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
-
-      <View style={styles.section}>
-        <View style={styles.sectionHead}>
-          <Text style={styles.sectionTitle}>Klip terbaik</Text>
-          {clips.length ? <Pressable onPress={() => router.push({ pathname: '/brand-clips/[id]', params: { id } })} hitSlop={8} accessibilityRole="link">
-            <Text style={styles.more}>Pakai untuk iklan</Text>
-          </Pressable> : null}
-        </View>
-        {!clips.length ? <Text style={styles.muted}>Belum ada klip yang disetujui.</Text> : null}
-        {clips.slice(0, 5).map((k, i) => (
-          <Pressable key={k.submission_id} onPress={() => Linking.openURL(k.post_url).catch(() => {})} accessibilityRole="link"
-            style={({ pressed }) => [styles.clip, pressed && { opacity: 0.6 }]}>
-            <Text style={styles.rank}>{i + 1}</Text>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.clipTitle}>@{k.creator_username ?? 'kreator'} <Text style={styles.clipPlat}>· {platformLabel(k.platform as Platform)}</Text></Text>
-              <Text style={styles.cap}>{compact(k.qualified_views)} qualified dari {compact(k.raw_views)} views{k.pending_views ? ` · ${compact(k.pending_views)} menunggu verifikasi` : ''} · {dateLabel(k.published_at)}</Text>
-            </View>
-            <Text style={styles.platSpend}>{idr(k.spend)}</Text>
-            <Feather name="external-link" size={14} color={color.textMuted} />
+      {tab === 'subs' ? (
+        <Section title={`${num(q.data.subs.length)} video`} right={canExport && q.data.subs.length ? (
+          <Pressable onPress={exportCsv} style={({ pressed }) => [styles.export, pressed && { opacity: 0.7 }]} accessibilityRole="button">
+            <Feather name="download" size={14} color={color.text} /><Text style={styles.exportText}>CSV</Text>
           </Pressable>
-        ))}
-      </View>
+        ) : null}>
+          <Segmented options={FILTERS} value={filter} onChange={setFilter} />
+          {!subs.length ? <Text style={styles.muted}>Belum ada video.</Text> : null}
+          <View style={{ gap: space.sm }}>{subs.map((k) => <SubRow key={k.submission_id} k={k} />)}</View>
+        </Section>
+      ) : null}
+
+      {tab === 'stats' ? (
+        <>
+          <Section title="Views harian">
+            <View style={styles.box}>
+              <Segmented options={RANGES} value={range} onChange={setRange} />
+              {!daily.data ? <SkeletonBlock width="100%" height={180} /> : gain > 0 ? (
+                <>
+                  <Text style={styles.big}>+{compact(gain)} <Text style={styles.bigUnit}>views · {idr(daily.data.reduce((a, x) => a + x.spend, 0))}</Text></Text>
+                  <BarChart data={daily.data.map((x) => ({ key: x.day, value: x.qualified_gain, label: dayLabel(x.day) }))}
+                    format={(v) => `+${compact(v)}`} summary={`${num(gain)} views dalam ${range} hari`} />
+                </>
+              ) : <Text style={styles.muted}>Belum ada views baru.</Text>}
+            </View>
+          </Section>
+          <Section title="Validasi views">
+            <ViewsBreakdown raw={c.raw_views} qualified={c.qualified_views} pending={c.pending_views} excluded={c.excluded_views} />
+          </Section>
+          <Section title="Funnel">
+            <View style={styles.box}>
+              {funnel.map((f, i) => (
+                <View key={f.l} style={styles.funnelRow}>
+                  <Text style={styles.funnelLabel}>{f.l}</Text>
+                  <View style={styles.funnelTrack} {...web('track')}><View style={[styles.funnelFill, { width: `${Math.max((f.v / fmax) * 100, 2)}%` }]} {...web('seg-q')} /></View>
+                  <Text style={styles.funnelValue}>{num(f.v)}</Text>
+                  <Text style={styles.funnelPct}>{i === 2 && funnel[1]!.v ? `${Math.round((f.v / funnel[1]!.v) * 100)}%` : ''}</Text>
+                </View>
+              ))}
+            </View>
+          </Section>
+          {platforms.length ? (
+            <Section title="Per platform">
+              <View style={styles.box}>
+                {platforms.map((p, i) => (
+                  <View key={p.platform} style={[styles.platRow, i === platforms.length - 1 && { borderBottomWidth: 0 }]}>
+                    <Text style={styles.platName}>{platformLabel(p.platform as Platform)}</Text>
+                    <Text style={styles.platMeta}>{p.approved} video · {compact(p.qualified_views)} views</Text>
+                    <Text style={styles.platSpend}>{idr(p.earned)}</Text>
+                  </View>
+                ))}
+              </View>
+            </Section>
+          ) : null}
+          {tags.length ? <Section title="Hashtag"><HashtagReach stats={tags} /></Section> : null}
+        </>
+      ) : null}
+
+      {tab === 'clips' ? (
+        <Section title="Klip terbaik" right={top.length ? (
+          <Pressable onPress={() => router.push({ pathname: '/brand-clips/[id]', params: { id } })} hitSlop={8} accessibilityRole="link">
+            <Text style={styles.more}>Pakai untuk iklan</Text>
+          </Pressable>
+        ) : null}>
+          {!top.length ? <Text style={styles.muted}>Belum ada klip disetujui.</Text> : null}
+          <View style={{ gap: space.sm }}>
+            {top.slice(0, 10).map((k, i) => (
+              <Pressable key={k.submission_id} onPress={() => Linking.openURL(k.post_url).catch(() => {})} accessibilityRole="link"
+                style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
+                <Text style={[styles.rank, i < 3 && { color: color.link }]}>{i + 1}</Text>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text style={styles.rowTitle}>{handle(k)}</Text>
+                  <Text style={styles.cap}>{platformLabel(k.platform as Platform)} · {compact(k.qualified_views)} views</Text>
+                </View>
+                <Text style={styles.platSpend}>{idr(k.spend)}</Text>
+                <Feather name="arrow-up-right" size={15} color={color.textMuted} />
+              </Pressable>
+            ))}
+          </View>
+        </Section>
+      ) : null}
     </Screen>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return <View style={styles.stat}><Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text><Text style={styles.cap}>{label}</Text></View>;
+function SubRow({ k }: { k: Clip }) {
+  const s = CLIP_STATUS[k.status] ?? { label: k.status, tone: 'neutral' as const };
+  return (
+    <Pressable onPress={() => Linking.openURL(k.post_url).catch(() => {})} accessibilityRole="link" style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
+      <View style={styles.avatar}><Text style={styles.avatarText}>{(k.creator_username ?? 'k').charAt(0).toUpperCase()}</Text></View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.rowTitle} numberOfLines={1}>{handle(k)}</Text>
+        <Text style={styles.cap} numberOfLines={1}>{platformLabel(k.platform as Platform)} · {k.published_at ? dateLabel(k.published_at) : '—'}</Text>
+      </View>
+      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+        <StatusBadge label={s.label} tone={s.tone} />
+        <Text style={styles.cap}>{compact(k.raw_views)} views{k.spend ? ` · ${idr(k.spend)}` : ''}</Text>
+      </View>
+    </Pressable>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -161,33 +198,28 @@ const styles = StyleSheet.create({
   brand: { ...type.label, color: color.textSecondary },
   title: { ...type.title, color: color.text, marginTop: space.xs },
   meta: { ...type.caption, color: color.textMuted, marginTop: space.xs },
-  budgetCard: { marginTop: space.xl, ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md },
-  budgetTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' },
-  budgetValue: { ...type.metric, fontSize: 26, color: color.text },
-  budgetSide: { ...type.heading, color: color.success, fontVariant: ['tabular-nums'] },
-  track: { height: 8, borderRadius: 4, backgroundColor: color.surfaceRaised, overflow: 'hidden' },
-  fill: { height: 8, borderRadius: 4, backgroundColor: color.blue },
+  box: { ...card, borderRadius: radius.lg, padding: space.lg, gap: space.md },
+  big: { ...type.metric, fontSize: 24, color: color.text },
+  bigUnit: { ...type.caption, color: color.textMuted },
   cap: { ...type.caption, color: color.textMuted, fontVariant: ['tabular-nums'] },
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.lg },
-  stat: { flexGrow: 1, flexBasis: '45%', padding: space.lg, gap: 4, ...card, borderRadius: radius.lg },
-  statValue: { ...type.metric, fontSize: 20, lineHeight: 24, color: color.text },
-  section: { marginTop: space.xxl, gap: space.md },
-  sectionTitle: { ...type.heading, color: color.text },
-  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  muted: { ...type.body, color: color.textMuted },
   more: { ...type.label, color: color.link, fontSize: 14 },
+  export: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: space.md, paddingVertical: 7, borderRadius: radius.pill,
+    borderWidth: 1, borderColor: color.borderStrong },
+  exportText: { ...type.label, fontSize: 13, color: color.text },
   funnelRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
-  funnelLabel: { ...type.caption, color: color.textSecondary, width: 120 },
-  funnelTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: color.surface, overflow: 'hidden' },
+  funnelLabel: { ...type.caption, color: color.textSecondary, width: 84 },
+  funnelTrack: { flex: 1, height: 10, borderRadius: 5, backgroundColor: color.surfaceRaised, overflow: 'hidden' },
   funnelFill: { height: 10, borderRadius: 5, backgroundColor: color.blue },
   funnelValue: { ...type.label, color: color.text, width: 44, textAlign: 'right', fontVariant: ['tabular-nums'] },
   funnelPct: { ...type.caption, color: color.textMuted, width: 38, textAlign: 'right', fontVariant: ['tabular-nums'] },
-  muted: { ...type.body, color: color.textMuted },
-  platRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, borderBottomWidth: 1, borderBottomColor: color.border },
-  platName: { ...type.label, color: color.text, width: 90 },
+  platRow: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingBottom: space.md, borderBottomWidth: 1, borderBottomColor: color.border },
+  platName: { ...type.label, color: color.text, width: 84 },
   platMeta: { ...type.caption, color: color.textMuted, flex: 1 },
   platSpend: { ...type.label, color: color.text, fontVariant: ['tabular-nums'] },
-  clip: { flexDirection: 'row', alignItems: 'center', gap: space.md, paddingVertical: space.md, borderBottomWidth: 1, borderBottomColor: color.border },
-  rank: { ...type.heading, color: color.blueLight, width: 20, fontVariant: ['tabular-nums'] },
-  clipTitle: { ...type.label, color: color.text },
-  clipPlat: { ...type.caption, color: color.textMuted },
+  row: { flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.md, borderRadius: radius.lg, ...card },
+  rowTitle: { ...type.label, color: color.text },
+  rank: { ...type.heading, color: color.textMuted, width: 22, textAlign: 'center', fontVariant: ['tabular-nums'] },
+  avatar: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center', backgroundColor: color.surfaceRaised },
+  avatarText: { ...type.label, color: color.textSecondary },
 });

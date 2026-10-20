@@ -42,6 +42,24 @@ export async function fetchTopClips(campaignId: string): Promise<Clip[]> {
   if (error) throw error;
   return (data as Clip[]).map((c) => ({ ...c, raw_views: n(c.raw_views), qualified_views: n(c.qualified_views), spend: n(c.spend), pending_views: n(c.pending_views) }));
 }
+// Every clip in a campaign, any status, newest first (Submission tab + CSV export).
+export async function fetchBrandSubmissions(campaignId: string): Promise<Clip[]> {
+  const { data, error } = await supabase.rpc('brand_submissions', { p_campaign_id: campaignId });
+  if (error) throw error;
+  return (data as Clip[]).map((c) => ({ ...c, raw_views: n(c.raw_views), qualified_views: n(c.qualified_views), spend: n(c.spend), pending_views: n(c.pending_views) }));
+}
+export const CLIP_STATUS: Record<string, { label: string; tone: 'neutral' | 'blue' | 'success' | 'warning' | 'danger'; group: 'review' | 'ok' | 'no' }> = {
+  pending_review: { label: 'Direview', tone: 'warning', group: 'review' }, needs_changes: { label: 'Revisi', tone: 'warning', group: 'review' },
+  approved: { label: 'Disetujui', tone: 'success', group: 'ok' }, tracking: { label: 'Disetujui', tone: 'success', group: 'ok' },
+  completed: { label: 'Selesai', tone: 'blue', group: 'ok' }, rejected: { label: 'Ditolak', tone: 'danger', group: 'no' },
+  flagged: { label: 'Tidak wajar', tone: 'danger', group: 'no' },
+};
+
+// Budget top-ups and new campaigns are arranged privately with the account manager on WhatsApp.
+export const BRAND_WA = 'https://wa.me/6282329160953';
+export const waTopUp = (brand?: string, campaign?: string) =>
+  `${BRAND_WA}?text=${encodeURIComponent(`Halo TAPP, saya mau top up budget${campaign ? ` campaign "${campaign}"` : ''}${brand ? ` (${brand})` : ''}.`)}`;
+
 export async function setDailyReport(brandId: string, on: boolean) {
   const { error } = await supabase.rpc('set_brand_daily_report', { p_brand_id: brandId, p_on: on });
   if (error) throw error;

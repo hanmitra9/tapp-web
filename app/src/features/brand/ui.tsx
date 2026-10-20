@@ -1,0 +1,100 @@
+import Feather from '@expo/vector-icons/Feather';
+import { LinearGradient } from 'expo-linear-gradient';
+import type { ComponentProps, ReactNode } from 'react';
+import { Image, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { SkeletonBlock } from '@/components/Skeleton';
+import { idr } from '@/lib/format';
+import { color, gradient, radius, space, type, card } from '@/theme/tokens';
+
+type Icon = ComponentProps<typeof Feather>['name'];
+
+// Budget hero: what's left, what's spent, and the top-up route (WhatsApp, arranged privately).
+export function BudgetHero({ budget, spent, topUpUrl, second }: { budget: number | null; spent: number; topUpUrl: string; second?: { label: string; icon: Icon; onPress: () => void } }) {
+  const used = budget ? Math.min(1, spent / budget) : 0;
+  return (
+    <LinearGradient colors={gradient.card} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.hero} {...({ dataSet: { tapp: 'balance' } } as object)}>
+      <View style={styles.heroTop}>
+        <Text style={styles.heroLabel}>Sisa budget</Text>
+        <Image source={require('../../../assets/tapp-mark-white.png')} style={styles.heroMark} accessibilityIgnoresInvertColors />
+      </View>
+      {budget == null ? <View style={styles.heroSkeleton} /> : (
+        <Text style={styles.heroAmount} numberOfLines={1} adjustsFontSizeToFit>{idr(Math.max(budget - spent, 0))}</Text>
+      )}
+      <View style={styles.heroTrack}><View style={[styles.heroFill, { width: `${Math.max(used * 100, 1)}%` }]} /></View>
+      <View style={styles.heroRow}>
+        <Text style={styles.heroCap}>Terpakai {idr(spent)}</Text>
+        <Text style={styles.heroCap}>{Math.round(used * 100)}% dari {budget == null ? '—' : idr(budget)}</Text>
+      </View>
+      <View style={styles.heroBtns}>
+        <Pressable onPress={() => Linking.openURL(topUpUrl).catch(() => {})} style={({ pressed }) => [styles.heroBtn, styles.heroBtnSolid, pressed && { opacity: 0.85 }]} accessibilityRole="link">
+          <Feather name="plus" size={16} color="#0A2A4D" /><Text style={styles.heroBtnSolidText}>Top up</Text>
+        </Pressable>
+        {second ? (
+          <Pressable onPress={second.onPress} style={({ pressed }) => [styles.heroBtn, styles.heroBtnGlass, pressed && { opacity: 0.8 }]} accessibilityRole="button">
+            <Feather name={second.icon} size={16} color="#FFFFFF" /><Text style={styles.heroBtnGlassText}>{second.label}</Text>
+          </Pressable>
+        ) : null}
+      </View>
+    </LinearGradient>
+  );
+}
+
+// One KPI tile: icon, value, label, optional small note under it.
+export function Kpi({ icon, label, value, note, tint = color.link }: { icon: Icon; label: string; value: string | null; note?: string; tint?: string }) {
+  return (
+    <View style={styles.kpi}>
+      <View style={[styles.kpiIcon, { backgroundColor: tint + '1F' }]}><Feather name={icon} size={15} color={tint} /></View>
+      {value == null ? <SkeletonBlock width="60%" height={24} /> : <Text style={styles.kpiValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>}
+      <Text style={styles.kpiLabel} numberOfLines={1}>{label}</Text>
+      {note ? <Text style={styles.kpiNote} numberOfLines={1}>{note}</Text> : null}
+    </View>
+  );
+}
+export const KpiGrid = ({ children }: { children: ReactNode }) => <View style={styles.grid}>{children}</View>;
+
+export function Section({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <View style={styles.sectionHead}><Text style={styles.sectionTitle}>{title}</Text>{right}</View>
+      {children}
+    </View>
+  );
+}
+
+// CSV download (web). Native has no file save here, so the button is web-only.
+export const canExport = Platform.OS === 'web';
+export function downloadCsv(name: string, rows: (string | number)[][]) {
+  const esc = (v: string | number) => { const s = String(v ?? ''); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const blob = new Blob(['﻿' + rows.map((r) => r.map(esc).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = name; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+
+const styles = StyleSheet.create({
+  hero: { marginTop: space.xl, borderRadius: radius.xl, padding: space.xl, gap: space.md, overflow: 'hidden' },
+  heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  heroLabel: { ...type.caption, color: 'rgba(255,255,255,0.82)' },
+  heroMark: { width: 26, height: 26 },
+  heroAmount: { ...type.display, fontSize: 38, lineHeight: 44, color: '#FFFFFF', fontVariant: ['tabular-nums'] },
+  heroSkeleton: { height: 44, width: '60%', borderRadius: radius.sm, backgroundColor: 'rgba(255,255,255,0.12)' },
+  heroTrack: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.18)', overflow: 'hidden' },
+  heroFill: { height: 6, borderRadius: 3, backgroundColor: '#FFFFFF' },
+  heroRow: { flexDirection: 'row', justifyContent: 'space-between', gap: space.md },
+  heroCap: { ...type.caption, fontSize: 12, color: 'rgba(255,255,255,0.8)', fontVariant: ['tabular-nums'] },
+  heroBtns: { flexDirection: 'row', gap: space.sm, marginTop: space.xs },
+  heroBtn: { flex: 1, height: 46, borderRadius: radius.pill, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },
+  heroBtnSolid: { backgroundColor: '#FFFFFF' },
+  heroBtnSolidText: { ...type.label, color: '#0A2A4D' },
+  heroBtnGlass: { backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
+  heroBtnGlassText: { ...type.label, color: '#FFFFFF' },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.lg },
+  kpi: { flexGrow: 1, flexBasis: '45%', minWidth: 140, padding: space.lg, gap: 4, ...card, borderRadius: radius.lg },
+  kpiIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: space.xs },
+  kpiValue: { ...type.metric, fontSize: 22, lineHeight: 28, letterSpacing: -0.5, color: color.text },
+  kpiLabel: { ...type.caption, color: color.textMuted },
+  kpiNote: { ...type.caption, fontSize: 11, color: color.success },
+  section: { marginTop: space.xxl, gap: space.md },
+  sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.md },
+  sectionTitle: { ...type.heading, color: color.text },
+});
