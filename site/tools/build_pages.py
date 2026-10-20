@@ -22,7 +22,7 @@ def head(title, desc, path=''):
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TAPP">
 <meta property="og:locale" content="id_ID">
-<meta property="og:image" content="__SITE_URL__/assets/og-image.png?v=3">
+<meta property="og:image" content="__SITE_URL__/assets/og-image.png?v=4">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="__SITE_URL__/{path}">
