@@ -64,11 +64,11 @@ def page(root_html=''):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TAPP: Ubah clip jadi penghasilan nyata</title>
-<meta name="description" content="TAPP mempertemukan brand dan creator short-form. Creator dibayar untuk setiap 1.000 views yang lolos verifikasi, brand hanya membayar hasil yang terbukti.">
+<title>TAPP | Klipmu jadi cuan</title>
+<meta name="description" content="Ambil campaign brand, posting di akunmu, dibayar per 1.000 views yang lolos verifikasi. Brand hanya bayar hasil nyata.">
 <meta name="theme-color" content="#07070A">
-<meta property="og:title" content="TAPP: Ubah clip jadi penghasilan nyata">
-<meta property="og:description" content="Kerjakan campaign dari brand, posting di akunmu sendiri, dan dibayar dari views yang lolos verifikasi.">
+<meta property="og:title" content="TAPP | Klipmu jadi cuan">
+<meta property="og:description" content="Ambil campaign brand, posting di akunmu, dibayar per 1.000 views.">
 <link rel="icon" href="assets/tapp-mark.svg" type="image/svg+xml">
 <link rel="icon" href="assets/icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
@@ -76,7 +76,7 @@ def page(root_html=''):
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="TAPP">
 <meta property="og:locale" content="id_ID">
-<meta property="og:image" content="__SITE_URL__/assets/og-image.png">
+<meta property="og:image" content="__SITE_URL__/assets/og-image.png?v=2">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="__SITE_URL__/">
