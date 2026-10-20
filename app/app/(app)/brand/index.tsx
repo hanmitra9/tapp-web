@@ -11,9 +11,9 @@ import { compact, greeting, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { Freshness } from '@/features/brand/ReportParts';
-import { BudgetHero, Kpi, KpiGrid, Section } from '@/features/brand/ui';
+import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section } from '@/features/brand/ui';
 import { color, space, type, card, radius } from '@/theme/tokens';
-import { fetchBrandCampaigns, fetchBrandDaily, fetchMyBrands, totals, waTopUp } from '@/features/brand/api';
+import { fetchBrandCampaigns, fetchBrandDaily, fetchHashtagTotals, fetchMyBrands, totals, waTopUp } from '@/features/brand/api';
 import { BrandCampaignRow } from '@/features/brand/BrandCampaignRow';
 
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
@@ -23,8 +23,8 @@ const dayLabel = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString
 export default function BrandHome() {
   const [range, setRange] = useState('30');
   const q = useQuery(async () => {
-    const [brands, campaigns] = await Promise.all([fetchMyBrands(), fetchBrandCampaigns()]);
-    return { brands, campaigns, t: totals(campaigns), videos: campaigns.reduce((a, c) => a + c.submissions, 0),
+    const [brands, campaigns, tags] = await Promise.all([fetchMyBrands(), fetchBrandCampaigns(), fetchHashtagTotals().catch(() => null)]);
+    return { brands, campaigns, tags, t: totals(campaigns), videos: campaigns.reduce((a, c) => a + c.submissions, 0),
       cpm: campaigns.length ? Math.round(campaigns.reduce((a, c) => a + c.cpm, 0) / campaigns.length) : null };
   }, []);
   const daily = useQuery(() => fetchBrandDaily(null, Number(range)), [range]);
@@ -52,6 +52,7 @@ export default function BrandHome() {
         <Kpi icon="film" label="Video masuk" value={d ? num(d.videos) : null} tint="#B794F6" />
         <Kpi icon="users" label="Kreator" value={d ? num(d.t.creators) : null} tint="#E8B65A" />
       </KpiGrid>
+      {d?.tags ? <HashtagTile {...d.tags} /> : null}
 
       <Section title="Views harian">
         <View style={styles.chartCard}>
