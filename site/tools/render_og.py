@@ -7,48 +7,34 @@ ROOT = pathlib.Path(__file__).resolve().parents[1]
 ASSETS = ROOT / 'assets'
 def data(rel, mime):   # inline every asset: a page set from a string can't load file:// URLs
     return f'data:{mime};base64,' + base64.b64encode((ASSETS / rel).read_bytes()).decode()
-IT, G, MARK = data('fonts/InterTight-Variable.woff2', 'font/woff2'), data('fonts/Geist-Variable.woff2', 'font/woff2'), data('tapp-mark.svg', 'image/svg+xml')
+MARK = data('tapp-mark.svg', 'image/svg+xml')
 
+# Cover: a deep blue gradient with the TAPP "T" in 3D at the centre (extruded layers, lit face, soft glow and floor shadow).
+LAYERS = 22
+EXTRUDE = ''.join(
+    f'<div class="t" style="transform:translate({-i*0.9:.1f}px,{i*1.15:.1f}px);background:linear-gradient(160deg,#1B3FB8,#0B1E6E {40 + i}%,#061048)"></div>'
+    for i in range(LAYERS, 0, -1))
 HTML = f'''<!doctype html><html><head><meta charset="utf-8"><style>
-@font-face{{font-family:IT;src:url({IT}) format("woff2");font-weight:100 900}}
-@font-face{{font-family:G;src:url({G}) format("woff2");font-weight:100 900}}
 *{{margin:0;box-sizing:border-box}}
-body{{width:1200px;height:630px;overflow:hidden;background:#05070F;font-family:G;color:#fff;position:relative}}
-.bg{{position:absolute;inset:0;background:
-  radial-gradient(620px 520px at 905px 300px,rgba(46,98,255,.55),rgba(20,50,170,.18) 45%,transparent 70%),
-  radial-gradient(500px 300px at 120px 640px,rgba(12,101,196,.35),transparent 70%),
-  linear-gradient(180deg,#070A16,#04050B)}}
-.grid{{position:absolute;inset:0;background-image:linear-gradient(rgba(140,170,255,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(140,170,255,.06) 1px,transparent 1px);
-  background-size:44px 44px;-webkit-mask-image:radial-gradient(ellipse 70% 80% at 75% 50%,#000 20%,transparent 75%)}}
-.left{{position:absolute;left:84px;top:72px;width:620px}}
-.brand{{display:flex;align-items:center;gap:14px;font-family:IT;font-weight:700;font-size:34px;letter-spacing:-.5px}}
-.brand img{{width:42px;height:42px}}
-h1{{font-family:IT;font-weight:700;font-size:92px;line-height:94px;letter-spacing:-3.5px;margin-top:70px}}
-h1 span{{background:linear-gradient(90deg,#9CC3FF,#5B7CFF 55%,#7B6CFF);-webkit-background-clip:text;color:transparent}}
-p{{font-size:27px;line-height:38px;color:rgba(214,224,255,.72);margin-top:26px;max-width:560px}}
-.pills{{display:flex;gap:12px;margin-top:40px}}
-.pill{{padding:11px 18px;border-radius:999px;font-size:19px;font-weight:600;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.14);color:#E4EAFF}}
-.mark{{position:absolute;right:120px;top:120px;width:380px;height:380px;filter:drop-shadow(0 0 60px rgba(70,110,255,.9)) drop-shadow(0 0 14px rgba(150,180,255,.8))}}
-.ring{{position:absolute;right:58px;top:58px;width:504px;height:504px;border-radius:50%;border:1px solid rgba(140,170,255,.22);box-shadow:inset 0 0 80px rgba(60,100,255,.15)}}
-.ring.r2{{right:118px;top:118px;width:384px;height:384px;border-color:rgba(140,170,255,.12)}}
-.card{{position:absolute;padding:16px 20px;border-radius:18px;background:rgba(12,16,32,.82);border:1px solid rgba(160,185,255,.22);
-  box-shadow:0 20px 50px -20px rgba(0,0,0,.9);backdrop-filter:blur(8px);display:flex;align-items:center;gap:14px}}
-.ico{{width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700}}
-.k{{font-size:15px;color:rgba(214,224,255,.6)}} .v{{font-family:IT;font-size:26px;font-weight:700;letter-spacing:-.5px}}
+body{{width:1200px;height:630px;overflow:hidden;position:relative;
+  background:radial-gradient(900px 600px at 50% 38%,#2F6BFF 0%,#1446D6 30%,#0A2A8F 58%,#051347 82%,#030A26 100%)}}
+.sheen{{position:absolute;inset:0;background:radial-gradient(600px 260px at 50% 0%,rgba(170,205,255,.35),transparent 70%)}}
+.vig{{position:absolute;inset:0;background:radial-gradient(ellipse 75% 75% at 50% 45%,transparent 55%,rgba(2,6,24,.65))}}
+.floor{{position:absolute;left:50%;top:478px;width:420px;height:60px;margin-left:-210px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(2,8,40,.75),transparent);filter:blur(6px)}}
+.wrap{{position:absolute;left:50%;top:50%;width:340px;height:340px;margin:-196px 0 0 -170px;
+  transform:perspective(1200px) rotateY(-18deg) rotateX(8deg)}}
+.t{{position:absolute;inset:0;-webkit-mask:url({MARK}) center/contain no-repeat;mask:url({MARK}) center/contain no-repeat}}
+.face{{background:linear-gradient(150deg,#E8F0FF 0%,#8FB4FF 28%,#4C7DFF 55%,#2A55E8 80%,#1D3FC4 100%);
+  filter:drop-shadow(0 0 30px rgba(120,170,255,.55))}}
+.gloss{{background:linear-gradient(115deg,rgba(255,255,255,.75) 0%,rgba(255,255,255,.15) 35%,transparent 50%);mix-blend-mode:screen}}
+.rim{{background:linear-gradient(180deg,rgba(255,255,255,.9),rgba(255,255,255,0) 18%);opacity:.35}}
+.glow{{position:absolute;left:50%;top:50%;width:620px;height:620px;margin:-330px 0 0 -310px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(110,160,255,.45),transparent 70%);filter:blur(10px)}}
 </style></head><body>
-<div class="bg"></div><div class="grid"></div>
-<div class="ring"></div><div class="ring r2"></div>
-<img class="mark" src="{MARK}">
-<div class="card" style="right:430px;top:96px"><div class="ico" style="background:rgba(52,208,122,.16);color:#34D07A">+</div>
-  <div><div class="k">Saldo masuk</div><div class="v" style="color:#5BE39A">Rp930.000</div></div></div>
-<div class="card" style="right:70px;bottom:78px"><div class="ico" style="background:rgba(91,124,255,.18);color:#9DB4FF">▶</div>
-  <div><div class="k">Qualified views</div><div class="v">1,2 jt</div></div></div>
-<div class="left">
-  <div class="brand"><img src="{MARK}">TAPP</div>
-  <h1>Klipmu<br><span>jadi cuan.</span></h1>
-  <p>Ambil campaign brand, posting di akunmu, dibayar per 1.000 views.</p>
-  <div class="pills"><span class="pill">Cair mulai Rp50rb</span><span class="pill">Bonus rank s/d 15%</span></div>
-</div>
+<div class="sheen"></div><div class="glow"></div><div class="floor"></div>
+<div class="wrap">{EXTRUDE}<div class="t face"></div><div class="t gloss"></div><div class="t rim"></div></div>
+<div class="vig"></div>
 </body></html>'''
 
 with sync_playwright() as p:
