@@ -9,11 +9,8 @@ import { color, radius, space, type, card } from '@/theme/tokens';
 export function Freshness({ metricsAt, qualifiedAt, refreshedAt }: { metricsAt: string | null; qualifiedAt: string | null; refreshedAt: number }) {
   const [, tick] = useState(0);
   useEffect(() => { const t = setInterval(() => tick((x) => x + 1), 30_000); return () => clearInterval(t); }, []);
-  const parts = [
-    metricsAt ? `Views terakhir masuk ${ago(metricsAt)}` : 'Belum ada data views',
-    qualifiedAt ? `verifikasi terakhir ${ago(qualifiedAt)}` : null,
-    `halaman diperbarui otomatis (${ago(new Date(refreshedAt).toISOString())})`,
-  ].filter(Boolean);
+  void qualifiedAt; void refreshedAt;   // the page refreshes itself; one line on data age is enough
+  const parts = ['Live', metricsAt ? `views update ${ago(metricsAt)}` : 'belum ada data views'];
   return (
     <View style={styles.fresh} accessibilityRole="text">
       <View style={styles.dot} />
@@ -26,14 +23,14 @@ export function Freshness({ metricsAt, qualifiedAt, refreshedAt }: { metricsAt: 
 export function ViewsBreakdown({ raw, qualified, pending, excluded }: { raw: number; qualified: number; pending: number; excluded: number }) {
   const total = Math.max(raw, qualified + pending + excluded, 1);
   const seg = [
-    { k: 'Qualified (dibayar)', v: qualified, t: 'seg-q', c: color.blue, note: 'Lolos verifikasi tim TAPP. Hanya ini yang ditagih.' },
-    { k: 'Menunggu verifikasi', v: pending, t: 'seg-p', c: '#E8B65A', note: 'Views baru yang masuk setelah verifikasi terakhir. Akan diputuskan tim TAPP.' },
-    { k: 'Tidak dihitung', v: excluded, t: 'seg-x', c: color.borderStrong, note: 'Di bawah minimum views, di atas batas per klip, klip ditolak, atau aktivitas tidak wajar (bot/lonjakan).' },
+    { k: 'Qualified (dibayar)', v: qualified, t: 'seg-q', c: color.blue, note: 'Lolos verifikasi. Hanya ini yang ditagih.' },
+    { k: 'Menunggu verifikasi', v: pending, t: 'seg-p', c: '#E8B65A', note: 'Masuk setelah verifikasi terakhir.' },
+    { k: 'Tidak dihitung', v: excluded, t: 'seg-x', c: color.borderStrong, note: 'Di bawah minimum, ditolak, atau tidak wajar (bot).' },
   ];
   return (
     <View style={styles.card}>
       <View style={styles.cardHead}>
-        <Text style={styles.cap}>Views mentah dari platform</Text>
+        <Text style={styles.cap}>Views mentah</Text>
         <Text style={styles.big}>{num(raw)}</Text>
       </View>
       <View style={styles.bar} {...web('track')}>
@@ -65,24 +62,24 @@ export function CostCard({ spent, fee, feePct, total, effectiveCpm, cpm }: { spe
         <Text style={styles.cap}>Total biaya</Text>
         <Text style={styles.big}>{idr(total)}</Text>
       </View>
-      <Row label="Qualified views × harga all-in per 1.000" value={idr(spent)} />
-      {feePct > 0 ? <Row label={`Fee kerjasama (${num(feePct)}% dari biaya views)`} value={idr(fee)} /> : null}
+      <Row label="Biaya views" value={idr(spent)} />
+      {feePct > 0 ? <Row label={`Fee kerjasama ${num(feePct)}%`} value={idr(fee)} /> : null}
       <View style={styles.cpmRow}>
         <View style={styles.cpmBox}>
           <Text style={styles.cap}>Effective CPM</Text>
           <Text style={[styles.cpmValue, { color: color.success }]}>{effectiveCpm == null ? '—' : idr(effectiveCpm)}</Text>
-          <Text style={styles.cap}>biaya per 1.000 views mentah</Text>
+          <Text style={styles.cap}>per 1K views mentah</Text>
         </View>
         {cpm ? (
           <View style={styles.cpmBox}>
-            <Text style={styles.cap}>CPM campaign</Text>
+            <Text style={styles.cap}>CPM asli</Text>
             <Text style={styles.cpmValue}>{idr(cpm)}</Text>
-            <Text style={styles.cap}>per 1.000 qualified views</Text>
+            <Text style={styles.cap}>per 1K views lolos</Text>
           </View>
         ) : null}
       </View>
       {saving != null && saving > 0 ? (
-        <Text style={styles.cap}>Setiap 1.000 views yang dihasilkan campaign ini rata-rata hanya berbiaya {idr(effectiveCpm!)}, {saving}% di bawah CPM yang disepakati, karena views yang tidak lolos tidak dibayar.</Text>
+        <Text style={styles.cap}>{saving}% lebih hemat dari CPM asli. Views tidak lolos tidak dibayar.</Text>
       ) : null}
     </View>
   );
@@ -126,11 +123,11 @@ export function HashtagReach({ stats }: { stats: HashtagStat[] }) {
       </View>
       <View style={styles.legendRow}>
         <View style={{ flex: 1, gap: 2 }}>
-          <Text style={styles.legendTitle}>{num(last.video_count)} video memakai hashtag ini</Text>
+          <Text style={styles.legendTitle}>{num(last.video_count)} video</Text>
           <Text style={styles.cap}>{grow(first.video_count, last.video_count) ? `${grow(first.video_count, last.video_count)} video` : 'Belum ada tambahan video'}{grow(first.view_count, last.view_count) ? ` · ${grow(first.view_count, last.view_count)} views` : ''} sejak dicatat {dateLabel(first.captured_at)}</Text>
         </View>
       </View>
-      <Text style={styles.cap}>Angka dari TikTok untuk semua video yang memakai hashtag ini, termasuk di luar TAPP. Diperbarui tiap 6 jam, terakhir {dateLabel(last.captured_at)}.</Text>
+      <Text style={styles.cap}>Data TikTok, semua video dengan hashtag ini. Update tiap 6 jam.</Text>
     </View>
   );
 }

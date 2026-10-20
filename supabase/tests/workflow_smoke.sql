@@ -294,6 +294,8 @@ select set_brand_daily_report('10000000-0000-0000-0000-000000000001', true);
 select sum(qualified_gain) as q, sum(spend) as spend from brand_daily(null, 30, 'Asia/Makassar');
 select creator_username, qualified_views, spend from brand_top_clips('20000000-0000-0000-0000-000000000001');
 select pg_temp.expect_error($$select brand_top_clips(gen_random_uuid())$$, 'forbidden');
+select count(*) as brand_subs, count(*) filter (where status = 'pending_review') as pending from brand_submissions('20000000-0000-0000-0000-000000000001');
+select pg_temp.expect_error($$select brand_submissions(gen_random_uuid())$$, 'forbidden');
 select pg_temp.expect_error($$select join_campaign('20000000-0000-0000-0000-000000000003')$$, 'creator_not_eligible');
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select count(*) as creator_sees_brand_campaigns_expect_0 from brand_campaigns();
