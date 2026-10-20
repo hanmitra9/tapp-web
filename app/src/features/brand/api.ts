@@ -95,6 +95,18 @@ export const cpvLabel = (v: number | null) => (v == null ? '—' : `Rp${v.toLoca
 
 // Campaign hashtag reach on TikTok (migration 0043): one row per reading, oldest first.
 export type HashtagStat = { hashtag: string; platform: string; video_count: number; view_count: number; captured_at: string };
+// Latest hashtag reading per campaign, summed: total TikTok views/videos on the brand's campaign hashtags.
+export async function fetchHashtagTotals(): Promise<{ views: number; videos: number; tags: string[] } | null> {
+  const { data } = await supabase.from('campaign_hashtag_stats').select('campaign_id, hashtag, video_count, view_count, captured_at')
+    .order('captured_at', { ascending: false }).limit(1000);
+  const seen = new Set<string>(), out = { views: 0, videos: 0, tags: [] as string[] };
+  for (const r of (data ?? []) as (HashtagStat & { campaign_id: string })[]) {
+    if (seen.has(r.campaign_id)) continue;
+    seen.add(r.campaign_id); out.views += n(r.view_count); out.videos += n(r.video_count);
+    if (!out.tags.includes(r.hashtag)) out.tags.push(r.hashtag);
+  }
+  return seen.size ? out : null;
+}
 export async function fetchHashtagStats(campaignId: string): Promise<HashtagStat[]> {
   const { data } = await supabase.from('campaign_hashtag_stats').select('hashtag, platform, video_count, view_count, captured_at').eq('campaign_id', campaignId).order('captured_at');
   return ((data ?? []) as HashtagStat[]).map((r) => ({ ...r, video_count: Number(r.video_count), view_count: Number(r.view_count) }));

@@ -3,7 +3,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import type { ComponentProps, ReactNode } from 'react';
 import { Image, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SkeletonBlock } from '@/components/Skeleton';
-import { idr } from '@/lib/format';
+import { compact, idr } from '@/lib/format';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 
 type Icon = ComponentProps<typeof Feather>['name'];
@@ -47,6 +47,19 @@ export function Kpi({ icon, label, value, note, tint = color.link }: { icon: Ico
       {value == null ? <SkeletonBlock width="60%" height={24} /> : <Text style={styles.kpiValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>}
       <Text style={styles.kpiLabel} numberOfLines={1}>{label}</Text>
       {note ? <Text style={styles.kpiNote} numberOfLines={1}>{note}</Text> : null}
+    </View>
+  );
+}
+// Hashtag reach banner: TikTok's own total for the campaign hashtag(s), including videos outside TAPP.
+export function HashtagTile({ views, videos, tags }: { views: number; videos: number; tags: string[] }) {
+  return (
+    <View style={styles.tag}>
+      <View style={styles.tagIcon}><Feather name="hash" size={18} color="#FF4D8D" /></View>
+      <View style={{ flex: 1, gap: 2 }}>
+        <Text style={styles.kpiLabel} numberOfLines={1}>Views hashtag TikTok · {tags.map((t) => `#${t}`).join(' ')}</Text>
+        <Text style={styles.tagValue} numberOfLines={1} adjustsFontSizeToFit>{compact(views)} views</Text>
+        <Text style={styles.kpiLabel}>{compact(videos)} video memakai hashtag</Text>
+      </View>
     </View>
   );
 }
@@ -94,6 +107,10 @@ const styles = StyleSheet.create({
   kpiValue: { ...type.metric, fontSize: 22, lineHeight: 28, letterSpacing: -0.5, color: color.text },
   kpiLabel: { ...type.caption, color: color.textMuted },
   kpiNote: { ...type.caption, fontSize: 11, color: color.success },
+  tag: { marginTop: space.sm, flexDirection: 'row', alignItems: 'center', gap: space.md, padding: space.lg, ...card, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: 'rgba(255,77,141,0.22)' },
+  tagIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,77,141,0.12)' },
+  tagValue: { ...type.metric, fontSize: 24, lineHeight: 30, letterSpacing: -0.5, color: color.text },
   section: { marginTop: space.xxl, gap: space.md },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.md },
   sectionTitle: { ...type.heading, color: color.text },

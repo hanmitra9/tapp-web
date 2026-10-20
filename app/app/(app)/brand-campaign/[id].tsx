@@ -13,7 +13,7 @@ import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { CostCard, Freshness, HashtagReach, ViewsBreakdown } from '@/features/brand/ReportParts';
-import { BudgetHero, Kpi, KpiGrid, Section, canExport, downloadCsv } from '@/features/brand/ui';
+import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section, canExport, downloadCsv } from '@/features/brand/ui';
 import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BRAND_STATUS, CLIP_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchBrandSubmissions, fetchHashtagStats, fetchPlatformBreakdown,
@@ -85,6 +85,7 @@ export default function BrandCampaignReport() {
             <Kpi icon="film" label="Video masuk" value={num(c.submissions)} note={`${num(c.approved)} disetujui`} tint="#B794F6" />
             <Kpi icon="users" label="Kreator" value={num(c.creators_joined)} tint="#E8B65A" />
           </KpiGrid>
+          {tags.length ? <HashtagTile views={tags.at(-1)!.view_count} videos={tags.at(-1)!.video_count} tags={[tags.at(-1)!.hashtag]} /> : null}
           <Section title="Biaya">
             <CostCard spent={c.spent} fee={c.platform_fee} feePct={c.fee_pct} total={c.total_cost} effectiveCpm={c.effective_cpm} cpm={c.cpm} />
           </Section>
