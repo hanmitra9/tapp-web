@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { DesktopSidebar, SideMenuProvider } from '@/components/SideMenu';
+import { BrandSidebar, DesktopSidebar, SideMenuProvider } from '@/components/SideMenu';
 import { View } from 'react-native';
 import { useLayout } from '@/lib/useLayout';
 import { useEffect } from 'react';
@@ -27,6 +27,7 @@ export default function AppLayout() {
     <SideMenuProvider>
     <View style={{ flex: 1, flexDirection: 'row' }}>
     {creator && isWide ? <DesktopSidebar /> : null}
+    {isBrand && isWide ? <BrandSidebar /> : null}
     <View style={{ flex: 1 }}>
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: color.canvas } }}>
       <Stack.Protected guard={isBrand}>

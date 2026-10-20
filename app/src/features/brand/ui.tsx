@@ -84,6 +84,32 @@ export function downloadCsv(name: string, rows: (string | number)[][]) {
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 }
 
+// PDF report (web): a print-ready page in a new tab; the browser's print dialog saves it as PDF.
+const esc = (s: string | number) => String(s).replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!);
+export type PdfReport = { title: string; subtitle: string; kpis: [string, string][]; tables: { title: string; head: string[]; rows: (string | number)[][] }[] };
+export function printReport(r: PdfReport) {
+  const w = window.open('', '_blank');
+  if (!w) return;
+  const table = (t: PdfReport['tables'][number]) => `<h2>${esc(t.title)}</h2><table><thead><tr>${t.head.map((h) => `<th>${esc(h)}</th>`).join('')}</tr></thead>
+    <tbody>${t.rows.map((row) => `<tr>${row.map((v) => `<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${esc(r.title)}</title><style>
+    *{box-sizing:border-box}body{font:13px/1.45 -apple-system,Segoe UI,Inter,Arial,sans-serif;color:#0B1220;margin:32px}
+    header{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #0C65C4;padding-bottom:12px}
+    .logo{font-weight:800;font-size:20px;color:#0C65C4;letter-spacing:-.5px}h1{font-size:22px;margin:16px 0 2px}.sub{color:#5B6475}
+    .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:18px 0}.k{border:1px solid #E3E8F0;border-radius:10px;padding:10px 12px}
+    .k b{display:block;font-size:17px}.k span{color:#5B6475;font-size:11px}h2{font-size:15px;margin:22px 0 8px}
+    table{width:100%;border-collapse:collapse;font-size:11.5px}th{text-align:left;background:#F1F5FB;color:#334155;font-weight:600}
+    th,td{padding:6px 8px;border-bottom:1px solid #E8EDF4}tr{page-break-inside:avoid}footer{margin-top:24px;color:#8A93A3;font-size:11px}
+    @page{margin:14mm}</style></head><body>
+    <header><div class="logo">TAPP</div><div class="sub">Laporan campaign · ${esc(new Date().toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' }))}</div></header>
+    <h1>${esc(r.title)}</h1><div class="sub">${esc(r.subtitle)}</div>
+    <div class="kpis">${r.kpis.map(([l, v]) => `<div class="k"><b>${esc(v)}</b><span>${esc(l)}</span></div>`).join('')}</div>
+    ${r.tables.filter((t) => t.rows.length).map(table).join('')}
+    <footer>Hanya views yang lolos verifikasi yang ditagih. tappcreators.com</footer>
+    <script>window.onload=()=>setTimeout(()=>window.print(),300)</script></body></html>`);
+  w.document.close();
+}
+
 const styles = StyleSheet.create({
   hero: { marginTop: space.xl, borderRadius: radius.xl, padding: space.xl, gap: space.md, overflow: 'hidden' },
   heroTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

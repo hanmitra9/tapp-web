@@ -13,7 +13,7 @@ import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { CostCard, Freshness, HashtagReach, ViewsBreakdown } from '@/features/brand/ReportParts';
-import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section, canExport, downloadCsv } from '@/features/brand/ui';
+import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section, canExport, downloadCsv, printReport } from '@/features/brand/ui';
 import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BRAND_STATUS, CLIP_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchBrandSubmissions, fetchHashtagStats, fetchPlatformBreakdown,
@@ -52,6 +52,23 @@ export default function BrandCampaignReport() {
   const fmax = Math.max(1, ...funnel.map((f) => f.v));
   const saving = c.effective_cpm != null && c.cpm ? Math.round((1 - c.effective_cpm / c.cpm) * 100) : null;
 
+  function exportPdf() {
+    const all = q.data!.subs;
+    printReport({
+      title: c.title, subtitle: `${c.brand_name} · ${idr(c.cpm)} / 1K views · ${st.label}`,
+      kpis: [['Views terverifikasi', num(c.qualified_views)], ['Views mentah', num(c.raw_views)], ['Effective CPM', c.effective_cpm == null ? '—' : idr(c.effective_cpm)],
+        ['CPM asli', idr(c.cpm)], ['Budget', idr(c.budget)], ['Terpakai', idr(c.spent)], ['Total biaya', idr(c.total_cost)], ['Sisa budget', idr(c.remaining)],
+        ['Video masuk', num(c.submissions)], ['Disetujui', num(c.approved)], ['Kreator', num(c.creators_joined)],
+        ['Views hashtag', tags.length ? num(tags.at(-1)!.view_count) : '—']],
+      tables: [
+        { title: 'Per platform', head: ['Platform', 'Video', 'Views', 'Biaya'], rows: platforms.map((p) => [platformLabel(p.platform as Platform), p.approved, num(p.qualified_views), idr(p.earned)]) },
+        { title: 'Klip terbaik', head: ['#', 'Kreator', 'Platform', 'Views lolos', 'Biaya'], rows: top.slice(0, 10).map((k, i) => [i + 1, handle(k), platformLabel(k.platform as Platform), num(k.qualified_views), idr(k.spend)]) },
+        { title: `Semua video (${all.length})`, head: ['Kreator', 'Platform', 'Status', 'Tanggal', 'Views', 'Lolos', 'Biaya'],
+          rows: all.map((k) => [handle(k), platformLabel(k.platform as Platform), CLIP_STATUS[k.status]?.label ?? k.status, k.published_at ? dateLabel(k.published_at) : '—', num(k.raw_views), num(k.qualified_views), idr(k.spend)]) },
+      ],
+    });
+  }
+
   function exportCsv() {
     downloadCsv(`${c.title.replace(/[^\w-]+/g, '_')}_submission.csv`, [
       ['Kreator', 'Platform', 'Link', 'Status', 'Tanggal posting', 'Views', 'Views lolos', 'Biaya (Rp)'],
@@ -71,6 +88,16 @@ export default function BrandCampaignReport() {
       <Text style={styles.meta}>{idr(c.cpm)} / 1K views · {c.platforms.map((p) => platformLabel(p as Platform)).join(', ')}
         {c.submission_deadline ? ` · s/d ${dateLabel(c.submission_deadline)}` : ''}</Text>
       <Freshness metricsAt={c.last_metrics_at} qualifiedAt={c.last_qualified_at} refreshedAt={refreshedAt} />
+      {canExport ? (
+        <View style={styles.exportRow}>
+          <Pressable onPress={exportPdf} style={({ pressed }) => [styles.export, pressed && { opacity: 0.7 }]} accessibilityRole="button">
+            <Feather name="file-text" size={14} color={color.text} /><Text style={styles.exportText}>PDF</Text>
+          </Pressable>
+          <Pressable onPress={exportCsv} style={({ pressed }) => [styles.export, pressed && { opacity: 0.7 }]} accessibilityRole="button">
+            <Feather name="download" size={14} color={color.text} /><Text style={styles.exportText}>CSV</Text>
+          </Pressable>
+        </View>
+      ) : null}
 
       <View style={{ marginTop: space.lg }}><Segmented options={TABS} value={tab} onChange={setTab} /></View>
 
@@ -93,11 +120,7 @@ export default function BrandCampaignReport() {
       ) : null}
 
       {tab === 'subs' ? (
-        <Section title={`${num(q.data.subs.length)} video`} right={canExport && q.data.subs.length ? (
-          <Pressable onPress={exportCsv} style={({ pressed }) => [styles.export, pressed && { opacity: 0.7 }]} accessibilityRole="button">
-            <Feather name="download" size={14} color={color.text} /><Text style={styles.exportText}>CSV</Text>
-          </Pressable>
-        ) : null}>
+        <Section title={`${num(q.data.subs.length)} video`}>
           <Segmented options={FILTERS} value={filter} onChange={setFilter} />
           {!subs.length ? <Text style={styles.muted}>Belum ada video.</Text> : null}
           <View style={{ gap: space.sm }}>{subs.map((k) => <SubRow key={k.submission_id} k={k} />)}</View>
@@ -205,6 +228,7 @@ const styles = StyleSheet.create({
   cap: { ...type.caption, color: color.textMuted, fontVariant: ['tabular-nums'] },
   muted: { ...type.body, color: color.textMuted },
   more: { ...type.label, color: color.link, fontSize: 14 },
+  exportRow: { flexDirection: 'row', gap: space.sm, marginTop: space.md },
   export: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: space.md, paddingVertical: 7, borderRadius: radius.pill,
     borderWidth: 1, borderColor: color.borderStrong },
   exportText: { ...type.label, fontSize: 13, color: color.text },

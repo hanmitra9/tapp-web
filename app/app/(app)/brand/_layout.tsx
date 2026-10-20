@@ -1,7 +1,6 @@
 import Feather from '@expo/vector-icons/Feather';
 import { Tabs } from 'expo-router';
 import type { ComponentProps } from 'react';
-import { WebSidebar } from '@/components/WebSidebar';
 import { tabChrome } from '@/components/tabChrome';
 import { useLayout } from '@/lib/useLayout';
 import { color } from '@/theme/tokens';
@@ -9,12 +8,12 @@ import { color } from '@/theme/tokens';
 type Icon = ComponentProps<typeof Feather>['name'];
 const icon = (name: Icon) => ({ color: c }: { color: string }) => <Feather name={name} color={c} size={21} />;
 
-// Brand home: same shell as the creator app, three read-only destinations.
+// Brand home: three read-only destinations. Desktop uses BrandSidebar (app layout); phones keep the bottom tabs.
 export default function BrandTabs() {
   const { isWide } = useLayout();
   return (
     <Tabs
-      tabBar={isWide ? (props) => <WebSidebar {...props} product="TAPP for Brands" /> : undefined}
+      tabBar={isWide ? () => null : undefined}
       screenOptions={{
         headerShown: false,
         tabBarPosition: isWide ? 'left' : 'bottom',

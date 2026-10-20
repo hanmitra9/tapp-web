@@ -7,6 +7,7 @@ import { useLayout } from '@/lib/useLayout';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchMyCampaigns, type MyCampaign } from '@/features/campaigns/api';
 import { unreadCount } from '@/features/notifications/api';
+import { BRAND_STATUS, BRAND_WA, fetchBrandCampaigns, waTopUp, type BrandCampaign } from '@/features/brand/api';
 import { color, radius, space, type } from '@/theme/tokens';
 
 type Icon = ComponentProps<typeof Feather>['name'];
@@ -76,6 +77,74 @@ export function DesktopSidebar() {
         <Text style={styles.brand}>TAPP</Text>
       </Pressable>
       <MenuBody run={(then) => then?.()} />
+    </View>
+  );
+}
+
+// Desktop brand portal: same sidebar look, brand destinations, campaigns, and the account manager on WhatsApp.
+export function BrandSidebar() {
+  const { signOut } = useAuth();
+  const path = usePathname();
+  const [campaigns, setCampaigns] = useState<BrandCampaign[]>([]);
+  useEffect(() => { fetchBrandCampaigns().then(setCampaigns).catch(() => {}); }, []);
+  const item = (icon: Icon, label: string, to: string) => {
+    const on = path === to || (to === '/brand' && path === '/brand/index');
+    return (
+      <Pressable key={to} onPress={() => router.navigate(to as never)} accessibilityRole="menuitem" accessibilityState={{ selected: on }}
+        style={({ pressed }) => [styles.item, on && styles.itemOn, pressed && !on && { backgroundColor: 'rgba(255,255,255,0.04)' }]}>
+        <Feather name={icon} size={20} color={on ? color.text : color.textSecondary} />
+        <Text style={[styles.itemText, on && { color: color.text }]}>{label}</Text>
+      </Pressable>
+    );
+  };
+  const link = (icon: Icon, label: string, url: string) => (
+    <Pressable key={label} onPress={() => void Linking.openURL(url)} accessibilityRole="link" style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}>
+      <Feather name={icon} size={20} color={color.textSecondary} />
+      <Text style={styles.itemText}>{label}</Text>
+    </Pressable>
+  );
+  return (
+    <View style={styles.desk} accessibilityRole="menu">
+      <Pressable onPress={() => router.navigate('/brand')} style={styles.head} accessibilityRole="link" accessibilityLabel="TAPP for Brands">
+        <Image source={require('../../assets/tapp-logo.png')} style={styles.logo} accessibilityIgnoresInvertColors />
+        <Text style={styles.brand}>TAPP</Text>
+        <Text style={styles.forBrands}>Brand</Text>
+      </Pressable>
+      <ScrollView contentContainerStyle={styles.body} showsVerticalScrollIndicator={false}>
+        {item('pie-chart', 'Ringkasan', '/brand')}
+        {item('layers', 'Campaign', '/brand/campaigns')}
+        {item('briefcase', 'Akun', '/brand/account')}
+        {campaigns.length ? (
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Campaign</Text>
+            {campaigns.slice(0, 6).map((c) => {
+              const on = path === `/brand-campaign/${c.id}`;
+              const live = c.status === 'active' || c.status === 'ending';
+              return (
+                <Pressable key={c.id} onPress={() => router.push({ pathname: '/brand-campaign/[id]', params: { id: c.id } })} accessibilityRole="button"
+                  style={({ pressed }) => [styles.camp, on && styles.itemOn, { borderRadius: radius.md }, pressed && { opacity: 0.7 }]}>
+                  <View style={styles.mono}><Text style={styles.monoText}>{c.title.slice(0, 1).toUpperCase()}</Text></View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.campTitle} numberOfLines={1}>{c.title}</Text>
+                    <Text style={[styles.campSub, live && { color: color.success }]} numberOfLines={1}>{BRAND_STATUS[c.status].label}</Text>
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        ) : null}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Account manager</Text>
+          {link('plus-circle', 'Top up budget', waTopUp(campaigns[0]?.brand_name))}
+          {link('message-circle', 'Chat WhatsApp', BRAND_WA)}
+        </View>
+        <View style={styles.section}>
+          <Pressable onPress={() => void signOut()} accessibilityRole="button" style={({ pressed }) => [styles.item, pressed && { opacity: 0.7 }]}>
+            <Feather name="log-out" size={20} color={color.danger} />
+            <Text style={[styles.itemText, { color: color.danger }]}>Keluar</Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </View>
   );
 }
@@ -170,6 +239,8 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', alignItems: 'center', gap: space.sm, paddingHorizontal: space.md, paddingVertical: space.md },
   logo: { width: 28, height: 28, marginLeft: space.xs },
   brand: { ...type.heading, fontSize: 20, color: color.text, letterSpacing: -0.4 },
+  forBrands: { ...type.caption, fontSize: 11, color: color.link, backgroundColor: color.accentSoft, paddingHorizontal: 8, paddingVertical: 2,
+    borderRadius: radius.pill, overflow: 'hidden', marginLeft: 2 },
   body: { paddingHorizontal: space.md, paddingBottom: space.xxl, gap: 2 },
   item: { flexDirection: 'row', alignItems: 'center', gap: space.md, height: 48, paddingHorizontal: space.md, borderRadius: radius.md },
   itemOn: { backgroundColor: 'rgba(12,101,196,0.16)', borderWidth: 1, borderColor: 'rgba(117,178,244,0.25)' },
