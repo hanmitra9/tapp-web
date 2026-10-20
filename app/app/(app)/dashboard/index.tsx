@@ -25,6 +25,7 @@ import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { MenuButton } from '@/components/SideMenu';
 import { unreadCount } from '@/features/notifications/api';
+import { CommunityModal } from '@/features/community/CommunityModal';
 
 const STATUS_NOTE: Record<string, string> = {
   verified: 'Akun sedang ditinjau (maks. 1x24 jam).',
@@ -54,6 +55,7 @@ export default function Home() {
 
   return (
     <Screen inTabs refreshControl={<RefreshControl refreshing={q.refreshing} onRefresh={q.refresh} tintColor={color.blue} />}>
+      <CommunityModal />
       <View style={styles.top}>
         <MenuButton />
         <Pressable onPress={() => router.navigate('/dashboard/profile')} accessibilityRole="button" accessibilityLabel="Profil">
