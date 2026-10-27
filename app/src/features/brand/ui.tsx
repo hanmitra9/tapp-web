@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
   heroBtnGlass: { backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.22)' },
   heroBtnGlassText: { ...type.label, color: '#FFFFFF' },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.lg },
-  kpi: { flexGrow: 1, flexBasis: '45%', minWidth: 140, padding: space.lg, gap: 4, ...card, borderRadius: radius.lg },
+  kpi: { flexGrow: 1, flexBasis: '22%', minWidth: 150, padding: space.lg, gap: 4, ...card, borderRadius: radius.lg },
   kpiIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: space.xs },
   kpiValue: { ...type.metric, fontSize: 22, lineHeight: 28, letterSpacing: -0.5, color: color.text },
   kpiLabel: { ...type.caption, color: color.textMuted },

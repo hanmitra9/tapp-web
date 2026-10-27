@@ -205,13 +205,13 @@ function SubRow({ k }: { k: Clip }) {
   return (
     <Pressable onPress={() => Linking.openURL(k.post_url).catch(() => {})} accessibilityRole="link" style={({ pressed }) => [styles.row, pressed && { opacity: 0.7 }]}>
       <View style={styles.avatar}><Text style={styles.avatarText}>{(k.creator_username ?? 'k').charAt(0).toUpperCase()}</Text></View>
-      <View style={{ flex: 1, gap: 2 }}>
+      <View style={{ flex: 1, gap: 2, minWidth: 0 }}>
         <Text style={styles.rowTitle} numberOfLines={1}>{handle(k)}</Text>
-        <Text style={styles.cap} numberOfLines={1}>{platformLabel(k.platform as Platform)} · {k.published_at ? dateLabel(k.published_at) : '—'}</Text>
+        <Text style={styles.cap} numberOfLines={1}>{platformLabel(k.platform as Platform)} · {compact(k.raw_views)} views</Text>
       </View>
       <View style={{ alignItems: 'flex-end', gap: 4 }}>
         <StatusBadge label={s.label} tone={s.tone} />
-        <Text style={styles.cap}>{compact(k.raw_views)} views{k.spend ? ` · ${idr(k.spend)}` : ''}</Text>
+        <Text style={styles.cap}>{k.spend ? idr(k.spend) : k.published_at ? dateLabel(k.published_at) : '—'}</Text>
       </View>
     </Pressable>
   );
