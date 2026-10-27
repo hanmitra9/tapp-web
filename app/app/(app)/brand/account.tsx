@@ -7,7 +7,7 @@ import { Screen } from '@/components/Screen';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type, card } from '@/theme/tokens';
-import { BRAND_WA, fetchMyBrands, setDailyReport, waTopUp } from '@/features/brand/api';
+import { BRAND_WA, fetchMyBrands, setDailyReport } from '@/features/brand/api';
 import { errorMessage } from '@/lib/errors';
 
 const ROLE = { owner: 'Pemilik', member: 'Anggota', viewer: 'Hanya lihat' } as const;
@@ -67,7 +67,6 @@ export default function BrandAccount() {
 
       <View style={styles.group}>
         <Text style={styles.groupTitle}>Account manager</Text>
-        <Action icon="plus-circle" label="Top up budget" onPress={() => void Linking.openURL(waTopUp(main?.name))} />
         <Action icon="message-circle" label="Campaign baru / tanya" onPress={() => void Linking.openURL(BRAND_WA)} />
         <Action icon="rotate-ccw" label="Refund sisa budget" onPress={() => void Linking.openURL(`${BRAND_WA}?text=${encodeURIComponent(`Halo TAPP, saya mau refund sisa budget${main ? ` (${main.name})` : ''}.`)}`)} last />
       </View>

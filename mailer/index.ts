@@ -138,6 +138,32 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
       },
     };
   }
+  if (type === "clip_approved") {
+    return {
+      subject: `Klipmu disetujui: ${d.campaign ?? "campaign"}`,
+      block: {
+        eyebrow: "Klip",
+        title: "Klipmu disetujui",
+        intro: "Bayarannya sudah masuk ke saldomu (bersih, fee platform sudah dipotong) dan bisa ditarik setelah masa tahan 7 hari.",
+        rows: [["Campaign", d.campaign ?? "-"], ["Platform", d.platform ?? "-"]],
+        button: APP() ? { label: "Lihat saldo", url: `${APP()}/dashboard/earnings` } : undefined,
+      },
+    };
+  }
+  if (type === "clip_needs_changes" || type === "clip_rejected") {
+    const fix = type === "clip_needs_changes";
+    return {
+      subject: fix ? `Klipmu perlu revisi: ${d.campaign ?? "campaign"}` : `Klipmu ditolak: ${d.campaign ?? "campaign"}`,
+      block: {
+        eyebrow: "Klip",
+        title: fix ? "Klipmu perlu revisi" : "Klipmu belum bisa diterima",
+        intro: fix ? "Perbaiki sesuai catatan di bawah, lalu kirim ulang dari halaman Aktivitas." : "Klip ini tidak dihitung. Kamu tetap bisa mengirim klip lain untuk campaign ini.",
+        rows: [["Campaign", d.campaign ?? "-"], ["Alasan", d.reason ?? "-"]],
+        button: APP() ? { label: fix ? "Revisi klip" : "Lihat aktivitas", url: `${APP()}/dashboard/activity` } : undefined,
+        outro: "Ada pertanyaan? Balas email ini.",
+      },
+    };
+  }
   if (type === "payout_rejected") {
     return {
       subject: "Transfer bayaranmu belum bisa diproses",

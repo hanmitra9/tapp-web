@@ -180,6 +180,17 @@ export async function listCreators(status: CreatorStatus, search: string): Promi
   if (error) throw error;
   return data as unknown as AdminCreator[];
 }
+// ── Blacklist (0066) ──
+export type BlockEntry = { id: string; kind: 'email' | 'social' | 'account'; value: string; reason: string | null; creator_id: string | null; created_at: string };
+export async function listBlocklist(): Promise<BlockEntry[]> {
+  const { data, error } = await supabase.from('blocklist').select('id, kind, value, reason, creator_id, created_at').order('created_at', { ascending: false }).limit(500);
+  if (error) throw error;
+  return data as BlockEntry[];
+}
+export const blacklistCreator = (id: string, reason: string) => rpc<number>('admin_blacklist_creator', { p_user_id: id, p_reason: reason });
+export const blocklistAdd = (kind: string, value: string, reason: string) => rpc('admin_blocklist_add', { p_kind: kind, p_value: value, p_reason: reason });
+export const blocklistRemove = (id: string, note: string) => rpc('admin_blocklist_remove', { p_id: id, p_note: note });
+
 export const setCreatorStatus = (id: string, status: CreatorStatus, reason: string | null) =>
   rpc('admin_set_creator_status', { p_user_id: id, p_status: status, p_reason: reason });
 export const verifyPlatform = (id: string, verified: boolean) => rpc('admin_verify_platform', { p_platform_id: id, p_verified: verified });

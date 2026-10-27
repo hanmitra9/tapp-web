@@ -851,3 +851,23 @@ select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select admin_set_submission_cap('20000000-0000-0000-0000-000000000001', 0);
 reset role;
 select 'submission_cap_ok' as result;
+
+-- ── 0066 · blacklist, withdrawal cap ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select kind, value from admin_blocklist_add('account', '0812-0000-9999', 'test') ;
+select kind, value from admin_blocklist_add('email', '  Cheat@Example.com ', 'test');
+reset role;
+do $$ begin
+  begin insert into auth.users (id, email) values (gen_random_uuid(), 'cheat@example.com'); raise exception 'blocked signup allowed';
+  exception when others then if sqlerrm <> 'identity_blocked' then raise; end if; end;
+  begin insert into creator_payout_methods (creator_id, kind, provider, account_name, account_number)
+        values ('00000000-0000-0000-0000-0000000000c1', 'ewallet', 'DANA', 'X', '081200009999'); raise exception 'blocked account allowed';
+  exception when others then if sqlerrm <> 'identity_blocked' then raise; end if; end;
+end $$;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select admin_blocklist_remove((select id from blocklist where kind = 'account'), 'appeal ok');
+select count(*) as blocklist_left_expect_1 from blocklist;
+select pg_temp.expect_error($$select admin_blacklist_creator('00000000-0000-0000-0000-0000000000c1', ' ')$$, 'reason_required');
+reset role;
+select (value->>'new')::bigint as cap_new_expect_5000000 from app_settings where key = 'max_payout_idr';
+select 'blacklist_ok' as result;

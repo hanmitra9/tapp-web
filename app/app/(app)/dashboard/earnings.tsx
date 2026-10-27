@@ -8,7 +8,7 @@ import { Notice } from '@/components/Notice';
 import { Screen } from '@/components/Screen';
 import { TopBar } from '@/components/TopBar';
 import { BarChart } from '@/components/BarChart';
-import { dateLabel, idr } from '@/lib/format';
+import { dateLabel, idr, idrCompact } from '@/lib/format';
 import { compactIdr } from '@/lib/shareCard';
 import { errorMessage } from '@/lib/errors';
 import { track } from '@/lib/analytics';
@@ -60,9 +60,10 @@ export default function Payments() {
   const total = d ? available + processing + d.summary.paid : 0;
   const open = d?.payouts.find((p) => OPEN.includes(p.status)) ?? null;
   const refBonus = d?.referral?.available ?? 0;
-  const bonus = d ? Math.round(available * d.terms.bonusPct / 100) + refBonus : 0;
-  const platformFee = d ? Math.round(available * d.terms.feePct / 100) : 0;
-  const net = d ? available + bonus - platformFee - d.terms.fee : 0;
+  const take = d?.terms.max != null ? Math.min(available, d.terms.max) : available;   // per-withdrawal cap; the rest waits for the next one
+  const bonus = d ? Math.round(take * d.terms.bonusPct / 100) + refBonus : 0;
+  const platformFee = d ? Math.round(take * d.terms.feePct / 100) : 0;
+  const net = d ? take + bonus - platformFee - d.terms.fee : 0;
   const paid = d?.payouts.filter((p) => p.status === 'paid') ?? [];
   const totalPaid = paid.reduce((a, p) => a + p.amount + Number(p.bonus ?? 0) - Number(p.fee ?? 0), 0);
   const firstPaid = paid.map((p) => p.paid_at ?? p.created_at).sort()[0] ?? null;
@@ -169,7 +170,7 @@ export default function Payments() {
       </View>
       {d ? (
         <Text style={styles.terms}>
-          {open ? `Pencairan ${PAYOUT_STATUS[open.status].label.toLowerCase()} · maks 1x24 jam kerja` : `Min. tarik ${idr(d.terms.min)} · biaya transfer ${idr(d.terms.fee)}`}
+          {open ? `Pencairan ${PAYOUT_STATUS[open.status].label.toLowerCase()} · maks 2x24 jam kerja` : `Min. tarik ${idr(d.terms.min)}${d.terms.max != null ? ` · maks ${idrCompact(d.terms.max)}/tarik` : ''} · biaya transfer ${idr(d.terms.fee)}`}
         </Text>
       ) : null}
 

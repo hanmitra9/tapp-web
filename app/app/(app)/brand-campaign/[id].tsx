@@ -17,7 +17,7 @@ import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section, canExport, downloadCsv,
 import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { BRAND_STATUS, CLIP_STATUS, fetchBrandCampaigns, fetchBrandDaily, fetchBrandSubmissions, fetchHashtagStats, fetchPlatformBreakdown,
-  waTopUp, type Clip } from '@/features/brand/api';
+  type Clip } from '@/features/brand/api';
 import { platformLabel, type Platform } from '@/features/creator/options';
 
 const TABS = [{ value: 'detail', label: 'Detail' }, { value: 'subs', label: 'Submission' }, { value: 'stats', label: 'Analitik' }, { value: 'clips', label: 'Klip' }];
@@ -103,8 +103,9 @@ export default function BrandCampaignReport() {
 
       {tab === 'detail' ? (
         <>
-          <BudgetHero budget={c.budget} spent={c.spent} topUpUrl={waTopUp(c.brand_name, c.title)}
-            second={{ label: 'Submission', icon: 'film', onPress: () => setTab('subs') }} />
+          <BudgetHero budget={c.budget} spent={c.spent}
+            primary={{ label: 'Submission', icon: 'film', onPress: () => setTab('subs') }}
+            second={{ label: 'Analitik', icon: 'bar-chart-2', onPress: () => setTab('stats') }} />
           <KpiGrid>
             <Kpi icon="eye" label="Views terverifikasi" value={compact(c.qualified_views)} />
             <Kpi icon="trending-down" label="Effective CPM" value={c.effective_cpm == null ? '—' : idr(c.effective_cpm)} tint={color.success}

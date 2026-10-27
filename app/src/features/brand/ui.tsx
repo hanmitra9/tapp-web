@@ -1,15 +1,16 @@
 import Feather from '@expo/vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { ComponentProps, ReactNode } from 'react';
-import { Image, Linking, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { compact, idr } from '@/lib/format';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 
 type Icon = ComponentProps<typeof Feather>['name'];
 
-// Budget hero: what's left, what's spent, and the top-up route (WhatsApp, arranged privately).
-export function BudgetHero({ budget, spent, topUpUrl, second }: { budget: number | null; spent: number; topUpUrl: string; second?: { label: string; icon: Icon; onPress: () => void } }) {
+type HeroAction = { label: string; icon: Icon; onPress: () => void };
+// Budget hero: what's left and what's spent; first action solid, second glass.
+export function BudgetHero({ budget, spent, primary, second }: { budget: number | null; spent: number; primary: HeroAction; second?: HeroAction }) {
   const used = budget ? Math.min(1, spent / budget) : 0;
   return (
     <LinearGradient colors={gradient.card} start={{ x: 0, y: 1 }} end={{ x: 1, y: 0 }} style={styles.hero} {...({ dataSet: { tapp: 'balance' } } as object)}>
@@ -26,8 +27,8 @@ export function BudgetHero({ budget, spent, topUpUrl, second }: { budget: number
         <Text style={styles.heroCap}>{Math.round(used * 100)}% dari {budget == null ? '—' : idr(budget)}</Text>
       </View>
       <View style={styles.heroBtns}>
-        <Pressable onPress={() => Linking.openURL(topUpUrl).catch(() => {})} style={({ pressed }) => [styles.heroBtn, styles.heroBtnSolid, pressed && { opacity: 0.85 }]} accessibilityRole="link">
-          <Feather name="plus" size={16} color="#0A2A4D" /><Text style={styles.heroBtnSolidText}>Top up</Text>
+        <Pressable onPress={primary.onPress} style={({ pressed }) => [styles.heroBtn, styles.heroBtnSolid, pressed && { opacity: 0.85 }]} accessibilityRole="button">
+          <Feather name={primary.icon} size={16} color="#0A2A4D" /><Text style={styles.heroBtnSolidText}>{primary.label}</Text>
         </Pressable>
         {second ? (
           <Pressable onPress={second.onPress} style={({ pressed }) => [styles.heroBtn, styles.heroBtnGlass, pressed && { opacity: 0.8 }]} accessibilityRole="button">

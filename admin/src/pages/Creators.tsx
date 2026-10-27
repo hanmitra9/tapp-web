@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { listCreators, setCreatorStatus, verifyPlatform, type AdminCreator, type CreatorStatus } from '../lib/api';
+import { blacklistCreator, listCreators, setCreatorStatus, verifyPlatform, type AdminCreator, type CreatorStatus } from '../lib/api';
 import { adminError } from '../lib/errors';
 import { dt, num } from '../lib/format';
 import { useLoad } from '../lib/useLoad';
@@ -55,6 +55,34 @@ export function Creators() {
   );
 }
 
+// Permanent ban: every identity this creator used (email, social handles, payout accounts) goes on the blacklist.
+function BlacklistCard({ c, onDone }: { c: AdminCreator; onDone: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
+  async function go() {
+    if (!reason.trim()) return setMsg({ ok: false, t: 'Alasan wajib diisi.' });
+    if (!confirm(`Blacklist permanen ${c.profile?.full_name ?? 'kreator ini'}? Email, akun sosial, dan rekeningnya diblokir.`)) return;
+    setBusy(true); setMsg(null);
+    try { const n = await blacklistCreator(c.user_id, reason.trim()); setMsg({ ok: true, t: `${n} identitas masuk blacklist. Akun di-banned.` }); setOpen(false); await onDone(); }
+    catch (e) { setMsg({ ok: false, t: adminError(e) }); } finally { setBusy(false); }
+  }
+  return (
+    <div className="section card">
+      <h3 style={{ margin: 0 }}>Blacklist permanen</h3>
+      <p className="sub" style={{ margin: 0 }}>Untuk kecurangan terbukti (bot, akun palsu, penipuan). Email, akun sosial, dan rekening kreator ini tidak bisa dipakai lagi di TAPP.</p>
+      {open ? <label className="field">Alasan<textarea value={reason} onChange={(e) => setReason(e.target.value)} /></label> : null}
+      {msg ? <div className={`notice ${msg.ok ? 'ok' : 'error'}`}>{msg.t}</div> : null}
+      <div className="actions">
+        {open ? <><button className="btn danger" disabled={busy} onClick={go}>{busy ? 'Memproses…' : 'Konfirmasi blacklist'}</button>
+          <button className="btn secondary" onClick={() => setOpen(false)}>Batal</button></>
+          : <button className="btn danger" onClick={() => setOpen(true)}>Blacklist kreator</button>}
+      </div>
+    </div>
+  );
+}
+
 function CreatorDetail({ c, onChanged }: { c: AdminCreator; onChanged: () => Promise<void> }) {
   const [action, setAction] = useState<CreatorStatus | null>(null);
   const [reason, setReason] = useState('');
@@ -98,6 +126,8 @@ function CreatorDetail({ c, onChanged }: { c: AdminCreator; onChanged: () => Pro
           ))}</tbody>
         </table>
       </div>
+
+      <BlacklistCard c={c} onDone={onChanged} />
 
       <dl className="kv" style={{ marginTop: 24 }}>
         <div><dt>Negara</dt><dd>{c.profile?.country ?? '—'}</dd></div>

@@ -42,6 +42,7 @@ const COPY: Record<string, string> = {
   submission_deadline_passed: 'Batas waktu submission sudah lewat.',
   submission_limit_reached: 'Kamu sudah mencapai batas video untuk campaign ini.',
   submission_rate_limited: 'Kamu sudah mencapai batas submission hari ini. Coba lagi besok.',
+  identity_blocked: 'Akun, rekening, atau akun sosial ini diblokir permanen karena pelanggaran. Hubungi admin untuk banding.',
   payout_below_minimum: 'Saldo tersedia masih di bawah minimum pencairan.',
   payout_by_admin: 'Bayaran ditransfer langsung oleh tim TAPP setelah klipmu diterima.',
   already_verified: 'Akun ini sudah terverifikasi.',
