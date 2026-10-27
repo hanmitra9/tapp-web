@@ -7,7 +7,7 @@ import { useLayout } from '@/lib/useLayout';
 import { useAuth } from '@/providers/AuthProvider';
 import { fetchMyCampaigns, type MyCampaign } from '@/features/campaigns/api';
 import { unreadCount } from '@/features/notifications/api';
-import { BRAND_STATUS, BRAND_WA, fetchBrandCampaigns, waTopUp, type BrandCampaign } from '@/features/brand/api';
+import { BRAND_STATUS, BRAND_WA, fetchBrandCampaigns, type BrandCampaign } from '@/features/brand/api';
 import { color, radius, space, type } from '@/theme/tokens';
 
 type Icon = ComponentProps<typeof Feather>['name'];
@@ -135,7 +135,6 @@ export function BrandSidebar() {
         ) : null}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Account manager</Text>
-          {link('plus-circle', 'Top up budget', waTopUp(campaigns[0]?.brand_name))}
           {link('message-circle', 'Chat WhatsApp', BRAND_WA)}
         </View>
         <View style={styles.section}>

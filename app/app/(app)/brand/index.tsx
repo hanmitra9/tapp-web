@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Linking, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { BarChart } from '@/components/BarChart';
 import { EmptyState } from '@/components/EmptyState';
 import { Notice } from '@/components/Notice';
@@ -13,7 +13,7 @@ import { useQuery } from '@/lib/useQuery';
 import { Freshness } from '@/features/brand/ReportParts';
 import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section } from '@/features/brand/ui';
 import { color, space, type, card, radius } from '@/theme/tokens';
-import { fetchBrandCampaigns, fetchBrandDaily, fetchHashtagTotals, fetchMyBrands, totals, waTopUp } from '@/features/brand/api';
+import { fetchBrandCampaigns, fetchBrandDaily, fetchHashtagTotals, fetchMyBrands, totals, BRAND_WA } from '@/features/brand/api';
 import { BrandCampaignRow } from '@/features/brand/BrandCampaignRow';
 
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
@@ -42,8 +42,9 @@ export default function BrandHome() {
       {d ? <Freshness metricsAt={d.t.lastMetricsAt} qualifiedAt={d.t.lastQualifiedAt} refreshedAt={refreshedAt} /> : null}
       {q.error && !d ? <Notice tone="error" message={q.error} /> : null}
 
-      <BudgetHero budget={d ? d.t.budget : null} spent={d?.t.spent ?? 0} topUpUrl={waTopUp(name)}
-        second={{ label: 'Campaign', icon: 'layers', onPress: () => router.navigate('/brand/campaigns') }} />
+      <BudgetHero budget={d ? d.t.budget : null} spent={d?.t.spent ?? 0}
+        primary={{ label: 'Campaign', icon: 'layers', onPress: () => router.navigate('/brand/campaigns') }}
+        second={{ label: 'Chat AM', icon: 'message-circle', onPress: () => void Linking.openURL(BRAND_WA).catch(() => {}) }} />
 
       <KpiGrid>
         <Kpi icon="eye" label="Views terverifikasi" value={d ? compact(d.t.qualified) : null} />

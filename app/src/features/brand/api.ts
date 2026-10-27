@@ -55,10 +55,9 @@ export const CLIP_STATUS: Record<string, { label: string; tone: 'neutral' | 'blu
   flagged: { label: 'Tidak wajar', tone: 'danger', group: 'no' },
 };
 
-// Budget top-ups and new campaigns are arranged privately with the account manager on WhatsApp.
+// Budget and new campaigns are arranged privately with the account manager on WhatsApp.
 export const BRAND_WA = 'https://wa.me/6282329160953';
-export const waTopUp = (brand?: string, campaign?: string) =>
-  `${BRAND_WA}?text=${encodeURIComponent(`Halo TAPP, saya mau top up budget${campaign ? ` campaign "${campaign}"` : ''}${brand ? ` (${brand})` : ''}.`)}`;
+
 
 export async function setDailyReport(brandId: string, on: boolean) {
   const { error } = await supabase.rpc('set_brand_daily_report', { p_brand_id: brandId, p_on: on });

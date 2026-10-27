@@ -35,7 +35,7 @@ test('brand summary shows budget, KPIs and hashtag reach (Supabase mocked)', asy
   await expect(page.getByText('Rp9.000.000').first()).toBeVisible();
   await expect(page.getByText('Views terverifikasi')).toBeVisible();
   await expect(page.getByText(/2,5\s?jt views/)).toBeVisible();
-  await expect(page.getByRole('link', { name: /Top up$/ })).toBeVisible();
+  await expect(page.getByRole('button', { name: /Chat AM$/ })).toBeVisible();
   await expect(page.getByText('Kopi Susu Launch').first()).toBeVisible();
 });
 
@@ -74,7 +74,7 @@ test('brand account: daily report toggle and account manager links (Supabase moc
   await page.route('**/rest/v1/rpc/set_brand_daily_report', async (r) => { toggled = r.request().postDataJSON(); await r.fulfill({ status: 204, body: '' }); });
   await page.goto('/brand/account');
   await expect(page.getByText('Kopi Nusa').first()).toBeVisible();
-  await expect(page.getByText('Top up budget').first()).toBeVisible();
+  await expect(page.getByText('Refund sisa budget').first()).toBeVisible();
   await page.getByRole('switch', { name: 'Laporan harian Kopi Nusa' }).click();
   await expect.poll(() => toggled).toMatchObject({ p_brand_id: 'b1', p_on: false });
 });
