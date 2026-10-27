@@ -68,7 +68,8 @@ export default function BrandAccount() {
       <View style={styles.group}>
         <Text style={styles.groupTitle}>Account manager</Text>
         <Action icon="plus-circle" label="Top up budget" onPress={() => void Linking.openURL(waTopUp(main?.name))} />
-        <Action icon="message-circle" label="Campaign baru / tanya" onPress={() => void Linking.openURL(BRAND_WA)} last />
+        <Action icon="message-circle" label="Campaign baru / tanya" onPress={() => void Linking.openURL(BRAND_WA)} />
+        <Action icon="rotate-ccw" label="Refund sisa budget" onPress={() => void Linking.openURL(`${BRAND_WA}?text=${encodeURIComponent(`Halo TAPP, saya mau refund sisa budget${main ? ` (${main.name})` : ''}.`)}`)} last />
       </View>
 
       <Pressable onPress={signOut} accessibilityRole="button" style={({ pressed }) => [styles.out, pressed && { opacity: 0.7 }]}>
@@ -78,7 +79,7 @@ export default function BrandAccount() {
   );
 }
 
-function Action({ icon, label, onPress, last }: { icon: 'plus-circle' | 'message-circle'; label: string; onPress: () => void; last?: boolean }) {
+function Action({ icon, label, onPress, last }: { icon: 'plus-circle' | 'message-circle' | 'rotate-ccw'; label: string; onPress: () => void; last?: boolean }) {
   return (
     <Pressable onPress={onPress} accessibilityRole="link" style={({ pressed }) => [styles.row, last && styles.rowLast, pressed && { backgroundColor: 'rgba(255,255,255,0.03)' }]}>
       <View style={[styles.rowIcon, { backgroundColor: 'rgba(37,211,102,0.12)' }]}><Feather name={icon} size={16} color="#25D366" /></View>
