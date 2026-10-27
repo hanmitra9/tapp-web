@@ -22,7 +22,7 @@ export type CampaignDetail = {
   status: 'draft' | 'pending_approval' | 'active' | 'paused' | 'ending' | 'completed' | 'archived' | 'cancelled';
   cpm: number; budget: number; remaining: number; min_views_to_qualify: number; max_earning_per_submission: number | null;
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null;
-  guidelines_do: string[]; guidelines_dont: string[]; terms: string | null; ugc_brief?: UgcBrief;
+  guidelines_do: string[]; guidelines_dont: string[]; terms: string | null; ugc_brief?: UgcBrief; max_submissions_per_creator?: number | null;
   brand: { name: string; logo_url: string | null; website: string | null };
   platforms: Platform[]; rules: { kind: 'requirement' | 'submission' | 'performance'; body: string }[];
   creators_joined: number; membership: { status: 'joined' | 'left' | 'removed'; joined_at: string } | null;

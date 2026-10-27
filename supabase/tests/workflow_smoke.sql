@@ -832,3 +832,22 @@ do $$ declare r jsonb := get_campaign('20000000-0000-0000-0000-000000000001'); b
 end $$;
 reset role;
 select 'money_hidden_ok' as result;
+
+-- ── 0065 · videos per creator cap ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select admin_set_submission_cap('20000000-0000-0000-0000-000000000001', 1);
+select (get_campaign('20000000-0000-0000-0000-000000000001')->>'max_submissions_per_creator') as cap_expect_1;
+reset role;
+do $$ begin
+  begin
+    insert into submissions (campaign_id, creator_id, membership_id, platform, post_url, normalized_url, published_at)
+    select campaign_id, creator_id, membership_id, platform, post_url || '?cap', normalized_url || '?cap', published_at
+    from submissions where campaign_id = '20000000-0000-0000-0000-000000000001' and status <> 'rejected' limit 1;
+    raise exception 'cap not enforced';
+  exception when others then if sqlerrm <> 'submission_limit_reached' then raise; end if;
+  end;
+end $$;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select admin_set_submission_cap('20000000-0000-0000-0000-000000000001', 0);
+reset role;
+select 'submission_cap_ok' as result;

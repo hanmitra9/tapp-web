@@ -40,6 +40,7 @@ const COPY: Record<string, string> = {
   published_before_join: 'Hanya postingan yang dipublikasikan setelah kamu bergabung yang dihitung.',
   duplicate_submission: 'Postingan ini sudah pernah disubmit.',
   submission_deadline_passed: 'Batas waktu submission sudah lewat.',
+  submission_limit_reached: 'Kamu sudah mencapai batas video untuk campaign ini.',
   submission_rate_limited: 'Kamu sudah mencapai batas submission hari ini. Coba lagi besok.',
   payout_below_minimum: 'Saldo tersedia masih di bawah minimum pencairan.',
   payout_by_admin: 'Bayaran ditransfer langsung oleh tim TAPP setelah klipmu diterima.',

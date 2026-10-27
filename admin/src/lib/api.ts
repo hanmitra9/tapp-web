@@ -267,13 +267,13 @@ export type CampaignFull = {
   status: CampaignStatus; cpm: number; budget: number; max_earning_per_submission: number | null; min_views_to_qualify: number;
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null; guidelines_do: string[]; guidelines_dont: string[]; terms: string | null;
   platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[]; banner_url: string | null; hashtag: string | null;
-  ugc_brief: UgcBrief;
+  ugc_brief: UgcBrief; max_submissions_per_creator: number | null;
   assets: { id: string; kind: string; title: string; url: string | null; storage_path: string | null; sort: number }[];
   pricing: { brand_cpm: number; brand_budget: number; creator_share_pct: number; budget_fee_pct: number } | null;
 };
 export async function getCampaignFull(id: string): Promise<CampaignFull> {
   const { data, error } = await supabase.from('campaigns')
-    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, hashtag, ugc_brief, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
+    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, hashtag, ugc_brief, max_submissions_per_creator, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
     .eq('id', id).single();
   if (error) throw error;
   const c = data as unknown as CampaignFull;
@@ -321,6 +321,7 @@ export async function uploadBanner(campaignId: string, file: File): Promise<stri
 export const removeBanner = (campaignId: string) => rpc('admin_set_campaign_banner', { p_campaign_id: campaignId, p_url: null });
 export const upsertCampaignDraft = (id: string | null, p: Record<string, unknown>) => rpc<{ id: string }>('upsert_campaign_draft', { p_id: id, p });
 export const setUgcBrief = (id: string, brief: Record<string, unknown>) => rpc('set_campaign_ugc_brief', { p_id: id, p: brief });
+export const setSubmissionCap = (id: string, max: number) => rpc('admin_set_submission_cap', { p_campaign_id: id, p_max: max });
 export const deleteCampaign = (id: string) => rpc('admin_delete_campaign', { p_campaign_id: id });
 export const updateCampaignCopy = (id: string, p: Record<string, unknown>) => rpc('admin_update_campaign_copy', { p_id: id, p });
 export const submitForApproval = (id: string) => rpc('submit_campaign_for_approval', { p_campaign_id: id });
