@@ -142,9 +142,9 @@ select campaigns_joined, submissions, approved, qualified_views, total_earned fr
 -- ── Phase 3: marketplace ──
 reset role;
 insert into campaigns (id,brand_id,title,category,content_type,cpm,budget,status,submission_deadline) values
- ('20000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000001','Crypto explainer clips','crypto','tutorial',5000,1000000,'active', now()+interval '3 days'),
- ('20000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000001','Finance podcast S2','finance','podcast_clips',2500,2000000,'active', now()+interval '20 days'),
- ('20000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000001','YouTube only','finance','podcast_clips',9000,2000000,'active', null);
+ ('20000000-0000-0000-0000-000000000002','10000000-0000-0000-0000-000000000001','Crypto explainer clips','crypto','ugc',5000,1000000,'active', now()+interval '3 days'),
+ ('20000000-0000-0000-0000-000000000003','10000000-0000-0000-0000-000000000001','Finance podcast S2','finance','clipping',2500,2000000,'active', now()+interval '20 days'),
+ ('20000000-0000-0000-0000-000000000004','10000000-0000-0000-0000-000000000001','YouTube only','finance','clipping',9000,2000000,'active', null);
 insert into campaign_platforms values ('20000000-0000-0000-0000-000000000002','tiktok'),('20000000-0000-0000-0000-000000000003','tiktok'),
  ('20000000-0000-0000-0000-000000000003','instagram'),('20000000-0000-0000-0000-000000000004','youtube');
 set role authenticated;
@@ -225,10 +225,13 @@ select payouts_open from admin_queue_counts;
 -- ── Phase 8: control center ──
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select id as draft_id, status from upsert_campaign_draft(null, jsonb_build_object(
-  'brand_id','10000000-0000-0000-0000-000000000001','title','Draft by admin','category','crypto','content_type','podcast_clips',
+  'brand_id','10000000-0000-0000-0000-000000000001','title','Draft by admin','category','crypto','content_type','ugc',
+  'ugc_brief',jsonb_build_object('narrative','  Cerita pakai produk  ','face','show','duration_min','30','junk','x','cta',''),
   'cpm',2500,'budget',5000000,'platforms',jsonb_build_array('tiktok','youtube'),
   'guidelines_do',jsonb_build_array('Hook cepat',''),'rules',jsonb_build_array(jsonb_build_object('kind','requirement','body','9:16')))) \gset
 select platforms, status from admin_campaigns where id = :'draft_id';
+select (get_campaign(:'draft_id')->>'content_type') as ugc_kind, get_campaign(:'draft_id')->'ugc_brief' as ugc_brief;
+select pg_temp.expect_error(format($$select upsert_campaign_draft(%L, '{"title":"x","cpm":1,"budget":1,"content_type":"vlog"}'::jsonb)$$, :'draft_id'), 'invalid_content_type');
 select title, cpm from upsert_campaign_draft(:'draft_id', jsonb_build_object('title','Draft v2','cpm',3000,'budget',5000000,'platforms',jsonb_build_array('tiktok')));
 select status from submit_campaign_for_approval(:'draft_id');
 select pg_temp.expect_error(format($$select upsert_campaign_draft(%L, '{"title":"x","cpm":1,"budget":1}'::jsonb)$$, :'draft_id'), 'terms_locked_after_draft');

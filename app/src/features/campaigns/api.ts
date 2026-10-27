@@ -15,12 +15,14 @@ export type FeedItem = {
   creators_joined?: number; joined_initials?: string[];
 };
 
+export type UgcBrief = { brand_about?: string; narrative?: string; cta?: string; must_include?: string; caption_rules?: string;
+  face?: 'show' | 'hide' | 'either'; duration_min?: number; duration_max?: number };
 export type CampaignDetail = {
   id: string; title: string; objective: string | null; description: string | null; category: string; content_type: string;
   status: 'draft' | 'pending_approval' | 'active' | 'paused' | 'ending' | 'completed' | 'archived' | 'cancelled';
   cpm: number; budget: number; remaining: number; min_views_to_qualify: number; max_earning_per_submission: number | null;
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null;
-  guidelines_do: string[]; guidelines_dont: string[]; terms: string | null;
+  guidelines_do: string[]; guidelines_dont: string[]; terms: string | null; ugc_brief?: UgcBrief;
   brand: { name: string; logo_url: string | null; website: string | null };
   platforms: Platform[]; rules: { kind: 'requirement' | 'submission' | 'performance'; body: string }[];
   creators_joined: number; membership: { status: 'joined' | 'left' | 'removed'; joined_at: string } | null;

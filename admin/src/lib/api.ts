@@ -259,17 +259,20 @@ export async function listCampaigns(statuses: CampaignStatus[]): Promise<AdminCa
   if (error) throw error;
   return (data ?? []).map((r) => { const o = { ...r } as Record<string, unknown>; for (const k of CNUM) if (o[k] != null) o[k] = Number(o[k]); return o as AdminCampaign; });
 }
+export type UgcBrief = { brand_about?: string; narrative?: string; cta?: string; must_include?: string; caption_rules?: string;
+  face?: 'show' | 'hide' | 'either'; duration_min?: number; duration_max?: number };
 export type CampaignFull = {
   id: string; brand_id: string; title: string; objective: string | null; description: string | null; category: string; content_type: string;
   status: CampaignStatus; cpm: number; budget: number; max_earning_per_submission: number | null; min_views_to_qualify: number;
   starts_at: string | null; ends_at: string | null; submission_deadline: string | null; guidelines_do: string[]; guidelines_dont: string[]; terms: string | null;
   platforms: { platform: string }[]; rules: { kind: string; body: string; sort: number }[]; banner_url: string | null; hashtag: string | null;
+  ugc_brief: UgcBrief;
   assets: { id: string; kind: string; title: string; url: string | null; storage_path: string | null; sort: number }[];
   pricing: { brand_cpm: number; brand_budget: number; creator_share_pct: number; budget_fee_pct: number } | null;
 };
 export async function getCampaignFull(id: string): Promise<CampaignFull> {
   const { data, error } = await supabase.from('campaigns')
-    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, hashtag, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
+    .select('id, brand_id, title, objective, description, category, content_type, status, cpm, max_earning_per_submission, min_views_to_qualify, starts_at, ends_at, submission_deadline, guidelines_do, guidelines_dont, terms, banner_url, hashtag, ugc_brief, platforms:campaign_platforms(platform), rules:campaign_rules(kind, body, sort), assets:campaign_assets(id, kind, title, url, storage_path, sort)')
     .eq('id', id).single();
   if (error) throw error;
   const c = data as unknown as CampaignFull;

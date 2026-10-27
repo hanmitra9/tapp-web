@@ -14,6 +14,9 @@ export const CAMPAIGN_TYPES: [string, string][] = [
   ['entertainment', 'Entertainment'], ['brand', 'Brand'], ['music', 'Music'], ['podcast', 'Podcast'], ['gaming', 'Gaming'],
   ['sports', 'Sports'], ['lifestyle', 'Lifestyle'], ['education', 'Education'], ['other', 'Lainnya'],
 ];
+// Campaign kind: clip the brand's videos, or make original content (UGC).
+export const CONTENT_KINDS: [string, string][] = [['clipping', 'Clipping'], ['ugc', 'UGC']];
+export const FACE: [string, string][] = [['either', 'Bebas'], ['show', 'Wajib tampil'], ['hide', 'Tanpa wajah']];
 export const campaignTypeLabel = (v: string) => CAMPAIGN_TYPES.find(([k]) => k === v)?.[1] ?? NICHES.find(([k]) => k === v)?.[1] ?? v;
 export const PLATFORMS: [string, string][] = [['tiktok', 'TikTok'], ['instagram', 'Instagram'], ['youtube', 'YouTube'], ['x', 'X'], ['facebook', 'Facebook'], ['other', 'Lainnya']];
 export const label = (list: [string, string][], v: string) => list.find(([k]) => k === v)?.[1] ?? v;

@@ -1,3 +1,4 @@
+import { UgcBriefCard } from '@/features/campaigns/UgcBrief';
 import type React from 'react';
 import { showAlert } from '@/lib/alert';
 import Feather from '@expo/vector-icons/Feather';
@@ -92,7 +93,7 @@ export default function CampaignDetailScreen() {
         <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(4,7,12,0.85)']} start={{ x: 0, y: 0.45 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
         <View style={styles.heroRate}><Text style={styles.heroRateValue}>{idr(c.cpm)}</Text><Text style={styles.heroRateUnit}>/1K views</Text></View>
         <View style={styles.heroText}>
-          <Text style={styles.heroBrand}>{c.brand.name} · {categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}</Text>
+          <Text style={styles.heroBrand}>{c.brand.name} · {c.content_type === 'ugc' ? 'UGC · ' : ''}{categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}</Text>
           <Text style={styles.heroTitle} accessibilityRole="header" numberOfLines={3}>{c.title}</Text>
         </View>
       </View>
@@ -134,9 +135,11 @@ export default function CampaignDetailScreen() {
       <GuideSheet c={c} assetCount={assets.length} visible={!!guide} onClose={() => setGuide(false)}
         onAck={guide === 'take' ? () => { setGuide(false); try { globalThis.localStorage?.setItem(`tapp:guide:${c.id}`, '1'); } catch { /* storage off */ } take(); } : undefined} />
 
-      <Section title="Konten sumber">
+      {c.content_type === 'ugc' ? <Section title="Brief UGC"><UgcBriefCard b={c.ugc_brief ?? {}} /></Section> : null}
+
+      <Section title={c.content_type === 'ugc' ? 'Materi brand' : 'Konten sumber'}>
         {joined ? (assets.length ? assets.map((a) => <AssetRow key={a.id} a={a} />)
-          : <Text style={styles.muted}>Brand belum menambahkan konten sumber.</Text>)
+          : <Text style={styles.muted}>{c.content_type === 'ugc' ? 'Tidak ada materi wajib.' : 'Brand belum menambahkan konten sumber.'}</Text>)
           : <Text style={styles.muted}>Terbuka setelah kamu bergabung.</Text>}
       </Section>
 
