@@ -320,6 +320,7 @@ export async function uploadBanner(campaignId: string, file: File): Promise<stri
 export const removeBanner = (campaignId: string) => rpc('admin_set_campaign_banner', { p_campaign_id: campaignId, p_url: null });
 export const upsertCampaignDraft = (id: string | null, p: Record<string, unknown>) => rpc<{ id: string }>('upsert_campaign_draft', { p_id: id, p });
 export const setUgcBrief = (id: string, brief: Record<string, unknown>) => rpc('set_campaign_ugc_brief', { p_id: id, p: brief });
+export const deleteCampaign = (id: string) => rpc('admin_delete_campaign', { p_campaign_id: id });
 export const updateCampaignCopy = (id: string, p: Record<string, unknown>) => rpc('admin_update_campaign_copy', { p_id: id, p });
 export const submitForApproval = (id: string) => rpc('submit_campaign_for_approval', { p_campaign_id: id });
 export const setCampaignStatus = (id: string, status: CampaignStatus, reason: string | null) => rpc('admin_set_campaign_status', { p_campaign_id: id, p_status: status, p_reason: reason });
