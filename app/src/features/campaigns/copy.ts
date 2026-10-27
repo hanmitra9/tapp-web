@@ -8,7 +8,9 @@ const CAMPAIGN_TYPES: Record<string, string> = {
 };
 export const categoryLabel = (c: string) => CAMPAIGN_TYPES[c] ?? labelOf(NICHES, c);
 export const CAMPAIGN_TYPE_OPTIONS = Object.entries(CAMPAIGN_TYPES).map(([value, label]) => ({ value, label }));
-export const contentTypeLabel = (c: string) => labelOf(CONTENT_CATEGORIES, c);
+// Campaign kind: clipping (cut the brand's videos) or UGC (original content).
+export const CONTENT_KINDS = [{ value: 'clipping', label: 'Clipping' }, { value: 'ugc', label: 'UGC' }];
+export const contentTypeLabel = (c: string) => (c === 'ugc' ? 'UGC' : c === 'clipping' ? 'Clipping' : labelOf(CONTENT_CATEGORIES, c));
 export const platformsLabel = (ps: Platform[]) => ps.map(platformLabel).join(' · ');
 
 export const CAMPAIGN_STATUS: Record<CampaignDetail['status'], string> = {
@@ -42,6 +44,6 @@ export function joinBlockCopy(code: string | null): { label: string; note: strin
 // Dropdown filters shared by Beranda and the Campaign tab.
 export const FILTER_CATEGORIES = [{ value: '', label: 'Semua' }, { value: 'entertainment', label: 'Entertainment' }, { value: 'education', label: 'Education' },
   { value: 'music', label: 'Music' }, { value: 'gaming', label: 'Gaming' }, { value: 'lifestyle', label: 'Lifestyle' }];
-export const FILTER_TYPES = [{ value: '', label: 'Semua' }, ...CONTENT_CATEGORIES];
+export const FILTER_TYPES = [{ value: '', label: 'Semua' }, ...CONTENT_KINDS];
 export const FEED_SORTS = [{ value: 'recommended', label: 'Rekomendasi' }, { value: 'newest', label: 'Terbaru' },
   { value: 'cpm', label: 'Tarif tertinggi' }, { value: 'deadline', label: 'Segera berakhir' }];

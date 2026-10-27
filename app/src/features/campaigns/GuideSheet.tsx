@@ -12,12 +12,17 @@ type Step = { title: string; items?: string[]; text?: string; danger?: boolean; 
 
 // The campaign's rules as a short numbered guide: what must be in the video, what to avoid, the story, material, platforms.
 export function guideSteps(c: CampaignDetail, assetCount: number): Step[] {
-  const must = [...c.guidelines_do, ...c.rules.filter((r) => r.kind === 'requirement').map((r) => r.body)];
+  const u = c.content_type === 'ugc' ? c.ugc_brief ?? {} : null;
+  const must = [...(u?.must_include ? [u.must_include] : []), ...c.guidelines_do, ...c.rules.filter((r) => r.kind === 'requirement').map((r) => r.body)];
   const steps: Step[] = [];
+  if (u) steps.push({ title: 'Konten UGC', text: [u.narrative ?? 'Buat konten orisinal sendiri, bukan potong video brand.',
+    u.cta ? `CTA: ${u.cta}` : null, u.caption_rules ? `Caption: ${u.caption_rules}` : null,
+    u.duration_min || u.duration_max ? `Durasi: ${u.duration_min ?? 0}–${u.duration_max ?? '∞'} detik` : null,
+    u.face === 'show' ? 'Wajah wajib tampil.' : u.face === 'hide' ? 'Tanpa wajah.' : null].filter(Boolean).join('\n\n') });
   if (must.length) steps.push({ title: 'Wajib ada di video kamu', items: must });
   if (c.guidelines_dont.length) steps.push({ title: 'Hindari', items: c.guidelines_dont, danger: true });
   if (c.description || c.objective) steps.push({ title: 'Isi video', text: c.description ?? c.objective ?? '' });
-  steps.push({ title: 'Materi', text: assetCount ? `${assetCount} konten sumber sudah disediakan — cek di Workspace.` : 'Bebas pakai footage sendiri.' });
+  steps.push({ title: 'Materi', text: assetCount ? `${assetCount} ${u ? 'materi brand' : 'konten sumber'} sudah disediakan — cek di Workspace.` : 'Bebas pakai footage sendiri.' });
   steps.push({ title: 'Platform yang didukung', platforms: true });
   return steps;
 }

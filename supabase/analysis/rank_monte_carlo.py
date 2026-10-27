@@ -1,6 +1,6 @@
 """Monte Carlo (10,000 runs) of TAPP creator economics under a rank/bonus scheme.
 
-Money flow per Rp of creator earnings (live pricing): brand pays budget B; 18% platform fee; creators get 70% of the
+Money flow per Rp of creator earnings (live pricing): brand pays budget B; 18% platform fee; creators get 80% of the
 rest -> creator pool = 0.574 B. So each Rp a creator earns was bought with 1/0.574 Rp of brand money (unspent
 budget is assumed refunded, the conservative case). TAPP then pays the level bonus at withdrawal, the referral bonus,
 the transfer cost of each withdrawal (creator pays a flat Rp10.000 fee), payment-gateway cost on brand top-ups and
@@ -10,8 +10,8 @@ import numpy as np
 
 RNG = np.random.default_rng(20261017)
 SIMS, MONTHS = 10_000, 12
-POOL = 0.82 * 0.70          # creator share of each brand Rp
-FEE = 10_000                # flat withdrawal fee charged to the creator
+POOL = 0.82 * 0.80          # creator share of each brand Rp (18% brand fee, 20% creator fee)
+FEE = 5_000                 # flat withdrawal fee charged to the creator
 MIN_PAYOUT = 50_000
 REFERRAL = 20_000
 
@@ -29,7 +29,7 @@ def run(s, n_sims=SIMS):
         n = RNG.integers(200, 3001)                                   # active creators
         mu, sig = RNG.uniform(9.0, 11.5), RNG.uniform(1.2, 2.2)       # monthly qualified views ~ lognormal (heavy tail)
         brand_cpm = RNG.uniform(2_500, 10_000)
-        creator_cpm = brand_cpm * 0.70
+        creator_cpm = brand_cpm * 0.80
         transfer_cost = RNG.uniform(2_500, 7_500)                     # per disbursement
         gateway = RNG.uniform(0.005, 0.025)                           # of brand money collected
         fraud = RNG.uniform(0.0, 0.06)                                # share of paid earnings later reversed, unrecoverable
@@ -97,3 +97,4 @@ if __name__ == '__main__':
 # sekarang: rugi 0/10000 | profit min Rp53,365,276 | margin median 34.9% (p1 30.6%) | bonus 8.47% (p99 13.41%) | penarikan terburuk Rp14,750 | kreator terburuk Rp15,066 | sebaran rank 18.3 / 17.1 / 30.4 / 28.1 / 6.0
 # kontencom: rugi 0/10000 | profit min Rp71,061,795 | margin median 38.5% (p1 34.2%) | bonus 1.95% (p99 7.41%) | penarikan terburuk Rp14,835 | kreator terburuk Rp15,142 | sebaran rank 81.1 / 18.5 / 0.3 / 0.0 / 0.0
 # baru: rugi 0/10000 | profit min Rp43,651,927 | margin median 37.1% (p1 33.7%) | bonus 4.51% (p99 7.85%) | penarikan terburuk Rp14,771 | kreator terburuk Rp15,167 | sebaran rank 29.2 / 42.8 / 21.1 / 6.2 / 0.7
+# fee brand 18% / kreator 20% / tarik Rp5.000 (0062): rugi 0/10000 | profit min Rp31,816,837 | margin median 27.9% (p1 24.3%) | bonus 4.50% (p99 7.85%) | penarikan terburuk -Rp880

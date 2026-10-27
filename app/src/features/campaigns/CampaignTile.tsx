@@ -27,7 +27,7 @@ export const CampaignTile = memo(function CampaignTile({ item, onPress }: { item
           {item.brand_logo ? <Image source={{ uri: item.brand_logo }} style={styles.mono} accessibilityIgnoresInvertColors />
             : <View style={styles.mono}><Text style={styles.monoText}>{item.brand_name.slice(0, 1).toUpperCase()}</Text></View>}
           <Text style={styles.brand} numberOfLines={1}>{item.brand_name}</Text>
-          {kind ? <Text style={styles.tag} numberOfLines={1}>{contentTypeLabel(kind).toUpperCase()}</Text> : null}
+          {kind ? <Text style={[styles.tag, kind === 'ugc' && styles.ugc]} numberOfLines={1}>{contentTypeLabel(kind).toUpperCase()}</Text> : null}
         </View>
         <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
         <Text style={styles.rate}>{idr(item.cpm)}<Text style={styles.unit}> / 1K views</Text></Text>
@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
   mono: { width: 18, height: 18, borderRadius: 9, backgroundColor: color.accentSoft, alignItems: 'center', justifyContent: 'center' },
   monoText: { fontSize: 10, fontFamily: type.label.fontFamily, color: color.link },
   brand: { ...type.caption, fontSize: 12, color: color.text, flex: 1 },
+  ugc: { color: '#FF7AA8', backgroundColor: 'rgba(255,77,141,0.14)' },
   tag: { fontSize: 9, letterSpacing: 0.3, fontFamily: type.label.fontFamily, color: color.textSecondary, paddingHorizontal: 6, paddingVertical: 2,
     borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.07)', overflow: 'hidden', maxWidth: 90 },
   title: { ...type.label, fontSize: 15, color: color.text },

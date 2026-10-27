@@ -1,13 +1,13 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-  addAssetLink, adjustBudget, BANNER_RULES, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
+  addAssetLink, adjustBudget, BANNER_RULES, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
   fetchHashtagStats, refreshHashtag, setCampaignHashtag,
 } from '../lib/api';
 import { adminError } from '../lib/errors';
 import { ago, dt, idr, num, toLocalInput } from '../lib/format';
-import { CAMPAIGN_TYPES, campaignTypeLabel, label, PLATFORMS } from '../lib/options';
+import { CAMPAIGN_TYPES, campaignTypeLabel, CONTENT_KINDS, FACE, label, PLATFORMS } from '../lib/options';
 import { useLoad } from '../lib/useLoad';
 
 const TABS: { key: string; label: string; statuses: CampaignStatus[] }[] = [
@@ -90,7 +90,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <div><h2>{f.title}</h2><p className="sub">{c?.brand_name} · {campaignTypeLabel(f.category)} · {f.platforms.map((p) => label(PLATFORMS, p.platform)).join(', ')}</p></div>
+        <div><h2>{f.title}</h2><p className="sub">{c?.brand_name} · {label(CONTENT_KINDS, f.content_type)} · {campaignTypeLabel(f.category)} · {f.platforms.map((p) => label(PLATFORMS, p.platform)).join(', ')}</p></div>
         <span className={`badge ${CSTATUS[f.status].tone}`}>{CSTATUS[f.status].t}</span>
       </div>
       {c?.status_reason ? <div className="notice warn" style={{ marginTop: 12 }}>Catatan status: {c.status_reason}</div> : null}
@@ -124,6 +124,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
           <div><dt>Budget brand</dt><dd>{idr(f.pricing?.brand_budget ?? f.budget)}</dd></div>
           <div><dt>Fee platform</dt><dd>{num(f.pricing?.budget_fee_pct ?? 0)}% dari budget</dd></div>
           <div><dt>Budget kreator</dt><dd>{idr(f.budget)}</dd></div>
+          <div><dt>Konten</dt><dd>{label(CONTENT_KINDS, f.content_type)}</dd></div>
           <div><dt>Minimum views</dt><dd>{num(f.min_views_to_qualify)}</dd></div>
           <div><dt>Maks per klip</dt><dd>{f.max_earning_per_submission ? idr(Number(f.max_earning_per_submission)) : '—'}</dd></div>
           <div><dt>Mulai</dt><dd>{dt(f.starts_at)}</dd></div>
@@ -263,9 +264,9 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
   const [f, setF] = useState({
     brand_id: initial?.brand_id ?? '', title: initial?.title ?? '', objective: initial?.objective ?? '', description: initial?.description ?? '',
     brand_name: initial ? (brands.data?.find((b) => b.id === initial.brand_id)?.name ?? '') : '',
-    category: initial?.category ?? 'entertainment', content_type: initial?.content_type ?? '',
+    category: initial?.category ?? 'entertainment', content_type: initial?.content_type ?? 'clipping',
     cpm: initial ? String(initial.pricing?.brand_cpm ?? initial.cpm) : '', budget: initial ? String(initial.pricing?.brand_budget ?? initial.budget) : '',
-    share: initial ? String(initial.pricing?.creator_share_pct ?? 70) : '70',
+    share: initial ? String(initial.pricing?.creator_share_pct ?? 80) : '80',
     max_earning_per_submission: initial?.max_earning_per_submission ? String(initial.max_earning_per_submission) : '',
     min_views_to_qualify: initial ? String(initial.min_views_to_qualify) : '1000',
     starts_at: local(initial?.starts_at ?? null), submission_deadline: local(initial?.submission_deadline ?? null), ends_at: local(initial?.ends_at ?? null),
@@ -273,6 +274,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
     do: (initial?.guidelines_do ?? []).join('\n'), dont: (initial?.guidelines_dont ?? []).join('\n'),
     requirement: byKind('requirement'), submission: byKind('submission'), performance: byKind('performance'), terms: initial?.terms ?? '',
   });
+  const [ugc, setUgc] = useState<UgcBrief>(initial?.ugc_brief ?? {});
   const [banner, setBanner] = useState<File | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -293,7 +295,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
         brand_id: brandId, title: f.title, objective: f.objective, description: f.description, category: f.category, content_type: f.content_type,
         cpm: n(f.cpm), budget: n(f.budget), creator_share_pct: n(f.share), max_earning_per_submission: n(f.max_earning_per_submission), min_views_to_qualify: n(f.min_views_to_qualify),
         starts_at: iso(f.starts_at), submission_deadline: iso(f.submission_deadline), ends_at: iso(f.ends_at), platforms: f.platforms,
-        guidelines_do: lines(f.do), guidelines_dont: lines(f.dont), terms: f.terms, rules,
+        guidelines_do: lines(f.do), guidelines_dont: lines(f.dont), terms: f.terms, rules, ugc_brief: f.content_type === 'ugc' ? ugc : {},
       });
       if (banner) await uploadBanner(r.id, banner);
       await onSaved(r.id);
@@ -311,7 +313,11 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
         <label className="field">Jenis campaign<select value={f.category} onChange={set('category')}>
           {CAMPAIGN_TYPES.some(([k]) => k === f.category) ? null : <option value={f.category}>{campaignTypeLabel(f.category)}</option>}
           {CAMPAIGN_TYPES.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+        <label className="field">Konten<select value={f.content_type} onChange={set('content_type')}>
+          {CONTENT_KINDS.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select>
+          <span className="sub" style={{ fontWeight: 400 }}>Clipping = potong video brand. UGC = kreator bikin konten sendiri.</span></label>
       </div>
+      {f.content_type === 'ugc' ? <UgcFields v={ugc} onChange={setUgc} /> : null}
       {id ? null : <BannerPicker file={banner} onPick={setBanner} onError={setError} />}
       <label className="field">Tujuan<input value={f.objective} onChange={set('objective')} /></label>
       <label className="field">Deskripsi / brief<textarea value={f.description} onChange={set('description')} rows={4} /></label>
@@ -321,7 +327,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
         <label className="field">Budget brand (Rp)<input inputMode="numeric" value={f.budget} onChange={set('budget')} required />
           <span className="sub" style={{ fontWeight: 400 }}>Budget kreator {idr(Math.floor(Number(n(f.budget) || 0) * (100 - (initial?.pricing?.budget_fee_pct ?? 18)) / 100 * Number(n(f.share) || 0) / 100))} (setelah fee platform {initial?.pricing?.budget_fee_pct ?? 18}% dan bagian kreator)</span></label>
         <label className="field">Bagian kreator (%)<input inputMode="numeric" value={f.share} onChange={set('share')} required />
-          <span className="sub" style={{ fontWeight: 400 }}>Standar 70%. Isi 100 untuk campaign milik TAPP sendiri.</span></label>
+          <span className="sub" style={{ fontWeight: 400 }}>Standar 80% (fee kreator 20%). Isi 100 untuk campaign milik TAPP sendiri.</span></label>
         <label className="field">Minimum views sebelum dibayar<input inputMode="numeric" value={f.min_views_to_qualify} onChange={set('min_views_to_qualify')} /></label>
         <label className="field">Maks penghasilan per klip (opsional)<input inputMode="numeric" value={f.max_earning_per_submission} onChange={set('max_earning_per_submission')} /></label>
       </div>
@@ -353,6 +359,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
 function CopyEditor({ f, onDone, onCancel }: { f: CampaignFull; onDone: () => Promise<void>; onCancel: () => void }) {
   const [v, setV] = useState({ title: f.title, objective: f.objective ?? '', description: f.description ?? '', do: f.guidelines_do.join('\n'),
     dont: f.guidelines_dont.join('\n'), terms: f.terms ?? '', submission_deadline: local(f.submission_deadline), ends_at: local(f.ends_at) });
+  const [ugc, setUgc] = useState<UgcBrief>(f.ugc_brief ?? {});
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const set = (k: keyof typeof v) => (e: { target: { value: string } }) => setV({ ...v, [k]: e.target.value });
@@ -360,7 +367,8 @@ function CopyEditor({ f, onDone, onCancel }: { f: CampaignFull; onDone: () => Pr
     e.preventDefault(); setBusy(true); setError(null);
     try {
       await updateCampaignCopy(f.id, { title: v.title, objective: v.objective, description: v.description, guidelines_do: lines(v.do),
-        guidelines_dont: lines(v.dont), terms: v.terms, submission_deadline: iso(v.submission_deadline), ends_at: iso(v.ends_at) });
+        guidelines_dont: lines(v.dont), terms: v.terms, submission_deadline: iso(v.submission_deadline), ends_at: iso(v.ends_at),
+        ...(f.content_type === 'ugc' ? { ugc_brief: ugc } : {}) });
       await onDone();
     } catch (err) { setError(adminError(err)); } finally { setBusy(false); }
   }
@@ -371,6 +379,7 @@ function CopyEditor({ f, onDone, onCancel }: { f: CampaignFull; onDone: () => Pr
       <label className="field">Judul<input value={v.title} onChange={set('title')} /></label>
       <label className="field">Tujuan<input value={v.objective} onChange={set('objective')} /></label>
       <label className="field">Deskripsi<textarea value={v.description} onChange={set('description')} rows={4} /></label>
+      {f.content_type === 'ugc' ? <UgcFields v={ugc} onChange={setUgc} /> : null}
       <div className="grid2">
         <label className="field">Do<textarea value={v.do} onChange={set('do')} /></label>
         <label className="field">Don't<textarea value={v.dont} onChange={set('dont')} /></label>
@@ -381,6 +390,29 @@ function CopyEditor({ f, onDone, onCancel }: { f: CampaignFull; onDone: () => Pr
       {error ? <div className="notice error">{error}</div> : null}
       <div className="actions"><button className="btn" disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan'}</button><button type="button" className="btn secondary" onClick={onCancel}>Batal</button></div>
     </form>
+  );
+}
+
+// UGC brief: what creators must say and show. Empty fields are hidden from creators.
+function UgcFields({ v, onChange }: { v: UgcBrief; onChange: (v: UgcBrief) => void }) {
+  const t = (k: keyof UgcBrief) => (e: { target: { value: string } }) => onChange({ ...v, [k]: e.target.value });
+  const num = (k: 'duration_min' | 'duration_max') => (e: { target: { value: string } }) =>
+    onChange({ ...v, [k]: e.target.value.replace(/\D/g, '') ? Number(e.target.value.replace(/\D/g, '')) : undefined });
+  return (
+    <div className="card section" style={{ display: 'grid', gap: 14 }}>
+      <h3 style={{ margin: 0 }}>Brief UGC</h3>
+      <label className="field">Tentang brand<textarea value={v.brand_about ?? ''} onChange={t('brand_about')} rows={2} maxLength={1000} /></label>
+      <label className="field">Narasi / ide cerita<textarea value={v.narrative ?? ''} onChange={t('narrative')} rows={4} maxLength={2000}
+        placeholder="Mis. ceritakan pengalaman sehari-hari lalu pakai produk…" /></label>
+      <div className="grid2">
+        <label className="field">CTA<input value={v.cta ?? ''} onChange={t('cta')} maxLength={300} placeholder="Mis. Beli di Alfamart / daftar pakai kode X" /></label>
+        <label className="field">Wajah kreator<select value={v.face ?? 'either'} onChange={t('face')}>{FACE.map(([k, l]) => <option key={k} value={k}>{l}</option>)}</select></label>
+        <label className="field">Elemen wajib<textarea value={v.must_include ?? ''} onChange={t('must_include')} maxLength={1000} placeholder="Mis. harus benar-benar pakai produk" /></label>
+        <label className="field">Caption wajib<textarea value={v.caption_rules ?? ''} onChange={t('caption_rules')} maxLength={500} placeholder="Mis. disclaimer, mention @brand" /></label>
+        <label className="field">Durasi min (detik)<input inputMode="numeric" value={v.duration_min ?? ''} onChange={num('duration_min')} /></label>
+        <label className="field">Durasi maks (detik)<input inputMode="numeric" value={v.duration_max ?? ''} onChange={num('duration_max')} /></label>
+      </div>
+    </div>
   );
 }
 
