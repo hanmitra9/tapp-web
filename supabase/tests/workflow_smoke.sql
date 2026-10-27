@@ -226,12 +226,12 @@ select payouts_open from admin_queue_counts;
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select id as draft_id, status from upsert_campaign_draft(null, jsonb_build_object(
   'brand_id','10000000-0000-0000-0000-000000000001','title','Draft by admin','category','crypto','content_type','ugc',
-  'ugc_brief',jsonb_build_object('narrative','  Cerita pakai produk  ','face','show','duration_min','30','junk','x','cta',''),
   'cpm',2500,'budget',5000000,'platforms',jsonb_build_array('tiktok','youtube'),
   'guidelines_do',jsonb_build_array('Hook cepat',''),'rules',jsonb_build_array(jsonb_build_object('kind','requirement','body','9:16')))) \gset
 select platforms, status from admin_campaigns where id = :'draft_id';
+select set_campaign_ugc_brief(:'draft_id', jsonb_build_object('narrative','  Cerita pakai produk  ','face','show','duration_min','30','junk','x','cta',''));
 select (get_campaign(:'draft_id')->>'content_type') as ugc_kind, get_campaign(:'draft_id')->'ugc_brief' as ugc_brief;
-select pg_temp.expect_error(format($$select upsert_campaign_draft(%L, '{"title":"x","cpm":1,"budget":1,"content_type":"vlog"}'::jsonb)$$, :'draft_id'), 'invalid_content_type');
+select pg_temp.expect_error(format($$select upsert_campaign_draft(%L, '{"title":"x","cpm":1,"budget":1,"content_type":"vlog"}'::jsonb)$$, :'draft_id'), 'new row for relation "campaigns" violates check constraint "campaigns_content_type_kind"');
 select title, cpm from upsert_campaign_draft(:'draft_id', jsonb_build_object('title','Draft v2','cpm',3000,'budget',5000000,'platforms',jsonb_build_array('tiktok')));
 select status from submit_campaign_for_approval(:'draft_id');
 select pg_temp.expect_error(format($$select upsert_campaign_draft(%L, '{"title":"x","cpm":1,"budget":1}'::jsonb)$$, :'draft_id'), 'terms_locked_after_draft');

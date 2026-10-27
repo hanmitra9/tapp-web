@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-  addAssetLink, adjustBudget, BANNER_RULES, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
+  addAssetLink, adjustBudget, BANNER_RULES, setUgcBrief, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
   fetchHashtagStats, refreshHashtag, setCampaignHashtag,
 } from '../lib/api';
@@ -295,8 +295,9 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
         brand_id: brandId, title: f.title, objective: f.objective, description: f.description, category: f.category, content_type: f.content_type,
         cpm: n(f.cpm), budget: n(f.budget), creator_share_pct: n(f.share), max_earning_per_submission: n(f.max_earning_per_submission), min_views_to_qualify: n(f.min_views_to_qualify),
         starts_at: iso(f.starts_at), submission_deadline: iso(f.submission_deadline), ends_at: iso(f.ends_at), platforms: f.platforms,
-        guidelines_do: lines(f.do), guidelines_dont: lines(f.dont), terms: f.terms, rules, ugc_brief: f.content_type === 'ugc' ? ugc : {},
+        guidelines_do: lines(f.do), guidelines_dont: lines(f.dont), terms: f.terms, rules,
       });
+      if (f.content_type === 'ugc') await setUgcBrief(r.id, ugc);
       if (banner) await uploadBanner(r.id, banner);
       await onSaved(r.id);
     } catch (err) { setError(adminError(err)); } finally { setBusy(false); }
