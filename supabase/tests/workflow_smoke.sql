@@ -236,6 +236,10 @@ select title, cpm from upsert_campaign_draft(:'draft_id', jsonb_build_object('ti
 select status from submit_campaign_for_approval(:'draft_id');
 select pg_temp.expect_error(format($$select upsert_campaign_draft(%L, '{"title":"x","cpm":1,"budget":1}'::jsonb)$$, :'draft_id'), 'terms_locked_after_draft');
 select title from admin_update_campaign_copy(:'draft_id', '{"title":"Draft v3 (copy edit)"}'::jsonb);
+select id as del_id from upsert_campaign_draft(null, jsonb_build_object('brand_id','10000000-0000-0000-0000-000000000001','title','Delete me','cpm',1000,'budget',100000,'platforms',jsonb_build_array('tiktok'))) \gset
+select admin_delete_campaign(:'del_id');
+do $$ begin if exists (select 1 from campaigns where title = 'Delete me') then raise exception 'campaign should be deleted'; end if; end $$;
+select pg_temp.expect_error($$select admin_delete_campaign('20000000-0000-0000-0000-000000000001')$$, 'campaign_has_submissions');
 select campaigns_pending, disputes_open, tickets_open from admin_queue_counts;
 -- creator raises a ticket + dispute
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');

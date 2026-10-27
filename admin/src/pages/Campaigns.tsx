@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-  addAssetLink, adjustBudget, BANNER_RULES, setUgcBrief, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
+  addAssetLink, adjustBudget, BANNER_RULES, deleteCampaign, setUgcBrief, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
   fetchHashtagStats, refreshHashtag, setCampaignHashtag,
 } from '../lib/api';
@@ -66,7 +66,8 @@ export function Campaigns() {
         </div>
         <div className="detail">
           {selected === 'new' ? <Editor id={null} onSaved={(id) => after(id)} onCancel={() => setSelected(null)} />
-            : selected ? <Detail key={selected} c={list.data?.find((x) => x.id === selected) ?? null} id={selected} onChanged={() => after(selected)} />
+            : selected ? <Detail key={selected} c={list.data?.find((x) => x.id === selected) ?? null} id={selected} onChanged={() => after(selected)}
+                onDeleted={async () => { setSelected(null); await after(); }} />
             : <div className="empty">Pilih campaign atau buat yang baru.</div>}
         </div>
       </div>
@@ -74,7 +75,7 @@ export function Campaigns() {
   );
 }
 
-function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onChanged: () => Promise<void> }) {
+function Detail({ id, c, onChanged, onDeleted }: { id: string; c: AdminCampaign | null; onChanged: () => Promise<void>; onDeleted: () => Promise<void> }) {
   const full = useLoad(() => getCampaignFull(id), [id]);
   const breakdown = useLoad(() => platformBreakdown(id), [id]);
   const [editing, setEditing] = useState(false);
@@ -146,6 +147,7 @@ function Detail({ id, c, onChanged }: { id: string; c: AdminCampaign | null; onC
       ) : null}
 
       <Assets f={f} onDone={refresh} />
+      <DeleteCard f={f} c={c} onDeleted={onDeleted} />
     </>
   );
 }
@@ -176,6 +178,28 @@ function StatusActions({ f, onDone }: { f: CampaignFull; onDone: () => Promise<v
       {move?.reason ? <label className="field">Alasan (dikirim ke kreator yang bergabung)<textarea value={reason} onChange={(e) => setReason(e.target.value)} /></label> : null}
       {error ? <div className="notice error">{error}</div> : null}
       {move ? <div className="actions"><button className="btn" disabled={busy} onClick={confirm}>{busy ? 'Menyimpan…' : `Konfirmasi: ${move.label}`}</button><button className="btn secondary" onClick={() => setMove(null)}>Batal</button></div> : null}
+    </div>
+  );
+}
+
+// Hard delete for campaigns with no submissions (tests, duplicates). Anything with history is cancelled/archived instead.
+function DeleteCard({ f, c, onDeleted }: { f: CampaignFull; c: AdminCampaign | null; onDeleted: () => Promise<void> }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  if (c && c.submissions > 0) return null;
+  const live = ['active', 'paused', 'ending'].includes(f.status) && (c?.creators_joined ?? 0) > 0;
+  async function del() {
+    if (!confirm(`Hapus campaign "${f.title}" permanen? Tidak bisa dibatalkan.`)) return;
+    setBusy(true); setError(null);
+    try { await deleteCampaign(f.id); await onDeleted(); } catch (e) { setError(adminError(e)); setBusy(false); }
+  }
+  return (
+    <div className="section card">
+      <h2>Hapus campaign</h2>
+      <p className="sub" style={{ margin: 0 }}>{live ? 'Ada kreator yang sudah bergabung. Batalkan campaign dulu, baru bisa dihapus.'
+        : 'Belum ada submission, jadi campaign ini bisa dihapus permanen beserta platform, aturan, dan materinya.'}</p>
+      {error ? <div className="notice error">{error}</div> : null}
+      <div className="actions"><button className="btn danger" disabled={busy || live} onClick={del}>{busy ? 'Menghapus…' : 'Hapus permanen'}</button></div>
     </div>
   );
 }
