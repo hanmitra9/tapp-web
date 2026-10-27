@@ -292,6 +292,8 @@ function PayPanel({ s, latestViews, fair, onDone, approve = false, onCancel }: {
     alreadyEarned: s.earned, budget: s.budget, campaignEarned: s.campaign_earned, override: s.budget_override,
   }), [v, valid, s]);
   const amount = Math.max(p.delta, 0);
+  const share = s.creator_share_pct ?? 100;
+  const gross = share > 0 ? Math.round((amount * 100) / share) : amount;
 
   async function credit() {
     setError(null); setOk(null);
@@ -318,12 +320,19 @@ function PayPanel({ s, latestViews, fair, onDone, approve = false, onCancel }: {
             : auto ? <>Views tidak terbaca otomatis, isi manual dari postingan. <a href="#" onClick={(e) => { e.preventDefault(); void readAuto(); }}>Coba lagi</a></> : null}
         </span></label>
       <div className="preview">
-        <span>Masuk ke saldo kreator</span>
+        {share < 100 && amount > 0 ? (
+          <dl className="kv" style={{ gridTemplateColumns: 'repeat(3, minmax(0, 1fr))' }}>
+            <div><dt>Nilai views</dt><dd>{idr(gross)}</dd></div>
+            <div><dt>Fee platform kreator ({num(100 - share)}%)</dt><dd>−{idr(gross - amount)}</dd></div>
+            <div><dt>Bersih ke kreator</dt><dd>{idr(amount)}</dd></div>
+          </dl>
+        ) : null}
+        <span>Masuk ke saldo kreator (bersih)</span>
         <strong>{idr(amount)}</strong>
-        <span className="sub">Bonus level, fee platform, dan biaya transfer dihitung saat kreator menarik saldo.</span>
+        <span className="sub">Fee platform {num(100 - share)}% sudah dipotong. Saat tarik saldo hanya ada biaya transfer + bonus level.</span>
         {p.belowMin ? <span style={{ color: 'var(--warning)' }}>Di bawah minimum {num(s.min_views_to_qualify)} views, jadi bayarannya 0.</span> : null}
         {p.capped ? <span style={{ color: 'var(--warning)' }}>Dibatasi sisa budget campaign.</span> : null}
-        <span className="sub">Sisa budget campaign: {idr(Math.max(s.budget - s.campaign_earned, 0))} → {idr(Math.max(s.budget - s.campaign_earned - amount, 0))}</span>
+        <span className="sub">Sisa budget kreator di campaign: {idr(Math.max(s.budget - s.campaign_earned, 0))} → {idr(Math.max(s.budget - s.campaign_earned - amount, 0))}</span>
       </div>
       {error ? <div className="notice error">{error}</div> : null}
       {ok ? <div className="notice ok">{ok}</div> : null}

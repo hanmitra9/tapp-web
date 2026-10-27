@@ -12,9 +12,10 @@ export type AdminSubmission = { check?: SubmissionCheck | null;
   account_handle: string | null; account_followers: number | null; creator_approved: number; creator_rejected: number;
   latest_metric_id: string | null; views: number | null; likes: number | null; comments: number | null; shares: number | null; saves: number | null;
   metrics_captured_at: string | null; metric_count: number; auto_hold_reason: string | null; auto_hold_at: string | null;
+  creator_share_pct?: number;   // 0064: creator keeps this %, the rest is the creator platform fee
 };
 const NUMERIC = ['qualified_views', 'earned', 'cpm', 'min_views_to_qualify', 'max_earning_per_submission', 'budget', 'campaign_earned',
-  'account_followers', 'creator_approved', 'creator_rejected', 'views', 'likes', 'comments', 'shares', 'saves', 'metric_count'] as const;
+  'account_followers', 'creator_approved', 'creator_rejected', 'views', 'likes', 'comments', 'shares', 'saves', 'metric_count', 'creator_share_pct'] as const;
 const norm = (r: Record<string, unknown>) => {
   const o = { ...r };
   for (const k of NUMERIC) if (o[k] != null) o[k] = Number(o[k]);
