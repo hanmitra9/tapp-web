@@ -44,7 +44,7 @@ export function Screen({ children, footer, scroll = true, scrollRef, refreshCont
         {scroll ? (
           <ScrollView ref={scrollRef} refreshControl={refreshControl} style={styles.flex}
             contentContainerStyle={[styles.content, isWide && styles.wideTop, tabPad, column]} keyboardShouldPersistTaps="handled">
-            {children}
+            <View {...({ dataSet: { tapp: 'enter' } } as object)}>{children}</View>
           </ScrollView>
         ) : (
           <View style={[styles.flex, styles.content, isWide && styles.wideTop, tabPad, column]}>{children}</View>

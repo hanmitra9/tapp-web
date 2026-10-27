@@ -42,6 +42,24 @@ if (typeof document !== 'undefined' && !document.getElementById('tapp-web-styles
     `html,body{background:radial-gradient(1100px 620px at 50% -8%,rgba(9,110,218,0.16),rgba(12,101,196,0.04) 45%,transparent 70%),radial-gradient(800px 700px at 100% 60%,rgba(12,101,196,0.05),transparent 65%),linear-gradient(180deg,#0B0B12 0%,#07070A 30%,#050507 100%) fixed #060608}`,
     `body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:9999;opacity:.04;mix-blend-mode:overlay;background-image:url("${GRAIN}")}`,
     `::selection{background:rgba(12,101,196,0.45)}`,
+    // Page entrance: sections rise in, staggered (first 8), once per screen mount.
+    `@keyframes tappIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}`,
+    `[data-tapp~="enter"]>*{animation:tappIn .5s cubic-bezier(.2,.7,.2,1) both}`,
+    ...[1, 2, 3, 4, 5, 6, 7, 8].map((i) => `[data-tapp~="enter"]>*:nth-child(${i}){animation-delay:${(i - 1) * 45}ms}`),
+    `@media (prefers-reduced-motion:reduce){[data-tapp~="enter"]>*{animation:none}}`,
+    // Pointer affordance + soft focus ring for keyboard users.
+    `[role="button"],[role="link"],[role="tab"],[role="menuitem"],[role="checkbox"],[role="switch"]{cursor:pointer}`,
+    `[role="button"]:focus-visible,[role="link"]:focus-visible,[role="tab"]:focus-visible{outline:2px solid rgba(117,178,244,0.7);outline-offset:2px}`,
+    `*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.12) transparent}`,
+    `::-webkit-scrollbar{width:8px;height:8px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:8px}::-webkit-scrollbar-track{background:transparent}`,
+    // Segmented control: the active segment is a lit blue pill.
+    `[data-tapp~="seg-on"]{background:linear-gradient(180deg,#1E6FCB,#0E4F99)!important;box-shadow:0 8px 22px -10px rgba(12,101,196,0.9),inset 0 1px 0 rgba(255,255,255,0.22)!important}`,
+    `[data-tapp~="seg-track"]{box-shadow:inset 0 1px 2px rgba(0,0,0,0.55),inset 0 0 0 1px rgba(255,255,255,0.05)}`,
+    // Primary button: moving sheen on hover.
+    `[data-tapp~="cta"]{position:relative;transition:transform .18s ease,box-shadow .18s ease}`,
+    `[data-tapp~="cta"]:hover{transform:translateY(-1px);box-shadow:0 16px 36px -14px rgba(73,154,240,1),inset 0 1px 0 rgba(255,255,255,0.3)!important}`,
+    `[data-tapp~="cta"]::after{content:'';position:absolute;inset:0;border-radius:inherit;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,0.22) 48%,transparent 62%);background-size:250% 100%;background-position:120% 0;transition:background-position .7s ease;pointer-events:none}`,
+    `[data-tapp~="cta"]:hover::after{background-position:-40% 0}`,
     // Form fields: the field container draws the focus ring, so no browser outline box inside it; autofill keeps the dark field.
     `input,textarea,select{outline:none!important;box-shadow:none}`,
     `input:-webkit-autofill,input:-webkit-autofill:hover,input:-webkit-autofill:focus,textarea:-webkit-autofill{-webkit-text-fill-color:#F4F4F5;caret-color:#F4F4F5;-webkit-box-shadow:0 0 0 1000px #141419 inset;box-shadow:0 0 0 1000px #141419 inset;transition:background-color 9999s ease-out 0s}`,

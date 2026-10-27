@@ -58,7 +58,15 @@ export const hairline = 1;
 
 // Premium card surface (web): top-lit gradient, hairline border, deep soft shadow — same as the website cards.
 export const card = {
-  backgroundColor: '#101016', borderWidth: 1, borderColor: 'rgba(255,255,255,0.07)',
-  backgroundImage: 'linear-gradient(180deg, rgba(255,255,255,0.045) 0%, rgba(255,255,255,0.012) 45%, rgba(255,255,255,0) 100%)',
-  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.05), 0 24px 60px -34px rgba(0,0,0,0.95)',
+  // Gradient hairline: the last layer paints the border box, the rest sit on the padding box above it.
+  backgroundColor: 'transparent', borderWidth: 1, borderColor: 'transparent',
+  backgroundImage: [
+    'radial-gradient(120% 70% at 0% 0%, rgba(12,101,196,0.10), transparent 55%)',
+    'linear-gradient(180deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.014) 42%, rgba(255,255,255,0) 100%)',
+    'linear-gradient(#0F0F15, #0F0F15)',
+    'linear-gradient(155deg, rgba(117,178,244,0.34) 0%, rgba(255,255,255,0.07) 28%, rgba(255,255,255,0.04) 70%, rgba(117,178,244,0.16) 100%)',
+  ].join(', '),
+  backgroundClip: 'padding-box, padding-box, padding-box, border-box',
+  backgroundOrigin: 'border-box',
+  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06), 0 28px 60px -36px rgba(0,0,0,0.95)',
 } as ViewStyle;
