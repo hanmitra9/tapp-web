@@ -169,7 +169,7 @@ export default function Payments() {
       </View>
       {d ? (
         <Text style={styles.terms}>
-          {open ? `Pencairan ${PAYOUT_STATUS[open.status].label.toLowerCase()} · maks 1x24 jam kerja` : `Min. tarik ${idr(d.terms.min)} · biaya transfer ${idr(d.terms.fee)}`}
+          {open ? `Pencairan ${PAYOUT_STATUS[open.status].label.toLowerCase()} · maks 2x24 jam kerja` : `Min. tarik ${idr(d.terms.min)} · biaya transfer ${idr(d.terms.fee)}`}
         </Text>
       ) : null}
 
