@@ -41,7 +41,7 @@ export function SubmissionRow({ s, showCampaign, onResubmit, onWithdraw, onDispu
         <View style={styles.metrics}>
           <Metric label="Views" value={s.raw_views == null ? '—' : compact(s.raw_views)} />
           <Metric label="Qualified" value={compact(s.qualified_views)} />
-          <Metric label="Penghasilan" value={idr(s.earned)} />
+          <Metric label="Bersih" value={idr(s.earned)} />
         </View>
       ) : null}
 
