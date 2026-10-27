@@ -103,7 +103,7 @@ select id as payout_id, amount, fee, bonus, net_amount, status from request_payo
 select pg_temp.expect_error($$select request_payout(gen_random_uuid())$$,'payout_already_open');
 do $$ declare p public.payout_requests; begin
   select * into p from payout_requests order by created_at desc limit 1;
-  if p.amount <> 600000 or p.fee <> 10000 or p.fee_pct <> 0 then raise exception 'withdrawal fee should be the flat 10.000 only: % % %', p.amount, p.fee, p.fee_pct; end if;
+  if p.amount <> 600000 or p.fee <> 5000 or p.fee_pct <> 0 then raise exception 'withdrawal fee should be the flat 5.000 only: % % %', p.amount, p.fee, p.fee_pct; end if;
   if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) then raise exception 'bonus wrong'; end if;
   if p.net_amount <> p.amount + p.bonus - p.fee then raise exception 'net wrong'; end if;
 end $$;
@@ -581,7 +581,7 @@ select withdrawal_fee_pct('new') as new_5, withdrawal_fee_pct('rising') as risin
 do $$ declare p public.payout_requests; begin
   select * into p from payout_requests where status = 'paid' order by created_at limit 1;
   if p.fee_tier is null then raise exception 'fee tier not recorded'; end if;
-  if p.fee <> 10000 or p.fee_pct <> 0 then raise exception 'flat transfer fee expected, got % (% pct)', p.fee, p.fee_pct; end if;
+  if p.fee <> 5000 or p.fee_pct <> 0 then raise exception 'flat transfer fee expected, got % (% pct)', p.fee, p.fee_pct; end if;
   if p.net_amount <> p.amount + p.bonus - p.fee then raise exception 'net mismatch'; end if;
   if p.bonus <> round(p.amount * tier_bonus_pct(p.fee_tier) / 100) or p.bonus_pct <> tier_bonus_pct(p.fee_tier) then raise exception 'bonus % pct % tier %', p.bonus, p.bonus_pct, p.fee_tier; end if;
   if tier_bonus_pct('elite') <= tier_bonus_pct('new') then raise exception 'higher tier should earn more'; end if;

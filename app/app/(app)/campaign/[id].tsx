@@ -149,6 +149,7 @@ export default function CampaignDetailScreen() {
           `100rb views = ${idr(c.cpm * 100)}${c.max_earning_per_submission && c.cpm * 100 > c.max_earning_per_submission ? ` (dibatasi ${idr(c.max_earning_per_submission)})` : ''}.`,
           c.min_views_to_qualify > 0 ? `Min. ${num(c.min_views_to_qualify)} views per klip.` : 'Tanpa minimum views.',
           c.max_earning_per_submission ? `Maks. ${idr(c.max_earning_per_submission)} per klip.` : 'Tanpa batas per klip.',
+          'Tarif sudah bersih, fee platform sudah dipotong.',
           'Views iklan, bot & repost tidak dihitung.',
         ]} />
       </Section>

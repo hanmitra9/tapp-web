@@ -266,7 +266,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
     brand_name: initial ? (brands.data?.find((b) => b.id === initial.brand_id)?.name ?? '') : '',
     category: initial?.category ?? 'entertainment', content_type: initial?.content_type ?? 'clipping',
     cpm: initial ? String(initial.pricing?.brand_cpm ?? initial.cpm) : '', budget: initial ? String(initial.pricing?.brand_budget ?? initial.budget) : '',
-    share: initial ? String(initial.pricing?.creator_share_pct ?? 70) : '70',
+    share: initial ? String(initial.pricing?.creator_share_pct ?? 80) : '80',
     max_earning_per_submission: initial?.max_earning_per_submission ? String(initial.max_earning_per_submission) : '',
     min_views_to_qualify: initial ? String(initial.min_views_to_qualify) : '1000',
     starts_at: local(initial?.starts_at ?? null), submission_deadline: local(initial?.submission_deadline ?? null), ends_at: local(initial?.ends_at ?? null),
@@ -327,7 +327,7 @@ function Editor({ id, initial, onSaved, onCancel }: { id: string | null; initial
         <label className="field">Budget brand (Rp)<input inputMode="numeric" value={f.budget} onChange={set('budget')} required />
           <span className="sub" style={{ fontWeight: 400 }}>Budget kreator {idr(Math.floor(Number(n(f.budget) || 0) * (100 - (initial?.pricing?.budget_fee_pct ?? 18)) / 100 * Number(n(f.share) || 0) / 100))} (setelah fee platform {initial?.pricing?.budget_fee_pct ?? 18}% dan bagian kreator)</span></label>
         <label className="field">Bagian kreator (%)<input inputMode="numeric" value={f.share} onChange={set('share')} required />
-          <span className="sub" style={{ fontWeight: 400 }}>Standar 70%. Isi 100 untuk campaign milik TAPP sendiri.</span></label>
+          <span className="sub" style={{ fontWeight: 400 }}>Standar 80% (fee kreator 20%). Isi 100 untuk campaign milik TAPP sendiri.</span></label>
         <label className="field">Minimum views sebelum dibayar<input inputMode="numeric" value={f.min_views_to_qualify} onChange={set('min_views_to_qualify')} /></label>
         <label className="field">Maks penghasilan per klip (opsional)<input inputMode="numeric" value={f.max_earning_per_submission} onChange={set('max_earning_per_submission')} /></label>
       </div>
