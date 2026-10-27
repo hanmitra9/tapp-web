@@ -48,16 +48,18 @@ export async function fetchWithdrawalFee(uid: string): Promise<{ tier: string; p
 }
 
 // Withdrawal terms (0045/0046): platform fee % + flat transfer fee per withdrawal, level bonus on top, minimum balance.
-export type WithdrawTerms = { tier: string; bonusPct: number; feePct: number; fee: number; min: number };
+export type WithdrawTerms = { tier: string; bonusPct: number; feePct: number; fee: number; min: number; max: number | null };
 export async function fetchWithdrawTerms(uid: string): Promise<WithdrawTerms> {
   const [c, s] = await Promise.all([
     supabase.from('creator_profiles').select('tier').eq('user_id', uid).single(),
-    supabase.from('app_settings').select('key, value').in('key', ['tier_bonus_pct', 'withdrawal_fee_idr', 'min_payout_idr', 'creator_fee_pct']),
+    supabase.from('app_settings').select('key, value').in('key', ['tier_bonus_pct', 'withdrawal_fee_idr', 'min_payout_idr', 'creator_fee_pct', 'max_payout_idr']),
   ]);
   const tier = (c.data?.tier as string | undefined) ?? 'new';
   const v = (k: string) => s.data?.find((x) => x.key === k)?.value;
   const bonus = (v('tier_bonus_pct') ?? {}) as Record<string, number>;
-  return { tier, bonusPct: Number(bonus[tier] ?? 0), feePct: Number(v('creator_fee_pct') ?? 0), fee: Number(v('withdrawal_fee_idr') ?? 5000), min: Number(v('min_payout_idr') ?? 50000) };
+  const cap = (v('max_payout_idr') ?? {}) as Record<string, number>;   // per withdrawal, by rank (0066)
+  return { tier, bonusPct: Number(bonus[tier] ?? 0), feePct: Number(v('creator_fee_pct') ?? 0), fee: Number(v('withdrawal_fee_idr') ?? 5000), min: Number(v('min_payout_idr') ?? 50000),
+    max: cap[tier] != null ? Number(cap[tier]) : null };
 }
 
 export async function requestPayout(idempotencyKey: string): Promise<Payout> {

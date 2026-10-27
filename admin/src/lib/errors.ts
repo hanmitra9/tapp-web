@@ -12,6 +12,8 @@ const COPY: Record<string, string> = {
   reverse_earnings_first: 'Submission sudah punya penghasilan. Turunkan qualified views ke 0 dulu sebelum menolak.',
   onboarding_incomplete: 'Kreator belum menyelesaikan onboarding.',
   reference_required: 'Nomor referensi transfer wajib diisi.',
+  identity_blocked: 'Identitas ini ada di blacklist.',
+  invalid_identity: 'Jenis atau nilai identitas tidak valid.',
   campaign_has_submissions: 'Campaign ini sudah punya submission, jadi tidak bisa dihapus. Batalkan atau arsipkan saja.',
   campaign_has_creators: 'Masih ada kreator yang bergabung. Batalkan campaign dulu (kreator diberi tahu), baru hapus.',
   terms_locked_after_draft: 'Syarat komersial (CPM, budget, minimum views) terkunci setelah draft. Ubah budget lewat "Atur budget".',

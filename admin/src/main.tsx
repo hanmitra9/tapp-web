@@ -6,6 +6,7 @@ import { Layout } from './components/Layout';
 import { Creators } from './pages/Creators';
 import { Dashboard } from './pages/Dashboard';
 import { Audit } from './pages/Audit';
+import { Blacklist } from './pages/Blacklist';
 import { Brands } from './pages/Brands';
 import { Campaigns } from './pages/Campaigns';
 import { Disputes } from './pages/Disputes';
@@ -33,6 +34,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="support" element={<Support />} />
             <Route path="meetings" element={<Meetings />} />
             <Route path="connections" element={<Connections />} />
+            <Route path="blacklist" element={<Blacklist />} />
             <Route path="audit" element={<Audit />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>
