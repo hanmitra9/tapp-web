@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
-  addAssetLink, adjustBudget, BANNER_RULES, deleteCampaign, setUgcBrief, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
+  addAssetLink, adjustBudget, BANNER_RULES, deleteCampaign, setSubmissionCap, setUgcBrief, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
   fetchHashtagStats, refreshHashtag, setCampaignHashtag,
 } from '../lib/api';
@@ -114,6 +114,7 @@ function Detail({ id, c, onChanged, onDeleted }: { id: string; c: AdminCampaign 
 
       <BannerCard f={f} onDone={refresh} />
       <HashtagCard f={f} onDone={refresh} />
+      <CapCard f={f} onDone={refresh} />
       <StatusActions f={f} onDone={refresh} />
       {f.status !== 'draft' && c ? <BudgetCard c={c} onDone={refresh} /> : null}
 
@@ -178,6 +179,30 @@ function StatusActions({ f, onDone }: { f: CampaignFull; onDone: () => Promise<v
       {move?.reason ? <label className="field">Alasan (dikirim ke kreator yang bergabung)<textarea value={reason} onChange={(e) => setReason(e.target.value)} /></label> : null}
       {error ? <div className="notice error">{error}</div> : null}
       {move ? <div className="actions"><button className="btn" disabled={busy} onClick={confirm}>{busy ? 'Menyimpan…' : `Konfirmasi: ${move.label}`}</button><button className="btn secondary" onClick={() => setMove(null)}>Batal</button></div> : null}
+    </div>
+  );
+}
+
+// Videos per creator: empty = no cap. Rejected clips don't count toward it.
+function CapCard({ f, onDone }: { f: CampaignFull; onDone: () => Promise<void> }) {
+  const [v, setV] = useState(f.max_submissions_per_creator ? String(f.max_submissions_per_creator) : '');
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ ok: boolean; t: string } | null>(null);
+  async function save() {
+    const n = Number(v.replace(/\D/g, '') || 0);
+    setBusy(true); setMsg(null);
+    try { await setSubmissionCap(f.id, n); await onDone(); setMsg({ ok: true, t: n ? `Maks. ${n} video per kreator.` : 'Tanpa batas.' }); }
+    catch (e) { setMsg({ ok: false, t: adminError(e) }); } finally { setBusy(false); }
+  }
+  return (
+    <div className="section card">
+      <h2>Batas video per kreator</h2>
+      <div className="actions" style={{ alignItems: 'flex-end' }}>
+        <label className="field" style={{ maxWidth: 200 }}>Maks. video<input inputMode="numeric" value={v} onChange={(e) => setV(e.target.value)} placeholder="Tanpa batas" /></label>
+        <button className="btn secondary" disabled={busy} onClick={save}>{busy ? 'Menyimpan…' : 'Simpan'}</button>
+      </div>
+      <p className="sub" style={{ margin: 0 }}>Kosongkan untuk tanpa batas. Klip yang ditolak tidak dihitung.</p>
+      {msg ? <div className={`notice ${msg.ok ? 'ok' : 'error'}`}>{msg.t}</div> : null}
     </div>
   );
 }
