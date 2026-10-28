@@ -22,7 +22,7 @@ export function LevelProgress({ p }: { p: TierProgress }) {
         <LinearGradient colors={gradient.card} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={[styles.fill, { width: `${Math.max(ratio * 100, 3)}%` }]} />
       </View>
       <Text style={styles.note}>
-        {done ? 'Level tertinggi.' : `${views(p.toNext ?? 0)} views lagi ke ${LABEL[p.next!]} (+${p.nextBonusPct}%)`}
+        {done ? 'Level tertinggi.' : `${views(p.toNext ?? 0)} views lagi ke ${LABEL[p.next!]} ${p.nextBonusPct ? ` (+${p.nextBonusPct}%)` : ''}`}
       </Text>
     </Pressable>
   );
