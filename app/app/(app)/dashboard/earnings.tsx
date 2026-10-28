@@ -87,7 +87,7 @@ export default function Payments() {
 
   function confirm() {
     if (!d || busy) return;
-    if (open) { showAlert('Sedang diproses', `Pencairan ${idr(open.amount + Number(open.bonus ?? 0) - (open.fee ?? 0))} masih ${PAYOUT_STATUS[open.status].label.toLowerCase()}. Maks 1x24 jam kerja.`); return; }
+    if (open) { showAlert('Sedang diproses', `Pencairan ${idr(open.amount + Number(open.bonus ?? 0) - (open.fee ?? 0))} masih ${PAYOUT_STATUS[open.status].label.toLowerCase()}. Maks 2x24 jam kerja.`); return; }
     if (!d.method) { setMethodOpen(true); return; }
     if (available < d.terms.min) { showAlert('Belum cukup', `Minimal penarikan ${idr(d.terms.min)}. Saldo kamu ${idr(available)}.`); return; }
     showAlert('Tarik saldo?', `Saldo ${idr(available)}${bonus - refBonus ? ` + bonus level ${idr(bonus - refBonus)}` : ''}${refBonus ? ` + bonus referral ${idr(refBonus)}` : ''}${platformFee ? ` − fee ${d.terms.feePct}% ${idr(platformFee)}` : ''} − biaya transfer ${idr(d.terms.fee)}.\nDiterima ${idr(net)} ke ${d.method.provider}.`, [
@@ -164,7 +164,7 @@ export default function Payments() {
         </View>
         <View style={[styles.tile, styles.tileAmber]}>
           <View style={styles.tileHead}><View style={[styles.tileIcon, { backgroundColor: color.warningSoft }]}><Feather name="clock" size={14} color={color.warning} /></View>
-            <Text style={styles.tileLabel}>Sedang diproses</Text></View>
+            <Text style={styles.tileLabel}>Masa tahan 7 hari</Text></View>
           <Text style={styles.tileValue} numberOfLines={1} adjustsFontSizeToFit>{d ? idr(processing) : '—'}</Text>
         </View>
       </View>

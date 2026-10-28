@@ -147,7 +147,7 @@ function Featured({ items, onOpen }: { items: FeedItem[]; onOpen: (id: string) =
         <ScrollView ref={ref} horizontal pagingEnabled showsHorizontalScrollIndicator={false} scrollEventThrottle={32}
           onScroll={(e) => setI(Math.round(e.nativeEvent.contentOffset.x / w))}>
           {items.map((c) => (
-            <View key={c.id} style={[styles.feat, { width: w }]} {...(c.banner_url ? {} : web('art'))}>
+            <View key={c.id} style={[styles.feat, { width: w }, !c.banner_url && styles.featPlain]} {...(c.banner_url ? {} : web('art'))}>
               {c.banner_url ? <Image source={{ uri: c.banner_url }} style={StyleSheet.absoluteFill} resizeMode="cover" accessibilityIgnoresInvertColors /> : null}
               <LinearGradient colors={['rgba(4,6,12,0.1)', 'rgba(4,6,12,0.55)', 'rgba(4,6,12,0.95)']} locations={[0, 0.45, 1]} style={StyleSheet.absoluteFill} />
               <View style={styles.featBody}>
@@ -159,7 +159,10 @@ function Featured({ items, onOpen }: { items: FeedItem[]; onOpen: (id: string) =
                   <Text style={styles.featCat}>{categoryLabel(c.category).toUpperCase()}</Text>
                 </View>
                 <View style={styles.featLine} />
-                <Text style={styles.featRate}>{idr(c.cpm)}<Text style={styles.featUnit}> / 1K views</Text></Text>
+                <View style={styles.featRow}>
+                  <Text style={styles.featRate}>{idr(c.cpm)}<Text style={styles.featUnit}> / 1K views</Text></Text>
+                  {c.budget > 0 ? <Text style={styles.featLeft}>Sisa {Math.max(0, Math.min(100, Math.round((c.remaining / c.budget) * 100)))}%</Text> : null}
+                </View>
                 <Pressable onPress={() => onOpen(c.id)} accessibilityRole="button" style={({ pressed }) => [pressed && { opacity: 0.85 }]}>
                   <LinearGradient colors={gradient.button} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={styles.featBtn}>
                     <Text style={styles.featBtnText}>{c.joined ? 'Buka campaign' : 'Ikut campaign'}</Text>
@@ -225,6 +228,10 @@ const styles = StyleSheet.create({
   moreText: { ...type.label, color: color.text },
   featWrap: { marginHorizontal: -space.xl, marginTop: space.sm },
   feat: { height: 440, justifyContent: 'flex-end', backgroundColor: color.blueDeep, overflow: 'hidden' },
+  featPlain: { height: 360 },
+  featRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', gap: space.md },
+  featLeft: { ...type.caption, fontSize: 12, color: '#FFFFFF', backgroundColor: 'rgba(255,255,255,0.12)', borderWidth: 1, borderColor: 'rgba(255,255,255,0.18)',
+    paddingHorizontal: 10, paddingVertical: 4, borderRadius: radius.pill, overflow: 'hidden', marginBottom: 6, fontVariant: ['tabular-nums'] },
   featBody: { padding: space.xl, gap: space.sm },
   featTag: { ...type.label, fontSize: 13, letterSpacing: 1.2, color: '#F5C451' },
   featTitle: { ...type.title, fontSize: 28, lineHeight: 34, color: '#FFFFFF' },

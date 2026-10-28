@@ -574,4 +574,5 @@ for p in POSTS:
   <section class="bl-sec"><h2>Artikel Lainnya</h2><div class="bl-grid">{more}</div></section>
 </main>
 ''' + FOOT + '\n</body>\n</html>\n'
+    page = page.replace('<meta property="og:type" content="website">', f'<meta property="og:type" content="article">\n<meta property="article:published_time" content="{p["date"]}">', 1)
     (ROOT / url(p)).write_text(page.replace('__SITE_URL__', SITE_URL))

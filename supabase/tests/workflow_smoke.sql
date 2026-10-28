@@ -871,3 +871,40 @@ select pg_temp.expect_error($$select admin_blacklist_creator('00000000-0000-0000
 reset role;
 select (value->>'new')::bigint as cap_new_expect_5000000 from app_settings where key = 'max_payout_idr';
 select 'blacklist_ok' as result;
+
+-- ── 0068 · ledger, refund, finance recap, payout reminder ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select kind, amount, fee_pct, fee, net, invoice_no like 'INV-TAPP-%' as inv_ok
+from admin_record_deposit((select brand_id from campaigns where id = '20000000-0000-0000-0000-000000000001'),
+  '20000000-0000-0000-0000-000000000001', 10000000, 'BCA 123', null);
+select pg_temp.expect_error($$select admin_record_deposit((select id from brands limit 1), null, 0, null, null)$$, 'amount_required');
+do $$ declare v jsonb := admin_refund_preview('20000000-0000-0000-0000-000000000001'); begin
+  if (v->>'base')::bigint <> floor((v->>'unspent_deposit')::bigint * (100 - (select budget_fee_pct from campaign_pricing where campaign_id = '20000000-0000-0000-0000-000000000001')) / 100)
+     or (v->>'net')::bigint + (v->>'fee')::bigint <> (v->>'base')::bigint then raise exception 'refund math: %', v; end if;
+end $$;
+select count(*) > 0 as recap_rows from admin_finance_monthly(3);
+do $$ declare r record; begin
+  select * into r from admin_finance_monthly(1);
+  if r.deposits < 10000000 or r.service_fees <> (select sum(fee) from brand_ledger where kind = 'deposit') then raise exception 'recap missing deposit: %', r; end if;
+  if r.creator_fees < 0 or r.creator_gross <> r.creator_net + r.creator_fees then raise exception 'recap missing creator fee: %', r; end if;
+end $$;
+-- refund closes the campaign and leaves no budget
+update submissions set status = 'rejected' where campaign_id = '20000000-0000-0000-0000-000000000001' and status in ('pending_review', 'flagged');
+select (admin_adjust_campaign_budget('20000000-0000-0000-0000-000000000001', (select brand_budget from campaign_pricing where campaign_id = '20000000-0000-0000-0000-000000000001') + 5000000, false, 'top up')).id is not null as topped_up;
+do $$ declare l brand_ledger; c campaigns; begin
+  l := admin_refund_campaign('20000000-0000-0000-0000-000000000001', false, 'BCA 123', 'test');
+  select * into c from campaigns where id = '20000000-0000-0000-0000-000000000001';
+  if l.kind <> 'refund' or l.invoice_no not like 'RF-TAPP-%' or c.status <> 'completed' or c.budget < c.earned
+     or (select remaining from admin_campaigns where id = c.id) > 1 then raise exception 'refund state: % %', l, c; end if;
+end $$;
+select pg_temp.expect_error($$select admin_refund_campaign('20000000-0000-0000-0000-000000000001', false, null, null)$$, 'already_refunded');
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as creator_sees_ledger_expect_0 from brand_ledger;
+select pg_temp.expect_error($$select admin_finance_monthly(1)$$, 'forbidden');
+reset role;
+update payout_requests set created_at = now() - interval '30 hours', status = 'requested' where id = (select id from payout_requests limit 1);
+select private.payout_overdue_sweep() >= 1 as overdue_flagged, private.payout_overdue_sweep() as second_run_expect_0;
+select private.uptime_sweep();
+select 'finance_ok' as result;
