@@ -81,6 +81,7 @@ def page(root_html=''):
 <meta name="twitter:card" content="summary_large_image">
 <link rel="canonical" href="__SITE_URL__/">
 <meta property="og:url" content="__SITE_URL__/">
+<script type="application/ld+json">{{"@context":"https://schema.org","@graph":[{{"@type":"Organization","name":"TAPP","url":"__SITE_URL__/","logo":"__SITE_URL__/assets/icons/icon-512.png"}},{{"@type":"WebSite","name":"TAPP","url":"__SITE_URL__/","inLanguage":"id-ID"}}]}}</script>
 {head_links}
 <style>{style}</style>
 </head>

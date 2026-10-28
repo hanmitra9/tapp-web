@@ -182,25 +182,27 @@ POSTS = [
 <p>Tidak ada minimum follower. Yang dihitung adalah views dari clip-mu.</p>
 '''),
   dict(slug='biaya-campaign-brand', cat='Brand', date='2026-10-04', cover='fee', popular=True,
-    title='Biaya Campaign di TAPP: Satu Harga All-in per 1.000 Views',
-    excerpt='Tanpa fee tambahan. Satu harga per 1.000 qualified views, sudah termasuk garansi views valid dan penyaringan fraud.',
+    title='Biaya Campaign di TAPP: Bayar per 1.000 Views yang Lolos Verifikasi',
+    excerpt='Satu tarif per 1.000 qualified views dan biaya layanan 18% dari setoran. Views yang tidak lolos tidak pernah ditagih.',
     body='''
-<p>Di TAPP, brand tidak membayar per posting, per jumlah follower, atau fee tambahan. Kamu membayar <b>satu harga all-in per 1.000 qualified views</b>, dan hanya untuk views yang lolos verifikasi.</p>
+<p>Di TAPP, brand tidak membayar per posting atau per jumlah follower. Kamu membayar <b>tarif per 1.000 qualified views</b>, dan hanya untuk views yang lolos verifikasi.</p>
 <h2>Contoh hitungan</h2>
 <table class="bl-table"><tbody>
-<tr><td>Harga campaign</td><td>Rp1.500 / 1.000 qualified views</td></tr>
-<tr><td>Qualified views terkumpul</td><td>2.000.000</td></tr>
-<tr><td><b>Total biaya</b></td><td><b>Rp3.000.000</b></td></tr>
+<tr><td>Setoran</td><td>Rp10.000.000</td></tr>
+<tr><td>Biaya layanan platform 18%</td><td>Rp1.800.000</td></tr>
+<tr><td><b>Budget campaign</b></td><td><b>Rp8.200.000</b></td></tr>
+<tr><td>Tarif</td><td>Rp1.500 / 1.000 qualified views</td></tr>
+<tr><td>Estimasi views dibayar</td><td>±5,5 juta qualified views</td></tr>
 </tbody></table>
 <h2>Apa saja yang sudah termasuk?</h2>
 <ul>
 <li><b>Garansi views valid</b>: kamu hanya ditagih views yang lolos penyaringan. Views bot, iklan, dan repost tidak pernah kamu bayar.</li>
 <li><b>Penyaringan fraud</b>: verifikasi akun lewat kode bio, pemantauan views setiap 6 jam, dan review setiap clip oleh tim TAPP.</li>
 <li><b>Creator</b>: pencarian, pengelolaan, dan pembayaran semua creator. Kamu cukup membayar satu tagihan ke TAPP.</li>
-<li><b>Laporan</b>: dashboard brand, laporan harian, dan pendampingan account manager.</li>
+<li><b>Laporan</b>: dashboard brand, laporan harian, ekspor PDF/CSV, dan pendampingan account manager.</li>
 </ul>
 <h2>Budget selalu terkendali</h2>
-<p>Kamu menetapkan budget di awal. Kalau budget habis di tengah jalan, campaign otomatis masuk fase segera berakhir dan views berikutnya tidak ditagih. Views mentah yang tidak lolos tetap terlihat di laporan sebagai pembanding, tapi tidak pernah kamu bayar.</p>
+<p>Budget dipotong hanya saat clip disetujui. Kalau budget habis, campaign otomatis berhenti membayar views baru. Sisa budget yang belum terpakai bisa ditarik kembali dengan biaya penarikan 11%; budget yang sudah terpakai tidak direfund. Detailnya ada di <a href="terms.html#brand">Syarat Layanan</a>.</p>
 '''),
 
   dict(slug='tips-clip-lolos-review', cat='Panduan', date='2026-09-26', cover='tips',
