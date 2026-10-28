@@ -237,6 +237,31 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
       },
     };
   }
+  if (type === "payout_overdue") {
+    return {
+      subject: `${d.count ?? 0} penarikan menunggu lebih dari 24 jam`,
+      block: {
+        eyebrow: "Admin · Pembayaran",
+        title: "Ada penarikan yang belum diproses",
+        intro: "Janji ke creator: diproses maksimal 2x24 jam hari kerja. Proses dari panel admin sebelum lewat batas.",
+        rows: [["Jumlah penarikan", String(d.count ?? 0)], ["Total", idr(Number(d.total))], ["Paling lama sejak", wib(d.oldest)]],
+        button: APP() ? { label: "Buka Admin → Pembayaran", url: `${APP()}/admin/payouts` } : undefined,
+      },
+    };
+  }
+  if (type === "uptime_down" || type === "uptime_up") {
+    const down = type === "uptime_down";
+    const name = d.target === "mailer" ? "Mailer (email)" : "Website tappcreators.com";
+    return {
+      subject: down ? `DOWN: ${name}` : `Normal lagi: ${name}`,
+      block: {
+        eyebrow: "Admin · Status",
+        title: down ? `${name} tidak bisa diakses` : `${name} sudah normal`,
+        intro: down ? "Dua pengecekan berturut-turut (tiap 5 menit) gagal. Cek Railway: deploy terakhir dan log service." : "Pengecekan terakhir berhasil.",
+        rows: [["Layanan", name], ["Waktu", wib(d.at)]],
+      },
+    };
+  }
   return null;
 }
 

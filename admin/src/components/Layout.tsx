@@ -27,6 +27,7 @@ export function Layout() {
         <NavLink to="/submissions">Submission <Count n={c ? c.pending_review + c.flagged : undefined} /></NavLink>
         <NavLink to="/creators">Kreator <Count n={c?.creators_to_review} /></NavLink>
         <NavLink to="/payouts">Pembayaran <Count n={c?.payouts_open} /></NavLink>
+        <NavLink to="/finance">Keuangan</NavLink>
         <NavLink to="/connections">Koneksi akun</NavLink>
         <NavLink to="/campaigns">Campaign <Count n={c?.campaigns_pending} /></NavLink>
         <NavLink to="/brands">Brand</NavLink>

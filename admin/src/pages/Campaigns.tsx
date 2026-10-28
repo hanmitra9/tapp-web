@@ -3,8 +3,9 @@ import { useOutletContext } from 'react-router-dom';
 import {
   addAssetLink, adjustBudget, BANNER_RULES, deleteCampaign, setSubmissionCap, setUgcBrief, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
-  fetchHashtagStats, refreshHashtag, setCampaignHashtag,
+  fetchHashtagStats, refreshHashtag, setCampaignHashtag, refundCampaign, refundPreview,
 } from '../lib/api';
+import { printInvoice } from './Finance';
 import { adminError } from '../lib/errors';
 import { ago, dt, idr, num, toLocalInput } from '../lib/format';
 import { CAMPAIGN_TYPES, campaignTypeLabel, CONTENT_KINDS, FACE, label, PLATFORMS } from '../lib/options';
@@ -117,6 +118,7 @@ function Detail({ id, c, onChanged, onDeleted }: { id: string; c: AdminCampaign 
       <CapCard f={f} onDone={refresh} />
       <StatusActions f={f} onDone={refresh} />
       {f.status !== 'draft' && c ? <BudgetCard c={c} onDone={refresh} /> : null}
+      {f.status !== 'draft' && c ? <RefundCard c={c} onDone={refresh} /> : null}
 
       <div className="section">
         <div style={{ display: 'flex', justifyContent: 'space-between' }}><h3>Brief</h3><button className="btn secondary" onClick={() => setEditing(true)}>{f.status === 'draft' ? 'Ubah draft' : 'Ubah teks'}</button></div>
@@ -226,6 +228,55 @@ function DeleteCard({ f, c, onDeleted }: { f: CampaignFull; c: AdminCampaign | n
       {error ? <div className="notice error">{error}</div> : null}
       <div className="actions"><button className="btn danger" disabled={busy || live} onClick={del}>{busy ? 'Menghapus…' : 'Hapus permanen'}</button></div>
     </div>
+  );
+}
+
+// Refund the unspent budget (0068): 11% fee, or the whole unspent deposit when TAPP is at fault. Closes the campaign.
+function RefundCard({ c, onDone }: { c: AdminCampaign; onDone: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [fault, setFault] = useState(false);
+  const [reference, setReference] = useState('');
+  const [note, setNote] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const prev = useLoad(() => (open ? refundPreview(c.id, fault) : Promise.resolve(null)), [open, fault, c.id, c.earned]);
+  if (!open) return <div className="section"><button className="btn secondary" style={{ justifySelf: 'start' }} onClick={() => setOpen(true)}>Refund sisa budget</button></div>;
+  const v = prev.data;
+  async function go(e: FormEvent) {
+    e.preventDefault(); if (!v) return;
+    if (!confirm(`Refund ${idr(v.net)} ke ${c.brand_name ?? 'brand'} dan tutup campaign "${c.title}"? Tidak bisa dibatalkan.`)) return;
+    setBusy(true); setError(null);
+    try { const r = await refundCampaign(c.id, fault, reference.trim(), note.trim()); printInvoice({ ...r, brand_name: c.brand_name ?? '', campaign_title: c.title }); setOpen(false); await onDone(); }
+    catch (err) { setError(adminError(err)); } finally { setBusy(false); }
+  }
+  return (
+    <form className="section card" onSubmit={go} style={{ display: 'grid', gap: 12 }}>
+      <h2 style={{ margin: 0 }}>Refund sisa budget</h2>
+      {prev.error ? <div className="notice error">{prev.error}</div> : null}
+      {v ? (
+        <>
+          <dl className="kv">
+            <div><dt>Setoran</dt><dd>{idr(v.deposit)}</dd></div>
+            <div><dt>Terpakai</dt><dd>{idr(v.spent)}</dd></div>
+            <div><dt>{fault ? 'Sisa setoran (termasuk fee 18%)' : 'Sisa budget (setelah fee 18%)'}</dt><dd>{idr(v.base)}</dd></div>
+            <div><dt>Biaya penarikan ({Number(v.fee_pct)}%)</dt><dd>−{idr(v.fee)}</dd></div>
+            <div><dt>Dikembalikan</dt><dd><b>{idr(v.net)}</b></dd></div>
+          </dl>
+          {v.already_refunded ? <div className="notice">Campaign ini sudah direfund.</div> : null}
+          {v.pending_reviews ? <div className="notice warning">{v.pending_reviews} klip masih menunggu review atau ditandai. Selesaikan dulu, baru refund.</div> : null}
+        </>
+      ) : <div className="sub">Menghitung…</div>}
+      <label className="check"><input type="checkbox" checked={fault} onChange={(e) => setFault(e.target.checked)} /> Kesalahan TAPP (kembalikan seluruh sisa setoran, tanpa biaya)</label>
+      <div className="grid2">
+        <label className="field">Referensi transfer refund<input value={reference} onChange={(e) => setReference(e.target.value)} placeholder="BCA 28/10 · no. ref" /></label>
+        <label className="field">Catatan<input value={note} onChange={(e) => setNote(e.target.value)} /></label>
+      </div>
+      {error ? <div className="notice error">{error}</div> : null}
+      <div className="actions">
+        <button type="button" className="btn secondary" onClick={() => setOpen(false)}>Batal</button>
+        <button className="btn danger" disabled={busy || !v || v.already_refunded || v.pending_reviews > 0 || v.base <= 0}>{busy ? 'Memproses…' : `Refund ${v ? idr(v.net) : ''} & tutup campaign`}</button>
+      </div>
+    </form>
   );
 }
 

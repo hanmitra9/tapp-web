@@ -263,7 +263,7 @@ export type AdminCampaign = {
   submission_deadline: string | null; created_at: string; approved_at: string | null; platforms: string[];
   creators_joined: number; submissions: number; approved: number; pending_review: number; qualified_views: number; assets: number;
   // Brand terms (0045): what the brand pays; cpm/budget above are the creator rate and creator-side budget.
-  brand_cpm: number; brand_budget: number; creator_share_pct: number; brand_spent: number;
+  brand_cpm: number; brand_budget: number; creator_share_pct: number; brand_spent: number; budget_fee_pct?: number | null;
 };
 const CNUM = ['brand_cpm', 'brand_budget', 'creator_share_pct', 'brand_spent', 'cpm', 'budget', 'earned', 'paid', 'remaining', 'min_views_to_qualify', 'max_earning_per_submission', 'creators_joined', 'submissions', 'approved', 'pending_review', 'qualified_views', 'assets'];
 export async function listCampaigns(statuses: CampaignStatus[]): Promise<AdminCampaign[]> {
@@ -480,3 +480,33 @@ export async function listConnections(status: ConnStatus | null, search: string)
 }
 export const disconnectPlatform = (id: string, reason: string, unverify: boolean) =>
   rpc('admin_disconnect_platform', { p_connection_id: id, p_reason: reason, p_unverify: unverify });
+
+// ── Finance (0068): brand deposits/refunds, monthly recap, uptime ──
+export type LedgerEntry = { id: string; brand_id: string; brand_name: string; campaign_id: string | null; campaign_title: string | null;
+  kind: 'deposit' | 'refund'; amount: number; fee_pct: number; fee: number; net: number; invoice_no: string; reference: string | null; note: string | null; created_at: string };
+const LNUM = ['amount', 'fee_pct', 'fee', 'net'] as const;
+export async function listLedger(): Promise<LedgerEntry[]> {
+  const { data, error } = await supabase.from('admin_brand_ledger').select('*').order('created_at', { ascending: false }).limit(300);
+  if (error) throw error;
+  return (data ?? []).map((r) => { const o = { ...r } as Record<string, unknown>; for (const k of LNUM) o[k] = Number(o[k]); return o as LedgerEntry; });
+}
+export const recordDeposit = (brandId: string, campaignId: string | null, amount: number, reference: string, note: string) =>
+  rpc<LedgerEntry>('admin_record_deposit', { p_brand_id: brandId, p_campaign_id: campaignId, p_amount: amount, p_reference: reference, p_note: note });
+export type RefundPreview = { deposit: number; spent: number; unspent_deposit: number; base: number; fee_pct: number; fee: number; net: number;
+  pending_reviews: number; status: CampaignStatus; already_refunded: boolean };
+export const refundPreview = (id: string, tappFault: boolean) => rpc<RefundPreview>('admin_refund_preview', { p_campaign_id: id, p_tapp_fault: tappFault });
+export const refundCampaign = (id: string, tappFault: boolean, reference: string, note: string) =>
+  rpc<LedgerEntry>('admin_refund_campaign', { p_campaign_id: id, p_tapp_fault: tappFault, p_reference: reference, p_note: note });
+export type FinanceMonth = { month: string; deposits: number; service_fees: number; creator_gross: number; creator_fees: number; creator_net: number;
+  withdrawals_paid: number; withdrawal_fees: number; bonuses: number; refunds: number; refund_fees: number; refunds_paid: number };
+export async function financeMonthly(months = 12): Promise<FinanceMonth[]> {
+  const rows = await rpc<Record<string, unknown>[]>('admin_finance_monthly', { p_months: months });
+  return (rows ?? []).map((r) => Object.fromEntries(Object.entries(r).map(([k, v]) => [k, k === 'month' ? v : Number(v)])) as FinanceMonth);
+}
+export type UptimeCheck = { target: 'site' | 'mailer'; status_code: number | null; ok: boolean | null; created_at: string };
+export async function latestUptime(): Promise<UptimeCheck[]> {
+  const { data, error } = await supabase.from('uptime_checks').select('target, status_code, ok, created_at').not('ok', 'is', null)
+    .order('created_at', { ascending: false }).limit(40);
+  if (error) throw error;
+  return data as UptimeCheck[];
+}
