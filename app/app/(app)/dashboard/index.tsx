@@ -21,7 +21,6 @@ import type { MySubmission } from '@/features/submissions/api';
 import { useLayout } from '@/lib/useLayout';
 import { fetchAvailable } from '@/features/campaigns/earnings';
 import { fetchMySubmissions } from '@/features/submissions/api';
-import { ActionCircle } from '@/components/ActionCircle';
 import { Avatar } from '@/components/Avatar';
 import { MenuButton } from '@/components/SideMenu';
 import { unreadCount } from '@/features/notifications/api';
@@ -74,12 +73,16 @@ export default function Home() {
 
       <Hero balance={d?.balance ?? null} level={d?.level ?? null} reviewing={d?.reviewing ?? 0} />
 
-      <View style={styles.actions}>
-        <ActionCircle icon="compass" label="Campaign" onPress={() => router.navigate('/dashboard/campaigns')} />
-        <ActionCircle icon="bar-chart-2" label="Performa" onPress={() => router.push('/performance')} />
-        <ActionCircle icon="gift" label="Ajak teman" onPress={() => router.push('/referral')} />
-        <ActionCircle icon="help-circle" label="Bantuan" onPress={() => router.push('/help')} />
+      <View style={styles.stats}>
+        <Stat icon="eye" tint={color.link} label="Views" value={d?.level ? compact(d.level.views) : null} onPress={() => router.push('/performance')} />
+        <Stat icon="check-circle" tint={color.success} label="Diterima" value={d ? String(d.subs.filter((s) => DONE.includes(s.status)).length) : null} onPress={() => router.navigate('/dashboard/activity')} />
+        <Stat icon="zap" tint="#F5C451" label="Campaign" value={d ? String(d.campaigns.length) : null} onPress={() => router.navigate('/dashboard/campaigns')} />
       </View>
+      <Pressable onPress={() => router.push('/referral')} accessibilityRole="button" style={({ pressed }) => [styles.invite, pressed && { opacity: 0.85 }]}>
+        <View style={styles.inviteIcon}><Feather name="gift" size={16} color="#F5C451" /></View>
+        <Text style={styles.inviteText} numberOfLines={1}>Ajak teman, dapat bonus</Text>
+        <Feather name="chevron-right" size={18} color={color.textMuted} />
+      </Pressable>
 
       {account && STATUS_NOTE[account.status] ? <View style={styles.notice}><Notice tone="info" message={STATUS_NOTE[account.status]!} /></View> : null}
       {q.error && !d ? <View style={styles.notice}><Notice tone="error" message={`${q.error} Tarik ke bawah untuk memuat ulang.`} /></View> : null}
@@ -122,7 +125,7 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
         <Pressable onPress={() => router.push('/rank')} accessibilityRole="button" accessibilityLabel="Rank & Rewards" style={styles.heroLevel}>
           <View style={styles.heroTrack}><View style={[styles.heroFill, { width: `${ratio * 100}%` }]} /></View>
           <Text style={styles.heroLevelText} numberOfLines={1}>
-            {done ? 'Level tertinggi' : `${compact(level.toNext ?? 0)} views lagi ke ${LEVEL[level.next!]} (+${level.nextBonusPct}%)`}
+            {done ? 'Level tertinggi' : `${compact(level.toNext ?? 0)} views lagi ke ${LEVEL[level.next!]} ${level.nextBonusPct ? ` (+${level.nextBonusPct}%)` : ''}`}
           </Text>
         </Pressable>
       ) : null}
@@ -130,6 +133,16 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
   );
 }
 
+
+// One tappable number under the hero: lifetime qualified views, accepted clips, campaigns joined.
+function Stat({ icon, tint, label, value, onPress }: { icon: 'eye' | 'check-circle' | 'zap'; tint: string; label: string; value: string | null; onPress: () => void }) {
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={`${label} ${value ?? ''}`} style={({ pressed }) => [styles.stat, pressed && { opacity: 0.8 }]}>
+      <View style={styles.statHead}><Feather name={icon} size={13} color={tint} /><Text style={styles.statLabel} numberOfLines={1}>{label}</Text></View>
+      {value == null ? <SkeletonBlock width="50%" height={22} /> : <Text style={styles.statValue} numberOfLines={1} adjustsFontSizeToFit>{value}</Text>}
+    </Pressable>
+  );
+}
 
 // "Video kamu": every clip with a status tab, campaign filter and sort, plus when views refresh next.
 function Videos({ subs, campaigns }: { subs: MySubmission[] | null; campaigns: { value: string; label: string }[] }) {
@@ -261,7 +274,15 @@ const styles = StyleSheet.create({
   heroFill: { height: 5, borderRadius: 3, backgroundColor: '#FFFFFF' },
   heroLevelText: { ...type.caption, fontSize: 12, color: 'rgba(255,255,255,0.78)' },
 
-  actions: { flexDirection: 'row', marginTop: space.xl },
+  stats: { flexDirection: 'row', gap: space.sm, marginTop: space.lg },
+  stat: { flex: 1, ...card, borderRadius: radius.lg, paddingVertical: space.md, paddingHorizontal: space.md, gap: 6 },
+  statHead: { flexDirection: 'row', alignItems: 'center', gap: 5 },
+  statLabel: { ...type.caption, fontSize: 12, color: color.textMuted, flexShrink: 1 },
+  statValue: { ...type.metric, fontSize: 22, lineHeight: 28, letterSpacing: -0.5, color: color.text },
+  invite: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginTop: space.sm, paddingHorizontal: space.md, height: 52, borderRadius: radius.lg,
+    borderWidth: 1, borderColor: 'rgba(245,196,81,0.22)', backgroundColor: 'rgba(245,196,81,0.06)' },
+  inviteIcon: { width: 30, height: 30, borderRadius: 10, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(245,196,81,0.12)' },
+  inviteText: { ...type.label, fontSize: 14, color: color.text, flex: 1 },
 
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginTop: space.xxl, marginBottom: space.md },
   sectionTitle: { ...type.heading, color: color.text },
