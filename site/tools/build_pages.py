@@ -1,12 +1,12 @@
 import re
 """Build the sub-pages (campaigns, privacy, terms) with the shared header/footer. Run: python3 site/tools/build_pages.py"""
-import os, pathlib, sys
+import json, os, pathlib, sys
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / 'src' / 'generator'))
 from footer import footer, CSS as FOOT_CSS
 SITE_URL = os.environ.get('SITE_URL', 'https://tappcreators.com').rstrip('/')
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 
-def head(title, desc, path=''):
+def head(title, desc, path='', extra=''):
     return f'''<!doctype html>
 <html lang="id">
 <head>
@@ -31,7 +31,7 @@ def head(title, desc, path=''):
 <meta property="og:url" content="__SITE_URL__/{path}">
 <link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="assets/site.css">
-</head>
+{extra}</head>
 <body>
 <div class="wrap">
 <div class="glow-top" aria-hidden="true"></div>'''
@@ -559,7 +559,12 @@ for p in POSTS:
     more = ''.join(card(o, f'm{i}') for i, o in enumerate([o for o in POSTS if o is not p][:3]))
     cta = ('<a class="btn" href="meeting.html">Jadwalkan Meeting</a>' if p['cat'] == 'Brand'
            else '<a class="btn" href="#app:/register">Mulai Sekarang</a><a class="btn ghost" href="campaigns.html">Jelajahi Campaign</a>')
-    page = head(f'{p["title"]} · Blog TAPP', p['excerpt'], url(p)[:-5]) + header('blog') + f'''
+    ld = json.dumps({'@context': 'https://schema.org', '@type': 'BlogPosting', 'headline': p['title'], 'description': p['excerpt'],
+                     'datePublished': p['date'], 'inLanguage': 'id-ID', 'image': '__SITE_URL__/assets/og-image.png?v=5',
+                     'mainEntityOfPage': f'__SITE_URL__/{url(p)[:-5]}', 'author': {'@type': 'Organization', 'name': 'TAPP'},
+                     'publisher': {'@type': 'Organization', 'name': 'TAPP', 'logo': {'@type': 'ImageObject', 'url': '__SITE_URL__/assets/icons/icon-512.png'}}},
+                    ensure_ascii=False)
+    page = head(f'{p["title"]} · Blog TAPP', p['excerpt'], url(p)[:-5], f'<script type="application/ld+json">{ld}</script>\n') + header('blog') + f'''
 <main class="bl bl-post">
   <a class="bl-back" href="blog.html">&#8249; Semua artikel</a>
   <header class="bl-ph">{meta(p)}<h1>{p["title"]}</h1><p>{p["excerpt"]}</p></header>
