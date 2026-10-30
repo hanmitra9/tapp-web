@@ -92,3 +92,17 @@ test('brand sees its monthly subscription progress (Supabase mocked)', async ({ 
   await expect(page.getByText(/^54% · periode .* termasuk bonus \+20% views/)).toBeVisible();
   await expect(page.getByText(/Tagihan berikut 29 Nov/)).toBeVisible();
 });
+
+test('brand without a subscription sees the plans and picks one via WhatsApp (Supabase mocked)', async ({ page }) => {
+  await brand(page);
+  await page.route('**/rest/v1/subscription_plans*', (r) => r.fulfill({ json: [
+    { id: 'p1', name: 'Starter', monthly_price: 500000, price_per_1k: 1500, bonus_pct: 20 },
+    { id: 'p2', name: 'Growth', monthly_price: 2500000, price_per_1k: 1500, bonus_pct: 20 }] }));
+  await page.goto('/brand');
+  await expect(page.getByText('Langganan bulanan')).toBeVisible();
+  await expect(page.getByText('400 rb')).toBeVisible();
+  let wa = '';
+  await page.context().route('https://wa.me/**', (r) => { wa = r.request().url(); return r.fulfill({ body: 'ok' }); });
+  await page.getByRole('button', { name: 'Langganan Growth' }).click();
+  await expect.poll(() => decodeURIComponent(wa)).toContain('paket Growth (Rp2.500.000/bulan)');
+});
