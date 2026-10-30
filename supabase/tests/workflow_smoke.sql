@@ -908,3 +908,61 @@ update payout_requests set created_at = now() - interval '30 hours', status = 'r
 select private.payout_overdue_sweep() >= 1 as overdue_flagged, private.payout_overdue_sweep() as second_run_expect_0;
 select private.uptime_sweep();
 select 'finance_ok' as result;
+
+-- ── 0069 · monthly subscriptions: Rp1.500 / 1.000 views guaranteed ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select id as sub_camp from upsert_campaign_draft(null, jsonb_build_object(
+  'brand_id','10000000-0000-0000-0000-000000000001','title','Langganan Starter','category','other','content_type','clipping',
+  'cpm',1000,'budget',1000000,'platforms',jsonb_build_array('tiktok'))) \gset
+select pg_temp.expect_error(format($$select admin_create_subscription(%L, gen_random_uuid())$$, :'sub_camp'), 'plan_not_found');
+select id as sub_id from admin_create_subscription(:'sub_camp', (select id from subscription_plans where name = 'Starter')) \gset
+select pg_temp.expect_error(format($$select admin_create_subscription(%L, (select id from subscription_plans where name = 'Starter'))$$, :'sub_camp'), 'already_subscribed');
+do $$ declare c campaigns; pr campaign_pricing; begin
+  select * into c from campaigns where title = 'Langganan Starter';
+  select * into pr from campaign_pricing where campaign_id = c.id;
+  if pr.brand_cpm <> 1230 or c.cpm <> 984 or pr.brand_budget <> 500000 or c.budget <> 328000 then raise exception 'subscription pricing: % %', pr, c; end if;
+end $$;
+select invoice_no like 'INV-TAPP-%' as inv1 from admin_subscription_payment(:'sub_id', 'BCA 1', null);
+select invoice_no like 'INV-TAPP-%' as inv2 from admin_subscription_payment(:'sub_id', 'BCA 2', null);
+do $$ declare s brand_subscriptions; g jsonb; pr campaign_pricing; p2 subscription_periods; begin
+  select * into s from brand_subscriptions where plan_name = 'Starter';
+  select * into pr from campaign_pricing where campaign_id = s.campaign_id;
+  select * into p2 from subscription_periods where subscription_id = s.id and seq = 2;
+  g := (select progress from admin_subscriptions_list() where id = s.id);
+  if s.status <> 'active' or pr.brand_budget <> 1000000 or (g->>'target_total')::bigint <> 666666
+     or p2.period_start <> (select period_end from subscription_periods where subscription_id = s.id and seq = 1)
+     or s.next_bill_at <> p2.period_end then raise exception 'subscription periods: % % %', s, g, p2; end if;
+end $$;
+reset role;
+-- pacing: day 0 allows ~10% of the budget; spending past it blocks new clips
+update campaigns set status = 'active', earned = 200000 where id = :'sub_camp';
+do $$ begin
+  begin
+    insert into submissions (campaign_id, creator_id, membership_id, platform, post_url, normalized_url, published_at)
+    select (select id from campaigns where title = 'Langganan Starter'), creator_id, membership_id, platform, post_url || '?pace', normalized_url || '?pace', published_at
+    from submissions limit 1;
+    raise exception 'pacing not enforced';
+  exception when others then if sqlerrm <> 'campaign_paced' then raise; end if;
+  end;
+end $$;
+select private.subscription_sweep() >= 0 as sweep_ok;
+-- guarantee: period 1 started 61 days ago with no views delivered → refunded without fee
+update subscription_periods set period_start = period_start - 61 where subscription_id = :'sub_id' and seq = 1;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+do $$ declare v jsonb := admin_subscription_cancel_preview((select id from brand_subscriptions where plan_name = 'Starter')); begin
+  if (v->>'breach_views')::bigint <> 333333 or (v->>'breach_refund')::bigint <= 0
+     or (v->>'net')::bigint <> (v->>'breach_refund')::bigint + (v->>'rest_base')::bigint - (v->>'fee')::bigint then raise exception 'cancel preview: %', v; end if;
+end $$;
+do $$ declare v jsonb := admin_cancel_subscription((select id from brand_subscriptions where plan_name = 'Starter'), 'BCA refund', null); begin
+  if (select status from brand_subscriptions where plan_name = 'Starter') <> 'cancelled'
+     or (select status from campaigns where title = 'Langganan Starter') <> 'completed'
+     or (v->'ledger'->>'kind') <> 'refund' then raise exception 'cancel: %', v; end if;
+end $$;
+select pg_temp.expect_error(format($$select admin_subscription_payment(%L, null, null)$$, :'sub_id'), 'subscription_cancelled');
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select * from admin_subscriptions_list()$$, 'forbidden');
+select count(*) as creator_sees_subs_expect_0 from brand_subscriptions;
+reset role;
+select 'subscriptions_ok' as result;

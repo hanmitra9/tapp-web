@@ -249,6 +249,37 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
       },
     };
   }
+  if (type === "subscription_bill_due" || type === "subscription_paused") {
+    const due = type === "subscription_bill_due";
+    const date = d.due ? new Date(`${d.due}T00:00:00+07:00`).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "long", year: "numeric" }) : "-";
+    return {
+      subject: due ? `Tagihan langganan TAPP ${d.plan ?? ""}: ${date}` : `Campaign ${d.brand ?? ""} dijeda: tagihan belum dibayar`,
+      block: {
+        eyebrow: "Langganan",
+        title: due ? "Tagihan bulan berikutnya" : "Campaign dijeda sementara",
+        intro: due ? `Langganan ${esc(d.plan)} untuk ${esc(d.brand)} jatuh tempo ${esc(date)}. Transfer ke rekening resmi TAPP lalu kirim bukti ke account manager, supaya views bulan berikutnya langsung jalan.`
+          : `Tagihan langganan ${esc(d.plan)} yang jatuh tempo ${esc(date)} belum kami terima, jadi campaign dijeda. Views yang sudah dibayar tetap aman dan campaign langsung jalan lagi setelah pembayaran tercatat.`,
+        rows: [["Paket", d.plan ?? "-"], ["Tagihan", idr(Number(d.amount))], ...(due ? ([["Views dijamin", `${Math.round(Number(d.views ?? 0)).toLocaleString("id-ID")} views`]] as [string, string][]) : []), ["Jatuh tempo", date]],
+        button: APP() ? { label: "Buka dashboard brand", url: `${APP()}/brand` } : undefined,
+        outro: "Ada pertanyaan? Balas email ini.",
+      },
+    };
+  }
+  if (type === "subscription_behind") {
+    const nf = (n: unknown) => Math.round(Number(n ?? 0)).toLocaleString("id-ID");
+    const breach = Number(d.breach_views) > 0;
+    return {
+      subject: `${breach ? "Jaminan lewat 60 hari" : "Di bawah pacing"}: ${d.brand ?? "-"} (${d.plan ?? ""})`,
+      block: {
+        eyebrow: "Admin · Langganan",
+        title: breach ? "Ada views jaminan yang lewat 60 hari" : "Langganan tertinggal dari target",
+        intro: breach ? "Views ini wajib dikejar; kalau brand berhenti, nilainya direfund tanpa potongan." : "Views terkirim di bawah 70% dari yang seharusnya sampai hari ini. Dorong kreator atau tonjolkan campaign ini.",
+        rows: [["Brand / campaign", `${d.brand ?? "-"} · ${d.campaign ?? "-"}`], ["Terkirim", nf(d.delivered)], ["Seharusnya sampai hari ini", nf(d.expected_now)],
+          ["Periode ini", `${nf(d.period_delivered)} / ${nf(d.period_target)}`], ...(breach ? ([["Kurang (lewat 60 hari)", nf(d.breach_views)]] as [string, string][]) : [])],
+        button: APP() ? { label: "Buka Admin → Langganan", url: `${APP()}/admin/subscriptions` } : undefined,
+      },
+    };
+  }
   if (type === "uptime_down" || type === "uptime_up") {
     const down = type === "uptime_down";
     const name = d.target === "mailer" ? "Mailer (email)" : "Website tappcreators.com";
