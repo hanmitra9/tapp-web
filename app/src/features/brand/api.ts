@@ -124,3 +124,14 @@ export async function fetchSubscriptions(): Promise<BrandSubscription[]> {
       period_target: r.progress?.period_target == null ? null : n(r.progress.period_target), period_delivered: n(r.progress?.period_delivered), bonus_pct: n(r.progress?.bonus_pct) },
   })) as BrandSubscription[];
 }
+
+// Plans a brand can subscribe to (0069/0070): guaranteed views include the plan's bonus.
+export type SubscriptionPlan = { id: string; name: string; monthly_price: number; price_per_1k: number; bonus_pct: number; views: number };
+export async function fetchPlans(): Promise<SubscriptionPlan[]> {
+  const { data, error } = await supabase.from('subscription_plans').select('id, name, monthly_price, price_per_1k, bonus_pct').eq('active', true).order('sort');
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map((p) => {
+    const price = n(p.monthly_price), per1k = n(p.price_per_1k), bonus = n(p.bonus_pct);
+    return { id: String(p.id), name: String(p.name), monthly_price: price, price_per_1k: per1k, bonus_pct: bonus, views: Math.floor(price * 1000 * (100 + bonus) / (per1k * 100)) };
+  });
+}

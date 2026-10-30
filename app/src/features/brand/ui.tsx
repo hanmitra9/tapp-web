@@ -4,7 +4,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { compact, idr } from '@/lib/format';
-import type { BrandSubscription } from './api';
+import type { BrandSubscription, SubscriptionPlan } from './api';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 
 type Icon = ComponentProps<typeof Feather>['name'];
@@ -90,6 +90,34 @@ export function SubscriptionTile({ s, onPress }: { s: BrandSubscription; onPress
     </Pressable>
   );
 }
+// Offer for brands without a subscription: the plans with guaranteed views; ordering goes through the account manager.
+export function PlansCard({ plans, onPick }: { plans: SubscriptionPlan[]; onPick: (p: SubscriptionPlan) => void }) {
+  const bonus = Math.max(0, ...plans.map((p) => p.bonus_pct));
+  return (
+    <View style={styles.plans}>
+      <View style={styles.subHead}>
+        <View style={styles.subIcon}><Feather name="repeat" size={16} color={color.link} /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.plansTitle}>Langganan bulanan</Text>
+          <Text style={styles.kpiLabel}>Views dijamin tiap bulan{bonus ? `, sudah termasuk bonus +${bonus}%` : ''}. Kurang? Terbawa ke bulan berikutnya.</Text>
+        </View>
+      </View>
+      <View style={styles.planRow}>
+        {plans.map((p, i) => (
+          <Pressable key={p.id} onPress={() => onPick(p)} accessibilityRole="button" accessibilityLabel={`Langganan ${p.name}`}
+            style={({ pressed }) => [styles.plan, i === 1 && styles.planHot, pressed && { opacity: 0.85 }]}>
+            {i === 1 ? <Text style={styles.planBadge}>POPULER</Text> : null}
+            <Text style={styles.planName}>{p.name}</Text>
+            <Text style={styles.planViews} numberOfLines={1} adjustsFontSizeToFit>{compact(p.views)}</Text>
+            <Text style={styles.kpiLabel}>views dijamin</Text>
+            <Text style={styles.planPrice}>{idr(p.monthly_price)}<Text style={styles.subOf}> /bln</Text></Text>
+            <View style={styles.planCta}><Text style={styles.planCtaText}>Pilih</Text><Feather name="arrow-right" size={14} color={color.link} /></View>
+          </Pressable>
+        ))}
+      </View>
+    </View>
+  );
+}
 export const KpiGrid = ({ children }: { children: ReactNode }) => <View style={styles.grid}>{children}</View>;
 
 export function Section({ title, right, children }: { title: string; right?: ReactNode; children: ReactNode }) {
@@ -170,6 +198,17 @@ const styles = StyleSheet.create({
   subOf: { ...type.caption, fontSize: 14, color: color.textMuted },
   subTrack: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
   subFill: { height: 6, borderRadius: 3, backgroundColor: color.blueLight },
+  plans: { marginTop: space.sm, padding: space.lg, gap: space.md, ...card, borderRadius: radius.lg, borderWidth: 1, borderColor: 'rgba(117,178,244,0.22)' },
+  plansTitle: { ...type.heading, fontSize: 17, color: color.text },
+  planRow: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+  plan: { flexGrow: 1, flexBasis: '30%', minWidth: 150, padding: space.md, gap: 2, borderRadius: radius.md, borderWidth: 1, borderColor: color.border, backgroundColor: 'rgba(255,255,255,0.02)' },
+  planHot: { borderColor: 'rgba(117,178,244,0.45)', backgroundColor: 'rgba(12,101,196,0.10)' },
+  planBadge: { ...type.caption, fontSize: 10, letterSpacing: 1, color: '#F5C451', position: 'absolute', top: space.md, right: space.md },
+  planName: { ...type.label, color: color.textSecondary },
+  planViews: { ...type.metric, fontSize: 26, lineHeight: 32, letterSpacing: -0.5, color: color.text },
+  planPrice: { ...type.label, color: color.text, marginTop: space.xs },
+  planCta: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: space.xs },
+  planCtaText: { ...type.caption, color: color.link, fontFamily: type.label.fontFamily },
   section: { marginTop: space.xxl, gap: space.md },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.md },
   sectionTitle: { ...type.heading, color: color.text },
