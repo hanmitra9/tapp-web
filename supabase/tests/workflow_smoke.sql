@@ -909,7 +909,7 @@ select private.payout_overdue_sweep() >= 1 as overdue_flagged, private.payout_ov
 select private.uptime_sweep();
 select 'finance_ok' as result;
 
--- ── 0069 · monthly subscriptions: Rp1.500 / 1.000 views guaranteed ──
+-- ── 0069/0070 · monthly subscriptions: Rp1.500 / 1.000 views guaranteed, +20% bonus views ──
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 select id as sub_camp from upsert_campaign_draft(null, jsonb_build_object(
   'brand_id','10000000-0000-0000-0000-000000000001','title','Langganan Starter','category','other','content_type','clipping',
@@ -920,7 +920,7 @@ select pg_temp.expect_error(format($$select admin_create_subscription(%L, (selec
 do $$ declare c campaigns; pr campaign_pricing; begin
   select * into c from campaigns where title = 'Langganan Starter';
   select * into pr from campaign_pricing where campaign_id = c.id;
-  if pr.brand_cpm <> 1230 or c.cpm <> 984 or pr.brand_budget <> 500000 or c.budget <> 328000 then raise exception 'subscription pricing: % %', pr, c; end if;
+  if pr.brand_cpm <> 1025 or c.cpm <> 984 or pr.brand_budget <> 500000 or c.budget <> 393600 then raise exception 'subscription pricing: % %', pr, c; end if;
 end $$;
 select invoice_no like 'INV-TAPP-%' as inv1 from admin_subscription_payment(:'sub_id', 'BCA 1', null);
 select invoice_no like 'INV-TAPP-%' as inv2 from admin_subscription_payment(:'sub_id', 'BCA 2', null);
@@ -929,7 +929,7 @@ do $$ declare s brand_subscriptions; g jsonb; pr campaign_pricing; p2 subscripti
   select * into pr from campaign_pricing where campaign_id = s.campaign_id;
   select * into p2 from subscription_periods where subscription_id = s.id and seq = 2;
   g := (select progress from admin_subscriptions_list() where id = s.id);
-  if s.status <> 'active' or pr.brand_budget <> 1000000 or (g->>'target_total')::bigint <> 666666
+  if s.status <> 'active' or pr.brand_budget <> 1000000 or (g->>'target_total')::bigint <> 800000
      or p2.period_start <> (select period_end from subscription_periods where subscription_id = s.id and seq = 1)
      or s.next_bill_at <> p2.period_end then raise exception 'subscription periods: % % %', s, g, p2; end if;
 end $$;
@@ -950,7 +950,7 @@ select private.subscription_sweep() >= 0 as sweep_ok;
 update subscription_periods set period_start = period_start - 61 where subscription_id = :'sub_id' and seq = 1;
 select pg_temp.act('00000000-0000-0000-0000-00000000000a');
 do $$ declare v jsonb := admin_subscription_cancel_preview((select id from brand_subscriptions where plan_name = 'Starter')); begin
-  if (v->>'breach_views')::bigint <> 333333 or (v->>'breach_refund')::bigint <= 0
+  if (v->>'breach_views')::bigint <> 400000 or (v->>'breach_refund')::bigint <= 0
      or (v->>'net')::bigint <> (v->>'breach_refund')::bigint + (v->>'rest_base')::bigint - (v->>'fee')::bigint then raise exception 'cancel preview: %', v; end if;
 end $$;
 do $$ declare v jsonb := admin_cancel_subscription((select id from brand_subscriptions where plan_name = 'Starter'), 'BCA refund', null); begin

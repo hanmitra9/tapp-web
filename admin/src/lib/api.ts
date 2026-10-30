@@ -512,24 +512,24 @@ export async function latestUptime(): Promise<UptimeCheck[]> {
 }
 
 // ── Subscriptions (0069): monthly plans with guaranteed views ──
-export type Plan = { id: string; name: string; monthly_price: number; price_per_1k: number; active: boolean; sort: number };
+export type Plan = { id: string; name: string; monthly_price: number; price_per_1k: number; bonus_pct: number; active: boolean; sort: number };
 export async function listPlans(): Promise<Plan[]> {
   const { data, error } = await supabase.from('subscription_plans').select('*').order('sort');
   if (error) throw error;
-  return (data ?? []).map((p) => ({ ...p, monthly_price: Number(p.monthly_price), price_per_1k: Number(p.price_per_1k) })) as Plan[];
+  return (data ?? []).map((p) => ({ ...p, monthly_price: Number(p.monthly_price), price_per_1k: Number(p.price_per_1k), bonus_pct: Number(p.bonus_pct ?? 0) })) as Plan[];
 }
-export const upsertPlan = (id: string | null, name: string, monthly: number, per1k: number, active: boolean) =>
-  rpc<Plan>('admin_upsert_plan', { p_id: id, p_name: name, p_monthly_price: monthly, p_price_per_1k: per1k, p_active: active });
+export const upsertPlan = (id: string | null, name: string, monthly: number, per1k: number, active: boolean, bonusPct: number) =>
+  rpc<Plan>('admin_upsert_plan', { p_id: id, p_name: name, p_monthly_price: monthly, p_price_per_1k: per1k, p_active: active, p_bonus_pct: bonusPct });
 export type SubProgress = { delivered: number; target_total: number; periods: number; period_start: string | null; period_end: string | null;
   period_target: number | null; period_delivered: number; breach_views: number; expected_now: number };
 export type Subscription = { id: string; brand_id: string; brand_name: string; campaign_id: string; campaign_title: string; campaign_status: CampaignStatus;
-  plan_name: string; monthly_price: number; price_per_1k: number; status: 'pending' | 'active' | 'past_due' | 'cancelled'; next_bill_at: string | null;
+  plan_name: string; monthly_price: number; price_per_1k: number; bonus_pct: number; status: 'pending' | 'active' | 'past_due' | 'cancelled'; next_bill_at: string | null;
   created_at: string; progress: SubProgress };
 export async function listSubscriptions(): Promise<Subscription[]> {
   const rows = await rpc<Record<string, unknown>[]>('admin_subscriptions_list', {});
   return (rows ?? []).map((r) => {
     const g = Object.fromEntries(Object.entries((r.progress ?? {}) as Record<string, unknown>).map(([k, v]) => [k, k.startsWith('period_') && typeof v === 'string' ? v : v == null ? null : Number(v)]));
-    return { ...r, monthly_price: Number(r.monthly_price), price_per_1k: Number(r.price_per_1k), progress: g } as unknown as Subscription;
+    return { ...r, monthly_price: Number(r.monthly_price), price_per_1k: Number(r.price_per_1k), bonus_pct: Number(r.bonus_pct ?? 0), progress: g } as unknown as Subscription;
   });
 }
 export const createSubscription = (campaignId: string, planId: string) => rpc('admin_create_subscription', { p_campaign_id: campaignId, p_plan_id: planId });

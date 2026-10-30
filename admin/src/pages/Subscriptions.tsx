@@ -9,7 +9,8 @@ import { useLoad } from '../lib/useLoad';
 import { printInvoice } from './Finance';
 
 // Fixed subscription terms (0069): 18% service fee, creator keeps 80% → creator rate = price × 0.656.
-const views = (p: { monthly_price: number; price_per_1k: number }) => Math.floor(p.monthly_price * 1000 / p.price_per_1k);
+// Guaranteed views include the plan's bonus (0070); the bonus comes out of TAPP's margin, the creator rate stays.
+const views = (p: { monthly_price: number; price_per_1k: number; bonus_pct: number }) => Math.floor(p.monthly_price * 1000 * (100 + p.bonus_pct) / (p.price_per_1k * 100));
 const creatorRate = (per1k: number) => Math.floor(Math.round(per1k * 0.82) * 0.8);
 const STATUS: Record<Subscription['status'], [string, string]> = {
   pending: ['Menunggu bayar', 'warning'], active: ['Aktif', 'success'], past_due: ['Telat bayar', 'danger'], cancelled: ['Berhenti', ''],
@@ -22,7 +23,7 @@ export function Subscriptions() {
   const subs = useLoad(listSubscriptions, []);
   return (
     <>
-      <div className="page-head"><div><h1>Langganan</h1><p className="sub">Brand bayar tiap 30 hari untuk views yang dijamin. Clipping saja. Kreator dapat 80% setelah fee 18% (margin TAPP 34%). Views yang belum tercapai pindah ke bulan berikutnya; yang lewat 60 hari direfund tanpa potongan saat berhenti.</p></div></div>
+      <div className="page-head"><div><h1>Langganan</h1><p className="sub">Brand bayar tiap 30 hari untuk views yang dijamin. Clipping saja. Kreator tetap Rp984 / 1.000 views; bonus views mengurangi margin TAPP (34% tanpa bonus, ±21% dengan +20%). Views yang belum tercapai pindah ke bulan berikutnya; yang lewat 60 hari direfund tanpa potongan saat berhenti.</p></div></div>
       <Subs list={subs.data} error={subs.error} onDone={subs.reload} />
       <NewSubscription plans={plans.data ?? []} onDone={subs.reload} />
       <Plans plans={plans.data} error={plans.error} onDone={plans.reload} />
@@ -152,24 +153,24 @@ function Plans({ plans, error, onDone }: { plans: Plan[] | null; error: string |
   const [err, setErr] = useState<string | null>(null);
   async function save(e: FormEvent) {
     e.preventDefault(); if (!edit) return; setErr(null);
-    try { await upsertPlan(edit.id ?? null, edit.name ?? '', Number(edit.monthly_price) || 0, Number(edit.price_per_1k) || 0, edit.active ?? true); setEdit(null); await onDone(); }
+    try { await upsertPlan(edit.id ?? null, edit.name ?? '', Number(edit.monthly_price) || 0, Number(edit.price_per_1k) || 0, edit.active ?? true, Number(edit.bonus_pct) || 0); setEdit(null); await onDone(); }
     catch (x) { setErr(adminError(x)); }
   }
   return (
     <div className="card section">
       <div className="actions" style={{ justifyContent: 'space-between' }}>
         <h2 style={{ margin: 0 }}>Paket</h2>
-        <button className="btn secondary" onClick={() => setEdit({ name: '', monthly_price: 0, price_per_1k: 1500, active: true })}>Paket baru</button>
+        <button className="btn secondary" onClick={() => setEdit({ name: '', monthly_price: 0, price_per_1k: 1500, bonus_pct: 20, active: true })}>Paket baru</button>
       </div>
       {error ? <div className="notice error">{error}</div> : null}
       {plans ? (
         <table>
-          <thead><tr><th>Paket</th><th className="n">Harga / bulan</th><th className="n">Per 1.000 views</th><th className="n">Views dijamin</th><th className="n">Kreator / 1.000</th><th className="n">Margin TAPP</th><th /></tr></thead>
+          <thead><tr><th>Paket</th><th className="n">Harga / bulan</th><th className="n">Per 1.000 views</th><th className="n">Bonus</th><th className="n">Views dijamin</th><th className="n">Kreator / 1.000</th><th className="n">Margin TAPP</th><th /></tr></thead>
           <tbody>{plans.map((p) => (
             <tr key={p.id} style={p.active ? undefined : { opacity: 0.5 }}>
-              <td>{p.name}{p.active ? '' : ' (nonaktif)'}</td><td className="n">{idr(p.monthly_price)}</td><td className="n">{idr(p.price_per_1k)}</td>
+              <td>{p.name}{p.active ? '' : ' (nonaktif)'}</td><td className="n">{idr(p.monthly_price)}</td><td className="n">{idr(p.price_per_1k)}</td><td className="n">+{p.bonus_pct}%</td>
               <td className="n">{num(views(p))}</td><td className="n">{idr(creatorRate(p.price_per_1k))}</td>
-              <td className="n">{idr(p.monthly_price - Math.floor(p.monthly_price * 0.656))}</td>
+              <td className="n">{idr(p.monthly_price - Math.floor(p.monthly_price * 0.656 * (1 + p.bonus_pct / 100)))} ({Math.round((1 - 0.656 * (1 + p.bonus_pct / 100)) * 100)}%)</td>
               <td className="n"><button className="btn secondary" onClick={() => setEdit(p)}>Ubah</button></td>
             </tr>
           ))}</tbody>
@@ -181,9 +182,10 @@ function Plans({ plans, error, onDone }: { plans: Plan[] | null; error: string |
             <label className="field">Nama<input value={edit.name ?? ''} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></label>
             <label className="field">Harga / bulan (Rp)<input inputMode="numeric" value={edit.monthly_price || ''} onChange={(e) => setEdit({ ...edit, monthly_price: Number(e.target.value.replace(/\D/g, '')) })} /></label>
             <label className="field">Harga per 1.000 views (Rp)<input inputMode="numeric" value={edit.price_per_1k || ''} onChange={(e) => setEdit({ ...edit, price_per_1k: Number(e.target.value.replace(/\D/g, '')) })} /></label>
+            <label className="field">Bonus views (%, maks 25)<input inputMode="numeric" value={edit.bonus_pct ?? 0} onChange={(e) => setEdit({ ...edit, bonus_pct: Math.min(25, Number(e.target.value.replace(/\D/g, '')) || 0) })} /></label>
           </div>
           <label className="check"><input type="checkbox" checked={edit.active ?? true} onChange={(e) => setEdit({ ...edit, active: e.target.checked })} /> Aktif (bisa dipilih untuk langganan baru)</label>
-          <p className="sub" style={{ margin: 0 }}>Langganan yang sudah jalan tetap memakai harga saat dibuat.</p>
+          <p className="sub" style={{ margin: 0 }}>Bonus menambah views dijamin tanpa mengubah harga; bayaran kreator tetap, margin TAPP yang berkurang. Langganan yang sudah jalan tetap memakai harga & bonus saat dibuat.</p>
           {err ? <div className="notice error">{err}</div> : null}
           <div className="actions"><button type="button" className="btn secondary" onClick={() => setEdit(null)}>Batal</button><button className="btn">Simpan paket</button></div>
         </form>
