@@ -3,10 +3,10 @@ import { signedInCreator, UID } from './mock';
 
 // Admin Langganan page: plans with guaranteed views, link a draft campaign, record a month's payment (Supabase mocked).
 const NOW = new Date().toISOString();
-const PLANS = [{ id: 'p1', name: 'Starter', monthly_price: 500000, price_per_1k: 1500, active: true, sort: 1 },
-  { id: 'p2', name: 'Growth', monthly_price: 2500000, price_per_1k: 1500, active: true, sort: 2 }];
+const PLANS = [{ id: 'p1', name: 'Starter', monthly_price: 500000, price_per_1k: 1500, bonus_pct: 20, active: true, sort: 1 },
+  { id: 'p2', name: 'Growth', monthly_price: 2500000, price_per_1k: 1500, bonus_pct: 20, active: true, sort: 2 }];
 const SUB = { id: 's1', brand_id: 'b1', brand_name: 'Kopi Nusa', campaign_id: 'c1', campaign_title: 'Kopi Bulanan', campaign_status: 'active', plan_name: 'Growth',
-  monthly_price: 2500000, price_per_1k: 1500, status: 'active', next_bill_at: '2026-11-29', created_at: NOW,
+  monthly_price: 2500000, price_per_1k: 1500, bonus_pct: 20, status: 'active', next_bill_at: '2026-11-29', created_at: NOW,
   progress: { delivered: 400000, target_total: 1666666, periods: 1, period_start: '2026-10-30', period_end: '2026-11-29', period_target: 1666666, period_delivered: 400000, breach_views: 0, expected_now: 300000 } };
 const DRAFT = { id: 'c9', brand_id: 'b1', brand_name: 'Kopi Nusa', title: 'Kopi Desember', content_type: 'clipping', status: 'draft' };
 
@@ -27,10 +27,10 @@ test('admin subscriptions: plan math, link a campaign, record a payment', async 
 
   await page.goto('/admin/subscriptions');
   await expect(page.getByRole('heading', { name: 'Langganan', exact: true })).toBeVisible();
-  // Starter: 333.333 views, creator Rp984 / 1.000, TAPP Rp172.000
-  await expect(page.getByRole('cell', { name: '333.333' })).toBeVisible();
+  // Starter +20%: 400.000 views, creator still Rp984 / 1.000, TAPP Rp106.400 (21%)
+  await expect(page.getByRole('cell', { name: '400.000', exact: true })).toBeVisible();
   await expect(page.getByRole('cell', { name: 'Rp984' }).first()).toBeVisible();
-  await expect(page.getByRole('cell', { name: 'Rp172.000' })).toBeVisible();
+  await expect(page.getByRole('cell', { name: 'Rp106.400 (21%)' })).toBeVisible();
   await expect(page.getByText('400.000 / 1.666.666 (24%)')).toBeVisible();
 
   await page.getByLabel('Campaign draft (clipping)').selectOption('c9');

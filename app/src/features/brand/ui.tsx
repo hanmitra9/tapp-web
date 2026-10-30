@@ -84,7 +84,7 @@ export function SubscriptionTile({ s, onPress }: { s: BrandSubscription; onPress
         <>
           <Text style={styles.tagValue} numberOfLines={1} adjustsFontSizeToFit>{compact(g.period_delivered)} <Text style={styles.subOf}>/ {compact(g.period_target)} views dijamin</Text></Text>
           <View style={styles.subTrack}><View style={[styles.subFill, { width: `${Math.max(pct, 1)}%` }]} /></View>
-          <Text style={styles.kpiLabel}>{pct}% · periode {day(g.period_start)} – {day(g.period_end)}</Text>
+          <Text style={styles.kpiLabel}>{pct}% · periode {day(g.period_start)} – {day(g.period_end)}{g.bonus_pct ? ` · termasuk bonus +${g.bonus_pct}% views` : ''}</Text>
         </>
       ) : null}
     </Pressable>
