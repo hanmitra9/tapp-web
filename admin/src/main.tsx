@@ -8,6 +8,7 @@ import { Dashboard } from './pages/Dashboard';
 import { Audit } from './pages/Audit';
 import { Blacklist } from './pages/Blacklist';
 import { Finance } from './pages/Finance';
+import { Subscriptions } from './pages/Subscriptions';
 import { Brands } from './pages/Brands';
 import { Campaigns } from './pages/Campaigns';
 import { Disputes } from './pages/Disputes';
@@ -37,6 +38,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="connections" element={<Connections />} />
             <Route path="blacklist" element={<Blacklist />} />
             <Route path="finance" element={<Finance />} />
+            <Route path="subscriptions" element={<Subscriptions />} />
             <Route path="audit" element={<Audit />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Route>

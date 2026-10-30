@@ -110,3 +110,17 @@ export async function fetchHashtagStats(campaignId: string): Promise<HashtagStat
   const { data } = await supabase.from('campaign_hashtag_stats').select('hashtag, platform, video_count, view_count, captured_at').eq('campaign_id', campaignId).order('captured_at');
   return ((data ?? []) as HashtagStat[]).map((r) => ({ ...r, video_count: Number(r.video_count), view_count: Number(r.view_count) }));
 }
+
+// Monthly subscription (0069): guaranteed views per 30-day period, next bill date.
+export type BrandSubscription = { id: string; campaign_id: string; campaign_title: string; plan_name: string; monthly_price: number; price_per_1k: number;
+  status: 'pending' | 'active' | 'past_due'; next_bill_at: string | null;
+  progress: { delivered: number; target_total: number; period_start: string | null; period_end: string | null; period_target: number | null; period_delivered: number } };
+export async function fetchSubscriptions(): Promise<BrandSubscription[]> {
+  const { data, error } = await supabase.rpc('brand_subscriptions_summary');
+  if (error) throw error;
+  return ((data ?? []) as Record<string, any>[]).map((r) => ({
+    ...r, monthly_price: n(r.monthly_price), price_per_1k: n(r.price_per_1k),
+    progress: { ...r.progress, delivered: n(r.progress?.delivered), target_total: n(r.progress?.target_total),
+      period_target: r.progress?.period_target == null ? null : n(r.progress.period_target), period_delivered: n(r.progress?.period_delivered) },
+  })) as BrandSubscription[];
+}

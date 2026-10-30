@@ -78,3 +78,17 @@ test('brand account: daily report toggle and account manager links (Supabase moc
   await page.getByRole('switch', { name: 'Laporan harian Kopi Nusa' }).click();
   await expect.poll(() => toggled).toMatchObject({ p_brand_id: 'b1', p_on: false });
 });
+
+test('brand sees its monthly subscription progress (Supabase mocked)', async ({ page }) => {
+  await brand(page);
+  await page.route('**/rest/v1/rpc/brand_subscriptions_summary', (r) => r.fulfill({ json: [{
+    id: 'sub1', brand_id: 'b1', campaign_id: CID, campaign_title: 'Kopi Susu Launch', plan_name: 'Growth', monthly_price: 2500000, price_per_1k: 1500,
+    status: 'active', next_bill_at: '2026-11-29',
+    progress: { delivered: 900000, target_total: 1666666, period_start: '2026-10-30', period_end: '2026-11-29', period_target: 1666666, period_delivered: 900000 },
+  }] }));
+  await page.goto('/brand');
+  await expect(page.getByText(/Langganan Growth · Kopi Susu Launch/)).toBeVisible();
+  await expect(page.getByText(/views dijamin/)).toBeVisible();
+  await expect(page.getByText(/^54% · periode/)).toBeVisible();
+  await expect(page.getByText(/Tagihan berikut 29 Nov/)).toBeVisible();
+});

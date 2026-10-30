@@ -11,9 +11,9 @@ import { compact, greeting, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { Freshness } from '@/features/brand/ReportParts';
-import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section } from '@/features/brand/ui';
+import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section, SubscriptionTile } from '@/features/brand/ui';
 import { color, space, type, card, radius } from '@/theme/tokens';
-import { fetchBrandCampaigns, fetchBrandDaily, fetchHashtagTotals, fetchMyBrands, totals, BRAND_WA } from '@/features/brand/api';
+import { fetchBrandCampaigns, fetchBrandDaily, fetchHashtagTotals, fetchMyBrands, fetchSubscriptions, totals, BRAND_WA } from '@/features/brand/api';
 import { BrandCampaignRow } from '@/features/brand/BrandCampaignRow';
 
 const RANGES = [{ value: '7', label: '7 hari' }, { value: '30', label: '30 hari' }, { value: '90', label: '90 hari' }];
@@ -23,8 +23,8 @@ const dayLabel = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString
 export default function BrandHome() {
   const [range, setRange] = useState('30');
   const q = useQuery(async () => {
-    const [brands, campaigns, tags] = await Promise.all([fetchMyBrands(), fetchBrandCampaigns(), fetchHashtagTotals().catch(() => null)]);
-    return { brands, campaigns, tags, t: totals(campaigns), videos: campaigns.reduce((a, c) => a + c.submissions, 0),
+    const [brands, campaigns, tags, subs] = await Promise.all([fetchMyBrands(), fetchBrandCampaigns(), fetchHashtagTotals().catch(() => null), fetchSubscriptions().catch(() => [])]);
+    return { brands, campaigns, tags, subs, t: totals(campaigns), videos: campaigns.reduce((a, c) => a + c.submissions, 0),
       cpm: campaigns.length ? Math.round(campaigns.reduce((a, c) => a + c.cpm, 0) / campaigns.length) : null };
   }, []);
   const daily = useQuery(() => fetchBrandDaily(null, Number(range)), [range]);
@@ -45,6 +45,7 @@ export default function BrandHome() {
       <BudgetHero budget={d ? d.t.budget : null} spent={d?.t.spent ?? 0}
         primary={{ label: 'Campaign', icon: 'layers', onPress: () => router.navigate('/brand/campaigns') }}
         second={{ label: 'Chat AM', icon: 'message-circle', onPress: () => void Linking.openURL(BRAND_WA).catch(() => {}) }} />
+      {d?.subs.map((s) => <SubscriptionTile key={s.id} s={s} onPress={() => router.push({ pathname: '/brand-campaign/[id]', params: { id: s.campaign_id } })} />)}
 
       <KpiGrid>
         <Kpi icon="eye" label="Views terverifikasi" value={d ? compact(d.t.qualified) : null} />

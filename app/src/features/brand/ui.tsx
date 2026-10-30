@@ -4,6 +4,7 @@ import type { ComponentProps, ReactNode } from 'react';
 import { Image, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SkeletonBlock } from '@/components/Skeleton';
 import { compact, idr } from '@/lib/format';
+import type { BrandSubscription } from './api';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 
 type Icon = ComponentProps<typeof Feather>['name'];
@@ -62,6 +63,31 @@ export function HashtagTile({ views, videos, tags }: { views: number; videos: nu
         <Text style={styles.kpiLabel}>{compact(videos)} video memakai hashtag</Text>
       </View>
     </View>
+  );
+}
+const day = (iso: string | null) => (iso ? new Date(`${iso}T00:00:00`).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) : '—');
+// Monthly subscription: guaranteed views for this period, progress, and the next bill.
+export function SubscriptionTile({ s, onPress }: { s: BrandSubscription; onPress?: () => void }) {
+  const g = s.progress;
+  const pct = g.period_target ? Math.min(100, Math.round((g.period_delivered / g.period_target) * 100)) : 0;
+  const status = s.status === 'past_due' ? 'Tagihan lewat jatuh tempo' : s.status === 'pending' ? 'Menunggu pembayaran pertama' : `Tagihan berikut ${day(s.next_bill_at)}`;
+  return (
+    <Pressable onPress={onPress} accessibilityRole="button" style={({ pressed }) => [styles.sub, pressed && { opacity: 0.9 }]}>
+      <View style={styles.subHead}>
+        <View style={styles.subIcon}><Feather name="repeat" size={16} color={color.link} /></View>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.kpiLabel} numberOfLines={1}>Langganan {s.plan_name} · {s.campaign_title}</Text>
+          <Text style={[styles.kpiNote, s.status !== 'active' && { color: color.warning }]} numberOfLines={1}>{status}</Text>
+        </View>
+      </View>
+      {g.period_target ? (
+        <>
+          <Text style={styles.tagValue} numberOfLines={1} adjustsFontSizeToFit>{compact(g.period_delivered)} <Text style={styles.subOf}>/ {compact(g.period_target)} views dijamin</Text></Text>
+          <View style={styles.subTrack}><View style={[styles.subFill, { width: `${Math.max(pct, 1)}%` }]} /></View>
+          <Text style={styles.kpiLabel}>{pct}% · periode {day(g.period_start)} – {day(g.period_end)}</Text>
+        </>
+      ) : null}
+    </Pressable>
   );
 }
 export const KpiGrid = ({ children }: { children: ReactNode }) => <View style={styles.grid}>{children}</View>;
@@ -138,6 +164,12 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: 'rgba(255,77,141,0.22)' },
   tagIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,77,141,0.12)' },
   tagValue: { ...type.metric, fontSize: 24, lineHeight: 30, letterSpacing: -0.5, color: color.text },
+  sub: { marginTop: space.sm, padding: space.lg, gap: 6, ...card, borderRadius: radius.lg, borderWidth: 1, borderColor: 'rgba(117,178,244,0.22)' },
+  subHead: { flexDirection: 'row', alignItems: 'center', gap: space.md, marginBottom: 2 },
+  subIcon: { width: 34, height: 34, borderRadius: 11, alignItems: 'center', justifyContent: 'center', backgroundColor: color.accentSoft },
+  subOf: { ...type.caption, fontSize: 14, color: color.textMuted },
+  subTrack: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.08)', overflow: 'hidden' },
+  subFill: { height: 6, borderRadius: 3, backgroundColor: color.blueLight },
   section: { marginTop: space.xxl, gap: space.md },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', gap: space.md },
   sectionTitle: { ...type.heading, color: color.text },
