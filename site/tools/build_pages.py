@@ -62,7 +62,7 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
     </div>
   </section>
 
-  <section class="stats" id="stats" aria-label="Ringkasan"></section>
+  <section class="stats" id="stats" aria-label="Ringkasan"><div class="st sk"></div><div class="st sk"></div><div class="st sk"></div></section>
 
   <section class="explore" aria-labelledby="exploreTitle">
     <div class="ex-head">
@@ -208,7 +208,9 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (rows) { all = rows || []; drawFeat(); drawStats(); drawFilters(); drawList(); })
     .catch(function () {
-      $('feat').classList.add('none'); $('featTrack').innerHTML = ''; $('stats').hidden = true; $('exCount').textContent = '';
+      // Keep the banner and stats boxes in place (no layout jump); just say what happened.
+      $('featTrack').innerHTML = '<div class="feat-slide on">' + art({ title: '' }, true) + '<div class="feat-shade"></div><div class="feat-body"><h1 class="feat-t">Campaign TAPP</h1><p class="feat-p">Daftar campaign belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.</p></div></div>';
+      $('stats').style.visibility = 'hidden'; $('exCount').textContent = '';
       $('list').innerHTML = '<div class="err">Daftar campaign belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.</div>';
     });
 })();
@@ -235,7 +237,7 @@ MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit deng
     <form id="mtg" class="mtg-card" novalidate>
       <div class="mtg-step"><span class="mtg-n">01</span><b>Pilih tanggal</b></div>
       <div class="cal-head"><button type="button" id="prev" aria-label="Bulan sebelumnya">&#8249;</button><b id="month"></b><button type="button" id="next" aria-label="Bulan berikutnya">&#8250;</button></div>
-      <div class="cal" id="cal" role="grid" aria-label="Tanggal"></div>
+      <div class="cal" id="cal" role="group" aria-label="Tanggal"></div>
       <div class="mtg-step"><span class="mtg-n">02</span><b>Pilih jam <span class="mtg-muted">(WIB)</span></b></div>
       <div class="slots" id="slots" aria-live="polite"><span class="mtg-muted">Pilih tanggal dulu.</span></div>
       <div class="mtg-step"><span class="mtg-n">03</span><b>Tentang brand-mu</b></div>
@@ -507,19 +509,22 @@ def tgl(iso):
 POSTS = sorted(POSTS, key=lambda p: p['date'], reverse=True)
 url = lambda p: f"blog-{p['slug']}.html"
 meta = lambda p: f'<span class="bl-meta"><b>{p["cat"]}</b> · {tgl(p["date"])}</span>'
-art = lambda p, i: f'<div class="bl-art"><img src="assets/blog/{p["cover"]}.webp" alt="" loading="{"eager" if str(i)[0] in "fc" else "lazy"}" width="1600" height="900"></div>'
+# Covers: 1600px for the wide slides and the article header, 800px for cards (assets/blog/<id>-800.webp).
+art = lambda p, i: (f'<div class="bl-art"><img src="assets/blog/{p["cover"]}.webp" srcset="assets/blog/{p["cover"]}-800.webp 800w, assets/blog/{p["cover"]}.webp 1600w" '
+                    f'sizes="{"(max-width: 900px) 100vw, 1100px" if str(i)[0] in "fc" else "(max-width: 700px) 100vw, 400px"}" alt="" '
+                    f'loading="{"eager" if str(i)[0] in "fc" else "lazy"}" width="1600" height="900"></div>')
 
 def card(p, i, cls='bl-card'):
     return (f'<a class="{cls}" href="{url(p)}" data-cat="{p["cat"]}" data-q="{(p["title"] + " " + p["excerpt"]).lower()}">'
             f'{art(p, i)}<div class="bl-body">{meta(p)}<h3>{p["title"]}</h3></div></a>')
 
 feat = POSTS[:4]
-slides = ''.join(f'<a class="bl-slide" href="{url(p)}">{art(p, f"f{i}")}<div class="bl-over">{meta(p)}<h3>{p["title"]}</h3></div></a>' for i, p in enumerate(feat))
+slides = ''.join(f'<a class="bl-slide" href="{url(p)}">{art(p, f"f{i}")}<div class="bl-over">{meta(p)}<h2 class="bl-st">{p["title"]}</h2></div></a>' for i, p in enumerate(feat))
 dots = ''.join(f'<i{" class=on" if i == 0 else ""}></i>' for i in range(len(feat)))
 latest = ''.join(card(p, f'l{i}', 'bl-row') for i, p in enumerate(POSTS[:4]))
 popular = ''.join(card(p, f'p{i}', 'bl-card bl-big') for i, p in enumerate([p for p in POSTS if p.get('popular')][:3]))
 explore = ''.join(card(p, f'e{i}') for i, p in enumerate(POSTS))
-tabs = ''.join(f'<button type="button" class="bl-tab{" on" if c == "Terbaru" else ""}" data-cat="{c}">{c}</button>' for c in ['Terbaru', 'Panduan', 'Produk', 'News', 'Brand'])
+tabs = ''.join(f'<button type="button" class="bl-tab{" on" if c == "Terbaru" else ""}" data-cat="{c}" aria-pressed="{"true" if c == "Terbaru" else "false"}">{c}</button>' for c in ['Terbaru', 'Panduan', 'Produk', 'News', 'Brand'])
 
 BLOG_JS = '''<script>
 (function () {
@@ -536,7 +541,7 @@ BLOG_JS = '''<script>
     empty.hidden = n > 0;
   }
   document.querySelectorAll('.bl-tab').forEach(function (b) { b.addEventListener('click', function () {
-    cat = b.dataset.cat; document.querySelectorAll('.bl-tab').forEach(function (x) { x.classList.toggle('on', x === b); }); apply(); }); });
+    cat = b.dataset.cat; document.querySelectorAll('.bl-tab').forEach(function (x) { x.classList.toggle('on', x === b); x.setAttribute('aria-pressed', x === b); }); apply(); }); });
   q.addEventListener('input', apply);
   document.getElementById('blForm').addEventListener('submit', function (e) { e.preventDefault(); apply(); });
 })();
@@ -550,7 +555,7 @@ BLOG = head('Blog TAPP: update, panduan, dan info terbaru', 'Update produk, pand
   <section class="bl-sec"><h2>Artikel Terbaru</h2><div class="bl-rows">{latest}</div></section>
   <section class="bl-sec"><h2>Populer</h2><div class="bl-grid">{popular}</div></section>
   <section class="bl-sec" id="eksplor"><h2>Eksplor Artikel</h2>
-    <div class="bl-tabs" role="tablist">{tabs}</div>
+    <div class="bl-tabs" role="group" aria-label="Kategori artikel">{tabs}</div>
     <form class="bl-search" id="blForm" role="search"><input id="blQ" type="search" placeholder="Cari panduan, update, atau info lain" aria-label="Cari artikel">
       <button type="submit" aria-label="Cari"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg></button></form>
     <div class="bl-grid" id="blGrid">{explore}</div><p class="bl-empty" id="blEmpty" hidden>Belum ada artikel yang cocok.</p>

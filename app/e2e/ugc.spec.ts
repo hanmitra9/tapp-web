@@ -30,7 +30,7 @@ test('submitting past the video cap shows a clear message', async ({ page }) => 
     await r.fulfill({ status: 400, json: { code: 'P0001', message: 'submission_limit_reached', details: null, hint: null } });
   });
   await page.goto(`/submit/${CID}`);
-  await page.getByPlaceholder('https://www.tiktok.com/@nama/video/…').fill('https://www.tiktok.com/@rani/video/7300000000000000001');
+  await page.getByLabel('Link postingan').fill('https://www.tiktok.com/@rani/video/7300000000000000001');
   await page.getByRole('checkbox', { name: 'Postingan milikku, publik, dan sesuai brief.' }).click();
   await page.getByRole('button', { name: 'Submit', exact: true }).click();
   await expect.poll(() => sent).toMatchObject({ p_campaign_id: CID, p_platform: 'tiktok' });

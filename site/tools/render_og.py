@@ -41,7 +41,7 @@ body{{width:1200px;height:630px;overflow:hidden;position:relative;background:#07
 </body></html>'''
 
 with sync_playwright() as p:
-    b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args=['--no-sandbox'])
+    b = p.chromium.launch(executable_path='/opt/pw-browsers/chromium', args=['--no-sandbox'])
     pg = b.new_page(viewport={'width': 1200, 'height': 630})
     pg.set_content(HTML, wait_until='networkidle'); pg.wait_for_timeout(400)
     pg.screenshot(path=str(ROOT / 'assets' / 'og-image.png'))

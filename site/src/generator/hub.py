@@ -273,7 +273,7 @@ TIER_CSS = (
     '.lp .tstep{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;-webkit-tap-highlight-color:transparent}'
     '.lp .tbadge{opacity:.45;transition:opacity .25s ease,transform .25s ease}'
     '.lp .tname{font-size:15px;font-weight:600;color:#8A8A93;transition:color .25s ease}'
-    '.lp .tbar{width:100%;display:flex;justify-content:center;padding-top:12px;border-radius:14px 14px 6px 6px;background:#101016;border:1px solid rgba(255,255,255,0.07);font-size:13px;font-weight:600;color:#5E5E68;transition:background .25s ease,border-color .25s ease,color .25s ease}'
+    '.lp .tbar{width:100%;display:flex;justify-content:center;padding-top:12px;border-radius:14px 14px 6px 6px;background:#101016;border:1px solid rgba(255,255,255,0.07);font-size:13px;font-weight:600;color:#8A8A93;transition:background .25s ease,border-color .25s ease,color .25s ease}'
     '.lp .tstep:hover .tbadge{opacity:.8}'
     '.lp .tcard{display:none}'
     '.lp .tradio:focus-visible ~ .tlad .tstairs{outline:2px solid #75B2F4;outline-offset:8px;border-radius:14px}'

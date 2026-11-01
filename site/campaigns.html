@@ -41,7 +41,7 @@
     </div>
   </section>
 
-  <section class="stats" id="stats" aria-label="Ringkasan"></section>
+  <section class="stats" id="stats" aria-label="Ringkasan"><div class="st sk"></div><div class="st sk"></div><div class="st sk"></div></section>
 
   <section class="explore" aria-labelledby="exploreTitle">
     <div class="ex-head">
@@ -203,7 +203,9 @@
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
     .then(function (rows) { all = rows || []; drawFeat(); drawStats(); drawFilters(); drawList(); })
     .catch(function () {
-      $('feat').classList.add('none'); $('featTrack').innerHTML = ''; $('stats').hidden = true; $('exCount').textContent = '';
+      // Keep the banner and stats boxes in place (no layout jump); just say what happened.
+      $('featTrack').innerHTML = '<div class="feat-slide on">' + art({ title: '' }, true) + '<div class="feat-shade"></div><div class="feat-body"><h1 class="feat-t">Campaign TAPP</h1><p class="feat-p">Daftar campaign belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.</p></div></div>';
+      $('stats').style.visibility = 'hidden'; $('exCount').textContent = '';
       $('list').innerHTML = '<div class="err">Daftar campaign belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.</div>';
     });
 })();

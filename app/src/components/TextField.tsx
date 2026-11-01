@@ -1,4 +1,4 @@
-import { forwardRef, useState } from 'react';
+import { forwardRef, useId, useState } from 'react';
 import { Pressable, StyleSheet, Text, TextInput, View, type TextInputProps } from 'react-native';
 import { color, font, radius, space, type } from '@/theme/tokens';
 
@@ -9,13 +9,16 @@ export const TextField = forwardRef<TextInput, Props>(function TextField(
 ) {
   const [focused, setFocused] = useState(false);
   const [hidden, setHidden] = useState(secure);
+  // The label's id must be a single token (no spaces) for aria-labelledby to resolve.
+  const id = `tf${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
   return (
     <View style={styles.wrap}>
-      <Text style={styles.label} nativeID={`${label}-label`}>{label}</Text>
+      <Text style={styles.label} nativeID={`${id}-label`}>{label}</Text>
       <View style={[styles.field, focused && styles.focused, !!error && styles.errored]}>
         <TextInput
           ref={ref}
-          accessibilityLabelledBy={`${label}-label`}
+          accessibilityLabelledBy={`${id}-label`}
+          aria-invalid={error ? true : undefined}
           placeholderTextColor={color.textMuted}
           selectionColor={color.blue}
           keyboardAppearance="dark"

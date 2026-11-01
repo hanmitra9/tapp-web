@@ -103,7 +103,7 @@ if '--prerender' in sys.argv:
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     async def go():
         async with async_playwright() as p:
-            b = await p.chromium.launch(executable_path='/opt/pw-browsers/chromium-1194/chrome-linux/chrome', args=['--no-sandbox'])
+            b = await p.chromium.launch(executable_path='/opt/pw-browsers/chromium', args=['--no-sandbox'])
             pg = await b.new_page()
             await pg.goto('http://127.0.0.1:8791/index.html', wait_until='load')
             await pg.wait_for_timeout(800)

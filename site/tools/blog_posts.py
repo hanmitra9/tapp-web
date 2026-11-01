@@ -2,6 +2,29 @@
 # Each post: slug, category (Panduan · Produk · News · Brand), ISO date, title, excerpt, cover art kind, body HTML.
 
 POSTS = [
+  dict(slug='langganan-bulanan-views-dijamin', cat='Brand', date='2026-11-01', cover='brand', popular=True,
+    title='Langganan Bulanan TAPP: Qualified Views Dijamin Setiap Bulan',
+    excerpt='Bayar tetap tiap bulan, dapat jumlah qualified views yang dijamin. Kurang? Terbawa ke bulan berikutnya.',
+    body='''
+<p>Selain campaign satuan, brand sekarang bisa berlangganan TAPP per bulan. Kamu membayar jumlah tetap setiap 30 hari dan mendapat <b>jumlah qualified views yang dijamin</b>, dari clip banyak creator sekaligus.</p>
+<h2>Pilihan paket</h2>
+<table class="bl-table"><tbody>
+<tr><td>Starter</td><td>400 rb qualified views / bulan</td></tr>
+<tr><td>Growth</td><td>2 juta qualified views / bulan</td></tr>
+<tr><td>Scale</td><td>6 juta qualified views / bulan</td></tr>
+</tbody></table>
+<p>Semua angka sudah termasuk bonus +20% views. Harga paket dibahas langsung bersama tim TAPP saat meeting. Butuh lebih besar, ada paket custom.</p>
+<h2>Bagaimana jaminannya bekerja?</h2>
+<ul>
+<li><b>Hanya qualified views yang dihitung</b>: views yang lolos saringan bot dan direview tim TAPP.</li>
+<li><b>Views merata sepanjang bulan</b>: jumlah video baru per hari diatur supaya konten tetap muncul dari awal sampai akhir periode.</li>
+<li><b>Kurang? Terbawa</b>: kalau target bulan itu belum tercapai, campaign tetap berjalan dan kekurangannya pindah ke bulan berikutnya.</li>
+<li><b>Berhenti kapan saja</b>: views jaminan yang belum tercapai lebih dari 60 hari dikembalikan penuh tanpa potongan. Detailnya ada di <a href="terms.html#brand">Syarat Layanan</a>.</li>
+</ul>
+<h2>Yang kamu lihat di dashboard</h2>
+<p>Dashboard brand menampilkan views periode ini dibanding target yang dijamin, tanggal tagihan berikutnya, plus laporan harian seperti campaign biasa. Tagihan diingatkan lewat email 3 hari sebelum jatuh tempo.</p>
+<p>Langganan khusus untuk campaign clipping. Jadwalkan meeting untuk memilih paket yang cocok.</p>
+'''),
   dict(slug='ambil-campaign', cat='Produk', date='2026-10-04', cover='wizard',
     title='Ambil Campaign: Cara Baru Join dan Submit Clip di TAPP',
     excerpt='Pilih akun, verifikasi, lalu pilih video langsung dari akunmu. Semua dalam satu alur tiga langkah.',
