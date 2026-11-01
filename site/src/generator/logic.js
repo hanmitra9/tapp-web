@@ -57,7 +57,8 @@ class Component extends DCLogic {
       ['Bisakah saya memilih creator?', 'Campaign ditawarkan ke creator yang cocok dari platform dan rekam jejak, bukan dari jumlah follower. Account manager-mu bisa membantu mengarahkan profil creator yang dicari.'],
       ['Kalau budget habis di tengah campaign?', 'Campaign otomatis masuk fase segera berakhir dan views berikutnya tidak dibayar, jadi pengeluaranmu tidak pernah melewati budget.'],
       ['Laporan apa yang saya dapat?', 'Views mentah dan qualified, total biaya, CPV, serta performa per platform dan per creator.'],
-      ['Berapa biayanya?', 'Satu harga all-in per 1.000 qualified views, tanpa fee tambahan. Kamu hanya membayar views yang lolos verifikasi. Rincian biaya dibahas langsung bersama tim TAPP saat meeting, sesuai brief dan target campaign-mu.'],
+      ['Berapa biayanya?', 'Satu harga per 1.000 qualified views, sudah termasuk biaya layanan. Kamu hanya membayar views yang lolos verifikasi. Rincian biaya dibahas langsung bersama tim TAPP saat meeting, sesuai brief dan target campaign-mu.'],
+      ['Ada paket langganan bulanan?', 'Ada. Kamu bayar tetap tiap bulan dan mendapat jumlah qualified views yang dijamin (Starter 400 rb, Growth 2 juta, Scale 6 juta views, sudah termasuk bonus +20%). Kalau target bulan itu belum tercapai, kekurangannya terbawa ke bulan berikutnya.'],
     ], 'openB');
 
     // live chart (brand card 3), values from the reference demo

@@ -3,6 +3,7 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
+import { gzipSync } from 'node:zlib';
 
 const root = new URL('../../dist/', import.meta.url).pathname;
 const types = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.json': 'application/json', '.png': 'image/png', '.ico': 'image/x-icon', '.ttf': 'font/ttf', '.woff2': 'font/woff2', '.svg': 'image/svg+xml' };
@@ -17,6 +18,11 @@ createServer(async (req, res) => {
   let file = null;
   for (const c of candidates) if (await isFile(c)) { file = c; break; }
   if (!file) file = path.startsWith('/admin/') ? join(root, 'admin/index.html') : join(root, 'app.html');
-  res.writeHead(200, { ...secHeaders, 'content-type': types[extname(file)] ?? 'application/octet-stream' });
-  res.end(await readFile(file));
+  const type = types[extname(file)] ?? 'application/octet-stream';
+  let body = await readFile(file);
+  // gzip text like production nginx (gzip on), so audits see real transfer sizes.
+  const gz = /text|javascript|json|svg/.test(type) && /\bgzip\b/.test(req.headers['accept-encoding'] ?? '');
+  if (gz) body = gzipSync(body);
+  res.writeHead(200, { ...secHeaders, 'content-type': type, ...(gz ? { 'content-encoding': 'gzip', vary: 'Accept-Encoding' } : {}) });
+  res.end(body);
 }).listen(port, () => console.log(`serving dist on :${port}`));

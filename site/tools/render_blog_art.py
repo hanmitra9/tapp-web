@@ -5,7 +5,7 @@ from playwright.async_api import async_playwright
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 SRC = ROOT / 'tools' / 'blog_art' / 'scenes.html'
 OUT = ROOT / 'assets' / 'blog'
-EXE = '/opt/pw-browsers/chromium-1194/chrome-linux/chrome'
+EXE = '/opt/pw-browsers/chromium'
 
 async def main():
     OUT.mkdir(exist_ok=True)
@@ -17,7 +17,9 @@ async def main():
             sid = await el.get_attribute('id')
             if len(sys.argv) > 1 and sid not in sys.argv[1:]: continue
             png = await el.screenshot()
-            Image.open(io.BytesIO(png)).convert('RGB').save(OUT / f'{sid}.webp', 'WEBP', quality=84, method=6)
+            im = Image.open(io.BytesIO(png)).convert('RGB')
+            im.save(OUT / f'{sid}.webp', 'WEBP', quality=84, method=6)
+            im.resize((800, 450), Image.LANCZOS).save(OUT / f'{sid}-800.webp', 'WEBP', quality=80, method=6)   # card size (srcset)
             print(sid, (OUT / f'{sid}.webp').stat().st_size // 1024, 'KB')
         await b.close()
 asyncio.run(main())
