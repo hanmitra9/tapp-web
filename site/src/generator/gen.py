@@ -126,33 +126,6 @@ def brand_row(i):
       <div style="display: flex; align-items: center; justify-content: center; min-height: 190px">{VIS_B[i]}</div>
     </div>'''
 
-# Brand monthly plans (0069/0070): guaranteed views only; price is discussed in the meeting. Keep in step with Admin → Langganan.
-PLANS = [
-    ('Starter', '400 rb', 'Untuk mulai menguji clipping.', False),
-    ('Growth', '2 juta', 'Untuk brand yang posting rutin tiap minggu.', True),
-    ('Scale', '6 juta', 'Untuk peluncuran dan dorongan besar.', False),
-]
-PLAN_POINTS = ['Clipping dari banyak creator sekaligus', 'Hanya qualified views yang dihitung', 'Views merata sepanjang bulan', 'Kurang? Terbawa ke bulan berikutnya']
-CHECK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#75B2F4" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6 9 17l-5-5"></path></svg>'
-
-def plan_card(name, views, note, hot):
-    border = 'border: 1px solid rgba(117,178,244,0.45); background: radial-gradient(90% 70% at 50% 0%, rgba(12,101,196,0.28), transparent 70%), #0B0B10' if hot else CARD
-    badge = '<span style="position: absolute; top: 18px; right: 18px; padding: 4px 10px; border-radius: 999px; background: rgba(245,196,81,0.12); border: 1px solid rgba(245,196,81,0.3); font-size: 11px; font-weight: 600; letter-spacing: 0.8px; color: #F5C451">POPULER</span>' if hot else ''
-    points = ''.join(f'<li style="display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 21px; color: #B9B9C4">{CHECK}<span>{t}</span></li>' for t in PLAN_POINTS)
-    return f'''<article class="cglow" style="position: relative; border-radius: 20px; padding: 28px; {border}; display: flex; flex-direction: column; gap: 18px">
-      {badge}
-      <div style="display: flex; flex-direction: column; gap: 6px"><h3 style="font-size: 18px; font-weight: 600; color: #C2DDFA">{name}</h3><p style="font-size: 14px; color: #8A8A93">{note}</p></div>
-      <div style="display: flex; flex-direction: column; gap: 2px"><span class="tabular" style="font-size: 44px; line-height: 48px; font-weight: 600; letter-spacing: -1.5px">{views}</span><span style="font-size: 14px; color: #9A9AA5">qualified views dijamin / bulan</span></div>
-      <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 10px">{points}</ul>
-      <div style="margin-top: auto; padding-top: 6px">{pill_btn("Tanya harga paket", "meeting.html", primary=hot)}</div>
-    </article>'''
-
-PLANS_SECTION = f'''<section id="langganan" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 88px 64px 40px">
-    {head("Langganan Bulanan", "Views Dijamin,", "Setiap Bulan", "Bayar tetap tiap bulan, dapat jumlah qualified views yang dijamin, sudah termasuk bonus +20%. Harga dibahas langsung bersama tim TAPP.")}
-    <div class="g3" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px">{''.join(plan_card(*p) for p in PLANS)}</div>
-    <p style="text-align: center; margin-top: 22px; font-size: 13px; color: #6E6E7A">Khusus campaign clipping. Butuh lebih besar? Paket custom tersedia.</p>
-  </section>'''
-
 def faq_block(pill, l1, l2, btn, href, listname):
     return f'''<section id="faq" class="sec pad" style="max-width: 1280px; margin: 0 auto; padding: 72px 64px 96px">
   <div class="faq2" style="display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr); gap: 48px; align-items: start">
@@ -402,8 +375,6 @@ a{{color:inherit;text-decoration:none}}
   </section>
 
   {steps_tabs(VIS_B[3])}
-
-  {PLANS_SECTION}
 
   <section id="kontak" class="sec pad" style="max-width: 1180px; margin: 0 auto; padding: 56px 64px 24px">
     {BRAND_CONTACT}
