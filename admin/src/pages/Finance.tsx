@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { financeMonthly, latestUptime, listBrands, listCampaigns, listLedger, recordDeposit, type FinanceMonth, type LedgerEntry } from '../lib/api';
+import { financeMonthly, getPaymentAccount, latestUptime, listBrands, listCampaigns, listLedger, recordDeposit, setPaymentAccount, type FinanceMonth, type LedgerEntry } from '../lib/api';
 import { adminError } from '../lib/errors';
 import { ago, dt, idr } from '../lib/format';
 import { useLoad } from '../lib/useLoad';
@@ -49,6 +49,7 @@ export function Finance() {
       </div>
 
       <DepositForm onDone={ledger.reload} />
+      <AccountForm />
 
       <div className="card section">
         <h2 style={{ margin: 0 }}>Setoran & refund</h2>
@@ -84,6 +85,39 @@ function Status({ checks }: { checks: { target: string; ok: boolean | null; crea
       <span className="v" style={{ fontSize: 22 }}>{!checks ? '—' : down ? 'Ada gangguan' : 'Semua normal'}</span>
       {line('Website', site)}{line('Mailer', mailer)}
     </div>
+  );
+}
+
+function AccountForm() {
+  const acc = useLoad(() => getPaymentAccount(true), []);
+  const [edit, setEdit] = useState<{ bank: string; number: string; name: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function save(e: FormEvent) {
+    e.preventDefault(); if (!edit) return; setBusy(true); setError(null);
+    try { await setPaymentAccount(edit.bank, edit.number, edit.name); setEdit(null); await acc.reload(); }
+    catch (err) { setError(adminError(err)); } finally { setBusy(false); }
+  }
+  const a = acc.data;
+  return (
+    <form className="card section" onSubmit={save} style={{ display: 'grid', gap: 12 }}>
+      <div className="actions" style={{ justifyContent: 'space-between' }}>
+        <h2 style={{ margin: 0 }}>Rekening penerimaan</h2>
+        {!edit ? <button type="button" className="btn secondary" onClick={() => setEdit(a ?? { bank: '', number: '', name: '' })}>{a ? 'Ubah' : 'Isi rekening'}</button> : null}
+      </div>
+      <p className="sub" style={{ margin: 0 }}>Dicetak di invoice setoran dan email tagihan langganan, supaya brand langsung tahu ke mana transfer.</p>
+      {!edit ? (a ? <div><b>{a.bank} {a.number}</b> · a.n. {a.name}</div> : <div className="notice warning">Belum diisi. Invoice dan email tagihan tampil tanpa rekening.</div>) : (
+        <>
+          <div className="grid3">
+            <label className="field">Bank<input value={edit.bank} onChange={(e) => setEdit({ ...edit, bank: e.target.value })} placeholder="BCA" /></label>
+            <label className="field">Nomor rekening<input inputMode="numeric" value={edit.number} onChange={(e) => setEdit({ ...edit, number: e.target.value })} /></label>
+            <label className="field">Atas nama<input value={edit.name} onChange={(e) => setEdit({ ...edit, name: e.target.value })} /></label>
+          </div>
+          {error ? <div className="notice error">{error}</div> : null}
+          <div className="actions"><button type="button" className="btn secondary" onClick={() => setEdit(null)}>Batal</button><button className="btn" disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan rekening'}</button></div>
+        </>
+      )}
+    </form>
   );
 }
 
@@ -144,9 +178,10 @@ function csv(rows: FinanceMonth[]) {
 
 const esc = (s: string | number | null | undefined) => String(s ?? '').replace(/[&<>"]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[ch]!);
 // Invoice / refund note: a print-ready page; the browser's print dialog saves it as PDF.
-export function printInvoice(l: Pick<LedgerEntry, 'kind' | 'invoice_no' | 'created_at' | 'brand_name' | 'campaign_title' | 'amount' | 'fee_pct' | 'fee' | 'net' | 'reference' | 'note'>) {
-  const w = window.open('', '_blank');
+export async function printInvoice(l: Pick<LedgerEntry, 'kind' | 'invoice_no' | 'created_at' | 'brand_name' | 'campaign_title' | 'amount' | 'fee_pct' | 'fee' | 'net' | 'reference' | 'note'>) {
+  const w = window.open('', '_blank');   // open first, inside the click, so popup blockers allow it
   if (!w) return;
+  const acc = l.kind === 'deposit' ? await getPaymentAccount() : null;
   const dep = l.kind === 'deposit';
   const rows: [string, string][] = dep
     ? [['Setoran diterima', idr(l.amount)], [`Biaya layanan platform (${Number(l.fee_pct)}%)`, `−${idr(l.fee)}`], ['Budget campaign', idr(l.net)]]
@@ -157,12 +192,13 @@ export function printInvoice(l: Pick<LedgerEntry, 'kind' | 'invoice_no' | 'creat
     .logo{font-weight:800;font-size:24px;color:#0C65C4;letter-spacing:-.5px}.muted{color:#5B6475;font-size:12.5px}
     h1{font-size:20px;margin:24px 0 4px}table{width:100%;border-collapse:collapse;margin-top:18px}td{padding:10px 0;border-bottom:1px solid #E8EDF4}
     td:last-child{text-align:right;font-variant-numeric:tabular-nums}tr:last-child td{font-weight:700;font-size:16px;border-bottom:2px solid #0B1220}
-    .meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin-top:16px}footer{margin-top:36px;color:#8A93A3;font-size:12px}@page{margin:16mm}</style></head><body>
+    .pay{margin-top:18px;padding:12px 14px;border:1px solid #E3E8F0;border-radius:10px;background:#F7FAFE}.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 24px;margin-top:16px}footer{margin-top:36px;color:#8A93A3;font-size:12px}@page{margin:16mm}</style></head><body>
     <header><div><div class="logo">TAPP</div><div class="muted">tappcreators.com</div></div>
       <div style="text-align:right"><b>${dep ? 'INVOICE' : 'BUKTI REFUND'}</b><div class="muted">${esc(l.invoice_no)}</div>
       <div class="muted">${esc(new Date(l.created_at).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }))}</div></div></header>
     <h1>${esc(l.brand_name)}</h1>${l.campaign_title ? `<div class="muted">Campaign: ${esc(l.campaign_title)}</div>` : ''}
     <table>${rows.map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table>
+    ${acc ? `<div class="pay"><div class="muted">Pembayaran ke</div><b>${esc(acc.bank)} ${esc(acc.number)}</b><div>a.n. ${esc(acc.name)}</div></div>` : ''}
     <div class="meta">${l.reference ? `<div><div class="muted">Referensi transfer</div>${esc(l.reference)}</div>` : ''}${l.note ? `<div><div class="muted">Catatan</div>${esc(l.note)}</div>` : ''}</div>
     <footer>${dep ? 'Budget campaign dipakai hanya untuk views yang lolos verifikasi. Sisa budget dapat ditarik kembali sesuai Syarat Layanan TAPP.'
       : 'Refund atas sisa budget yang belum terpakai, sesuai Syarat Layanan TAPP.'}</footer>

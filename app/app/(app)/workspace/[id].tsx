@@ -88,7 +88,7 @@ export default function Workspace() {
       <View style={styles.wHero} {...web('art')}>
         <Text style={styles.wBrand}>{c.brand.name} · {CAMPAIGN_STATUS[c.status]}</Text>
         <Text style={styles.wTitle} accessibilityRole="header" numberOfLines={2}>{c.title}</Text>
-        <Text style={styles.wMeta}>{cpmLabel(c.cpm)}{dl ? ` · ${dl}` : ''}</Text>
+        <Text style={styles.wMeta}>{c.content_type === 'challenge' ? `Challenge · hadiah ${idr(c.challenge?.prize_pool ?? 0)}` : cpmLabel(c.cpm)}{dl ? ` · ${dl}` : ''}</Text>
         <View style={styles.wStats}>
           <Stat label="Klip" value={String(subs.length)} />
           <Stat label="Qualified views" value={compact(totals.q)} />

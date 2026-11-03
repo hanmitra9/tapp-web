@@ -93,6 +93,10 @@
   var hasBanner = function (k) { return /^https:\/\//.test(k.banner_url || ''); };
   var daysLeft = function (k) { return k.submission_deadline ? Math.ceil((new Date(k.submission_deadline) - Date.now()) / 864e5) : null; };
   var deadline = function (k) { var d = daysLeft(k); return d == null ? 'Tanpa batas waktu' : d <= 0 ? 'Berakhir hari ini' : d + ' hari lagi'; };
+  // Challenges (0071) show their total prize instead of a per-view rate; prize totals come from challenge_info.
+  var prize = {};
+  var isChal = function (k) { return k.content_type === 'challenge'; };
+  var rateHtml = function (k, unit) { return isChal(k) ? 'Rp' + nf.format(prize[k.id] || 0) + '<small> total hadiah</small>' : 'Rp' + nf.format(k.cpm) + '<small> ' + unit + '</small>'; };
   var maxViews = function (k) { return k.max_earning_per_submission ? Math.round(k.max_earning_per_submission / k.cpm * 1000) : null; };
   var plats = function (k) { return (k.platforms || []).map(function (p) { return '<span class="pi" title="' + esc(NAME[p] || p) + '">' + (ICON[p] || esc(NAME[p] || p)) + '</span>'; }).join(''); };
   var art = function (k, big) {
@@ -114,7 +118,7 @@
       + '<div class="feat-body">'
       + '<div class="feat-meta"><span class="tag">' + esc(typeLabel(k.category)) + '</span><span class="brand"><img src="assets/tapp-mark-white.svg" alt="">' + esc(k.brand_name) + '</span>' + (k.status === 'ending' ? '<span class="tag warn">Segera berakhir</span>' : '') + '</div>'
       + '<h1 class="feat-t">' + esc(k.title) + '</h1>'
-      + '<div class="feat-row tab"><span class="rate">Rp' + nf.format(k.cpm) + '<small> / 1.000 views</small></span><span class="sep"></span><span class="pl">' + plats(k) + '</span><span class="sep"></span><span class="dl">' + deadline(k) + '</span></div>'
+      + '<div class="feat-row tab"><span class="rate">' + rateHtml(k, '/ 1.000 views') + '</span><span class="sep"></span><span class="pl">' + plats(k) + '</span><span class="sep"></span><span class="dl">' + deadline(k) + '</span></div>'
       + joined(k)
       + '<div class="feat-cta"><a class="btn" href="' + hrefOf(k) + '">Ambil Campaign</a><a class="btn ghost" href="' + hrefOf(k) + '">Lihat Detail</a></div>'
       + '</div></article>';
@@ -145,7 +149,7 @@
   // ── Stats ──
   function drawStats() {
     if (!all.length) { $('stats').hidden = true; return; }
-    var top = all.reduce(function (m, k) { return Math.max(m, k.cpm || 0); }, 0);
+    var top = all.reduce(function (m, k) { return isChal(k) ? m : Math.max(m, k.cpm || 0); }, 0);
     var ps = Array.from(new Set([].concat.apply([], all.map(function (k) { return k.platforms || []; }))));
     var cell = function (l, v, s) { return '<div class="st"><span class="st-l">' + l + '</span><b class="st-v tab">' + v + '</b><span class="st-s">' + s + '</span></div>'; };
     $('stats').innerHTML = cell('Campaign aktif', nf.format(all.length), 'Terbuka untuk semua creator')
@@ -161,7 +165,7 @@
       + '<div class="cc-body">'
       + '<span class="cc-brand"><img src="assets/tapp-mark-white.svg" alt="">' + esc(k.brand_name) + '</span>'
       + '<h3 class="cc-t">' + esc(k.title) + '</h3>'
-      + '<div class="cc-rate tab"><b>Rp' + nf.format(k.cpm) + '</b><small> / 1K views</small><span class="pl">' + plats(k) + '</span></div>'
+      + '<div class="cc-rate tab"><b>' + rateHtml(k, '/ 1K views').replace('<small>', '</b><small>') + '<span class="pl">' + plats(k) + '</span></div>'
       + '<div class="cc-kv tab"><span><small>Min. klaim</small>' + short(k.min_views_to_qualify || 0) + '</span><span><small>Maks. per clip</small>' + (mv ? short(mv) : 'Tanpa batas') + '</span><span><small>Sisa waktu</small>' + (d == null ? '—' : d <= 0 ? 'Hari ini' : d + ' hari') + '</span></div>'
       + joined(k)
       + '<div class="cc-bud tab"><span>Budget tersisa</span><b>' + k.budget_left_pct + '%</b></div><div class="bar"><i style="width: ' + k.budget_left_pct + '%"></i></div>'
@@ -201,7 +205,14 @@
   $('list').innerHTML = [0, 1, 2].map(function () { return '<div class="cc sk"></div>'; }).join('');
   fetch(c.SUPABASE_URL + '/rest/v1/rpc/public_campaigns', { method: 'POST', headers: { apikey: c.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: '{}' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
-    .then(function (rows) { all = rows || []; drawFeat(); drawStats(); drawFilters(); drawList(); })
+    .then(function (rows) {
+      all = rows || [];
+      var ch = all.filter(isChal).map(function (k) { return k.id; });
+      if (!ch.length) return;
+      return fetch(c.SUPABASE_URL + '/rest/v1/rpc/challenge_info', { method: 'POST', headers: { apikey: c.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_ids: ch }) })
+        .then(function (r) { return r.ok ? r.json() : []; }).then(function (xs) { (xs || []).forEach(function (x) { prize[x.id] = x.prize_pool; }); }).catch(function () {});
+    })
+    .then(function () { drawFeat(); drawStats(); drawFilters(); drawList(); })
     .catch(function () {
       // Keep the banner and stats boxes in place (no layout jump); just say what happened.
       $('featTrack').innerHTML = '<div class="feat-slide on">' + art({ title: '' }, true) + '<div class="feat-shade"></div><div class="feat-body"><h1 class="feat-t">Campaign TAPP</h1><p class="feat-p">Daftar campaign belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.</p></div></div>';

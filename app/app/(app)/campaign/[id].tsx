@@ -19,7 +19,8 @@ import { card, color, radius, space, type } from '@/theme/tokens';
 import { assetLink, fetchAssets, fetchCampaign, leaveCampaign, type Asset } from '@/features/campaigns/api';
 import { JoinedRow } from '@/features/campaigns/JoinedRow';
 import { GuideCard, GuideSheet, guideSteps } from '@/features/campaigns/GuideSheet';
-import { CAMPAIGN_STATUS, categoryLabel, joinBlockCopy, platformsLabel } from '@/features/campaigns/copy';
+import { CAMPAIGN_STATUS, categoryLabel, joinBlockCopy, platformsLabel, rateLabel } from '@/features/campaigns/copy';
+import { ChallengePrizes, ChallengeStandings } from '@/features/campaigns/Challenge';
 import { track } from '@/lib/analytics';
 
 const RULE_TITLES = { requirement: 'Syarat konten', submission: 'Aturan submission', performance: 'Aturan performa' } as const;
@@ -39,6 +40,7 @@ export default function CampaignDetailScreen() {
   if (!q.data) return <Screen scroll={false}><Header title="" /><LoadState error={q.error} onRetry={q.reload} /></Screen>;
   const { c, assets } = q.data;
   const joined = c.membership?.status === 'joined';
+  const challenge = c.content_type === 'challenge' ? c.challenge ?? null : null;
   const block = joinBlockCopy(c.join_block);
   // The bar shows what's left, matching its label (and the website's "Budget Tersisa" bars).
   const pct = c.budget ? Math.min(Math.max(c.remaining, 0) / c.budget, 1) : 0;
@@ -91,9 +93,9 @@ export default function CampaignDetailScreen() {
         {c.banner_url ? <Image source={{ uri: c.banner_url }} style={StyleSheet.absoluteFill} resizeMode="cover" accessibilityIgnoresInvertColors />
           : <Image source={require('../../../assets/tapp-mark-white.png')} style={styles.artMark} accessibilityIgnoresInvertColors />}
         <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(4,7,12,0.85)']} start={{ x: 0, y: 0.45 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
-        <View style={styles.heroRate}><Text style={styles.heroRateValue}>{idr(c.cpm)}</Text><Text style={styles.heroRateUnit}>/1K views</Text></View>
+        <View style={styles.heroRate}><Text style={styles.heroRateValue}>{rateLabel(c).value}</Text><Text style={styles.heroRateUnit}>{challenge ? 'hadiah' : '/1K views'}</Text></View>
         <View style={styles.heroText}>
-          <Text style={styles.heroBrand}>{c.brand.name} · {c.content_type === 'ugc' ? 'UGC · ' : ''}{categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}</Text>
+          <Text style={styles.heroBrand}>{c.brand.name} · {c.content_type === 'ugc' ? 'UGC · ' : challenge ? 'Challenge · ' : ''}{categoryLabel(c.category)}{c.status !== 'active' ? ` · ${CAMPAIGN_STATUS[c.status]}` : ''}</Text>
           <Text style={styles.heroTitle} accessibilityRole="header" numberOfLines={3}>{c.title}</Text>
         </View>
       </View>
@@ -102,19 +104,20 @@ export default function CampaignDetailScreen() {
       {error ? <View style={styles.gap}><Notice tone="error" message={error} /></View> : null}
 
       <View style={styles.facts}>
-        <Fact icon="trending-up" label="Per 1.000 views" value={idr(c.cpm)} strong />
+        {challenge ? <Fact icon="award" label="Total hadiah" value={idr(challenge.prize_pool)} strong />
+          : <Fact icon="trending-up" label="Per 1.000 views" value={idr(c.cpm)} strong />}
         <Fact icon="clock" label="Deadline" value={deadline ? deadlineLabel(deadline) ?? dateLabel(deadline) : 'Tidak ada'} />
         <Fact icon="smartphone" label="Platform" value={platformsLabel(c.platforms)} />
         <Fact icon="users" label="Kreator" value={num(c.creators_joined)} />
       </View>
 
-      <View style={styles.budget} accessible accessibilityLabel={`Sisa budget ${Math.round(pct * 100)} persen`}>
+      {challenge ? null : <View style={styles.budget} accessible accessibilityLabel={`Sisa budget ${Math.round(pct * 100)} persen`}>
         <View style={styles.budgetHead}>
           <Text style={styles.budgetLabel}>Sisa budget</Text>
           <Text style={styles.budgetValue}>{Math.round(pct * 100)}%</Text>
         </View>
         <View style={styles.track} {...web('track')}><View style={[styles.fill, { width: `${pct * 100}%` }]} {...web('seg-q')} /></View>
-      </View>
+      </View>}
 
       {!joined ? (
         <Section title="Cara Ambil Campaign">
@@ -143,7 +146,21 @@ export default function CampaignDetailScreen() {
           : <Text style={styles.muted}>Terbuka setelah kamu bergabung.</Text>}
       </Section>
 
-      <Section title="Bayaran">
+      {challenge ? (
+        <>
+          <Section title="Hadiah">
+            <ChallengePrizes info={challenge} />
+            <Bullets items={[
+              'Peringkat dari total qualified views semua klipmu di challenge ini.',
+              challenge.ends_at ? `Challenge ditutup ${dateLabel(challenge.ends_at)}; hadiah dibagikan maks. 1 hari setelahnya.` : 'Hadiah dibagikan setelah challenge ditutup.',
+              c.min_views_to_qualify > 0 ? `Min. ${num(c.min_views_to_qualify)} views untuk masuk peringkat.` : 'Tanpa minimum views.',
+              'Tidak ada bayaran per views; hanya juara yang mendapat hadiah.',
+              'Views iklan, bot & repost tidak dihitung.',
+            ]} />
+          </Section>
+          {joined ? <Section title="Peringkat sementara"><ChallengeStandings campaignId={c.id} /></Section> : null}
+        </>
+      ) : <Section title="Bayaran">
         <Bullets items={[
           `${cpmLabel(c.cpm)} (qualified views).`,
           `100rb views = ${idr(c.cpm * 100)}${c.max_earning_per_submission && c.cpm * 100 > c.max_earning_per_submission ? ` (dibatasi ${idr(c.max_earning_per_submission)})` : ''}.`,
@@ -153,7 +170,7 @@ export default function CampaignDetailScreen() {
           'Tarif sudah bersih, fee platform sudah dipotong.',
           'Views iklan, bot & repost tidak dihitung.',
         ]} />
-      </Section>
+      </Section>}
       {rulesBy('submission').length ? <Section title={RULE_TITLES.submission}><Bullets items={rulesBy('submission').map((r) => r.body)} /></Section> : null}
       {rulesBy('performance').length ? <Section title={RULE_TITLES.performance}><Bullets items={rulesBy('performance').map((r) => r.body)} /></Section> : null}
       {c.terms ? <Section title="Ketentuan"><Text style={styles.body}>{c.terms}</Text></Section> : null}

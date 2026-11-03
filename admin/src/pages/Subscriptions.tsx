@@ -63,7 +63,7 @@ function Subs({ list, error, onDone }: { list: Subscription[] | null; error: str
                   <td>{s.plan_name}<div className="sub">{idr(s.monthly_price)} · {num(views(s))} views</div></td>
                   <td><span className={`badge ${STATUS[s.status][1]}`}>{STATUS[s.status][0]}</span>
                     {g.breach_views > 0 ? <div className="sub" style={{ color: 'var(--danger)' }}>Lewat 60 hari: kurang {num(g.breach_views)} views</div>
-                      : behind && s.status === 'active' ? <div className="sub" style={{ color: 'var(--warning)' }}>Di bawah pacing</div> : null}</td>
+                      : behind && s.status === 'active' ? <div className="sub" style={{ color: 'var(--warning)' }}>Tertinggal dari jadwal</div> : null}</td>
                   <td style={{ minWidth: 160 }}>{g.period_target ? (
                     <><div className="sub">{num(g.period_delivered)} / {num(g.period_target)} ({pct}%)</div>
                       <div style={{ height: 6, background: 'var(--g150)', borderRadius: 3 }}><div style={{ width: `${pct}%`, height: 6, background: 'var(--blue)', borderRadius: 3 }} /></div>

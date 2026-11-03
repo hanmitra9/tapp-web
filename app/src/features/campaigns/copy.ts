@@ -1,3 +1,4 @@
+import { idr } from '@/lib/format';
 import { CONTENT_CATEGORIES, labelOf, NICHES, platformLabel, type Platform } from '@/features/creator/options';
 import type { CampaignDetail } from './api';
 
@@ -10,7 +11,11 @@ export const categoryLabel = (c: string) => CAMPAIGN_TYPES[c] ?? labelOf(NICHES,
 export const CAMPAIGN_TYPE_OPTIONS = Object.entries(CAMPAIGN_TYPES).map(([value, label]) => ({ value, label }));
 // Campaign kind: clipping (cut the brand's videos) or UGC (original content).
 export const CONTENT_KINDS = [{ value: 'clipping', label: 'Clipping' }, { value: 'ugc', label: 'UGC' }];
-export const contentTypeLabel = (c: string) => (c === 'ugc' ? 'UGC' : c === 'clipping' ? 'Clipping' : labelOf(CONTENT_CATEGORIES, c));
+export const contentTypeLabel = (c: string) => (c === 'ugc' ? 'UGC' : c === 'clipping' ? 'Clipping' : c === 'challenge' ? 'Challenge' : labelOf(CONTENT_CATEGORIES, c));
+// Headline money for a campaign: the per-1K rate, or a challenge's total prize.
+export const rateLabel = (c: { content_type?: string; cpm: number; prize_pool?: number; challenge?: { prize_pool: number } | null }) =>
+  c.content_type === 'challenge' ? { value: idr(c.prize_pool ?? c.challenge?.prize_pool ?? 0), unit: ' total hadiah' }
+    : { value: idr(c.cpm), unit: ' / 1K views' };
 export const platformsLabel = (ps: Platform[]) => ps.map(platformLabel).join(' · ');
 
 export const CAMPAIGN_STATUS: Record<CampaignDetail['status'], string> = {

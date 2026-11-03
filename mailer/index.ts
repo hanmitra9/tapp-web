@@ -259,7 +259,8 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
         title: due ? "Tagihan bulan berikutnya" : "Campaign dijeda sementara",
         intro: due ? `Langganan ${esc(d.plan)} untuk ${esc(d.brand)} jatuh tempo ${esc(date)}. Transfer ke rekening resmi TAPP lalu kirim bukti ke account manager, supaya views bulan berikutnya langsung jalan.`
           : `Tagihan langganan ${esc(d.plan)} yang jatuh tempo ${esc(date)} belum kami terima, jadi campaign dijeda. Views yang sudah dibayar tetap aman dan campaign langsung jalan lagi setelah pembayaran tercatat.`,
-        rows: [["Paket", d.plan ?? "-"], ["Tagihan", idr(Number(d.amount))], ...(due ? ([["Views dijamin", `${Math.round(Number(d.views ?? 0)).toLocaleString("id-ID")} views`]] as [string, string][]) : []), ["Jatuh tempo", date]],
+        rows: [["Paket", d.plan ?? "-"], ["Tagihan", idr(Number(d.amount))], ...(due ? ([["Views dijamin", `${Math.round(Number(d.views ?? 0)).toLocaleString("id-ID")} views`]] as [string, string][]) : []), ["Jatuh tempo", date],
+          ...(d.account?.number ? ([["Transfer ke", `${d.account.bank} ${d.account.number}`], ["Atas nama", String(d.account.name ?? "-")]] as [string, string][]) : [])],
         button: APP() ? { label: "Buka dashboard brand", url: `${APP()}/brand` } : undefined,
         outro: "Ada pertanyaan? Balas email ini.",
       },
@@ -269,7 +270,7 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
     const nf = (n: unknown) => Math.round(Number(n ?? 0)).toLocaleString("id-ID");
     const breach = Number(d.breach_views) > 0;
     return {
-      subject: `${breach ? "Jaminan lewat 60 hari" : "Di bawah pacing"}: ${d.brand ?? "-"} (${d.plan ?? ""})`,
+      subject: `${breach ? "Jaminan lewat 60 hari" : "Tertinggal dari jadwal"}: ${d.brand ?? "-"} (${d.plan ?? ""})`,
       block: {
         eyebrow: "Admin · Langganan",
         title: breach ? "Ada views jaminan yang lewat 60 hari" : "Langganan tertinggal dari target",
@@ -277,6 +278,20 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
         rows: [["Brand / campaign", `${d.brand ?? "-"} · ${d.campaign ?? "-"}`], ["Terkirim", nf(d.delivered)], ["Seharusnya sampai hari ini", nf(d.expected_now)],
           ["Periode ini", `${nf(d.period_delivered)} / ${nf(d.period_target)}`], ...(breach ? ([["Kurang (lewat 60 hari)", nf(d.breach_views)]] as [string, string][]) : [])],
         button: APP() ? { label: "Buka Admin → Langganan", url: `${APP()}/admin/subscriptions` } : undefined,
+      },
+    };
+  }
+  if (type === "campaign_announce") {
+    const rate = Number(d.cpm) > 0 ? `${idr(Number(d.cpm))} / 1.000 qualified views` : "-";
+    return {
+      subject: `Campaign baru dibuka: ${d.title ?? "TAPP"}`,
+      block: {
+        eyebrow: "Campaign baru",
+        title: `${esc(d.title ?? "Campaign baru")} sudah dibuka`,
+        intro: `Halo ${esc(String(d.name ?? "").split(/\s+/)[0] || "kreator")}, ada campaign yang bisa langsung kamu ambil. Posting clip di akunmu, submit, dan bayaran masuk ke saldo dari views yang lolos verifikasi.`,
+        rows: [["Tarif", rate], ["Platform", d.platforms ?? "-"], ["Syarat follower", "Tidak ada"]],
+        button: APP() ? { label: "Ambil campaign", url: `${APP()}/campaign/${d.campaign_id ?? ""}` } : undefined,
+        outro: "Tidak ingin menerima kabar campaign? Balas email ini.",
       },
     };
   }

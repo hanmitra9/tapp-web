@@ -105,7 +105,7 @@ function CampaignTile({ m }: { m: MyCampaign }) {
       </View>
       <View style={styles.tileBody}>
         <Text style={styles.title} numberOfLines={2}>{c.title}</Text>
-        <Text style={styles.meta}>{cpmLabel(Number(c.cpm))}</Text>
+        <Text style={styles.meta}>{Number(c.cpm) <= 1 ? 'Challenge berhadiah' /* challenges carry a placeholder rate of 1 (0071) */ : cpmLabel(Number(c.cpm))}</Text>
         <Text style={[styles.meta, dl && isUrgent(c.submission_deadline) && { color: color.warning }]}>{dl ?? `Bergabung ${dateLabel(m.joined_at)}`}</Text>
       </View>
     </Pressable>

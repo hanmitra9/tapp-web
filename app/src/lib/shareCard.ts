@@ -4,6 +4,7 @@ import { Image as RNImage, Platform } from 'react-native';
 // into the corner, a big condensed number and mono labels. Drawn on a canvas (web only).
 //   total payout (Saldo)  ·  qualified views per campaign (Workspace)
 export type PayoutCard = { total: number; from: string | null; to: string; name: string; avatarUrl: string | null };
+export type RecapCard = { month: string; views: number; clips: number; topPct: number | null; tier: string; name: string; avatarUrl: string | null };
 export type ViewsCard = { views: number; campaign: string; from: string | null; to: string; name: string; avatarUrl: string | null };
 type Spec = { label: string; prefix: string | null; value: string; line1: string; line2: string; name: string; avatarUrl: string | null };
 export type RenderedCard = { blob: Blob; url: string };
@@ -131,6 +132,15 @@ export function renderViewsCard(c: ViewsCard): Promise<RenderedCard> {
   const from = c.from ?? c.to;
   return render({ label: 'QUALIFIED VIEWS', prefix: null, value: compactIdr(c.views), name: c.name, avatarUrl: c.avatarUrl,
     line1: fit(c.campaign.toUpperCase(), 30), line2: dateRange(from, c.to) });
+}
+
+// Monthly recap (0071): qualified views of the month, then clips, standing and level. Never money.
+const MONTHS_FULL = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
+export function renderRecapCard(c: RecapCard): Promise<RenderedCard> {
+  const d = new Date(`${c.month}T00:00:00`);
+  const bits = [`${c.clips.toLocaleString('id-ID')} KLIP`, c.topPct ? `TOP ${c.topPct}%` : null, c.tier.toUpperCase()].filter(Boolean).join(' · ');
+  return render({ label: `REKAP ${MONTHS_FULL[d.getMonth()]}`, prefix: null, value: compactIdr(c.views), name: c.name, avatarUrl: c.avatarUrl,
+    line1: `${bits}`, line2: `QUALIFIED VIEWS · ${d.getFullYear()}` });
 }
 
 // Share sheet on phones (Save Image / Instagram / WhatsApp), download elsewhere.

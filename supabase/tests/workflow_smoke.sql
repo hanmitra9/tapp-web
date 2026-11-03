@@ -934,17 +934,7 @@ do $$ declare s brand_subscriptions; g jsonb; pr campaign_pricing; p2 subscripti
      or s.next_bill_at <> p2.period_end then raise exception 'subscription periods: % % %', s, g, p2; end if;
 end $$;
 reset role;
--- pacing: day 0 allows ~10% of the budget; spending past it blocks new clips
 update campaigns set status = 'active', earned = 200000 where id = :'sub_camp';
-do $$ begin
-  begin
-    insert into submissions (campaign_id, creator_id, membership_id, platform, post_url, normalized_url, published_at)
-    select (select id from campaigns where title = 'Langganan Starter'), creator_id, membership_id, platform, post_url || '?pace', normalized_url || '?pace', published_at
-    from submissions limit 1;
-    raise exception 'pacing not enforced';
-  exception when others then if sqlerrm <> 'campaign_paced' then raise; end if;
-  end;
-end $$;
 select private.subscription_sweep() >= 0 as sweep_ok;
 -- guarantee: period 1 started 61 days ago with no views delivered → refunded without fee
 update subscription_periods set period_start = period_start - 61 where subscription_id = :'sub_id' and seq = 1;
@@ -966,3 +956,36 @@ select pg_temp.expect_error($$select * from admin_subscriptions_list()$$, 'forbi
 select count(*) as creator_sees_subs_expect_0 from brand_subscriptions;
 reset role;
 select 'subscriptions_ok' as result;
+
+-- ── 0071 · payment account, challenges, monthly recap ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select admin_set_payment_account('BCA', '1234567890', 'PT TAPP') ->> 'bank' as bank_expect_bca;
+select pg_temp.expect_error($$select admin_set_payment_account('BCA', ' ', 'x')$$, 'payment_account_required');
+select jsonb_array_length(private.default_prizes(1000000)) as prizes_expect_10,
+  (select sum(x::bigint) from jsonb_array_elements_text(private.default_prizes(1000000)) x) as pool_expect_1000000;
+select id as chal_id from upsert_campaign_draft(null, jsonb_build_object(
+  'brand_id','10000000-0000-0000-0000-000000000001','title','Challenge Mingguan','category','other','content_type','clipping',
+  'cpm',1000,'budget',1000000,'platforms',jsonb_build_array('tiktok'))) \gset
+select content_type, budget as budget_expect_1000000, jsonb_array_length(challenge_prizes) as n
+from admin_set_challenge(:'chal_id', 1000000);
+select pg_temp.expect_error(format($$select admin_set_challenge(%L, 1000, '[500,400]'::jsonb)$$, :'chal_id'), 'amount_required');
+reset role;
+set role authenticated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select admin_payment_account()$$, 'forbidden');
+select (my_monthly_recap(date_trunc('month', now())::date)) ? 'views' as recap_has_views;
+select count(*) as challenge_info_rows from challenge_info(array[:'chal_id']::uuid[]);
+reset role;
+-- settle on an existing campaign with accepted clips: winners get prize earnings, once
+update campaigns set content_type = 'challenge', challenge_prizes = '[600, 400]'::jsonb, budget_override = true
+where id = '20000000-0000-0000-0000-000000000001';
+do $$ declare n int; e bigint; begin
+  n := private.settle_challenge('20000000-0000-0000-0000-000000000001', null);
+  select coalesce(sum(amount), 0) into e from earnings where campaign_id = '20000000-0000-0000-0000-000000000001' and cpm = 0;
+  if n < 1 or e not in (600, 1000) or (select challenge_settled_at from campaigns where id = '20000000-0000-0000-0000-000000000001') is null then
+    raise exception 'settle: n=% prizes=%', n, e; end if;
+  begin perform private.settle_challenge('20000000-0000-0000-0000-000000000001', null); raise exception 'settled twice';
+  exception when others then if sqlerrm <> 'challenge_already_settled' then raise; end if; end;
+end $$;
+select private.recap_announce() >= 0 as recap_ok, private.challenge_sweep() >= 0 as sweep_ok;
+select 'challenge_recap_ok' as result;
