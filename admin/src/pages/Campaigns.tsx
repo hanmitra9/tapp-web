@@ -3,12 +3,12 @@ import { useOutletContext } from 'react-router-dom';
 import {
   addAssetLink, adjustBudget, BANNER_RULES, deleteCampaign, setSubmissionCap, setUgcBrief, type UgcBrief, checkBanner, deleteAsset, ensureBrand, removeBanner, uploadBanner, getCampaignFull, listBrands, listCampaigns, platformBreakdown, setCampaignStatus,
   submitForApproval, updateCampaignCopy, uploadAsset, upsertCampaignDraft, type AdminCampaign, type CampaignFull, type CampaignStatus,
-  fetchHashtagStats, refreshHashtag, setCampaignHashtag, refundCampaign, refundPreview,
+  fetchHashtagStats, refreshHashtag, setCampaignHashtag, refundCampaign, refundPreview, setChallenge, settleChallenge, challengeRanking, challengeInfo,
 } from '../lib/api';
 import { printInvoice } from './Finance';
 import { adminError } from '../lib/errors';
 import { ago, dt, idr, num, toLocalInput } from '../lib/format';
-import { CAMPAIGN_TYPES, campaignTypeLabel, CONTENT_KINDS, FACE, label, PLATFORMS } from '../lib/options';
+import { CAMPAIGN_TYPES, campaignTypeLabel, CONTENT_KINDS, CONTENT_LABEL, FACE, label, PLATFORMS } from '../lib/options';
 import { useLoad } from '../lib/useLoad';
 
 const TABS: { key: string; label: string; statuses: CampaignStatus[] }[] = [
@@ -92,7 +92,7 @@ function Detail({ id, c, onChanged, onDeleted }: { id: string; c: AdminCampaign 
   return (
     <>
       <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
-        <div><h2>{f.title}</h2><p className="sub">{c?.brand_name} · {label(CONTENT_KINDS, f.content_type)} · {campaignTypeLabel(f.category)} · {f.platforms.map((p) => label(PLATFORMS, p.platform)).join(', ')}</p></div>
+        <div><h2>{f.title}</h2><p className="sub">{c?.brand_name} · {(CONTENT_LABEL[f.content_type] ?? f.content_type)} · {campaignTypeLabel(f.category)} · {f.platforms.map((p) => label(PLATFORMS, p.platform)).join(', ')}</p></div>
         <span className={`badge ${CSTATUS[f.status].tone}`}>{CSTATUS[f.status].t}</span>
       </div>
       {c?.status_reason ? <div className="notice warn" style={{ marginTop: 12 }}>Catatan status: {c.status_reason}</div> : null}
@@ -115,6 +115,7 @@ function Detail({ id, c, onChanged, onDeleted }: { id: string; c: AdminCampaign 
 
       <BannerCard f={f} onDone={refresh} />
       <HashtagCard f={f} onDone={refresh} />
+      <ChallengeCard f={f} onDone={refresh} />
       <CapCard f={f} onDone={refresh} />
       <StatusActions f={f} onDone={refresh} />
       {f.status !== 'draft' && c ? <BudgetCard c={c} onDone={refresh} /> : null}
@@ -128,7 +129,7 @@ function Detail({ id, c, onChanged, onDeleted }: { id: string; c: AdminCampaign 
           <div><dt>Budget brand</dt><dd>{idr(f.pricing?.brand_budget ?? f.budget)}</dd></div>
           <div><dt>Fee platform</dt><dd>{num(f.pricing?.budget_fee_pct ?? 0)}% dari budget</dd></div>
           <div><dt>Budget kreator</dt><dd>{idr(f.budget)}</dd></div>
-          <div><dt>Konten</dt><dd>{label(CONTENT_KINDS, f.content_type)}</dd></div>
+          <div><dt>Konten</dt><dd>{(CONTENT_LABEL[f.content_type] ?? f.content_type)}</dd></div>
           <div><dt>Minimum views</dt><dd>{num(f.min_views_to_qualify)}</dd></div>
           <div><dt>Maks per klip</dt><dd>{f.max_earning_per_submission ? idr(Number(f.max_earning_per_submission)) : '—'}</dd></div>
           <div><dt>Mulai</dt><dd>{dt(f.starts_at)}</dd></div>
@@ -186,6 +187,69 @@ function StatusActions({ f, onDone }: { f: CampaignFull; onDone: () => Promise<v
 }
 
 // Videos per creator: empty = no cap. Rejected clips don't count toward it.
+// Challenge (0071): TAPP-run prize campaign. Draft: set the pool (default split 30/20/12, places 4–10 share 38%).
+// Live/ended: current standings with the prize per place, and paying the prizes (automatic 24 h after the end).
+function ChallengeCard({ f, onDone }: { f: CampaignFull; onDone: () => Promise<void> }) {
+  const info = useLoad(() => (f.content_type === 'challenge' ? challengeInfo(f.id) : Promise.resolve(null)), [f.id, f.content_type, f.status]);
+  const rank = useLoad(() => (f.content_type === 'challenge' && f.status !== 'draft' ? challengeRanking(f.id) : Promise.resolve([])), [f.id, f.content_type, f.status]);
+  const [pool, setPool] = useState('');
+  const [custom, setCustom] = useState('');
+  const [force, setForce] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [msg, setMsg] = useState<string | null>(null);
+  if (f.status !== 'draft' && f.content_type !== 'challenge') return null;
+
+  async function save(e: FormEvent) {
+    e.preventDefault(); setError(null);
+    const n = Number(pool.replace(/\D/g, ''));
+    const prizes = custom.trim() ? custom.split(/[,\s]+/).filter(Boolean).map((x) => Number(x.replace(/\D/g, ''))) : null;
+    setBusy(true);
+    try { await setChallenge(f.id, n, prizes); setPool(''); setCustom(''); await onDone(); await info.reload(); }
+    catch (err) { setError(adminError(err)); } finally { setBusy(false); }
+  }
+  async function settle() {
+    if (!confirm(`Bagikan hadiah "${f.title}" ke ${Math.min(rank.data?.length ?? 0, info.data?.prizes.length ?? 0)} juara sekarang? Tidak bisa dibatalkan.`)) return;
+    setBusy(true); setError(null);
+    try { const n = await settleChallenge(f.id, force); setMsg(`${n} juara dibayar.`); await onDone(); await Promise.all([info.reload(), rank.reload()]); }
+    catch (err) { setError(adminError(err)); } finally { setBusy(false); }
+  }
+  const i = info.data;
+  return (
+    <div className="section card" style={{ display: 'grid', gap: 12 }}>
+      <h2 style={{ margin: 0 }}>Challenge berhadiah</h2>
+      {f.status === 'draft' && f.content_type !== 'challenge' ? (
+        <form onSubmit={save} style={{ display: 'grid', gap: 12 }}>
+          <p className="sub" style={{ margin: 0 }}>Khusus campaign mingguan TAPP. Klip tidak dibayar per views; 10 kreator dengan qualified views terbanyak mendapat hadiah. Isi juga tanggal selesai di brief (mis. 7 hari).</p>
+          <div className="grid2">
+            <label className="field">Total hadiah (Rp)<input inputMode="numeric" value={pool} onChange={(e) => setPool(e.target.value)} placeholder="1000000" /></label>
+            <label className="field">Hadiah per juara (opsional)<input value={custom} onChange={(e) => setCustom(e.target.value)} placeholder="Kosongkan = 30% / 20% / 12% / sisanya rata" /></label>
+          </div>
+          {error ? <div className="notice error">{error}</div> : null}
+          <div className="actions"><button className="btn" disabled={busy || !pool}>{busy ? 'Menyimpan…' : 'Jadikan challenge'}</button></div>
+        </form>
+      ) : i ? (
+        <>
+          <div className="preview"><span>Total hadiah {idr(i.prize_pool)} · {i.prizes.length} juara · {i.settled_at ? `dibagikan ${dt(i.settled_at)}` : i.ends_at ? `selesai ${dt(i.ends_at)} (otomatis dibagikan 24 jam setelahnya)` : 'belum ada tanggal selesai'}</span></div>
+          {rank.data?.length ? (
+            <table><thead><tr><th>#</th><th>Kreator</th><th className="n">Qualified views</th><th className="n">Hadiah</th></tr></thead>
+              <tbody>{rank.data.map((r) => <tr key={r.creator_id}><td>{r.rank}</td><td>{r.creator_name ?? '—'}{r.username ? <div className="sub">@{r.username}</div> : null}</td>
+                <td className="n">{num(r.views)}</td><td className="n">{r.prize ? idr(r.prize) : '—'}</td></tr>)}</tbody></table>
+          ) : f.status !== 'draft' ? <div className="empty">Belum ada klip yang lolos verifikasi.</div> : <div className="sub">Peringkat muncul setelah challenge aktif.</div>}
+          {!i.settled_at && f.status !== 'draft' ? (
+            <>
+              <label className="check"><input type="checkbox" checked={force} onChange={(e) => setForce(e.target.checked)} /> Bagikan sekarang walau belum lewat tanggal selesai</label>
+              <div className="actions"><button className="btn" disabled={busy || !rank.data?.length} onClick={settle}>{busy ? 'Memproses…' : 'Bagikan hadiah'}</button></div>
+            </>
+          ) : null}
+          {msg ? <div className="notice">{msg}</div> : null}
+          {error ? <div className="notice error">{error}</div> : null}
+        </>
+      ) : null}
+    </div>
+  );
+}
+
 function CapCard({ f, onDone }: { f: CampaignFull; onDone: () => Promise<void> }) {
   const [v, setV] = useState(f.max_submissions_per_creator ? String(f.max_submissions_per_creator) : '');
   const [busy, setBusy] = useState(false);

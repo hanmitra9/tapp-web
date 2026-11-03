@@ -16,6 +16,8 @@ export const CAMPAIGN_TYPES: [string, string][] = [
 ];
 // Campaign kind: clip the brand's videos, or make original content (UGC).
 export const CONTENT_KINDS: [string, string][] = [['clipping', 'Clipping'], ['ugc', 'UGC']];
+// Display only: challenges are set from the campaign's Challenge card, not the form.
+export const CONTENT_LABEL: Record<string, string> = { clipping: 'Clipping', ugc: 'UGC', challenge: 'Challenge' };
 export const FACE: [string, string][] = [['either', 'Bebas'], ['show', 'Wajib tampil'], ['hide', 'Tanpa wajah']];
 export const campaignTypeLabel = (v: string) => CAMPAIGN_TYPES.find(([k]) => k === v)?.[1] ?? NICHES.find(([k]) => k === v)?.[1] ?? v;
 export const PLATFORMS: [string, string][] = [['tiktok', 'TikTok'], ['instagram', 'Instagram'], ['youtube', 'YouTube'], ['x', 'X'], ['facebook', 'Facebook'], ['other', 'Lainnya']];

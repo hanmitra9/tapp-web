@@ -21,7 +21,7 @@ import { useLayout } from '@/lib/useLayout';
 import { color, gradient, radius, space, type } from '@/theme/tokens';
 import { activeFilterCount, EMPTY_FILTERS, fetchFeed, PAGE, type FeedItem, type Filters, type Sort } from '@/features/campaigns/api';
 import { PLATFORMS, type Platform } from '@/features/creator/options';
-import { CAMPAIGN_TYPE_OPTIONS, categoryLabel, FEED_SORTS, FILTER_CATEGORIES, FILTER_TYPES } from '@/features/campaigns/copy';
+import { CAMPAIGN_TYPE_OPTIONS, categoryLabel, FEED_SORTS, FILTER_CATEGORIES, FILTER_TYPES, rateLabel } from '@/features/campaigns/copy';
 import { track } from '@/lib/analytics';
 
 const MIN_CPM = [{ value: '0', label: 'Semua' }, { value: '2000', label: '≥ Rp2.000' }, { value: '5000', label: '≥ Rp5.000' }, { value: '10000', label: '≥ Rp10.000' }];
@@ -160,7 +160,7 @@ function Featured({ items, onOpen }: { items: FeedItem[]; onOpen: (id: string) =
                 </View>
                 <View style={styles.featLine} />
                 <View style={styles.featRow}>
-                  <Text style={styles.featRate}>{idr(c.cpm)}<Text style={styles.featUnit}> / 1K views</Text></Text>
+                  <Text style={styles.featRate}>{rateLabel(c).value}<Text style={styles.featUnit}>{rateLabel(c).unit}</Text></Text>
                   {c.budget > 0 ? <Text style={styles.featLeft}>Sisa {Math.max(0, Math.min(100, Math.round((c.remaining / c.budget) * 100)))}%</Text> : null}
                 </View>
                 <Pressable onPress={() => onOpen(c.id)} accessibilityRole="button" style={({ pressed }) => [pressed && { opacity: 0.85 }]}>

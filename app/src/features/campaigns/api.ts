@@ -13,6 +13,7 @@ export type FeedItem = {
   submission_deadline: string | null; ends_at: string | null; created_at: string;
   joined: boolean; match_score: number; match_reasons: string[]; banner_url?: string | null;
   creators_joined?: number; joined_initials?: string[];
+  prize_pool?: number;   // challenges (0071): total prizes instead of a per-view rate
 };
 
 export type UgcBrief = { brand_about?: string; narrative?: string; cta?: string; must_include?: string; caption_rules?: string;
@@ -27,6 +28,7 @@ export type CampaignDetail = {
   platforms: Platform[]; rules: { kind: 'requirement' | 'submission' | 'performance'; body: string }[];
   creators_joined: number; membership: { status: 'joined' | 'left' | 'removed'; joined_at: string } | null;
   join_block: string | null; banner_url?: string | null; joined_initials?: string[];
+  challenge?: ChallengeInfo | null;
 };
 export type Asset = { id: string; kind: 'video' | 'audio' | 'image' | 'document' | 'link'; title: string; url: string | null; storage_path: string | null };
 
@@ -42,9 +44,20 @@ export async function fetchFeed(sort: Sort, f: Filters, offset = 0): Promise<Fee
   if (error) throw error;
   const rows = (data ?? []) as FeedItem[];
   const ids = rows.map((r) => r.id);
-  const [banners, joined] = await Promise.all([fetchBanners(ids), fetchParticipation(ids)]);
+  const [banners, joined, prizes] = await Promise.all([fetchBanners(ids), fetchParticipation(ids),
+    fetchChallengeInfo(rows.filter((r) => r.content_type === 'challenge').map((r) => r.id))]);
   return rows.map((r) => ({ ...r, cpm: num(r.cpm), budget: num(r.budget), remaining: num(r.remaining), banner_url: banners[r.id] ?? null,
-    creators_joined: joined[r.id]?.creators_joined ?? 0, joined_initials: joined[r.id]?.initials ?? [] }));
+    creators_joined: joined[r.id]?.creators_joined ?? 0, joined_initials: joined[r.id]?.initials ?? [], prize_pool: prizes[r.id]?.prize_pool }));
+}
+
+// Challenges (0071): prize list per campaign; the feed/detail RPCs only carry content_type.
+export type ChallengeInfo = { prize_pool: number; prizes: number[]; ends_at: string | null; settled_at: string | null };
+export async function fetchChallengeInfo(ids: string[]): Promise<Record<string, ChallengeInfo>> {
+  if (!ids.length) return {};
+  const { data } = await supabase.rpc('challenge_info', { p_ids: ids });
+  return Object.fromEntries(((data ?? []) as Record<string, unknown>[]).map((r) => [String(r.id), {
+    prize_pool: num(r.prize_pool), prizes: ((r.prizes ?? []) as unknown[]).map(num), ends_at: (r.ends_at as string) ?? null, settled_at: (r.settled_at as string) ?? null,
+  }]));
 }
 
 // Banner photos (migration 0036) live on campaigns.banner_url; the feed/detail RPCs predate it.
@@ -67,8 +80,10 @@ export async function fetchCampaign(id: string): Promise<CampaignDetail> {
   const { data, error } = await supabase.rpc('get_campaign', { p_campaign_id: id });
   if (error) throw error;
   const d = data as CampaignDetail;
-  const [banners, joined] = await Promise.all([fetchBanners([d.id]), fetchParticipation([d.id])]);
-  return { ...d, banner_url: banners[d.id] ?? null, joined_initials: joined[d.id]?.initials ?? [], cpm: num(d.cpm), budget: num(d.budget), remaining: num(d.remaining), creators_joined: num(d.creators_joined) };
+  const [banners, joined, prizes] = await Promise.all([fetchBanners([d.id]), fetchParticipation([d.id]),
+    d.content_type === 'challenge' ? fetchChallengeInfo([d.id]) : Promise.resolve({} as Record<string, ChallengeInfo>)]);
+  return { ...d, banner_url: banners[d.id] ?? null, joined_initials: joined[d.id]?.initials ?? [], cpm: num(d.cpm), budget: num(d.budget), remaining: num(d.remaining), creators_joined: num(d.creators_joined),
+    challenge: prizes[d.id] ?? null };
 }
 
 // RLS only returns assets once the creator has joined.
@@ -112,4 +127,12 @@ export async function fetchMyCampaigns(): Promise<MyCampaign[]> {
     .order('joined_at', { ascending: false });
   if (error) throw error;
   return data as unknown as MyCampaign[];
+}
+
+// Challenge standings (0048/0071): ranked on total qualified views; only joined creators (and admins) can read it.
+export type Standing = { rank: number; name: string; views: number; is_me: boolean };
+export async function fetchStandings(campaignId: string, limit = 10): Promise<Standing[]> {
+  const { data, error } = await supabase.rpc('campaign_leaderboard', { p_campaign: campaignId, p_limit: limit });
+  if (error) throw error;
+  return ((data ?? []) as Record<string, unknown>[]).map((r) => ({ rank: num(r.rank), name: String(r.name), views: num(r.views), is_me: !!r.is_me }));
 }

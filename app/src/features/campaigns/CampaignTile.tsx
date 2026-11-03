@@ -2,11 +2,10 @@ import Feather from '@expo/vector-icons/Feather';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { memo } from 'react';
 import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import { idr } from '@/lib/format';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import { web } from '@/theme/web';
 import type { FeedItem } from './api';
-import { categoryLabel, contentTypeLabel } from './copy';
+import { categoryLabel, contentTypeLabel, rateLabel } from './copy';
 
 const ICON: Record<string, string> = { tiktok: 'tiktok', instagram: 'instagram', youtube: 'youtube', x: 'x-twitter', facebook: 'facebook' };
 
@@ -27,10 +26,10 @@ export const CampaignTile = memo(function CampaignTile({ item, onPress }: { item
           {item.brand_logo ? <Image source={{ uri: item.brand_logo }} style={styles.mono} accessibilityIgnoresInvertColors />
             : <View style={styles.mono}><Text style={styles.monoText}>{item.brand_name.slice(0, 1).toUpperCase()}</Text></View>}
           <Text style={styles.brand} numberOfLines={1}>{item.brand_name}</Text>
-          {kind ? <Text style={[styles.tag, kind === 'ugc' && styles.ugc]} numberOfLines={1}>{contentTypeLabel(kind).toUpperCase()}</Text> : null}
+          {kind ? <Text style={[styles.tag, kind === 'ugc' && styles.ugc, kind === 'challenge' && styles.challenge]} numberOfLines={1}>{contentTypeLabel(kind).toUpperCase()}</Text> : null}
         </View>
         <Text style={styles.title} numberOfLines={1}>{item.title}</Text>
-        <Text style={styles.rate}>{idr(item.cpm)}<Text style={styles.unit}> / 1K views</Text></Text>
+        <Text style={styles.rate}>{rateLabel(item).value}<Text style={styles.unit}>{rateLabel(item).unit}</Text></Text>
         <View style={styles.meta}>
           {item.platforms.map((p) => <FontAwesome6 key={p} name={ICON[p] ?? 'link'} brand size={12} color={color.textSecondary} />)}
           <Text style={styles.tag} numberOfLines={1}>{categoryLabel(item.category).toUpperCase()}</Text>
@@ -55,6 +54,7 @@ const styles = StyleSheet.create({
   monoText: { fontSize: 10, fontFamily: type.label.fontFamily, color: color.link },
   brand: { ...type.caption, fontSize: 12, color: color.text, flex: 1 },
   ugc: { color: '#FF7AA8', backgroundColor: 'rgba(255,77,141,0.14)' },
+  challenge: { color: '#F5C451', backgroundColor: 'rgba(245,196,81,0.14)' },
   tag: { fontSize: 9, letterSpacing: 0.3, fontFamily: type.label.fontFamily, color: color.textSecondary, paddingHorizontal: 6, paddingVertical: 2,
     borderRadius: radius.pill, backgroundColor: 'rgba(255,255,255,0.07)', overflow: 'hidden', maxWidth: 90 },
   title: { ...type.label, fontSize: 15, color: color.text },

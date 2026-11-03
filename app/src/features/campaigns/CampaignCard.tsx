@@ -5,7 +5,7 @@ import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { deadlineLabel, idr, isUrgent } from '@/lib/format';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import type { FeedItem } from './api';
-import { categoryLabel } from './copy';
+import { categoryLabel, rateLabel } from './copy';
 import { JoinedRow } from './JoinedRow';
 import { web } from '@/theme/web';
 
@@ -25,7 +25,7 @@ export const CampaignCard = memo(function CampaignCard({ item, onPress }: { item
           : <Image source={require('../../../assets/tapp-mark-white.png')} style={styles.artMark} accessibilityIgnoresInvertColors />}
         <LinearGradient colors={['rgba(0,0,0,0)', 'rgba(5,8,14,0.8)']} start={{ x: 0, y: 0.45 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill} />
         <View style={styles.bannerTop}>
-          <View style={styles.rate}><Text style={styles.rateValue}>{idr(item.cpm)}</Text><Text style={styles.rateUnit}>/1K views</Text></View>
+          <View style={styles.rate}><Text style={styles.rateValue}>{rateLabel(item).value}</Text><Text style={styles.rateUnit}>{rateLabel(item).unit.trim()}</Text></View>
           {deadline ? <Text style={[styles.pill, urgent && styles.pillUrgent]}>{deadline}</Text> : null}
         </View>
         <View style={styles.bannerBottom}>

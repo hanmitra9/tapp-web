@@ -539,3 +539,32 @@ export type CancelPreview = SubProgress & { unspent_deposit: number; breach_refu
 export const subscriptionCancelPreview = (id: string) => rpc<CancelPreview>('admin_subscription_cancel_preview', { p_sub_id: id });
 export const cancelSubscription = (id: string, reference: string, note: string) =>
   rpc<CancelPreview & { ledger: LedgerEntry | null }>('admin_cancel_subscription', { p_sub_id: id, p_reference: reference, p_note: note });
+
+// ── Payment account (0071): where brands transfer; printed on invoices and bill emails ──
+export type PaymentAccount = { bank: string; number: string; name: string };
+let accountCache: Promise<PaymentAccount | null> | null = null;
+export function getPaymentAccount(fresh = false): Promise<PaymentAccount | null> {
+  if (fresh || !accountCache) accountCache = rpc<PaymentAccount | null>('admin_payment_account', {}).catch(() => null);
+  return accountCache;
+}
+export async function setPaymentAccount(bank: string, number: string, name: string) {
+  const v = await rpc<PaymentAccount>('admin_set_payment_account', { p_bank: bank, p_number: number, p_name: name });
+  accountCache = Promise.resolve(v);
+  return v;
+}
+
+// ── Challenges (0071): TAPP-run weekly prize campaigns ──
+export const setChallenge = (id: string, pool: number, prizes: number[] | null) =>
+  rpc('admin_set_challenge', { p_campaign_id: id, p_pool: pool, p_prizes: prizes });
+export const settleChallenge = (id: string, force: boolean) => rpc<number>('admin_settle_challenge', { p_campaign_id: id, p_force: force });
+export type ChallengeRow = { rank: number; creator_id: string; creator_name: string | null; username: string | null; views: number; prize: number | null };
+export async function challengeRanking(id: string): Promise<ChallengeRow[]> {
+  const rows = await rpc<Record<string, unknown>[]>('admin_challenge_ranking', { p_campaign_id: id });
+  return (rows ?? []).map((r) => ({ ...r, rank: Number(r.rank), views: Number(r.views), prize: r.prize == null ? null : Number(r.prize) }) as ChallengeRow);
+}
+export type ChallengeInfo = { prize_pool: number; prizes: number[]; ends_at: string | null; settled_at: string | null };
+export async function challengeInfo(id: string): Promise<ChallengeInfo | null> {
+  const rows = await rpc<Record<string, unknown>[]>('challenge_info', { p_ids: [id] });
+  const r = rows?.[0];
+  return r ? { prize_pool: Number(r.prize_pool), prizes: ((r.prizes ?? []) as unknown[]).map(Number), ends_at: (r.ends_at as string) ?? null, settled_at: (r.settled_at as string) ?? null } : null;
+}

@@ -181,6 +181,7 @@ function MenuBody({ run }: { run: (then?: () => void) => void }) {
       {item('credit-card', 'Saldo', '/dashboard/earnings')}
       {item('award', 'Rank & Rewards', '/rank')}
       {item('gift', 'Ajak teman', '/referral')}
+      {item('calendar', 'Rekap bulanan', '/recap')}
 
       <Pressable onPress={() => go('/help')} accessibilityRole="button" style={({ pressed }) => [styles.learn, pressed && { opacity: 0.85 }]}>
         <View style={styles.learnArt} {...({ dataSet: { tapp: 'art' } } as object)}>

@@ -17,7 +17,6 @@ POSTS = [
 <h2>Bagaimana jaminannya bekerja?</h2>
 <ul>
 <li><b>Hanya qualified views yang dihitung</b>: views yang lolos saringan bot dan direview tim TAPP.</li>
-<li><b>Views merata sepanjang bulan</b>: jumlah video baru per hari diatur supaya konten tetap muncul dari awal sampai akhir periode.</li>
 <li><b>Kurang? Terbawa</b>: kalau target bulan itu belum tercapai, campaign tetap berjalan dan kekurangannya pindah ke bulan berikutnya.</li>
 <li><b>Berhenti kapan saja</b>: views jaminan yang belum tercapai lebih dari 60 hari dikembalikan penuh tanpa potongan. Detailnya ada di <a href="terms.html#brand">Syarat Layanan</a>.</li>
 </ul>
