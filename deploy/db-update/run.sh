@@ -2,6 +2,7 @@
 # Same steps as supabase/tools/sync_migration_history.sh + supabase db push.
 # Auth: SUPABASE_ACCESS_TOKEN (CLI links the project and logs in with a temporary role) or DB_PASSWORD (--db-url).
 set -uo pipefail
+export SUPABASE_YES=1   # CLI 3+: confirm hosted changes non-interactively
 REF=njffqsbddzztfxxbavpp
 cd /src
 [ -f supabase/config.toml ] || supabase init --force >/dev/null 2>&1 || true
@@ -25,9 +26,10 @@ REMOTE=(20260923121600 20260923121738 20260923121829 20260923121846 202609231219
 LOCAL=(); for i in $(seq -w 1 23); do LOCAL+=("202609230000$i"); done
 set -e
 supabase migration list "${TARGET[@]}"
-supabase migration repair "${TARGET[@]}" --status reverted "${REMOTE[@]}"
-supabase migration repair "${TARGET[@]}" --status applied "${LOCAL[@]}"
-echo y | supabase db push "${TARGET[@]}"
+# --yes: newer CLIs refuse to change history without a terminal unless told to.
+supabase migration repair --yes "${TARGET[@]}" --status reverted "${REMOTE[@]}"
+supabase migration repair --yes "${TARGET[@]}" --status applied "${LOCAL[@]}"
+echo y | supabase db push --yes "${TARGET[@]}"
 supabase migration list "${TARGET[@]}"
 echo "DB UPDATE DONE"
 # Stay up briefly so the logs are kept with a finished deployment, then exit.
