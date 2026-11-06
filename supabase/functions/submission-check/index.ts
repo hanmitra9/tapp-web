@@ -14,7 +14,10 @@ const cors = {
 const json = (status: number, body: unknown) => new Response(JSON.stringify(body), { status, headers: { ...cors, 'Content-Type': 'application/json' } });
 const UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36';
 
-type Result = { status: 'ok' | 'not_owner' | 'not_found' | 'unreadable'; author?: string | null; views?: number | null; likes?: number | null; comments?: number | null; shares?: number | null; note?: string };
+type Result = { status: 'ok' | 'not_owner' | 'not_found' | 'unreadable'; author?: string | null; views?: number | null; likes?: number | null; comments?: number | null; shares?: number | null; note?: string;
+  posted_at?: string | null };   // when the platform says the post was published (0072: checked against the join time)
+// Unix seconds → ISO, ignoring values that can't be a real post time.
+const fromUnix = (n: number | null | undefined) => (n && n > 1.2e9 && n < 4e9 ? new Date(n * 1000).toISOString() : null);
 
 async function page(url: string) {
   try {
@@ -36,7 +39,9 @@ async function tiktok(url: string, handle: string | null): Promise<Result> {
   if (!item) return code && code !== '0' ? { status: 'not_found', note: 'Video tidak ditemukan, dihapus, atau diprivat' } : { status: 'unreadable', note: 'Halaman TikTok tidak berisi data video' };
   const author = html.match(/"author":\{[^{}]*?"uniqueId":"([^"]+)"/)?.[1] ?? null;
   const stats = html.match(/"stats"\s*:\s*\{[^{}]*"playCount"[^{}]*\}/)?.[0] ?? '';
-  const c = { author, views: num(stats, 'playCount'), likes: num(stats, 'diggCount'), comments: num(stats, 'commentCount'), shares: num(stats, 'shareCount') };
+  const at = html.slice(html.indexOf('"itemStruct"')).match(/"createTime":"?(\d{9,11})"?/)?.[1];
+  const c = { author, views: num(stats, 'playCount'), likes: num(stats, 'diggCount'), comments: num(stats, 'commentCount'), shares: num(stats, 'shareCount'),
+    posted_at: fromUnix(at ? Number(at) : null) };
   if (handle && author && !same(author, handle)) return { status: 'not_owner', ...c, note: `Diposting oleh @${author}, bukan @${handle}` };
   return { status: c.views == null ? 'unreadable' : 'ok', ...c };
 }
@@ -55,9 +60,11 @@ async function youtube(url: string, handle: string | null): Promise<Result> {
   const block = html.match(/"videoDetails"\s*:\s*\{[\s\S]*?"viewCount"\s*:\s*"\d+"/)?.[0] ?? '';
   const views = num(block, 'viewCount');
   const author = html.match(/"ownerProfileUrl":"https?:\/\/www\.youtube\.com\/@([^"]+)"/)?.[1] ?? null;
+  const up = html.match(/"(?:uploadDate|publishDate)":"(\d{4}-\d{2}-\d{2}[^"]*)"/)?.[1];
+  const posted_at = up && !Number.isNaN(Date.parse(up)) ? new Date(up).toISOString() : null;
   if (views == null) return { status: 'unreadable', author, note: 'Views YouTube tidak terbaca' };
-  if (handle && author && !same(author, handle)) return { status: 'not_owner', author, views, note: `Diposting oleh @${author}, bukan @${handle}` };
-  return { status: 'ok', author, views, likes: null, comments: null, shares: null };
+  if (handle && author && !same(author, handle)) return { status: 'not_owner', author, views, posted_at, note: `Diposting oleh @${author}, bukan @${handle}` };
+  return { status: 'ok', author, views, likes: null, comments: null, shares: null, posted_at };
 }
 
 async function instagram(url: string, handle: string | null): Promise<Result> {
@@ -74,7 +81,8 @@ async function instagram(url: string, handle: string | null): Promise<Result> {
     const n = edges.map((e: { node: Record<string, any> }) => e.node).find((x: Record<string, any>) => x?.shortcode === code);
     if (!n) return { status: 'unreadable', note: `Postingan tidak ada di 12 postingan terbaru @${handle}; dicek manual` };
     const v = n.video_view_count ?? n.video_play_count ?? null;
-    return { status: 'ok', author: handle, views: typeof v === 'number' ? v : null, likes: n.edge_liked_by?.count ?? n.edge_media_preview_like?.count ?? null, comments: n.edge_media_to_comment?.count ?? null, shares: null };
+    return { status: 'ok', author: handle, views: typeof v === 'number' ? v : null, likes: n.edge_liked_by?.count ?? n.edge_media_preview_like?.count ?? null, comments: n.edge_media_to_comment?.count ?? null, shares: null,
+      posted_at: fromUnix(typeof n.taken_at_timestamp === 'number' ? n.taken_at_timestamp : null) };
   } catch { return { status: 'unreadable', note: 'Instagram tidak bisa dibaca otomatis' }; }
 }
 
@@ -91,7 +99,8 @@ async function check(sb: Sb, s: Sub) {
     : s.platform === 'instagram' ? await instagram(s.post_url, handle)
     : { status: 'unreadable', note: 'Platform ini dicek manual' };
   const row = { submission_id: s.id, status: r.status, author: r.author ?? null, views: r.views ?? null, likes: r.likes ?? null,
-    comments: r.comments ?? null, shares: r.shares ?? null, note: r.note ?? null, checked_at: new Date().toISOString() };
+    comments: r.comments ?? null, shares: r.shares ?? null, note: r.note ?? null, checked_at: new Date().toISOString(),
+    ...(r.posted_at ? { posted_at: r.posted_at } : {}) };   // keep an earlier reading when this one has no date
   const { error } = await sb.from('submission_checks').upsert(row);
   if (error) return null;
   if (row.views != null || row.status === 'not_found') {

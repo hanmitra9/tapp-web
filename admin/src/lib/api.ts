@@ -44,7 +44,8 @@ export async function listSubmissions(queue: Queue, search: string): Promise<Adm
 }
 // Automatic link check made when the creator submitted (migration 0041 / submission-check function).
 export type SubmissionCheck = { submission_id: string; status: 'ok' | 'not_owner' | 'not_found' | 'unreadable'; author: string | null;
-  views: number | null; likes: number | null; comments: number | null; shares: number | null; note: string | null; checked_at: string };
+  views: number | null; likes: number | null; comments: number | null; shares: number | null; note: string | null; checked_at: string;
+  posted_at?: string | null; posted_before_join?: boolean };   // 0072: real post time from the platform
 export async function fetchChecks(ids: string[]): Promise<Record<string, SubmissionCheck>> {
   if (!ids.length) return {};
   const { data } = await supabase.from('submission_checks').select('*').in('submission_id', ids);
@@ -204,6 +205,7 @@ export type AdminPayout = {
   created_at: string; updated_at: string; creator_name: string | null; creator_username: string | null; creator_status: string;
   earning_rows: number; creator_flagged: number; creator_open_disputes: number; creator_paid_total: number; ledger_matches: boolean;
   method_changed_recently: boolean;
+  name_mismatch?: boolean;   // 0072: account holder name doesn't match the profile name
   fee: number; fee_pct: number; fee_tier: string | null; net_amount: number;   // migration 034
   bonus: number; bonus_pct: number;   // 0037 level bonus, added at withdrawal since 0045
 };

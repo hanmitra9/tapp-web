@@ -754,6 +754,16 @@ insert into payout_requests (id, creator_id, amount, fee, idempotency_key, payou
 values ('30000000-0000-0000-0000-0000000000c3', '00000000-0000-0000-0000-0000000000c3', 150000, 37000, gen_random_uuid(),
         '{"kind":"ewallet","provider":"GoPay","account_name":"C3","account_number":"0812"}');
 update payout_requests set status = 'paid', processed_reference = 'T-1', paid_at = now() where id = '30000000-0000-0000-0000-0000000000c3';
+-- 0072: a paid first withdrawal alone is not enough; the referee also needs 3 accepted clips
+do $$ begin if exists (select 1 from referral_rewards) then raise exception 'reward before 3 accepted clips'; end if; end $$;
+insert into campaign_creators (campaign_id, creator_id, status, joined_at)
+values ('20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c3', 'joined', now() - interval '2 days');
+insert into submissions (campaign_id, creator_id, membership_id, platform, post_url, normalized_url, published_at)
+select '20000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-0000000000c3',
+  (select id from campaign_creators where creator_id = '00000000-0000-0000-0000-0000000000c3' limit 1), 'tiktok',
+  'https://www.tiktok.com/@c3/video/' || g, 'tiktok.com/@c3/video/' || g, now() - interval '1 day'
+from generate_series(1, 3) g;
+update submissions set status = 'approved' where creator_id = '00000000-0000-0000-0000-0000000000c3';
 set role authenticated;
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 do $$ declare r jsonb := my_referral(); begin
@@ -989,3 +999,35 @@ do $$ declare n int; e bigint; begin
 end $$;
 select private.recap_announce() >= 0 as recap_ok, private.challenge_sweep() >= 0 as sweep_ok;
 select 'challenge_recap_ok' as result;
+
+-- ── 0072 · fraud checks ──
+select private.names_match('RANI PUTRI', 'Rani Putri') as same_case, private.names_match('Rani P.', 'Rani Putri Lestari') as initial_ok,
+  private.names_match('Bpk. Budi Santoso, S.Kom', 'budi santoso') as titles_ok, not private.names_match('Andi Wijaya', 'Rani Putri') as different_flagged;
+do $$ declare e earnings; begin
+  -- a held earning on a flagged clip stays held after its hold date
+  select * into e from earnings where status = 'pending' limit 1;
+  if e.id is null then
+    select * into e from earnings where status = 'available' and payout_request_id is null limit 1;
+    update earnings set status = 'pending' where id = e.id;
+  end if;
+  update earnings set available_at = now() - interval '1 day' where id = e.id;
+  update submissions set status = 'flagged', review_reason = 'tes: postingan dihapus' where id = e.submission_id;
+  perform release_matured_earnings(e.creator_id);
+  if (select status from earnings where id = e.id) <> 'pending' then raise exception 'flagged clip earning released'; end if;
+  update submissions set status = 'completed' where id = e.submission_id;
+  perform release_matured_earnings(e.creator_id);
+  if (select status from earnings where id = e.id) <> 'available' then raise exception 'cleared clip earning not released'; end if;
+end $$;
+do $$ declare s submissions; v boolean; begin
+  select * into s from submissions where membership_id is not null limit 1;
+  insert into submission_checks (submission_id, status, posted_at) values (s.id, 'ok', now() - interval '400 days')
+  on conflict (submission_id) do update set posted_at = excluded.posted_at;
+  select posted_before_join into v from submission_checks where submission_id = s.id;
+  if not v then raise exception 'posted before join not marked'; end if;
+  update submission_checks set posted_at = now() where submission_id = s.id;
+  select posted_before_join into v from submission_checks where submission_id = s.id;
+  if v then raise exception 'recent post wrongly marked'; end if;
+end $$;
+select (value->>'enabled')::boolean as auto_filter_on from app_settings where key = 'auto_qualify';
+select count(*) >= 0 as payouts_view_ok from admin_payouts where name_mismatch or not name_mismatch;
+select 'fraud_checks_ok' as result;

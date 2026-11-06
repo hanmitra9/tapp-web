@@ -55,7 +55,7 @@ export default function ReferralScreen() {
       {r.available > 0 ? <Text style={styles.note}>{idr(r.available)} ikut cair di penarikan berikutnya.</Text> : null}
 
       <Text style={styles.section}>Cara kerjanya</Text>
-      {['Bagikan link ke teman.', 'Teman daftar & submit klip.', `Pencairan pertamanya dibayar → kamu dapat ${idr(r.bonus)}.`].map((t, i) => (
+      {['Bagikan link ke teman.', 'Teman daftar & punya 3 klip diterima.', `Pencairan pertamanya dibayar → kamu dapat ${idr(r.bonus)}.`].map((t, i) => (
         <View key={t} style={styles.step}><Text style={styles.stepNum}>{i + 1}</Text><Text style={styles.stepText}>{t}</Text></View>
       ))}
 
