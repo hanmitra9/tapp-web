@@ -50,7 +50,7 @@ export function Payouts() {
             <button key={p.id} className={`list-item ${selected === p.id ? 'on' : ''}`} onClick={() => setSelected(p.id)}>
               <div className="row"><span className="title">{idr(p.net_amount)}</span><span className={`badge ${LABEL[p.status].tone}`}>{LABEL[p.status].t}</span></div>
               <div className="meta">@{p.creator_username} · {p.payout_method.provider} · {dt(p.created_at)}</div>
-              {!p.ledger_matches || p.creator_flagged || p.creator_open_disputes || p.method_changed_recently ? <div className="meta" style={{ color: 'var(--warning)' }}>Perlu dicek</div> : null}
+              {!p.ledger_matches || p.creator_flagged || p.creator_open_disputes || p.method_changed_recently || p.name_mismatch ? <div className="meta" style={{ color: 'var(--warning)' }}>Perlu dicek</div> : null}
             </button>
           ))}
         </div>
@@ -95,6 +95,7 @@ function Detail({ p, onChanged }: { p: AdminPayout; onChanged: () => Promise<voi
       {p.creator_flagged ? <div className="notice warn" style={{ marginTop: 12 }}>Kreator punya {p.creator_flagged} submission yang ditandai.</div> : null}
       {p.creator_open_disputes ? <div className="notice warn" style={{ marginTop: 12 }}>Kreator punya {p.creator_open_disputes} dispute terbuka.</div> : null}
       {p.method_changed_recently ? <div className="notice warn" style={{ marginTop: 12 }}>Metode pencairan diubah kreator dalam 72 jam sebelum pengajuan. Konfirmasi ke kreator sebelum transfer.</div> : null}
+      {p.name_mismatch ? <div className="notice warn" style={{ marginTop: 12 }}>Nama pemilik rekening tidak cocok dengan nama di profil kreator. Pastikan rekening milik kreator sendiri sebelum transfer.</div> : null}
       {p.creator_status !== 'active' ? <div className="notice warn" style={{ marginTop: 12 }}>Akun kreator sedang {p.creator_status}.</div> : null}
 
       <div className="section card">

@@ -172,7 +172,8 @@ const CHECK: Record<SubmissionCheck['status'], { label: string; tone: string }> 
   not_found: { label: 'Postingan tidak ditemukan', tone: 'danger' }, unreadable: { label: 'Cek manual', tone: 'warning' },
 };
 function CheckLine({ c }: { c: SubmissionCheck }) {
-  return <div className="meta"><span className={`badge ${CHECK[c.status].tone}`}>{CHECK[c.status].label}</span>{c.views != null ? ` · ${num(c.views)} views` : ''}</div>;
+  return <div className="meta"><span className={`badge ${CHECK[c.status].tone}`}>{CHECK[c.status].label}</span>{c.views != null ? ` · ${num(c.views)} views` : ''}
+    {c.posted_before_join ? <> · <span className="badge danger">Diposting sebelum bergabung</span></> : null}</div>;
 }
 // Result of the automatic check made when the creator submitted the link, the views history the checks
 // recorded since (every 6 hours), and the fairness score built from it. A re-check adds a point now.
@@ -194,6 +195,8 @@ function CheckPanel({ id, initial, log, fair, onRechecked }: { id: string; initi
             <span className="sub">· dicek {ago(c.checked_at)}</span>
           </div>
           {c.note ? <p className="sub" style={{ margin: '6px 0 0' }}>{c.note}</p> : null}
+          {c.posted_at ? <p className="sub" style={{ margin: '6px 0 0' }}>Diposting di platform: {dt(c.posted_at)}</p> : null}
+          {c.posted_before_join ? <div className="notice error" style={{ marginTop: 8 }}>Tanggal asli postingan lebih awal dari waktu kreator bergabung ke campaign. Video lama tidak boleh dihitung.</div> : null}
         </>
       ) : <p className="sub" style={{ margin: 0 }}>Belum dicek.</p>}
       <FairBox fair={fair} />
