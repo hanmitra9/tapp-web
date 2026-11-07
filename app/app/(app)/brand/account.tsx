@@ -7,7 +7,7 @@ import { Screen } from '@/components/Screen';
 import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { color, radius, space, type, card } from '@/theme/tokens';
-import { BRAND_WA, fetchMyBrands, setDailyReport } from '@/features/brand/api';
+import { BRAND_WA, fetchMyBrands, setDailyReport, setWeeklyReport } from '@/features/brand/api';
 import { errorMessage } from '@/lib/errors';
 
 const ROLE = { owner: 'Pemilik', member: 'Anggota', viewer: 'Hanya lihat' } as const;
@@ -18,10 +18,10 @@ export default function BrandAccount() {
   const q = useQuery(fetchMyBrands, []);
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState<string | null>(null);
-  async function toggle(id: string, on: boolean) {
+  async function toggle(id: string, on: boolean, kind: 'daily' | 'weekly' = 'daily') {
     setBusy(id); setErr(null);
-    q.setData((xs) => xs?.map((b) => (b.id === id ? { ...b, daily_report: on } : b)) ?? xs);
-    try { await setDailyReport(id, on); } catch (e) { setErr(errorMessage(e)); await q.reload(); } finally { setBusy(null); }
+    q.setData((xs) => xs?.map((b) => (b.id === id ? { ...b, [kind === 'daily' ? 'daily_report' : 'weekly_report']: on } : b)) ?? xs);
+    try { await (kind === 'daily' ? setDailyReport : setWeeklyReport)(id, on); } catch (e) { setErr(errorMessage(e)); await q.reload(); } finally { setBusy(null); }
   }
   const main = q.data?.[0];
   const email = session?.user.email ?? '';
@@ -50,9 +50,9 @@ export default function BrandAccount() {
       ) : null}
 
       <View style={styles.group}>
-        <Text style={styles.groupTitle}>Laporan harian</Text>
+        <Text style={styles.groupTitle}>Laporan email</Text>
         {q.data?.map((b, i) => (
-          <View key={`r-${b.id}`} style={[styles.row, i === q.data!.length - 1 && styles.rowLast]}>
+          <View key={`r-${b.id}`} style={styles.row}>
             <View style={styles.rowIcon}><Feather name="mail" size={16} color={color.link} /></View>
             <View style={{ flex: 1 }}>
               <Text style={styles.rowText}>{q.data!.length > 1 ? b.name : 'Email tiap pagi'}</Text>
@@ -60,6 +60,17 @@ export default function BrandAccount() {
             </View>
             <Switch value={b.daily_report} disabled={busy === b.id} onValueChange={(on) => void toggle(b.id, on)}
               trackColor={{ false: color.surfaceRaised, true: color.blue }} thumbColor={color.text} accessibilityLabel={`Laporan harian ${b.name}`} />
+          </View>
+        ))}
+        {q.data?.map((b, i) => (
+          <View key={`w-${b.id}`} style={[styles.row, i === q.data!.length - 1 && styles.rowLast]}>
+            <View style={styles.rowIcon}><Feather name="calendar" size={16} color={color.link} /></View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.rowText}>{q.data!.length > 1 ? `${b.name} · mingguan` : 'Email mingguan'}</Text>
+              <Text style={styles.muted}>Senin 07.45 WIB · views, klip terbaik, biaya, prediksi</Text>
+            </View>
+            <Switch value={b.weekly_report} disabled={busy === b.id} onValueChange={(on) => void toggle(b.id, on, 'weekly')}
+              trackColor={{ false: color.surfaceRaised, true: color.blue }} thumbColor={color.text} accessibilityLabel={`Laporan mingguan ${b.name}`} />
           </View>
         ))}
         {err ? <Text style={[styles.muted, { color: color.danger, padding: space.md }]}>{err}</Text> : null}

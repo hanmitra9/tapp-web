@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, approveSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission, forfeitSubmission,
+  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, approveSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission, forfeitSubmission, heldValue,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { fairness, previewEarnings, signals, typicalEngagement, type CheckPoint, type Fairness } from '../lib/engine';
@@ -16,7 +16,7 @@ const STATUS: Record<SubStatus, { label: string; tone: string }> = {
 };
 const TABS: Record<'review' | 'performance', { q: Queue; label: string }[]> = {
   review: [{ q: 'review', label: 'Perlu review' }, { q: 'payable', label: 'Siap dibayar' }, { q: 'paid', label: 'Sudah dibayar' }, { q: 'flagged', label: 'Ditandai' }, { q: 'closed', label: 'Ditolak / revisi' }],
-  performance: [{ q: 'held', label: 'Ditahan otomatis' }, { q: 'metrics', label: 'Belum ada metrik' }, { q: 'tracking', label: 'Dilacak' }, { q: 'flagged', label: 'Ditandai' }],
+  performance: [{ q: 'held', label: 'Ditahan (prioritas)' }, { q: 'metrics', label: 'Belum ada metrik' }, { q: 'tracking', label: 'Dilacak' }, { q: 'flagged', label: 'Ditandai' }],
 };
 const PRESETS: Partial<Record<SubStatus, string[]>> = {
   rejected: [
@@ -71,7 +71,8 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
               {mode === 'review' && s.check ? <CheckLine c={s.check} /> : null}
               {s.status === 'completed' ? <div className="meta">Dibayar {idr(s.earned)} · {num(s.qualified_views)} views</div> : null}
               {mode === 'performance' ? <div className="meta">Raw {num(s.views)} · Qualified {num(s.qualified_views)} · metrik {ago(s.last_metrics_at)}</div> : null}
-              {mode === 'performance' && s.auto_hold_reason ? <div className="meta" style={{ color: 'var(--warning)' }}>Ditahan: {s.auto_hold_reason}</div> : null}
+              {mode === 'performance' && s.auto_hold_reason ? <div className="meta" style={{ color: 'var(--warning)' }}>
+                {queue === 'held' ? <b>±{idr(heldValue(s))} tertahan · </b> : null}Ditahan: {s.auto_hold_reason}</div> : null}
             </button>
           ))}
         </div>

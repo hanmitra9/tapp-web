@@ -12,7 +12,7 @@ export type BrandCampaign = {
 export type Daily = { day: string; qualified_gain: number; spend: number };
 export type Clip = { submission_id: string; creator_username: string | null; platform: string; post_url: string; status: string;
   published_at: string; raw_views: number; qualified_views: number; spend: number; pending_views: number; last_metrics_at: string | null };
-export type MyBrand = { id: string; name: string; logo_url: string | null; role: 'owner' | 'member' | 'viewer'; daily_report: boolean };
+export type MyBrand = { id: string; name: string; logo_url: string | null; role: 'owner' | 'member' | 'viewer'; daily_report: boolean; weekly_report: boolean };
 
 const n = (x: unknown) => Number(x ?? 0);
 const tz = () => { try { return Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta'; } catch { return 'Asia/Jakarta'; } };
@@ -59,6 +59,10 @@ export const CLIP_STATUS: Record<string, { label: string; tone: 'neutral' | 'blu
 export const BRAND_WA = 'https://wa.me/6282329160953';
 
 
+export async function setWeeklyReport(brandId: string, on: boolean) {
+  const { error } = await supabase.rpc('set_brand_weekly_report', { p_brand_id: brandId, p_on: on });
+  if (error) throw error;
+}
 export async function setDailyReport(brandId: string, on: boolean) {
   const { error } = await supabase.rpc('set_brand_daily_report', { p_brand_id: brandId, p_on: on });
   if (error) throw error;
@@ -148,4 +152,17 @@ export async function setReportLink(campaignId: string, on: boolean, renew = fal
   const { data, error } = await supabase.rpc('brand_set_report_link', { p_campaign_id: campaignId, p_on: on, p_renew: renew });
   if (error) throw error;
   return (data as string | null) ?? null;
+}
+
+// Views forecast (0076): last 7 days' pace projected to the end date or until the budget runs out.
+export type Forecast = { qualified_views: number; daily_views: number; daily_spend: number; projected_views: number; horizon_days: number;
+  ends_at: string | null; budget_runout_at: string | null; remaining: number; enough_data: boolean };
+export async function fetchForecast(campaignId: string): Promise<Forecast | null> {
+  const { data, error } = await supabase.rpc('brand_campaign_forecast', { p_campaign_id: campaignId });
+  if (error) throw error;
+  if (!data) return null;
+  const d = data as Record<string, unknown>;
+  return { qualified_views: n(d.qualified_views), daily_views: n(d.daily_views), daily_spend: n(d.daily_spend), projected_views: n(d.projected_views),
+    horizon_days: n(d.horizon_days), ends_at: (d.ends_at as string) ?? null, budget_runout_at: (d.budget_runout_at as string) ?? null,
+    remaining: n(d.remaining), enough_data: d.enough_data === true };
 }

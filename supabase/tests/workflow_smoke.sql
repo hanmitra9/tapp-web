@@ -1096,3 +1096,24 @@ select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select my_streak() ? 'current' as streak_ok, my_monthly_recap() ? 'streak' as recap_streak;
 reset role;
 select 'report_streak_ok' as result;
+
+-- ── 0076 · streak weeks + reminder, forecast, weekly report, admin digest ──
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as weeks_expect_12 from my_streak_weeks(12);
+select pg_temp.expect_error($$select brand_campaign_forecast('20000000-0000-0000-0000-000000000001')$$, 'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select (brand_campaign_forecast('20000000-0000-0000-0000-000000000001')) ? 'projected_views' as forecast_ok,
+  (brand_campaign_forecast('20000000-0000-0000-0000-000000000001') ->> 'projected_views')::bigint
+    >= (brand_campaign_forecast('20000000-0000-0000-0000-000000000001') ->> 'qualified_views')::bigint as projection_not_below_now;
+select count(*) = 1 and bool_and(weekly_report) as weekly_default_on from my_brands();
+select set_brand_weekly_report('10000000-0000-0000-0000-000000000001', false);
+select not bool_or(weekly_report) as weekly_off from my_brands();
+select set_brand_weekly_report('10000000-0000-0000-0000-000000000001', true);
+reset role;
+select public.send_brand_weekly_reports() >= 0 as weekly_ok, private.streak_reminder() >= 0 as reminder_ok,
+  private.admin_daily_digest() >= 0 as digest_ok, private.admin_digest_data() ? 'held_value' as digest_data_ok;
+do $$ declare n int; begin
+  n := private.streak_reminder();   -- second run in the same week sends nothing new
+  if n <> 0 then raise exception 'reminder sent twice: %', n; end if;
+end $$;
+select 'weekly_forecast_digest_ok' as result;

@@ -99,7 +99,7 @@ export default function Profile() {
               <Pressable onPress={() => router.push('/rank')} style={[styles.rankPill, { borderColor: `${metal.mid}88` }]} accessibilityRole="link">
                 <RankBadge tier={p.tier} size={18} /><Text style={[styles.rankText, { color: metal.hi }]}>{TIER[p.tier]} Clipper</Text>
               </Pressable>
-              {badge ? <Pressable onPress={() => router.push('/recap')} style={styles.streakPill} accessibilityRole="link"
+              {badge ? <Pressable onPress={() => router.push('/streak')} style={styles.streakPill} accessibilityRole="link"
                 accessibilityLabel={`Badge ${badge}, streak terbaik ${streak!.best} minggu`}>
                 <Text style={styles.streakText}>🔥 {badge} · {streak!.best} mgg</Text>
               </Pressable> : null}

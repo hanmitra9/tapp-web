@@ -83,3 +83,39 @@ test('a raw video asset has a trim button that opens the trimmer', async ({ page
   await expect(page.getByText('Video mentah 1').last()).toBeVisible();
   await expect(page.getByRole('button', { name: 'Potong & buat video' })).toBeVisible();
 });
+
+test('streak page shows the big number, the week calendar and the share card', async ({ page }) => {
+  const now = new Date(); const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const weeks = Array.from({ length: 26 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() - (25 - i) * 7);
+    return { week: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, clips: i >= 20 && i < 25 ? 2 : 0 }; });
+  await signedInCreator(page, { my_streak: { current: 5, best: 9, this_week: false }, my_streak_weeks: weeks });
+  await page.goto('/streak');
+  await expect(page.getByText('WEEKS STREAK')).toBeVisible();
+  await expect(page.getByRole('heading', { name: '5' })).toBeVisible();
+  await expect(page.getByText('9 weeks')).toBeVisible();
+  await expect(page.getByText('3 weeks lagi')).toBeVisible();   // 5 → Rajin at 8
+  await expect(page.getByText('26 minggu terakhir')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Simpan / bagikan ke Story' })).toBeEnabled({ timeout: 10000 });
+});
+
+test('brand sees a views forecast and can turn off the weekly email', async ({ page }) => {
+  await signedInCreator(page, {
+    profiles: { id: UID, full_name: 'Dina', role: 'brand' },
+    my_brands: [{ id: 'b1', name: 'Kopi Nusa', logo_url: null, role: 'owner', daily_report: true, weekly_report: true }],
+    brand_campaigns: [{ id: CID, brand_id: 'b1', brand_name: 'Kopi Nusa', title: 'Kopi Susu Launch', category: 'product', status: 'active', cpm: 1500,
+      budget: 15000000, spent: 6000000, remaining: 9000000, starts_at: NOW, ends_at: null, submission_deadline: null, platforms: ['tiktok'],
+      creators_joined: 12, submissions: 3, approved: 2, qualified_views: 4000000, raw_views: 5000000, pending_views: 0, excluded_views: 0,
+      fee_pct: 15, platform_fee: 900000, total_cost: 6900000, effective_cpm: 1200, last_metrics_at: NOW, last_qualified_at: NOW }],
+    brand_campaign_forecast: { qualified_views: 4000000, daily_views: 200000, daily_spend: 300000, projected_views: 10000000, horizon_days: 30,
+      ends_at: null, budget_runout_at: new Date(Date.now() + 30 * 86400e3).toISOString(), remaining: 9000000, enough_data: true },
+  });
+  let weekly: unknown = null;
+  await page.route('**/rest/v1/rpc/set_brand_weekly_report', async (r) => { weekly = r.request().postDataJSON(); return r.fulfill({ json: null }); });
+  await page.goto(`/brand-campaign/${CID}`);
+  await expect(page.getByText('Prediksi views')).toBeVisible();
+  await expect(page.getByText(/10\s?jt/).first()).toBeVisible();
+  await expect(page.getByText(/budget habis/)).toBeVisible();
+  await page.goto('/brand/account');
+  await page.getByLabel('Laporan mingguan Kopi Nusa').click();
+  await expect.poll(() => weekly).toEqual({ p_brand_id: 'b1', p_on: false });
+});

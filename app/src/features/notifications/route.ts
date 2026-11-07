@@ -7,6 +7,7 @@ export async function openNotification(data: Record<string, unknown> | undefined
   const d = data ?? {};
   track('notification_opened', { type: typeof d.type === 'string' ? d.type : null });
   if (d.type === 'recap' || d.path === '/recap') return router.push('/recap');
+  if (d.type === 'streak_reminder' || d.path === '/streak') return router.push('/streak');
   if (d.type === 'earnings_update' || d.type === 'referral') return router.navigate('/dashboard/earnings');
   if (d.type === 'campaign_deadline' && typeof d.campaign_id === 'string') return router.push({ pathname: '/workspace/[id]', params: { id: d.campaign_id } });
   if (typeof d.ticket_id === 'string' || typeof d.dispute_id === 'string') return router.push('/help');
