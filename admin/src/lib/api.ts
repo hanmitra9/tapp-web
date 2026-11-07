@@ -153,6 +153,8 @@ export const approveSubmission = (id: string, views: number, note: string | null
   rpc('admin_approve_submission', { p_submission_id: id, p_views: views, p_note: note });
 export const reviewSubmission = (id: string, decision: SubStatus, reason: string | null) =>
   rpc('admin_review_submission', { p_submission_id: id, p_decision: decision, p_reason: reason });
+export const forfeitSubmission = (id: string, reason: string) =>
+  rpc('admin_forfeit_submission', { p_submission_id: id, p_reason: reason });
 export const recordMetrics = (id: string, m: { views: number; likes: number; comments: number; shares: number; saves: number; capturedAt: string; state: string }) =>
   rpc<{ id: string }>('admin_record_metrics', {
     p_submission_id: id, p_views: m.views, p_likes: m.likes, p_comments: m.comments, p_shares: m.shares, p_saves: m.saves,

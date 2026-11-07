@@ -23,6 +23,7 @@ const COPY: Record<string, string> = {
   main_platform_not_linked: 'Hubungkan akun di platform utama kamu.',
   payout_method_required: 'Tambahkan rekening pembayaran untuk menyelesaikan.',
   campaign_not_found: 'Campaign ini sudah tidak tersedia.',
+  asset_not_found: 'Video ini tidak bisa dipotong di app. Unduh file aslinya dari halaman campaign.',
   campaign_not_active: 'Campaign ini sudah tidak aktif.',
   campaign_not_started: 'Campaign ini belum dimulai.',
   campaign_closed: 'Campaign ini sudah tidak menerima kreator baru.',

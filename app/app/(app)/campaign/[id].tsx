@@ -5,7 +5,7 @@ import Feather from '@expo/vector-icons/Feather';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useState, useEffect } from 'react';
-import { Image, Linking, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
+import { Image, Linking, Platform, Pressable, RefreshControl, StyleSheet, Text, View } from 'react-native';
 import { Button } from '@/components/Button';
 import { Header } from '@/components/Header';
 import { LoadState } from '@/components/LoadState';
@@ -141,7 +141,7 @@ export default function CampaignDetailScreen() {
       {c.content_type === 'ugc' ? <Section title="Brief UGC"><UgcBriefCard b={c.ugc_brief ?? {}} /></Section> : null}
 
       <Section title={c.content_type === 'ugc' ? 'Materi brand' : 'Konten sumber'}>
-        {joined ? (assets.length ? assets.map((a) => <AssetRow key={a.id} a={a} />)
+        {joined ? (assets.length ? assets.map((a) => <AssetRow key={a.id} a={a} campaignId={id} />)
           : <Text style={styles.muted}>{c.content_type === 'ugc' ? 'Tidak ada materi wajib.' : 'Brand belum menambahkan konten sumber.'}</Text>)
           : <Text style={styles.muted}>Terbuka setelah kamu bergabung.</Text>}
       </Section>
@@ -197,8 +197,9 @@ function Bullets({ items, mark = '•', danger }: { items: string[]; mark?: stri
     </View>
   ))}</View>;
 }
-function AssetRow({ a }: { a: Asset }) {
+function AssetRow({ a, campaignId }: { a: Asset; campaignId: string }) {
   const [err, setErr] = useState<string | null>(null);
+  const trimmable = Platform.OS === 'web' && a.kind === 'video' && !!a.storage_path;
   const icon = a.kind === 'video' ? 'film' : a.kind === 'audio' ? 'headphones' : a.kind === 'image' ? 'image' : a.kind === 'document' ? 'file-text' : 'link';
   return (
     <Pressable accessibilityRole="link" style={({ pressed }) => [styles.asset, pressed && { backgroundColor: color.surface }]}
@@ -212,12 +213,21 @@ function AssetRow({ a }: { a: Asset }) {
         <Text style={styles.assetTitle}>{a.title}</Text>
         {err ? <Text style={styles.assetErr}>{err}</Text> : null}
       </View>
+      {trimmable ? (
+        <Pressable onPress={(e) => { e.stopPropagation?.(); router.push({ pathname: '/trim', params: { c: campaignId, a: a.id } }); }}
+          accessibilityRole="button" accessibilityLabel={`Potong ${a.title}`} hitSlop={6} style={({ pressed }) => [styles.trimBtn, pressed && { opacity: 0.7 }]}>
+          <Feather name="scissors" size={13} color={color.link} /><Text style={styles.trimText}>Potong</Text>
+        </Pressable>
+      ) : null}
       <Feather name="external-link" size={16} color={color.textMuted} />
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
+  trimBtn: { flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 10, paddingVertical: 5, borderRadius: radius.pill,
+    borderWidth: 1, borderColor: 'rgba(117,178,244,0.35)' },
+  trimText: { ...type.caption, color: color.link, fontWeight: '600' },
   hero: { width: '100%', aspectRatio: 1.45, borderRadius: radius.xl, backgroundColor: color.surface, overflow: 'hidden', justifyContent: 'space-between', padding: space.lg },
   heroRate: { alignSelf: 'flex-start', flexDirection: 'row', alignItems: 'baseline', gap: 3, paddingHorizontal: 12, paddingVertical: 6, borderRadius: radius.pill,
     backgroundColor: 'rgba(5,10,20,0.62)', borderWidth: 1, borderColor: 'rgba(52,208,122,0.45)' },

@@ -1031,3 +1031,68 @@ end $$;
 select (value->>'enabled')::boolean as auto_filter_on from app_settings where key = 'auto_qualify';
 select count(*) >= 0 as payouts_view_ok from admin_payouts where name_mismatch or not name_mismatch;
 select 'fraud_checks_ok' as result;
+
+-- ── 0074 · view patterns, forfeit ──
+do $$ declare s submissions; m content_metrics; t timestamptz := now() + interval '30 days'; f text[]; begin
+  select * into s from submissions order by created_at limit 1;
+  insert into content_metrics (submission_id, captured_at, views, likes, comments) values
+    (s.id, t, 1000, 50, 5), (s.id, t + interval '4 days', 1200, 60, 6);
+  insert into content_metrics (submission_id, captured_at, views, likes, comments) values (s.id, t + interval '4 days 12 hours', 5000, 250, 25)
+  returning * into m;
+  f := private.view_pattern_flags(s, m);
+  if not exists (select 1 from unnest(f) x where x like 'lonjakan setelah sepi%') then raise exception 'late surge missed: %', f; end if;
+  m.likes := 3000; m.comments := 0;
+  f := private.view_pattern_flags(s, m);
+  if not exists (select 1 from unnest(f) x where x like 'likes tidak wajar%') then raise exception 'like ratio missed: %', f; end if;
+  if not exists (select 1 from unnest(f) x where x like 'banyak likes%') then raise exception 'no-comment likes missed: %', f; end if;
+  m.views := 800; m.likes := 40; m.comments := 4;
+  f := private.view_pattern_flags(s, m);
+  if not exists (select 1 from unnest(f) x where x like 'views turun dari puncak%') then raise exception 'peak drop missed: %', f; end if;
+  if private.auto_qualify_hold(s, m) not like '%views turun dari puncak%' then raise exception 'hold does not include patterns'; end if;
+end $$;
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error($$select admin_forfeit_submission('00000000-0000-0000-0000-000000000000', ' ')$$, 'reason_required');
+do $$ declare s submissions; r submissions; c0 bigint; c1 bigint; begin
+  select * into s from submissions where earned > 0 and status <> 'rejected' order by earned desc limit 1;
+  if s.id is null then raise exception 'no earning clip to forfeit'; end if;
+  select earned into c0 from campaigns where id = s.campaign_id;
+  r := admin_forfeit_submission(s.id, 'views tidak wajar');
+  select earned into c1 from campaigns where id = s.campaign_id;
+  if r.status <> 'rejected' or r.earned <> 0 or r.qualified_views <> 0 then raise exception 'forfeit state wrong'; end if;
+  if c0 - c1 <> s.earned then raise exception 'budget not returned: % -> %', c0, c1; end if;
+  -- net of non-reversed earnings for the clip is what was already withdrawn minus what is taken back = 0 owed
+  if (select coalesce(sum(amount), 0) from earnings where submission_id = s.id and status <> 'reversed' and payout_request_id is null and amount > 0) <> 0 then
+    raise exception 'unpaid earnings left'; end if;
+  if (select coalesce(sum(amount), 0) from earnings where submission_id = s.id and status <> 'reversed') <> 0 then
+    raise exception 'clip still nets money'; end if;
+  if not exists (select 1 from notifications where user_id = s.creator_id and title = 'Klip dihanguskan') then raise exception 'creator not told'; end if;
+end $$;
+reset role;
+select 'view_patterns_forfeit_ok' as result;
+
+-- ── 0075 · report links, streak ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select brand_set_report_link('20000000-0000-0000-0000-000000000001', true) as tok \gset
+select length(:'tok') = 32 as token_ok, brand_report_link('20000000-0000-0000-0000-000000000001') = :'tok' as same_link;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select pg_temp.expect_error($$select brand_set_report_link('20000000-0000-0000-0000-000000000001', true)$$, 'forbidden');
+reset role;
+set role anon;
+select (public_campaign_report(:'tok')) ->> 'title' is not null as public_report_ok,
+  jsonb_array_length(public_campaign_report(:'tok') -> 'daily') as days_expect_30,
+  public_campaign_report('x') is null as bad_token_null,
+  not (public_campaign_report(:'tok') ? 'budget') as no_money;
+select pg_temp.expect_error($$select * from campaign_report_links$$, 'permission denied');
+reset role;
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select brand_set_report_link('20000000-0000-0000-0000-000000000001', false) is null as off_ok;
+select public_campaign_report(:'tok') is null as old_link_dead;
+do $$ declare j jsonb; c uuid; begin
+  select creator_id into c from submissions where status in ('approved', 'tracking', 'completed') limit 1;
+  j := private.creator_streak(c);
+  if (j->>'best')::int < 1 or (j->>'current')::int > (j->>'best')::int then raise exception 'streak wrong: %', j; end if;
+end $$;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select my_streak() ? 'current' as streak_ok, my_monthly_recap() ? 'streak' as recap_streak;
+reset role;
+select 'report_streak_ok' as result;

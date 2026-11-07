@@ -135,3 +135,17 @@ export async function fetchPlans(): Promise<SubscriptionPlan[]> {
     return { id: String(p.id), name: String(p.name), monthly_price: price, price_per_1k: per1k, bonus_pct: bonus, views: Math.floor(price * 1000 * (100 + bonus) / (per1k * 100)) };
   });
 }
+
+// Shareable report link (0075): anyone with it sees the campaign's results without logging in. No money shown.
+export const reportUrl = (token: string) =>
+  `${(process.env.EXPO_PUBLIC_SITE_URL ?? 'https://tappcreators.com').replace(/\/$/, '')}/laporan.html?t=${token}`;
+export async function fetchReportLink(campaignId: string): Promise<string | null> {
+  const { data, error } = await supabase.rpc('brand_report_link', { p_campaign_id: campaignId });
+  if (error) throw error;
+  return (data as string | null) ?? null;
+}
+export async function setReportLink(campaignId: string, on: boolean, renew = false): Promise<string | null> {
+  const { data, error } = await supabase.rpc('brand_set_report_link', { p_campaign_id: campaignId, p_on: on, p_renew: renew });
+  if (error) throw error;
+  return (data as string | null) ?? null;
+}

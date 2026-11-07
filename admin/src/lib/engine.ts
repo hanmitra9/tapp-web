@@ -59,6 +59,7 @@ export function fairness(log: CheckPoint[], followers: number | null, creatorTyp
     else if (eng < 0.015) { score -= 8; reasons.push(`Engagement agak rendah (${pct}%).`); }
     if (creatorTypical != null && creatorTypical >= 0.01 && eng < creatorTypical / 4) { score -= 15; reasons.push(`Jauh di bawah engagement biasa kreator ini (${(creatorTypical * 100).toFixed(1).replace('.', ',')}%).`); }
   }
+  if (v >= 2000 && (last.likes ?? 0) / v > 0.35) { score -= 25; reasons.push(`Likes ${Math.round(((last.likes ?? 0) / v) * 100)}% dari views — terlalu tinggi, kemungkinan likes beli.`); }
   if ((last.likes ?? 0) >= 500 && last.comments != null && last.comments / (last.likes || 1) < 0.002) { score -= 10; reasons.push('Banyak likes tapi hampir tidak ada komentar.'); }
   for (let i = 1; i < pts.length; i++) {
     const a = pts[i - 1]!, b = pts[i]!;

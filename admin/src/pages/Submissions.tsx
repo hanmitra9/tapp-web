@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, approveSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission,
+  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, approveSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission, forfeitSubmission,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { fairness, previewEarnings, signals, typicalEngagement, type CheckPoint, type Fairness } from '../lib/engine';
@@ -129,6 +129,7 @@ function Detail({ id, mode, onChanged }: { id: string; mode: 'review' | 'perform
 
       {mode === 'review' && ['approved', 'tracking', 'completed'].includes(s.status) ? <PayPanel s={s} latestViews={h.metrics[0]?.views ?? null} fair={d.data.fair} onDone={refresh} /> : null}
       {mode === 'review' && reviewable ? <ReviewPanel s={s} latestViews={h.metrics[0]?.views ?? null} fair={d.data.fair} onDone={refresh} /> : null}
+      {['approved', 'tracking', 'completed', 'flagged'].includes(s.status) ? <ForfeitPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && trackable ? <MetricsPanel s={s} onDone={refresh} /> : null}
       {mode === 'performance' && s.status === 'tracking' && s.auto_hold_reason ? <div className="notice warn" style={{ marginTop: 16 }}>Ditahan penyaringan otomatis: {s.auto_hold_reason}. Cek klipnya, lalu tetapkan qualified views secara manual di bawah.</div> : null}
       {mode === 'performance' && s.status === 'tracking' ? <QualifyPanel s={s} metrics={h.metrics} onDone={refresh} /> : null}
@@ -269,6 +270,38 @@ function ReviewPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; lat
           <button className="btn secondary" onClick={() => setDecision(null)}>Batal</button>
         </div>
       ) : null}
+    </div>
+  );
+}
+
+// Cheating clip → only this clip is forfeited (0074): unpaid earnings cancelled, anything withdrawn taken back
+// from the next withdrawal, budget back to the campaign, creator told why. The account stays active.
+function ForfeitPanel({ s, onDone }: { s: AdminSubmission; onDone: () => Promise<void> }) {
+  const [open, setOpen] = useState(false);
+  const [reason, setReason] = useState('views tidak wajar (terindikasi bot)');
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function go() {
+    if (!reason.trim()) return setError('Alasan wajib diisi — kreator akan melihatnya.');
+    setBusy(true); setError(null);
+    try { await forfeitSubmission(s.id, reason.trim()); setOpen(false); await onDone(); }
+    catch (e) { setError(adminError(e)); }
+    finally { setBusy(false); }
+  }
+  if (!open) return <div className="actions" style={{ marginTop: 12 }}><button className="btn danger secondary" onClick={() => setOpen(true)}>Hanguskan klip (curang)</button></div>;
+  return (
+    <div className="section card">
+      <h2>Hanguskan klip</h2>
+      <p className="sub" style={{ marginTop: 0 }}>Hanya klip ini: views & penghasilannya jadi 0 ({idr(s.earned)}), budget kembali ke campaign.
+        Yang sudah dicairkan dipotong dari pencairan berikutnya. Akun kreator tetap aktif.</p>
+      <div className="presets">{['views tidak wajar (terindikasi bot)', 'likes/komentar palsu', 'bukan konten milik kreator'].map((p) =>
+        <button key={p} className="preset" onClick={() => setReason(p)}>{p}</button>)}</div>
+      <label className="field">Alasan (dilihat kreator)<textarea value={reason} onChange={(e) => setReason(e.target.value)} /></label>
+      {error ? <div className="notice error">{error}</div> : null}
+      <div className="actions">
+        <button className="btn danger" onClick={go} disabled={busy}>{busy ? 'Menyimpan…' : 'Konfirmasi hanguskan'}</button>
+        <button className="btn secondary" onClick={() => setOpen(false)} disabled={busy}>Batal</button>
+      </div>
     </div>
   );
 }
