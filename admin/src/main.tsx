@@ -13,6 +13,7 @@ import { Brands } from './pages/Brands';
 import { Campaigns } from './pages/Campaigns';
 import { Disputes } from './pages/Disputes';
 import { Meetings } from './pages/Meetings';
+import { Announcements } from './pages/Announcements';
 import { Connections } from './pages/Connections';
 import { Payouts } from './pages/Payouts';
 import { Support } from './pages/Support';
@@ -35,6 +36,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="disputes" element={<Disputes />} />
             <Route path="support" element={<Support />} />
             <Route path="meetings" element={<Meetings />} />
+            <Route path="announcements" element={<Announcements />} />
             <Route path="connections" element={<Connections />} />
             <Route path="blacklist" element={<Blacklist />} />
             <Route path="finance" element={<Finance />} />

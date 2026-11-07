@@ -576,3 +576,10 @@ export async function challengeInfo(id: string): Promise<ChallengeInfo | null> {
   const r = rows?.[0];
   return r ? { prize_pool: Number(r.prize_pool), prizes: ((r.prizes ?? []) as unknown[]).map(Number), ends_at: (r.ends_at as string) ?? null, settled_at: (r.settled_at as string) ?? null } : null;
 }
+
+// In-app announcements (0077): banners at the top of the creator / brand home screen.
+export type Announcement = { id: string; title: string; body: string; cta_label: string | null; cta_url: string | null; tone: 'info' | 'success' | 'warning';
+  audience: 'creator' | 'brand' | 'all'; starts_at: string; ends_at: string | null; active: boolean; created_at: string };
+export const listAnnouncements = () => rpc<Announcement[]>('admin_announcements', {});
+export const saveAnnouncement = (a: Partial<Announcement>) => rpc<Announcement>('admin_upsert_announcement', { p: a });
+export const deleteAnnouncement = (id: string) => rpc<void>('admin_delete_announcement', { p_id: id });

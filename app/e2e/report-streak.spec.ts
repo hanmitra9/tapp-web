@@ -90,11 +90,12 @@ test('streak page shows the big number, the week calendar and the share card', a
     return { week: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, clips: i >= 20 && i < 25 ? 2 : 0 }; });
   await signedInCreator(page, { my_streak: { current: 5, best: 9, this_week: false }, my_streak_weeks: weeks });
   await page.goto('/streak');
-  await expect(page.getByText('WEEKS STREAK')).toBeVisible();
-  await expect(page.getByRole('heading', { name: '5' })).toBeVisible();
-  await expect(page.getByText('9 weeks')).toBeVisible();
-  await expect(page.getByText('3 weeks lagi')).toBeVisible();   // 5 → Rajin at 8
-  await expect(page.getByText('26 minggu terakhir')).toBeVisible();
+  await expect(page.getByText('STREAK', { exact: true })).toBeVisible();
+  await expect(page.getByRole('heading', { name: '5 minggu beruntun' })).toBeVisible();
+  await expect(page.getByText('Rajin', { exact: true })).toBeVisible();      // next badge at 8
+  await expect(page.getByText('weeks lagi')).toBeVisible();
+  await expect(page.getByText('Sisa waktu minggu ini')).toBeVisible();     // this week not done yet → countdown
+  await expect(page.getByText('26 MINGGU TERAKHIR')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Simpan / bagikan ke Story' })).toBeEnabled({ timeout: 10000 });
 });
 
@@ -118,4 +119,15 @@ test('brand sees a views forecast and can turn off the weekly email', async ({ p
   await page.goto('/brand/account');
   await page.getByLabel('Laporan mingguan Kopi Nusa').click();
   await expect.poll(() => weekly).toEqual({ p_brand_id: 'b1', p_on: false });
+});
+
+test('creator sees an admin announcement and can close it', async ({ page }) => {
+  await signedInCreator(page, { my_announcements: [{ id: 'an1', title: 'TAPP Mega dibuka lagi', body: 'Budget baru minggu ini.', cta_label: 'Lihat', cta_url: '/dashboard/campaigns', tone: 'success' }] });
+  await page.goto('/dashboard');
+  await expect(page.getByText('TAPP Mega dibuka lagi')).toBeVisible();
+  await page.getByRole('button', { name: 'Tutup pengumuman TAPP Mega dibuka lagi' }).click();
+  await expect(page.getByText('TAPP Mega dibuka lagi')).toHaveCount(0);
+  await page.reload();
+  await expect(page.getByText('Saldo bisa ditarik')).toBeVisible();
+  await expect(page.getByText('TAPP Mega dibuka lagi')).toHaveCount(0);
 });

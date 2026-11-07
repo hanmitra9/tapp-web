@@ -11,6 +11,7 @@ import { compact, greeting, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { Freshness } from '@/features/brand/ReportParts';
+import { Announcements } from '@/features/announcements/Announcements';
 import { BudgetHero, HashtagTile, Kpi, KpiGrid, PlansCard, Section, SubscriptionTile } from '@/features/brand/ui';
 import { color, space, type, card, radius } from '@/theme/tokens';
 import { fetchBrandCampaigns, fetchBrandDaily, fetchHashtagTotals, fetchMyBrands, fetchPlans, fetchSubscriptions, totals, BRAND_WA } from '@/features/brand/api';
@@ -42,6 +43,7 @@ export default function BrandHome() {
       <Text style={styles.title} accessibilityRole="header" numberOfLines={1}>{name ?? ' '}</Text>
       {d ? <Freshness metricsAt={d.t.lastMetricsAt} qualifiedAt={d.t.lastQualifiedAt} refreshedAt={refreshedAt} /> : null}
       {q.error && !d ? <Notice tone="error" message={q.error} /> : null}
+      <Announcements style={{ marginTop: space.md }} />
 
       <BudgetHero budget={d ? d.t.budget : null} spent={d?.t.spent ?? 0}
         primary={{ label: 'Campaign', icon: 'layers', onPress: () => router.navigate('/brand/campaigns') }}

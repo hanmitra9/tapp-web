@@ -35,6 +35,7 @@ export function Layout() {
         <NavLink to="/disputes">Keberatan <Count n={c?.disputes_open} /></NavLink>
         <NavLink to="/support">Support <Count n={c?.tickets_open} /></NavLink>
         <NavLink to="/meetings">Meeting <Count n={meetings.data ?? undefined} /></NavLink>
+        <NavLink to="/announcements">Pengumuman</NavLink>
         <NavLink to="/blacklist">Blacklist</NavLink>
         <NavLink to="/audit">Audit log</NavLink>
         <div className="nav-foot">
