@@ -11,6 +11,7 @@ import { useQuery } from '@/lib/useQuery';
 import { useAuth } from '@/providers/AuthProvider';
 import { PushToggle } from '@/components/PushToggle';
 import { fetchTierProgress, type TierProgress } from '@/features/creator/tier';
+import { fetchStreak, streakBadge, type Streak } from '@/features/creator/recap';
 import { color, gradient, radius, space, type, card } from '@/theme/tokens';
 import { EMPTY_FILTERS, fetchFeed, fetchMyCampaigns, type FeedItem, type MyCampaign, type Sort } from '@/features/campaigns/api';
 import { CampaignCard } from '@/features/campaigns/CampaignCard';
@@ -40,11 +41,11 @@ const CATEGORIES = FILTER_CATEGORIES, TYPES = FILTER_TYPES, SORTS = FEED_SORTS;
 export default function Home() {
   const { account } = useAuth();
   const q = useQuery(async () => {
-    const [mine, unread, balance, subs, level] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
+    const [mine, unread, balance, subs, level, streak] = await Promise.all([fetchMyCampaigns().catch(() => [] as MyCampaign[]),
       unreadCount().catch(() => 0), fetchAvailable().catch(() => 0), fetchMySubmissions(undefined, 200).catch(() => []),
-      fetchTierProgress().catch(() => null)]);
+      fetchTierProgress().catch(() => null), fetchStreak().catch(() => null)]);
     return {
-      unread, balance, level, subs,
+      unread, balance, level, subs, streak,
       reviewing: subs.filter((s) => s.status === 'pending_review').length,
       campaigns: mine.filter((m) => m.status === 'joined' && m.campaign).map((m) => ({ value: m.campaign!.id, label: m.campaign!.title })),
     };
@@ -78,6 +79,7 @@ export default function Home() {
         <Stat icon="check-circle" tint={color.success} label="Diterima" value={d ? String(d.subs.filter((s) => DONE.includes(s.status)).length) : null} onPress={() => router.navigate('/dashboard/activity')} />
         <Stat icon="zap" tint="#F5C451" label="Campaign" value={d ? String(d.campaigns.length) : null} onPress={() => router.navigate('/dashboard/campaigns')} />
       </View>
+      {d?.streak && d.streak.current > 0 ? <StreakRow s={d.streak} /> : null}
       <Pressable onPress={() => router.push('/referral')} accessibilityRole="button" style={({ pressed }) => [styles.invite, pressed && { opacity: 0.85 }]}>
         <View style={styles.inviteIcon}><Feather name="gift" size={16} color="#F5C451" /></View>
         <Text style={styles.inviteText} numberOfLines={1}>Ajak teman, dapat bonus</Text>
@@ -133,6 +135,21 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
   );
 }
 
+
+// Weekly streak (0075): weeks in a row with an accepted clip. A badge only; reminds to post this week to keep it.
+function StreakRow({ s }: { s: Streak }) {
+  const badge = streakBadge(s.current);
+  return (
+    <Pressable onPress={() => router.push('/recap')} accessibilityRole="button" style={({ pressed }) => [styles.invite, pressed && { opacity: 0.85 }]}>
+      <View style={[styles.inviteIcon, { backgroundColor: 'rgba(255,122,69,0.14)' }]}><Text style={{ fontSize: 15 }}>🔥</Text></View>
+      <View style={{ flex: 1, minWidth: 0 }}>
+        <Text style={styles.inviteText} numberOfLines={1}>Streak {s.current} minggu{badge ? ` · ${badge}` : ''}</Text>
+        <Text style={styles.streakSub} numberOfLines={1}>{s.this_week ? 'Minggu ini aman. Lanjut minggu depan!' : 'Kirim klip minggu ini biar nggak putus.'}</Text>
+      </View>
+      <Feather name="chevron-right" size={18} color={color.textMuted} />
+    </Pressable>
+  );
+}
 
 // One tappable number under the hero: lifetime qualified views, accepted clips, campaigns joined.
 function Stat({ icon, tint, label, value, onPress }: { icon: 'eye' | 'check-circle' | 'zap'; tint: string; label: string; value: string | null; onPress: () => void }) {
@@ -246,6 +263,7 @@ function SectionHead({ title, action }: { title: string; action?: { label: strin
 }
 
 const styles = StyleSheet.create({
+  streakSub: { ...type.caption, fontSize: 12, color: color.textMuted },
   top: { flexDirection: 'row', alignItems: 'center', marginTop: space.md, gap: space.md },
   hello: { ...type.caption, color: color.textMuted },
   name: { ...type.heading, fontSize: 20, lineHeight: 26, color: color.text },

@@ -231,6 +231,97 @@ CAMPAIGNS = head('Campaign TAPP: yang sedang dibuka', 'Daftar campaign yang seda
 '''
 (ROOT / 'campaigns.html').write_text(CAMPAIGNS.replace('__SITE_URL__', SITE_URL))
 
+# ───────────────────────────── Shared campaign report (0075) ─────────────────────────────
+# Opened from a brand's share link: laporan.html?t=<token>. Read-only, no login, no money shown.
+REPORT_CSS = '''<meta name="robots" content="noindex, nofollow">
+<style>
+.rp{max-width:880px;margin:0 auto;padding:24px 16px 72px}
+.rp-brand{display:flex;align-items:center;gap:10px;color:var(--t2);font-size:14px}
+.rp-brand img{width:28px;height:28px;border-radius:8px;object-fit:cover}
+.rp h1{font-size:clamp(26px,5vw,38px);letter-spacing:-.02em;margin:10px 0 6px;line-height:1.15}
+.rp-meta{color:var(--t3);font-size:14px;margin:0}
+.rp-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:28px 0}
+.rp-k{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:16px}
+.rp-k b{display:block;font-size:24px;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.rp-k span{color:var(--t3);font-size:13px}
+.rp-box{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:14px}
+.rp-box h2{font-size:16px;margin:0 0 14px}
+.rp-chart{display:flex;align-items:flex-end;gap:3px;height:160px}
+.rp-bar{flex:1;background:var(--blue);border-radius:3px 3px 0 0;min-height:2px}
+.rp-bar.z{background:rgba(255,255,255,.08)}
+.rp-axis{display:flex;justify-content:space-between;color:var(--t3);font-size:12px;margin-top:8px}
+.rp-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line);color:var(--text);text-decoration:none}
+.rp-row:first-of-type{border-top:0}
+.rp-rank{width:22px;text-align:center;color:var(--t3);font-variant-numeric:tabular-nums}
+.rp-row .n{margin-left:auto;font-variant-numeric:tabular-nums;white-space:nowrap}
+.rp-sub{color:var(--t3);font-size:13px;font-weight:400}
+.rp-plat{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+.rp-plat:first-of-type{border-top:0}
+.rp-foot{margin-top:28px;color:var(--t3);font-size:13px;text-align:center}
+.rp-foot a{color:var(--bl)}
+.rp-msg{padding:80px 0;text-align:center;color:var(--t2)}
+.rp .sk{background:var(--s1);border-radius:16px;height:86px}
+@media (max-width:640px){.rp-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+'''
+REPORT_JS = r'''<script>
+(function () {
+  var c = window.TAPP_CONFIG || {}, $ = function (i) { return document.getElementById(i); };
+  var MAP = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+  var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (x) { return MAP[x]; }); };
+  var num = function (n) { return Number(n || 0).toLocaleString('id-ID'); };
+  var compact = function (n) { n = Number(n || 0); return n >= 1e6 ? (n / 1e6).toFixed(n >= 1e7 ? 0 : 1).replace('.', ',') + ' jt' : n >= 1e3 ? (n / 1e3).toFixed(n >= 1e4 ? 0 : 1).replace('.', ',') + ' rb' : String(n); };
+  var day = function (iso, o) { return new Date(iso.length <= 10 ? iso + 'T00:00:00' : iso).toLocaleDateString('id-ID', o || { day: 'numeric', month: 'short', year: 'numeric' }); };
+  var SHORT = { day: 'numeric', month: 'short' };
+  var NAME = { tiktok: 'TikTok', instagram: 'Instagram', youtube: 'YouTube' };
+  var STATUS = { active: 'Berjalan', ending: 'Hampir selesai', paused: 'Dijeda', completed: 'Selesai', archived: 'Selesai', cancelled: 'Dibatalkan', pending_approval: 'Menunggu' };
+  var safeUrl = function (u) { return /^https:\/\//i.test(u || '') ? u : '#'; };
+  var t = new URLSearchParams(location.search).get('t');
+  function fail(msg) { $('rp').innerHTML = '<div class="rp-msg">' + msg + '</div>'; }
+  if (!t) return fail('Link laporan tidak lengkap.');
+  fetch(c.SUPABASE_URL + '/rest/v1/rpc/public_campaign_report', { method: 'POST', headers: { apikey: c.SUPABASE_ANON_KEY, 'Content-Type': 'application/json' }, body: JSON.stringify({ p_token: t }) })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (d) {
+      if (!d) return fail('Link laporan ini sudah tidak aktif. Minta link baru ke pemilik campaign.');
+      document.title = d.title + ' · Laporan TAPP';
+      var max = Math.max.apply(null, d.daily.map(function (x) { return x.views; }).concat([1]));
+      var gain = d.daily.reduce(function (a, x) { return a + x.views; }, 0);
+      var eng = d.engagement == null ? '—' : (d.engagement * 100).toFixed(1).replace('.', ',') + '%';
+      var period = (d.starts_at ? day(d.starts_at) : '') + (d.ends_at ? ' – ' + day(d.ends_at) : '');
+      $('rp').innerHTML =
+        '<div class="rp-brand">' + (d.logo ? '<img src="' + esc(safeUrl(d.logo)) + '" alt="">' : '') + '<span>' + esc(d.brand) + '</span></div>' +
+        '<h1>' + esc(d.title) + '</h1>' +
+        '<p class="rp-meta">' + esc(STATUS[d.status] || d.status) + (period ? ' · ' + esc(period) : '') + (d.platforms.length ? ' · ' + d.platforms.map(function (p) { return NAME[p] || esc(p); }).join(', ') : '') + '</p>' +
+        '<div class="rp-kpis">' +
+          '<div class="rp-k"><b>' + compact(d.views) + '</b><span>Total views</span></div>' +
+          '<div class="rp-k"><b>' + num(d.clips) + '</b><span>Klip tayang</span></div>' +
+          '<div class="rp-k"><b>' + num(d.creators) + '</b><span>Kreator</span></div>' +
+          '<div class="rp-k"><b>' + eng + '</b><span>Engagement</span></div>' +
+        '</div>' +
+        '<section class="rp-box"><h2>Views terverifikasi · 30 hari terakhir <span class="rp-sub">(+' + num(gain) + ')</span></h2>' +
+          '<div class="rp-chart" role="img" aria-label="' + num(gain) + ' views terverifikasi dalam 30 hari">' + d.daily.map(function (x) {
+            return '<div class="rp-bar' + (x.views ? '' : ' z') + '" style="height:' + Math.max(2, Math.round(x.views / max * 100)) + '%" title="' + day(x.day, SHORT) + ': ' + num(x.views) + '"></div>'; }).join('') + '</div>' +
+          '<div class="rp-axis"><span>' + day(d.daily[0].day, SHORT) + '</span><span>' + day(d.daily[d.daily.length - 1].day, SHORT) + '</span></div>' +
+        '</section>' +
+        (d.top.length ? '<section class="rp-box"><h2>Klip terbaik</h2>' + d.top.map(function (k, i) {
+          return '<a class="rp-row" href="' + esc(safeUrl(k.url)) + '" target="_blank" rel="noopener noreferrer"><span class="rp-rank">' + (i + 1) + '</span><span>@' + esc(k.creator || 'kreator') +
+            '<br><span class="rp-sub">' + (NAME[k.platform] || esc(k.platform)) + '</span></span><span class="n">' + compact(k.views) + ' views ↗</span></a>'; }).join('') + '</section>' : '') +
+        (d.per_platform.length > 1 ? '<section class="rp-box"><h2>Per platform</h2>' + d.per_platform.map(function (p) {
+          return '<div class="rp-plat"><span>' + (NAME[p.platform] || esc(p.platform)) + '</span><span class="rp-sub">' + num(p.clips) + ' klip · ' + compact(p.views) + ' views</span></div>'; }).join('') + '</section>' : '') +
+        '<p class="rp-foot">' + (d.updated_at ? 'Data diperbarui ' + day(d.updated_at, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + '. ' : '') +
+          'Views dicek otomatis dan disaring dari views bot. Dibuat dengan <a href="index.html">TAPP</a>.</p>';
+    })
+    .catch(function () { fail('Laporan belum bisa dimuat. Periksa koneksi lalu muat ulang halaman.'); });
+})();
+</script>
+</body>
+</html>
+'''
+REPORT = (head('Laporan Campaign · TAPP', 'Hasil campaign clipping di TAPP: views, klip, dan kreator.', 'laporan', REPORT_CSS) + header('') +
+  '\n<main class="rp" id="rp" aria-live="polite">\n  <div class="rp-kpis"><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>\n</main>\n'
+  + FOOT + '\n' + REPORT_JS)
+(ROOT / 'laporan.html').write_text(REPORT.replace('__SITE_URL__', SITE_URL))
+
 # ───────────────────────────── Meeting booking (brands) ─────────────────────────────
 MEETING = head('Jadwalkan Meeting dengan TAPP', 'Pilih jadwal 30–60 menit dengan tim TAPP untuk membahas tujuan, audiens, platform, dan budget campaign brand-mu.', 'meeting') + header('meeting') + '''
 <main>

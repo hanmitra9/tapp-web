@@ -9,7 +9,7 @@ const COPY: Record<string, string> = {
   qualified_exceeds_raw: 'Qualified views tidak boleh melebihi raw views.',
   decrease_requires_flag: 'Qualified views lebih kecil dari sebelumnya. Centang "izinkan penurunan" dan isi alasan.',
   metric_not_found: 'Snapshot metrik tidak ditemukan untuk submission ini.',
-  reverse_earnings_first: 'Submission sudah punya penghasilan. Turunkan qualified views ke 0 dulu sebelum menolak.',
+  reverse_earnings_first: 'Submission sudah punya penghasilan. Pakai tombol "Hanguskan klip" untuk menolaknya sekaligus membatalkan penghasilannya.',
   onboarding_incomplete: 'Kreator belum menyelesaikan onboarding.',
   reference_required: 'Nomor referensi transfer wajib diisi.',
   identity_blocked: 'Identitas ini ada di blacklist.',

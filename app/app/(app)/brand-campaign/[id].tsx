@@ -13,6 +13,7 @@ import { compact, dateLabel, idr, num } from '@/lib/format';
 import { useAutoRefresh } from '@/lib/useAutoRefresh';
 import { useQuery } from '@/lib/useQuery';
 import { CostCard, Freshness, HashtagReach, ViewsBreakdown } from '@/features/brand/ReportParts';
+import { ShareReport } from '@/features/brand/ShareReport';
 import { BudgetHero, HashtagTile, Kpi, KpiGrid, Section, canExport, downloadCsv, printReport } from '@/features/brand/ui';
 import { web } from '@/theme/web';
 import { color, radius, space, type, card } from '@/theme/tokens';
@@ -106,6 +107,7 @@ export default function BrandCampaignReport() {
           <BudgetHero budget={c.budget} spent={c.spent}
             primary={{ label: 'Submission', icon: 'film', onPress: () => setTab('subs') }}
             second={{ label: 'Analitik', icon: 'bar-chart-2', onPress: () => setTab('stats') }} />
+          <ShareReport campaignId={c.id} title={c.title} />
           <KpiGrid>
             <Kpi icon="eye" label="Views terverifikasi" value={compact(c.qualified_views)} />
             <Kpi icon="trending-down" label="Effective CPM" value={c.effective_cpm == null ? '—' : idr(c.effective_cpm)} tint={color.success}
