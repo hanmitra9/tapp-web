@@ -138,9 +138,17 @@ export function renderViewsCard(c: ViewsCard): Promise<RenderedCard> {
 const MONTHS_FULL = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
 export function renderRecapCard(c: RecapCard): Promise<RenderedCard> {
   const d = new Date(`${c.month}T00:00:00`);
-  const bits = [`${c.clips.toLocaleString('id-ID')} KLIP`, c.topPct ? `TOP ${c.topPct}%` : null, c.streak && c.streak >= 2 ? `🔥 ${c.streak} MINGGU` : null, c.tier.toUpperCase()].filter(Boolean).join(' · ');
+  const bits = [`${c.clips.toLocaleString('id-ID')} KLIP`, c.topPct ? `TOP ${c.topPct}%` : null, c.streak && c.streak >= 2 ? `🔥 ${c.streak} WEEKS` : null, c.tier.toUpperCase()].filter(Boolean).join(' · ');
   return render({ label: `REKAP ${MONTHS_FULL[d.getMonth()]}`, prefix: null, value: compactIdr(c.views), name: c.name, avatarUrl: c.avatarUrl,
     line1: `${bits}`, line2: `QUALIFIED VIEWS · ${d.getFullYear()}` });
+}
+
+// Weekly streak (0075/0076): weeks in a row with an accepted clip. "🔥 9 WEEKS" — a badge, never money.
+export type StreakCard = { weeks: number; best: number; badge: string | null; name: string; avatarUrl: string | null };
+export function renderStreakCard(c: StreakCard): Promise<RenderedCard> {
+  return render({ label: '🔥 WEEKS STREAK', prefix: null, value: String(c.weeks), name: c.name, avatarUrl: c.avatarUrl,
+    line1: [`${c.weeks} WEEKS`, c.badge ? c.badge.toUpperCase() : null, c.best > c.weeks ? `BEST ${c.best}` : null].filter(Boolean).join(' · '),
+    line2: 'KLIP DITERIMA TIAP MINGGU' });
 }
 
 // Share sheet on phones (Save Image / Instagram / WhatsApp), download elsewhere.

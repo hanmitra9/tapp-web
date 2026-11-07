@@ -200,6 +200,53 @@ function appEmail(type: string, d: Record<string, any>): { subject: string; bloc
       },
     };
   }
+  if (type === "brand_weekly_report") {
+    const dd = (x: unknown) => x ? new Date(`${x}T00:00:00+07:00`).toLocaleDateString("id-ID", { timeZone: "Asia/Jakarta", day: "numeric", month: "short" }) : "-";
+    const nf = (n: unknown) => Math.round(Number(n ?? 0)).toLocaleString("id-ID");
+    const top = (Array.isArray(d.top) ? d.top : []) as Record<string, any>[];
+    const camps = (Array.isArray(d.campaigns) ? d.campaigns : []) as Record<string, any>[];
+    const rows: [string, string][] = [
+      ["Qualified views baru", `+${nf(d.qualified_gain)}`],
+      ["Biaya views", idr(Number(d.spend))],
+      ...(Number(d.fee_pct) > 0 ? ([[`Fee kerjasama (${nf(d.fee_pct)}%)`, idr(Number(d.fee))]] as [string, string][]) : []),
+      ...top.map((k, i): [string, string] => [`Klip terbaik #${i + 1}`, `@${k.creator ?? "kreator"} · ${k.campaign ?? ""} · +${nf(k.views)} views`]),
+      ...camps.slice(0, 5).map((c): [string, string] => [String(c.title ?? "Campaign"),
+        `sisa ${idr(Number(c.remaining))} · prediksi ${nf(c.projected)} views${c.runout ? ` · budget habis ±${dd(String(c.runout).slice(0, 10))}` : ""}`]),
+    ];
+    return {
+      subject: `Laporan mingguan ${d.brand ?? "brand"}: +${nf(d.qualified_gain)} views (${dd(d.from)}–${dd(d.to)})`,
+      block: {
+        eyebrow: "Laporan mingguan",
+        title: `Minggu lalu di ${esc(d.brand ?? "TAPP")}`,
+        intro: `Ringkasan ${esc(dd(d.from))}–${esc(dd(d.to))} (WIB). Prediksi dihitung dari kecepatan views 7 hari terakhir sampai campaign selesai atau budget habis.`,
+        rows,
+        button: APP() ? { label: "Buka dashboard brand", url: `${APP()}/brand` } : undefined,
+        outro: "Tidak ingin menerima laporan mingguan? Matikan di dashboard brand → Akun.",
+      },
+    };
+  }
+  if (type === "admin_daily_digest") {
+    const nf = (n: unknown) => Math.round(Number(n ?? 0)).toLocaleString("id-ID");
+    const low = (Array.isArray(d.low_budget) ? d.low_budget : []) as Record<string, any>[];
+    const rows: [string, string][] = [
+      ["Klip ditahan filter", `${nf(d.held)} · ±${idr(Number(d.held_value))} tertahan`],
+      ["Menunggu review", nf(d.pending_review)],
+      ["Ditandai", nf(d.flagged)],
+      ["Penarikan menunggu", `${nf(d.payouts)} · ${idr(Number(d.payouts_total))}`],
+      ["Kreator perlu dicek", nf(d.creators_to_review)],
+      ...low.slice(0, 5).map((c): [string, string] => [`Budget hampir habis`, `${c.title ?? "-"} · sisa ${nf(c.left_pct)}%`]),
+    ];
+    return {
+      subject: `Ringkasan admin TAPP: ${nf(d.held)} ditahan · ${nf(d.pending_review)} review · ${nf(d.payouts)} penarikan`,
+      block: {
+        eyebrow: "Admin · Harian",
+        title: "Yang perlu dicek hari ini",
+        intro: "Klip ditahan diurutkan dari nilai terbesar di Admin → Performa (urutan Prioritas).",
+        rows,
+        button: APP() ? { label: "Buka Admin", url: `${APP()}/admin` } : undefined,
+      },
+    };
+  }
   if (type === "meeting_received") {
     return {
       subject: `Permintaan meeting TAPP: ${wib(d.slot)}`,

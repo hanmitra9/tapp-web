@@ -140,7 +140,7 @@ function Hero({ balance, level, reviewing }: { balance: number | null; level: Ti
 function StreakRow({ s }: { s: Streak }) {
   const badge = streakBadge(s.current);
   return (
-    <Pressable onPress={() => router.push('/recap')} accessibilityRole="button" style={({ pressed }) => [styles.invite, pressed && { opacity: 0.85 }]}>
+    <Pressable onPress={() => router.push('/streak')} accessibilityRole="button" style={({ pressed }) => [styles.invite, pressed && { opacity: 0.85 }]}>
       <View style={[styles.inviteIcon, { backgroundColor: 'rgba(255,122,69,0.14)' }]}><Text style={{ fontSize: 15 }}>🔥</Text></View>
       <View style={{ flex: 1, minWidth: 0 }}>
         <Text style={styles.inviteText} numberOfLines={1}>Streak {s.current} minggu{badge ? ` · ${badge}` : ''}</Text>

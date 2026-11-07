@@ -28,6 +28,8 @@ const QUEUE_FILTER: Record<Queue, SubStatus[]> = {
   payable: ['approved', 'tracking'], paid: ['completed'],
 };
 
+export const heldValue = (s: { views?: number | null; qualified_views: number; cpm: number }) =>
+  Math.floor((Math.max(0, Number(s.views ?? 0) - Number(s.qualified_views ?? 0)) * Number(s.cpm ?? 0)) / 1000);
 export async function listSubmissions(queue: Queue, search: string): Promise<AdminSubmission[]> {
   let q = supabase.from('admin_submissions').select('*').in('status', QUEUE_FILTER[queue]).limit(200);
   // Review queues: oldest first (FIFO). Tracking: stalest metrics first.
@@ -38,7 +40,9 @@ export async function listSubmissions(queue: Queue, search: string): Promise<Adm
   if (s) q = q.or(`campaign_title.ilike.%${s}%,creator_username.ilike.%${s}%,post_url.ilike.%${s}%`);
   const { data, error } = await q;
   if (error) throw error;
-  const rows = (data ?? []).map(norm);
+  let rows = (data ?? []).map(norm);
+  // Held clips: biggest money at stake first (unqualified views × CPM), then the most views.
+  if (queue === 'held') rows = rows.sort((a, b) => heldValue(b) - heldValue(a) || Number(b.views ?? 0) - Number(a.views ?? 0));
   const checks = await fetchChecks(rows.map((r) => r.id));
   return rows.map((r) => ({ ...r, check: checks[r.id] ?? null }));
 }
