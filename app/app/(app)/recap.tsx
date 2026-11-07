@@ -5,7 +5,7 @@ import { Button } from '@/components/Button';
 import { LoadState } from '@/components/LoadState';
 import { Screen } from '@/components/Screen';
 import { TopBar } from '@/components/TopBar';
-import { fetchRecap, streakBadge } from '@/features/creator/recap';
+import { fetchRecap } from '@/features/creator/recap';
 import { compact } from '@/lib/format';
 import { renderRecapCard, shareRenderedCard, type RenderedCard } from '@/lib/shareCard';
 import { useQuery } from '@/lib/useQuery';
@@ -31,7 +31,7 @@ export default function RecapScreen() {
     if (!r || Platform.OS !== 'web') return;
     let live = true, made: RenderedCard | null = null;
     renderRecapCard({ month: r.month, views: r.views, clips: r.clips, topPct: r.top_pct, tier: LEVEL[r.tier] ?? r.tier,
-      name: account?.fullName ?? r.name ?? 'TAPP', avatarUrl: account?.avatarUrl ?? null, streak: r.streak.current })
+      name: account?.fullName ?? r.name ?? 'TAPP', avatarUrl: account?.avatarUrl ?? null })
       .then((c) => { made = c; if (live) setImg(c); }).catch(() => {});
     return () => { live = false; if (made) URL.revokeObjectURL(made.url); };
   }, [r, account?.fullName, account?.avatarUrl]);
@@ -60,9 +60,6 @@ export default function RecapScreen() {
             <Stat label="Klip terbaik" value={r.best_views ? `${compact(r.best_views)} views` : '—'} />
             <Stat label="Posisi" value={r.top_pct ? `Top ${r.top_pct}%` : '—'} />
             <Stat label="Level" value={LEVEL[r.tier] ?? r.tier} />
-            <Stat label="Streak sekarang" value={r.streak.current ? `${r.streak.current} minggu` : '—'} />
-            <Stat label="Streak terbaik" value={r.streak.best ? `${r.streak.best} minggu` : '—'} />
-            <Stat label="Badge" value={streakBadge(r.streak.best) ?? '—'} />
           </View>
           {r.views === 0 ? <Text style={styles.note}>Belum ada qualified views di bulan ini. Ambil campaign dan posting klip supaya rekap berikutnya terisi.</Text> : null}
           {Platform.OS === 'web' ? (

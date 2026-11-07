@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { signedInCreator, UID } from './mock';
 
-// Shareable campaign report (brand button + public page), weekly streak, trim entry (Supabase mocked).
+// Shareable campaign report (brand button + public page), trim entry, forecast, announcements (Supabase mocked).
 const CID = '30000000-0000-0000-0000-000000000002';
 const NOW = new Date().toISOString();
 const TOKEN = 'a'.repeat(32);
@@ -51,19 +51,6 @@ test('brand makes a share link for the report', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Matikan' })).toBeVisible();
 });
 
-test('dashboard and recap show the weekly streak', async ({ page }) => {
-  await signedInCreator(page, {
-    my_streak: { current: 5, best: 9, this_week: false },
-    my_monthly_recap: { month: '2026-10-01', views: 1000, clips: 2, campaigns: 1, best_views: 900, tier: 'new', name: 'rani', top_pct: 50, creators: 10,
-      streak: { current: 5, best: 9, this_week: false } },
-  });
-  await page.goto('/dashboard');
-  await expect(page.getByText('Streak 5 minggu · Konsisten')).toBeVisible();
-  await expect(page.getByText(/biar nggak putus/)).toBeVisible();
-  await page.goto('/recap');
-  await expect(page.getByText('9 minggu')).toBeVisible();
-  await expect(page.getByText('Rajin', { exact: true })).toBeVisible();
-});
 
 test('a raw video asset has a trim button that opens the trimmer', async ({ page }) => {
   await signedInCreator(page, {
@@ -84,20 +71,6 @@ test('a raw video asset has a trim button that opens the trimmer', async ({ page
   await expect(page.getByRole('button', { name: 'Potong & buat video' })).toBeVisible();
 });
 
-test('streak page shows the big number, the week calendar and the share card', async ({ page }) => {
-  const now = new Date(); const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  const weeks = Array.from({ length: 26 }, (_, i) => { const d = new Date(monday); d.setDate(monday.getDate() - (25 - i) * 7);
-    return { week: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`, clips: i >= 20 && i < 25 ? 2 : 0 }; });
-  await signedInCreator(page, { my_streak: { current: 5, best: 9, this_week: false }, my_streak_weeks: weeks });
-  await page.goto('/streak');
-  await expect(page.getByText('STREAK', { exact: true })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '5 minggu beruntun' })).toBeVisible();
-  await expect(page.getByText('Rajin', { exact: true })).toBeVisible();      // next badge at 8
-  await expect(page.getByText('weeks lagi')).toBeVisible();
-  await expect(page.getByText('Sisa waktu minggu ini')).toBeVisible();     // this week not done yet → countdown
-  await expect(page.getByText('26 MINGGU TERAKHIR')).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Simpan / bagikan ke Story' })).toBeEnabled({ timeout: 10000 });
-});
 
 test('brand sees a views forecast and can turn off the weekly email', async ({ page }) => {
   await signedInCreator(page, {
