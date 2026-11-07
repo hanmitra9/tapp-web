@@ -4,7 +4,7 @@ import { Image as RNImage, Platform } from 'react-native';
 // into the corner, a big condensed number and mono labels. Drawn on a canvas (web only).
 //   total payout (Saldo)  ·  qualified views per campaign (Workspace)
 export type PayoutCard = { total: number; from: string | null; to: string; name: string; avatarUrl: string | null };
-export type RecapCard = { month: string; views: number; clips: number; topPct: number | null; tier: string; name: string; avatarUrl: string | null; streak?: number };
+export type RecapCard = { month: string; views: number; clips: number; topPct: number | null; tier: string; name: string; avatarUrl: string | null };
 export type ViewsCard = { views: number; campaign: string; from: string | null; to: string; name: string; avatarUrl: string | null };
 type Spec = { label: string; prefix: string | null; value: string; line1: string; line2: string; name: string; avatarUrl: string | null };
 export type RenderedCard = { blob: Blob; url: string };
@@ -138,66 +138,9 @@ export function renderViewsCard(c: ViewsCard): Promise<RenderedCard> {
 const MONTHS_FULL = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
 export function renderRecapCard(c: RecapCard): Promise<RenderedCard> {
   const d = new Date(`${c.month}T00:00:00`);
-  const bits = [`${c.clips.toLocaleString('id-ID')} KLIP`, c.topPct ? `TOP ${c.topPct}%` : null, c.streak && c.streak >= 2 ? `🔥 ${c.streak} WEEKS` : null, c.tier.toUpperCase()].filter(Boolean).join(' · ');
+  const bits = [`${c.clips.toLocaleString('id-ID')} KLIP`, c.topPct ? `TOP ${c.topPct}%` : null, c.tier.toUpperCase()].filter(Boolean).join(' · ');
   return render({ label: `REKAP ${MONTHS_FULL[d.getMonth()]}`, prefix: null, value: compactIdr(c.views), name: c.name, avatarUrl: c.avatarUrl,
     line1: `${bits}`, line2: `QUALIFIED VIEWS · ${d.getFullYear()}` });
-}
-
-// Weekly streak (0075/0076): orange "fire" card — giant white number, "🔥 9 WEEKS STREAK", the last 13 weeks as a strip.
-// A badge, never money.
-export type StreakCard = { weeks: number; best: number; badge: string | null; name: string; avatarUrl: string | null; recent?: boolean[] };
-export async function renderStreakCard(c: StreakCard): Promise<RenderedCard> {
-  if (Platform.OS !== 'web') throw new Error('Kartu tersedia di versi web.');
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const g = cv.getContext('2d')!;
-  try { await Promise.all([document.fonts.load('300px BebasNeue'), document.fonts.load('40px RobotoMono')]); } catch { /* fallback faces */ }
-  const shape = () => { g.beginPath(); g.roundRect(1, 1, W - 2, H - 2, R); };
-  g.save(); shape(); g.clip();
-
-  // Fire gradient: deep red at the bottom-left to warm amber at the top-right, a soft hot spot behind the number.
-  const bg = g.createLinearGradient(0, H, W, 0);
-  bg.addColorStop(0, '#B3170B'); bg.addColorStop(0.45, '#F2541B'); bg.addColorStop(1, '#FFAA3B');
-  g.fillStyle = bg; g.fillRect(0, 0, W, H);
-  const hot = g.createRadialGradient(W * 0.35, H * 0.52, 0, W * 0.35, H * 0.52, W * 0.75);
-  hot.addColorStop(0, 'rgba(255,236,170,0.55)'); hot.addColorStop(1, 'rgba(255,236,170,0)');
-  g.fillStyle = hot; g.fillRect(0, 0, W, H);
-  const shade = g.createLinearGradient(0, H * 0.7, 0, H);
-  shade.addColorStop(0, 'rgba(60,4,0,0)'); shade.addColorStop(1, 'rgba(60,4,0,0.45)');
-  g.fillStyle = shade; g.fillRect(0, 0, W, H);
-
-  try { const src = logoSrc(); if (src) g.drawImage(await loadImage(src), 96, 104, 96, 96); } catch { /* no logo */ }
-  g.fillStyle = 'rgba(255,255,255,0.92)'; g.font = '40px RobotoMono, monospace'; g.textAlign = 'right';
-  g.fillText(fit(c.name.toUpperCase(), 18), W - 96, 168); g.textAlign = 'left';
-
-  // Label + giant number.
-  g.fillStyle = '#FFFFFF'; g.textBaseline = 'alphabetic';
-  g.font = '52px RobotoMono, monospace';
-  g.fillText('🔥 WEEKS STREAK', 96, H * 0.36);
-  // Fit the number between the label and the week strip (Bebas caps are ~0.7 of the font size).
-  const val = String(c.weeks), stripY = H - 300, base = stripY - 64, top = H * 0.36 + 44;
-  let size = Math.floor((base - top) / 0.72);
-  g.font = `${size}px BebasNeue, sans-serif`;
-  while (g.measureText(val).width > W - 180 && size > 200) { size -= 20; g.font = `${size}px BebasNeue, sans-serif`; }
-  g.shadowColor = 'rgba(120,20,0,0.35)'; g.shadowBlur = 40; g.shadowOffsetY = 12;
-  g.fillText(val, 84, base);
-  g.shadowColor = 'transparent'; g.shadowBlur = 0; g.shadowOffsetY = 0;
-
-  // Last 13 weeks strip.
-  const rec = (c.recent ?? []).slice(-13);
-  const gap = 12, cell = (W - 192 - gap * 12) / 13, y = stripY;
-  for (let i = 0; i < 13; i++) {
-    const on = rec[i - (13 - rec.length)] ?? false;
-    g.beginPath(); g.roundRect(96 + i * (cell + gap), y, cell, cell, 12);
-    g.fillStyle = on ? '#FFFFFF' : 'rgba(255,255,255,0.22)'; g.fill();
-  }
-  g.font = '40px RobotoMono, monospace'; g.fillStyle = '#FFFFFF';
-  g.fillText([`${c.weeks} WEEKS`, c.badge ? c.badge.toUpperCase() : null].filter(Boolean).join(' · '), 96, H - 168);
-  g.fillStyle = 'rgba(255,255,255,0.85)';
-  g.fillText(c.best > c.weeks ? `BEST ${c.best} WEEKS · TAPP` : 'TAPP CREATORS', 96, H - 108);
-  g.restore();
-  shape(); g.strokeStyle = 'rgba(255,255,255,0.25)'; g.lineWidth = 2; g.stroke();
-  const blob: Blob = await new Promise((res, rej) => cv.toBlob((b) => (b ? res(b) : rej(new Error('Gagal membuat gambar.'))), 'image/png'));
-  return { blob, url: URL.createObjectURL(blob) };
 }
 
 // Share sheet on phones (Save Image / Instagram / WhatsApp), download elsewhere.

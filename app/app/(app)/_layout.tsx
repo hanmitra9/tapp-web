@@ -50,7 +50,6 @@ export default function AppLayout() {
         <Stack.Screen name="rank" />
         <Stack.Screen name="recap" />
         <Stack.Screen name="trim" />
-        <Stack.Screen name="streak" />
         <Stack.Screen name="dispute" options={{ presentation: 'modal' }} />
         <Stack.Screen name="submit/[campaignId]" options={{ presentation: 'modal' }} />
         <Stack.Screen name="take/[id]" />

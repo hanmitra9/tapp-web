@@ -19,7 +19,6 @@ import { idrCompact } from '@/lib/format';
 import { supabase } from '@/lib/supabase';
 import { useLayout } from '@/lib/useLayout';
 import { useAuth } from '@/providers/AuthProvider';
-import { fetchStreak, streakBadge, type Streak } from '@/features/creator/recap';
 import { color, radius, space, type, card } from '@/theme/tokens';
 import {
   fetchCreatorProfile, fetchPayoutMethod, fetchPlatforms, fetchStats, updateProfile, uploadAvatar,
@@ -38,7 +37,7 @@ const STATUS: Record<CreatorProfile['status'], { label: string; tone: 'ok' | 'wa
   banned: { label: 'Ditutup', tone: 'bad', note: 'Akunmu ditutup.' },
 };
 type Tab = 'profil' | 'akun' | 'verifikasi' | 'keamanan';
-type Data = { profile: CreatorProfile; stats: CreatorStats; platforms: LinkedPlatform[]; payout: PayoutMethod | null; streak: Streak | null };
+type Data = { profile: CreatorProfile; stats: CreatorStats; platforms: LinkedPlatform[]; payout: PayoutMethod | null };
 
 // Profile (konten-style): identity + total earnings, then tabs for profile, account, verification and security.
 export default function Profile() {
@@ -54,9 +53,8 @@ export default function Profile() {
 
   const load = useCallback(async () => {
     try {
-      const [profile, stats, platforms, payout, streak] = await Promise.all([fetchCreatorProfile(uid), fetchStats(uid), fetchPlatforms(uid), fetchPayoutMethod(uid),
-        fetchStreak().catch(() => null)]);
-      setData({ profile, stats, platforms, payout, streak }); setError(null);
+      const [profile, stats, platforms, payout] = await Promise.all([fetchCreatorProfile(uid), fetchStats(uid), fetchPlatforms(uid), fetchPayoutMethod(uid)]);
+      setData({ profile, stats, platforms, payout }); setError(null);
     } catch (e) { setError(errorMessage(e)); }
   }, [uid]);
   useFocusEffect(useCallback(() => { void load(); }, [load]));
@@ -73,8 +71,7 @@ export default function Profile() {
 
   const header = <View style={{ marginBottom: space.xl }}><TopBar title="Profil" /></View>;
   if (!data) return <Screen inTabs scroll={false}>{header}<LoadState error={error} onRetry={load} /></Screen>;
-  const { profile: p, stats: s, platforms, payout, streak } = data;
-  const badge = streak ? streakBadge(streak.best) : null;
+  const { profile: p, stats: s, platforms, payout } = data;
   const locked = p.status === 'suspended' || p.status === 'banned';
   const joined = new Date(session!.user.created_at).toLocaleDateString('id-ID', { month: 'short', year: 'numeric' });
   const metal = RANK_METAL[p.tier];
@@ -99,10 +96,6 @@ export default function Profile() {
               <Pressable onPress={() => router.push('/rank')} style={[styles.rankPill, { borderColor: `${metal.mid}88` }]} accessibilityRole="link">
                 <RankBadge tier={p.tier} size={18} /><Text style={[styles.rankText, { color: metal.hi }]}>{TIER[p.tier]} Clipper</Text>
               </Pressable>
-              {badge ? <Pressable onPress={() => router.push('/streak')} style={styles.streakPill} accessibilityRole="link"
-                accessibilityLabel={`Badge ${badge}, streak terbaik ${streak!.best} minggu`}>
-                <Text style={styles.streakText}>🔥 {badge} · {streak!.best} mgg</Text>
-              </Pressable> : null}
               <Text style={styles.meta}>@{p.username ?? '—'} · sejak {joined}</Text>
             </View>
           </View>
@@ -298,9 +291,6 @@ function LinkCard({ icon, title, sub, action, onPress }: { icon: 'credit-card' |
 }
 
 const styles = StyleSheet.create({
-  streakPill: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999, borderWidth: 1,
-    borderColor: 'rgba(255,122,69,0.45)', backgroundColor: 'rgba(255,122,69,0.10)' },
-  streakText: { ...type.caption, fontSize: 12, color: '#FFB08A', fontWeight: '600' },
   hero: { borderRadius: radius.xl, overflow: 'hidden', ...card },
   banner: { height: 96, overflow: 'hidden' },
   bannerMark: { position: 'absolute', right: 18, top: 14, width: 90, height: 90, opacity: 0.12 },

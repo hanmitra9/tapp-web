@@ -1070,7 +1070,7 @@ end $$;
 reset role;
 select 'view_patterns_forfeit_ok' as result;
 
--- ── 0075 · report links, streak ──
+-- ── 0075 · report links ──
 select pg_temp.act('00000000-0000-0000-0000-00000000000b');
 select brand_set_report_link('20000000-0000-0000-0000-000000000001', true) as tok \gset
 select length(:'tok') = 32 as token_ok, brand_report_link('20000000-0000-0000-0000-000000000001') = :'tok' as same_link;
@@ -1087,19 +1087,11 @@ reset role;
 select pg_temp.act('00000000-0000-0000-0000-00000000000b');
 select brand_set_report_link('20000000-0000-0000-0000-000000000001', false) is null as off_ok;
 select public_campaign_report(:'tok') is null as old_link_dead;
-do $$ declare j jsonb; c uuid; begin
-  select creator_id into c from submissions where status in ('approved', 'tracking', 'completed') limit 1;
-  j := private.creator_streak(c);
-  if (j->>'best')::int < 1 or (j->>'current')::int > (j->>'best')::int then raise exception 'streak wrong: %', j; end if;
-end $$;
-select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
-select my_streak() ? 'current' as streak_ok, my_monthly_recap() ? 'streak' as recap_streak;
 reset role;
-select 'report_streak_ok' as result;
+select 'report_links_ok' as result;
 
--- ── 0076 · streak weeks + reminder, forecast, weekly report, admin digest ──
+-- ── 0076 · forecast, weekly report, admin digest ──
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
-select count(*) as weeks_expect_12 from my_streak_weeks(12);
 select pg_temp.expect_error($$select brand_campaign_forecast('20000000-0000-0000-0000-000000000001')$$, 'forbidden');
 select pg_temp.act('00000000-0000-0000-0000-00000000000b');
 select (brand_campaign_forecast('20000000-0000-0000-0000-000000000001')) ? 'projected_views' as forecast_ok,
@@ -1110,12 +1102,8 @@ select set_brand_weekly_report('10000000-0000-0000-0000-000000000001', false);
 select not bool_or(weekly_report) as weekly_off from my_brands();
 select set_brand_weekly_report('10000000-0000-0000-0000-000000000001', true);
 reset role;
-select public.send_brand_weekly_reports() >= 0 as weekly_ok, private.streak_reminder() >= 0 as reminder_ok,
+select public.send_brand_weekly_reports() >= 0 as weekly_ok,
   private.admin_daily_digest() >= 0 as digest_ok, private.admin_digest_data() ? 'held_value' as digest_data_ok;
-do $$ declare n int; begin
-  n := private.streak_reminder();   -- second run in the same week sends nothing new
-  if n <> 0 then raise exception 'reminder sent twice: %', n; end if;
-end $$;
 select 'weekly_forecast_digest_ok' as result;
 
 -- ── 0077 · announcements ──
@@ -1137,3 +1125,9 @@ select admin_upsert_announcement(jsonb_build_object('id', :'ann_id', 'title', 'C
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select count(*) as creator_after_off_expect_0 from my_announcements();
 select 'announcements_ok' as result;
+
+-- ── 0078 · streak removed ──
+select to_regprocedure('public.my_streak()') is null and to_regprocedure('private.creator_streak(uuid)') is null as streak_gone;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select not (my_monthly_recap() ? 'streak') as recap_without_streak;
+select 'streak_removed_ok' as result;
