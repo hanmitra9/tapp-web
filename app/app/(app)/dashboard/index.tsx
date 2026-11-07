@@ -26,6 +26,7 @@ import { Avatar } from '@/components/Avatar';
 import { MenuButton } from '@/components/SideMenu';
 import { unreadCount } from '@/features/notifications/api';
 import { CommunityModal } from '@/features/community/CommunityModal';
+import { Announcements } from '@/features/announcements/Announcements';
 
 const STATUS_NOTE: Record<string, string> = {
   verified: 'Akun sedang ditinjau (maks. 1x24 jam).',
@@ -72,6 +73,7 @@ export default function Home() {
         </Pressable>
       </View>
 
+      <Announcements style={{ marginTop: space.md, marginBottom: space.md }} />
       <Hero balance={d?.balance ?? null} level={d?.level ?? null} reviewing={d?.reviewing ?? 0} />
 
       <View style={styles.stats}>

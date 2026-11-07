@@ -1117,3 +1117,23 @@ do $$ declare n int; begin
   if n <> 0 then raise exception 'reminder sent twice: %', n; end if;
 end $$;
 select 'weekly_forecast_digest_ok' as result;
+
+-- ── 0077 · announcements ──
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select pg_temp.expect_error($$select admin_upsert_announcement('{"title":" "}')$$, 'title_required');
+select pg_temp.expect_error($$select admin_upsert_announcement('{"title":"x","cta_label":"Buka"}')$$, 'cta_incomplete');
+select pg_temp.expect_error($$select admin_upsert_announcement('{"title":"x","cta_label":"Buka","cta_url":"javascript:alert(1)"}')$$, 'cta_url_invalid');
+select (admin_upsert_announcement('{"title":"Campaign baru!","body":"Cek TAPP Mega","cta_label":"Lihat","cta_url":"/dashboard/campaigns","audience":"creator"}')).id as ann_id \gset
+select admin_upsert_announcement('{"title":"Untuk brand","audience":"brand"}') is not null as brand_ann;
+select admin_upsert_announcement('{"title":"Nanti","starts_at":"2099-01-01T00:00:00Z"}') is not null as future_ann;
+select count(*) >= 3 as admin_list from admin_announcements();
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select string_agg(title, ',') as creator_sees_expect_campaign from my_announcements();
+select pg_temp.expect_error($$select * from admin_announcements()$$, 'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000b');
+select string_agg(title, ',') as brand_sees_expect_brand from my_announcements();
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select admin_upsert_announcement(jsonb_build_object('id', :'ann_id', 'title', 'Campaign baru!', 'active', false)) is not null as deactivated;
+select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
+select count(*) as creator_after_off_expect_0 from my_announcements();
+select 'announcements_ok' as result;
