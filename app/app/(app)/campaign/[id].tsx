@@ -21,6 +21,7 @@ import { JoinedRow } from '@/features/campaigns/JoinedRow';
 import { GuideCard, GuideSheet, guideSteps } from '@/features/campaigns/GuideSheet';
 import { CAMPAIGN_STATUS, categoryLabel, joinBlockCopy, platformsLabel, rateLabel } from '@/features/campaigns/copy';
 import { ChallengePrizes, ChallengeStandings } from '@/features/campaigns/Challenge';
+import { TopClips } from '@/features/campaigns/TopClips';
 import { track } from '@/lib/analytics';
 
 const RULE_TITLES = { requirement: 'Syarat konten', submission: 'Aturan submission', performance: 'Aturan performa' } as const;
@@ -145,6 +146,7 @@ export default function CampaignDetailScreen() {
           : <Text style={styles.muted}>{c.content_type === 'ugc' ? 'Tidak ada materi wajib.' : 'Brand belum menambahkan konten sumber.'}</Text>)
           : <Text style={styles.muted}>Terbuka setelah kamu bergabung.</Text>}
       </Section>
+      {c.content_type !== 'ugc' ? <TopClipsSection campaignId={c.id} /> : null}
 
       {challenge ? (
         <>
@@ -196,6 +198,10 @@ function Bullets({ items, mark = '•', danger }: { items: string[]; mark?: stri
       <Text style={styles.bulletText}>{t}</Text>
     </View>
   ))}</View>;
+}
+// Hidden until the campaign has accepted clips with views.
+function TopClipsSection({ campaignId }: { campaignId: string }) {
+  return <TopClips campaignId={campaignId} render={(list) => <Section title="Contoh klip terbaik">{list}</Section>} />;
 }
 function AssetRow({ a, campaignId }: { a: Asset; campaignId: string }) {
   const [err, setErr] = useState<string | null>(null);

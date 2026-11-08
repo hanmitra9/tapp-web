@@ -583,3 +583,12 @@ export type Announcement = { id: string; title: string; body: string; cta_label:
 export const listAnnouncements = () => rpc<Announcement[]>('admin_announcements', {});
 export const saveAnnouncement = (a: Partial<Announcement>) => rpc<Announcement>('admin_upsert_announcement', { p: a });
 export const deleteAnnouncement = (id: string) => rpc<void>('admin_delete_announcement', { p_id: id });
+
+// Review reason templates (0079), kept in app_settings.review_presets.
+export type ReviewPresets = { rejected: string[]; needs_changes: string[]; flagged: string[] };
+export const getReviewPresets = () => rpc<ReviewPresets>('admin_review_presets', {});
+export const setReviewPresets = (p: ReviewPresets) => rpc<ReviewPresets>('admin_set_review_presets', { p });
+// Every money movement in one month (0079) for the bookkeeping CSV.
+export type FinanceRow = { at: string; kind: string; party: string; campaign: string | null; invoice: string | null; amount: number; fee: number; net: number;
+  reference: string | null; note: string | null };
+export const financeExport = (month: string) => rpc<FinanceRow[]>('admin_finance_export', { p_month: month });

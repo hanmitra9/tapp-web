@@ -1131,3 +1131,17 @@ select to_regprocedure('public.my_streak()') is null and to_regprocedure('privat
 select pg_temp.act('00000000-0000-0000-0000-0000000000c1');
 select not (my_monthly_recap() ? 'streak') as recap_without_streak;
 select 'streak_removed_ok' as result;
+
+-- ── 0079 · example clips, review presets, finance export ──
+select pg_temp.act('00000000-0000-0000-0000-0000000000c2');
+select count(*) <= 3 as top_max_3, bool_and(name like '%•••' or name = 'Kamu') as names_masked
+from campaign_top_clips('20000000-0000-0000-0000-000000000001');
+select pg_temp.expect_error($$select admin_review_presets()$$, 'forbidden');
+select pg_temp.act('00000000-0000-0000-0000-00000000000a');
+select jsonb_array_length(admin_review_presets() -> 'rejected') >= 1 as presets_seeded;
+select jsonb_array_length((admin_set_review_presets('{"rejected":["A"," A ","B",""],"needs_changes":["C"],"flagged":[]}')) -> 'rejected') as rejected_expect_2;
+select pg_temp.expect_error($$select admin_set_review_presets('{"rejected":[]}')$$, 'presets_invalid');
+select count(*) >= 0 as export_ok from admin_finance_export(date_trunc('month', now())::date);
+select count(*) as export_prev_rows from admin_finance_export((date_trunc('month', now()) - interval '1 month')::date);
+reset role;
+select 'top_presets_export_ok' as result;

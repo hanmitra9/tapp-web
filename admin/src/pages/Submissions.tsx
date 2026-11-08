@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
 import {
-  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, approveSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission, forfeitSubmission, heldValue,
+  fetchCheckLog, fetchChecks, fetchCreatorLogs, fetchHistory, runCheck, type SubmissionCheck, getSubmission, listSubmissions, creditSubmission, approveSubmission, proofUrl, readPublicViews, type PublicViews, qualifyViews, recordMetrics, reviewSubmission, forfeitSubmission, heldValue, getReviewPresets, setReviewPresets, type ReviewPresets,
   type AdminSubmission, type Queue, type SubStatus,
 } from '../lib/api';
 import { fairness, previewEarnings, signals, typicalEngagement, type CheckPoint, type Fairness } from '../lib/engine';
@@ -38,6 +38,7 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
   const queue = (tabs.find((t) => t.q === params.get('q'))?.q ?? tabs[0]!.q) as Queue;
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState<string | null>(null);
+  const [editPresets, setEditPresets] = useState(false);
   const list = useLoad(() => listSubmissions(queue, search), [queue, search]);
 
   useEffect(() => { setSelected(null); }, [queue, mode]);
@@ -52,8 +53,12 @@ export function Submissions({ mode }: { mode: 'review' | 'performance' }) {
             ? 'Terima atau tolak klip kreator, lalu bayar klip yang diterima langsung ke rekening kreator. Penolakan wajib punya alasan yang dilihat kreator.'
             : 'Catat raw metrics, lalu tetapkan qualified views. Penghasilan dihitung di server.'}</p>
         </div>
-        <input type="search" placeholder="Cari campaign, username, link…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 280 }} />
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {mode === 'review' ? <button className="btn secondary" onClick={() => setEditPresets((x) => !x)}>Template alasan</button> : null}
+          <input type="search" placeholder="Cari campaign, username, link…" value={search} onChange={(e) => setSearch(e.target.value)} style={{ maxWidth: 280 }} />
+        </div>
       </div>
+      {mode === 'review' && editPresets ? <PresetsEditor onClose={() => setEditPresets(false)} /> : null}
       <div className="tabs" role="tablist">
         {tabs.map((t) => (
           <button key={t.q} role="tab" aria-selected={queue === t.q} className={`tab ${queue === t.q ? 'on' : ''}`}
@@ -225,6 +230,42 @@ function FairBox({ fair }: { fair: Fairness }) {
   );
 }
 
+// Template alasan (0079): one reason per line for each decision; buttons in the review panel fill the reason.
+const PRESET_GROUPS: { k: keyof ReviewPresets; label: string }[] = [
+  { k: 'rejected', label: 'Tolak' }, { k: 'needs_changes', label: 'Minta revisi' }, { k: 'flagged', label: 'Tandai' }];
+function PresetsEditor({ onClose }: { onClose: () => void }) {
+  const db = useLoad(getReviewPresets, []);
+  const [text, setText] = useState<Record<string, string> | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState<{ tone: 'error' | 'success'; text: string } | null>(null);
+  const value = (k: keyof ReviewPresets) => text?.[k] ?? (db.data?.[k] ?? PRESETS[k as SubStatus] ?? []).join('\n');
+  async function save() {
+    setBusy(true); setMsg(null);
+    const lines = (k: keyof ReviewPresets) => value(k).split('\n').map((x) => x.trim()).filter(Boolean);
+    try { await setReviewPresets({ rejected: lines('rejected'), needs_changes: lines('needs_changes'), flagged: lines('flagged') });
+      setMsg({ tone: 'success', text: 'Template tersimpan.' }); await db.reload(); setText(null); }
+    catch (e) { setMsg({ tone: 'error', text: adminError(e) }); } finally { setBusy(false); }
+  }
+  return (
+    <div className="card section" style={{ display: 'grid', gap: 12 }}>
+      <h3 style={{ margin: 0 }}>Template alasan</h3>
+      <p className="sub" style={{ margin: 0 }}>Satu alasan per baris (maks 20 per jenis). Muncul sebagai tombol cepat saat review; kreator melihat alasan yang dipilih.</p>
+      <div className="grid3">
+        {PRESET_GROUPS.map((g) => (
+          <label key={g.k} className="field">{g.label}
+            <textarea rows={7} value={value(g.k)} onChange={(e) => setText((t) => ({ ...(t ?? {}), [g.k]: e.target.value }))} />
+          </label>
+        ))}
+      </div>
+      {msg ? <div className={`notice ${msg.tone === 'error' ? 'error' : 'info'}`}>{msg.text}</div> : null}
+      <div className="actions">
+        <button className="btn" onClick={save} disabled={busy || !db.data}>{busy ? 'Menyimpan…' : 'Simpan template'}</button>
+        <button className="btn secondary" onClick={onClose}>Tutup</button>
+      </div>
+    </div>
+  );
+}
+
 function ReviewPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; latestViews: number | null; fair: Fairness; onDone: () => Promise<void> }) {
   const options: { d: SubStatus; label: string; cls: string }[] = s.status === 'approved' || s.status === 'tracking'
     ? [{ d: 'flagged', label: 'Tandai', cls: 'warn' }, { d: 'rejected', label: 'Tolak', cls: 'danger' }]
@@ -234,6 +275,8 @@ function ReviewPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; lat
       ];
   const [decision, setDecision] = useState<SubStatus | null>(null);
   const [reason, setReason] = useState('');
+  const db = useLoad(getReviewPresets, []);
+  const presets = (d: SubStatus) => (db.data?.[d as keyof ReviewPresets]?.length ? db.data[d as keyof ReviewPresets] : PRESETS[d]) ?? null;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const needsReason = decision && decision !== 'approved';
@@ -259,8 +302,8 @@ function ReviewPanel({ s, latestViews, fair, onDone }: { s: AdminSubmission; lat
             onClick={() => { setDecision(o.d); setError(null); }} disabled={busy}>{o.label}</button>
         ))}
       </div>
-      {decision && PRESETS[decision] ? (
-        <div className="presets">{PRESETS[decision]!.map((p) => <button key={p} className="preset" onClick={() => setReason(p)}>{p}</button>)}</div>
+      {decision && presets(decision)?.length ? (
+        <div className="presets">{presets(decision)!.map((p) => <button key={p} className="preset" onClick={() => setReason(p)}>{p}</button>)}</div>
       ) : null}
       {needsReason ? <label className="field">Alasan (dilihat kreator)<textarea value={reason} onChange={(e) => setReason(e.target.value)} /></label> : null}
       {error ? <div className="notice error">{error}</div> : null}
