@@ -104,3 +104,21 @@ test('review shows the fairness score from the views history (bot-like spike fla
   await expect(page.getByText(/Skor kewajaran: \d+\/100 · Mencurigakan/)).toBeVisible();
   await expect(page.getByText(/Lonjakan 20× dalam 6 jam/)).toBeVisible();
 });
+
+test('admin edits the reason templates and they show up as quick buttons', async ({ page }) => {
+  const sub = { ...SUB, status: 'pending_review' };
+  let presets = { rejected: ['Bukan konten sendiri.'], needs_changes: ['Tambah hashtag.'], flagged: [] as string[] };
+  let saved: unknown = null;
+  await signedInCreator(page, { profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, admin_submissions: [sub] }, { aal: 'aal2' });
+  await page.route('**/rest/v1/rpc/admin_review_presets', (r) => r.fulfill({ json: presets }));
+  await page.route('**/rest/v1/rpc/admin_set_review_presets', async (r) => { saved = r.request().postDataJSON(); presets = (saved as { p: typeof presets }).p; await r.fulfill({ json: presets }); });
+  await page.goto('/admin/submissions');
+  await page.getByRole('button', { name: 'Template alasan' }).click();
+  await page.getByLabel('Tolak').fill('Bukan konten sendiri.\nVideo buram.\n');
+  await page.getByRole('button', { name: 'Simpan template' }).click();
+  await expect(page.getByText('Template tersimpan.')).toBeVisible();
+  expect(saved).toEqual({ p: { rejected: ['Bukan konten sendiri.', 'Video buram.'], needs_changes: ['Tambah hashtag.'], flagged: [] } });
+  await page.getByRole('button', { name: /TAPP Campaign/ }).first().click();
+  await page.getByRole('button', { name: 'Tolak', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'Video buram.' })).toBeVisible();
+});

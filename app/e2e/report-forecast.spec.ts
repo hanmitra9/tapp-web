@@ -104,3 +104,18 @@ test('creator sees an admin announcement and can close it', async ({ page }) => 
   await expect(page.getByText('Saldo bisa ditarik')).toBeVisible();
   await expect(page.getByText('TAPP Mega dibuka lagi')).toHaveCount(0);
 });
+
+test('campaign page shows the best clips as examples', async ({ page }) => {
+  await signedInCreator(page, {
+    get_campaign: { id: CID, title: 'Kopi Susu Launch', objective: null, description: 'x', category: 'product', content_type: 'clipping', status: 'active',
+      cpm: 1500, budget: 1000000, remaining: 1000000, min_views_to_qualify: 0, max_earning_per_submission: null, starts_at: NOW, ends_at: null,
+      submission_deadline: null, guidelines_do: [], guidelines_dont: [], terms: null, brand: { name: 'Kopi Nusa', logo_url: null, website: null },
+      platforms: ['tiktok'], rules: [], creators_joined: 3, membership: null, join_block: null },
+    campaign_top_clips: [{ rank: 1, name: 'ra•••', platform: 'tiktok', post_url: 'https://www.tiktok.com/@r/video/1', views: 820000 },
+      { rank: 2, name: 'Kamu', platform: 'instagram', post_url: 'https://www.instagram.com/reel/x', views: 300000 }],
+  });
+  await page.goto(`/campaign/${CID}`);
+  await expect(page.getByText('Contoh klip terbaik')).toBeVisible();
+  await expect(page.getByText('ra•••')).toBeVisible();
+  await expect(page.getByRole('link', { name: /Klip nomor 1, 820/ })).toBeVisible();
+});

@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from 'react';
-import { financeMonthly, getPaymentAccount, latestUptime, listBrands, listCampaigns, listLedger, recordDeposit, setPaymentAccount, type FinanceMonth, type LedgerEntry } from '../lib/api';
+import { financeExport, financeMonthly, getPaymentAccount, latestUptime, listBrands, listCampaigns, listLedger, recordDeposit, setPaymentAccount, type FinanceMonth, type LedgerEntry } from '../lib/api';
 import { adminError } from '../lib/errors';
 import { ago, dt, idr } from '../lib/format';
 import { useLoad } from '../lib/useLoad';
@@ -31,6 +31,7 @@ export function Finance() {
           <h2 style={{ margin: 0 }}>Rekap bulanan</h2>
           <button className="btn secondary" disabled={!recap.data?.length} onClick={() => recap.data && csv(recap.data)}>Unduh CSV</button>
         </div>
+        <TxExport months={recap.data?.map((m) => m.month) ?? []} />
         {recap.error ? <div className="notice error">{recap.error}</div> : null}
         {recap.data ? (
           <div style={{ overflowX: 'auto' }}>
@@ -165,6 +166,39 @@ function DepositForm({ onDone }: { onDone: () => Promise<void> }) {
       {saved ? <div className="notice">Tersimpan sebagai {saved.invoice_no}. <button type="button" className="btn secondary" onClick={() => printInvoice({ ...saved, brand_name: brands.data?.find((b) => b.id === saved.brand_id)?.name ?? '', campaign_title: camp?.title ?? null })}>Cetak invoice</button></div> : null}
       <div className="actions"><button className="btn" disabled={busy}>{busy ? 'Menyimpan…' : 'Simpan setoran'}</button></div>
     </form>
+  );
+}
+
+// All transactions of one month (0079): brand deposits / refunds and paid creator withdrawals, one row each.
+function TxExport({ months }: { months: string[] }) {
+  const [m, setM] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState<string | null>(null);
+  const pick = m || months[0] || '';
+  async function go() {
+    if (!pick) return;
+    setBusy(true); setErr(null);
+    try {
+      const rows = await financeExport(pick);
+      const q = (v: unknown) => { const t = String(v ?? ''); return /[",\n]/.test(t) ? `"${t.replace(/"/g, '""')}"` : t; };
+      const head = ['Tanggal (WIB)', 'Jenis', 'Pihak', 'Campaign', 'No. invoice', 'Jumlah', 'Fee', 'Bersih', 'Referensi', 'Catatan'];
+      const body = rows.map((r) => [new Date(r.at).toLocaleString('sv-SE', { timeZone: 'Asia/Jakarta' }), r.kind, r.party, r.campaign, r.invoice,
+        r.amount, r.fee, r.net, r.reference, r.note]);
+      const blob = new Blob(['\ufeff' + [head, ...body].map((r) => r.map(q).join(',')).join('\n')], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `tapp-transaksi-${pick.slice(0, 7)}.csv`; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      if (!rows.length) setErr('Tidak ada transaksi di bulan ini (file tetap diunduh, kosong).');
+    } catch (e) { setErr(adminError(e)); } finally { setBusy(false); }
+  }
+  return (
+    <div className="actions" style={{ alignItems: 'center' }}>
+      <span className="sub">Semua transaksi per bulan (untuk pembukuan):</span>
+      <select value={pick} onChange={(e) => setM(e.target.value)} aria-label="Bulan transaksi">
+        {months.map((x) => <option key={x} value={x}>{month(x)}</option>)}
+      </select>
+      <button className="btn secondary" onClick={go} disabled={busy || !pick}>{busy ? 'Menyiapkan…' : 'Unduh transaksi'}</button>
+      {err ? <span className="sub" style={{ color: 'var(--warning)' }}>{err}</span> : null}
+    </div>
   );
 }
 

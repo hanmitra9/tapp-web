@@ -38,3 +38,21 @@ test('admin finance: recap, record a deposit, print its invoice', async ({ page 
   await expect(inv.getByText('INVOICE')).toBeVisible();
   await expect(inv.getByRole('cell', { name: 'Budget campaign' })).toBeVisible();
 });
+
+test('admin finance: download all transactions of a month as CSV', async ({ page }) => {
+  await signedInCreator(page, {
+    profiles: { id: UID, full_name: 'Admin TAPP', role: 'admin' }, login_policy: { require_login_otp: false, require_admin_mfa: false },
+    admin_finance_monthly: [MONTH], admin_brand_ledger: [LEDGER], uptime_checks: [], brands: [], admin_campaigns: [],
+    admin_finance_export: [
+      { at: NOW, kind: 'Deposit brand', party: 'Kopi Nusa', campaign: 'Kopi, Susu', invoice: 'INV-TAPP-202610-0001', amount: 10000000, fee: 1800000, net: 8200000, reference: 'BCA', note: null },
+      { at: NOW, kind: 'Pencairan kreator', party: 'Rani Putri', campaign: null, invoice: null, amount: 500000, fee: 5000, net: 495000, reference: 'TRX1', note: 'BCA ••••1234' }],
+  });
+  await page.goto('/admin/finance');
+  const dl = page.waitForEvent('download');
+  await page.getByRole('button', { name: 'Unduh transaksi' }).click();
+  const file = await dl;
+  expect(file.suggestedFilename()).toBe(`tapp-transaksi-${MONTH.month.slice(0, 7)}.csv`);
+  const text = (await import('fs')).readFileSync(await file.path(), 'utf8');
+  expect(text).toContain('Pencairan kreator,Rani Putri');
+  expect(text).toContain('"Kopi, Susu"');
+});
